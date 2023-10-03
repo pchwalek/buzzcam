@@ -15,7 +15,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rmessage.proto\"H\n\x0cPacketHeader\x12\x12\n\nsystem_uid\x18\x01 \x01(\r\x12\x15\n\rms_from_start\x18\x02 \x01(\r\x12\r\n\x05\x65poch\x18\x03 \x01(\x04\"p\n\x13SimpleSensorReading\x12\r\n\x05index\x18\x01 \x01(\r\x12\x16\n\x0etimestamp_unix\x18\x02 \x01(\r\x12\x13\n\x0btemperature\x18\x03 \x01(\x02\x12\x10\n\x08humidity\x18\x04 \x01(\x02\x12\x0b\n\x03\x63o2\x18\x05 \x01(\x02\"\xb8\x02\n\rSensorReading\x12\x14\n\x0cpacket_index\x18\x01 \x01(\r\x12\x15\n\rsample_period\x18\x02 \x01(\r\x12\'\n\x07payload\x18\x03 \x03(\x0b\x32\x16.SensorReading.Payload\x1a\xd0\x01\n\x07Payload\x12\x18\n\x10timestamp_sensor\x18\x01 \x01(\x06\x12\x16\n\x0etimestamp_unix\x18\x02 \x01(\x04\x12\x1f\n\x17timestamp_ms_from_start\x18\x03 \x01(\r\x12\x0e\n\x06signal\x18\x04 \x01(\x02\x12\x19\n\x11signal_dimensions\x18\x05 \x01(\r\x12$\n\tsensor_id\x18\x06 \x01(\x0e\x32\x11.SignalIdentifier\x12!\n\x08\x61\x63\x63uracy\x18\x07 \x01(\x0e\x32\x0f.SensorAccuracy\"q\n\x0cSensorConfig\x12\x18\n\x10sample_period_ms\x18\x01 \x01(\r\x12\x1a\n\x12\x65nable_temperature\x18\x02 \x01(\x08\x12\x17\n\x0f\x65nable_humidity\x18\x03 \x01(\x08\x12\x12\n\nenable_gas\x18\x04 \x01(\x08\"d\n\x0bSDCardState\x12\x10\n\x08\x64\x65tected\x18\x01 \x01(\x08\x12\x17\n\x0fspace_remaining\x18\x02 \x01(\x04\x12*\n\"estimated_remaining_recording_time\x18\x03 \x01(\x04\"N\n\tMarkState\x12\x14\n\x0c\x62\x65\x65p_enabled\x18\x01 \x01(\x08\x12\x13\n\x0bmark_number\x18\x02 \x01(\r\x12\x16\n\x0etimestamp_unix\x18\x03 \x01(\x04\"J\n\nMarkPacket\x12\x14\n\x0c\x62\x65\x65p_enabled\x18\x01 \x01(\x08\x12\x17\n\nannotation\x18\x02 \x01(\tH\x00\x88\x01\x01\x42\r\n\x0b_annotation\"\xdf\x01\n\x10SystemInfoPacket\x12!\n\x19number_discovered_devices\x18\x01 \x01(\r\x12\x15\n\rmarker_number\x18\x02 \x01(\r\x12\x33\n\x15simple_sensor_reading\x18\x03 \x01(\x0b\x32\x14.SimpleSensorReading\x12\x18\n\x10\x64\x65vice_recording\x18\x04 \x01(\x08\x12\"\n\x0csdcard_state\x18\x05 \x01(\x0b\x32\x0c.SDCardState\x12\x1e\n\nmark_state\x18\x06 \x01(\x0b\x32\n.MarkState\"?\n\x10\x41udioCompression\x12\x0f\n\x07\x65nabled\x18\x01 \x01(\x08\x12\x1a\n\x12\x63ompression_factor\x18\x02 \x01(\r\"\xb1\x01\n\x0b\x41udioConfig\x12\x11\n\tchannel_1\x18\x01 \x01(\x08\x12\x11\n\tchannel_2\x18\x02 \x01(\x08\x12#\n\x0bsample_freq\x18\x03 \x01(\x0e\x32\x0e.MicSampleFreq\x12)\n\x0e\x62it_resolution\x18\x04 \x01(\x0e\x32\x11.MicBitResolution\x12,\n\x11\x61udio_compression\x18\x05 \x01(\x0b\x32\x11.AudioCompression\"\xda\x01\n\x0eScheduleConfig\x12\x0e\n\x06Sunday\x18\x01 \x01(\x08\x12\x0e\n\x06Monday\x18\x02 \x01(\x08\x12\x0f\n\x07Tuesday\x18\x03 \x01(\x08\x12\x11\n\tWednesday\x18\x04 \x01(\x08\x12\x10\n\x08Thursday\x18\x05 \x01(\x08\x12\x0e\n\x06\x46riday\x18\x06 \x01(\x08\x12\x10\n\x08Saturday\x18\x07 \x01(\x08\x12\x12\n\nstart_hour\x18\x08 \x01(\r\x12\x14\n\x0cstart_minute\x18\t \x01(\r\x12\x11\n\tstop_hour\x18\n \x01(\r\x12\x13\n\x0bstop_minute\x18\x0b \x01(\r\"\x7f\n\x11\x44iscoveredDevices\x12\x19\n\x11number_of_devices\x18\x01 \x01(\r\x12)\n\x06\x64\x65vice\x18\x02 \x03(\x0b\x32\x19.DiscoveredDevices.Device\x1a$\n\x06\x44\x65vice\x12\x0b\n\x03UID\x18\x01 \x01(\r\x12\r\n\x05range\x18\x02 \x01(\x02\"\xce\x01\n\x0c\x43onfigPacket\x12\"\n\x0c\x61udio_config\x18\x01 \x01(\x0b\x32\x0c.AudioConfig\x12(\n\x0fschedule_config\x18\x02 \x03(\x0b\x32\x0f.ScheduleConfig\x12$\n\rsensor_config\x18\x03 \x01(\x0b\x32\r.SensorConfig\x12\x33\n\x12\x64iscovered_devices\x18\x04 \x01(\x0b\x32\x12.DiscoveredDevicesH\x00\x88\x01\x01\x42\x15\n\x13_discovered_devices\"\xcf\x01\n\x0fSpecialFunction\x12\x17\n\rformat_sdcard\x18\x01 \x01(\x08H\x00\x12\x14\n\nfunction_2\x18\x02 \x01(\x08H\x00\x12\x14\n\nfunction_3\x18\x03 \x01(\x08H\x00\x12\x14\n\nfunction_4\x18\x04 \x01(\x08H\x00\x12\x14\n\nfunction_5\x18\x05 \x01(\x08H\x00\x12\x14\n\nfunction_6\x18\x06 \x01(\x08H\x00\x12\x14\n\nfunction_7\x18\x07 \x01(\x08H\x00\x12\x14\n\nfunction_8\x18\x08 \x01(\x08H\x00\x42\t\n\x07payload\"\xdd\x01\n\x06Packet\x12\x1d\n\x06header\x18\x01 \x01(\x0b\x32\r.PacketHeader\x12/\n\x12system_info_packet\x18\x02 \x01(\x0b\x32\x11.SystemInfoPacketH\x00\x12\"\n\x0bmark_packet\x18\x03 \x01(\x0b\x32\x0b.MarkPacketH\x00\x12&\n\rconfig_packet\x18\x04 \x01(\x0b\x32\r.ConfigPacketH\x00\x12,\n\x10special_function\x18\x05 \x01(\x0b\x32\x10.SpecialFunctionH\x00\x42\t\n\x07payload*\x94\x02\n\x10SignalIdentifier\x12\r\n\tUNDEFINED\x10\x00\x12\x07\n\x03IAQ\x10\x01\x12\x0e\n\nSTATIC_IAQ\x10\x02\x12\n\n\x06\x43O2_EQ\x10\x03\x12\x11\n\rBREATH_VOC_EQ\x10\x04\x12\x13\n\x0fRAW_TEMPERATURE\x10\x06\x12\x10\n\x0cRAW_PRESSURE\x10\x07\x12\x10\n\x0cRAW_HUMIDITY\x10\x08\x12\x0b\n\x07RAW_GAS\x10\t\x12\x18\n\x14STABILIZATION_STATUS\x10\x0c\x12\x11\n\rRUN_IN_STATUS\x10\r\x12\x1b\n\x17SENSOR_HEAT_COMPEN_TEMP\x10\x0e\x12\x15\n\x11HEAT_COMPEN_HUMID\x10\x0f\x12\x12\n\x0eGAS_PERCENTAGE\x10\x15*Z\n\x0eSensorAccuracy\x12\x0e\n\nUNRELIABLE\x10\x00\x12\x10\n\x0cLOW_ACCURACY\x10\x01\x12\x13\n\x0fMEDIUM_ACCURACY\x10\x02\x12\x11\n\rHIGH_ACCURACY\x10\x03*\x82\x01\n\rMicSampleFreq\x12\x15\n\x11SAMPLE_RATE_16000\x10\x00\x12\x15\n\x11SAMPLE_RATE_20500\x10\x01\x12\x15\n\x11SAMPLE_RATE_44100\x10\x02\x12\x15\n\x11SAMPLE_RATE_48000\x10\x03\x12\x15\n\x11SAMPLE_RATE_96000\x10\x04*1\n\x10MicBitResolution\x12\r\n\tBIT_RES_8\x10\x00\x12\x0e\n\nBIT_RES_16\x10\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rmessage.proto\"H\n\x0cPacketHeader\x12\x12\n\nsystem_uid\x18\x01 \x01(\r\x12\x15\n\rms_from_start\x18\x02 \x01(\r\x12\r\n\x05\x65poch\x18\x03 \x01(\x04\"p\n\x13SimpleSensorReading\x12\r\n\x05index\x18\x01 \x01(\r\x12\x16\n\x0etimestamp_unix\x18\x02 \x01(\r\x12\x13\n\x0btemperature\x18\x03 \x01(\x02\x12\x10\n\x08humidity\x18\x04 \x01(\x02\x12\x0b\n\x03\x63o2\x18\x05 \x01(\x02\"\xb8\x02\n\rSensorReading\x12\x14\n\x0cpacket_index\x18\x01 \x01(\r\x12\x15\n\rsample_period\x18\x02 \x01(\r\x12\'\n\x07payload\x18\x03 \x03(\x0b\x32\x16.SensorReading.Payload\x1a\xd0\x01\n\x07Payload\x12\x18\n\x10timestamp_sensor\x18\x01 \x01(\x06\x12\x16\n\x0etimestamp_unix\x18\x02 \x01(\x04\x12\x1f\n\x17timestamp_ms_from_start\x18\x03 \x01(\r\x12\x0e\n\x06signal\x18\x04 \x01(\x02\x12\x19\n\x11signal_dimensions\x18\x05 \x01(\r\x12$\n\tsensor_id\x18\x06 \x01(\x0e\x32\x11.SignalIdentifier\x12!\n\x08\x61\x63\x63uracy\x18\x07 \x01(\x0e\x32\x0f.SensorAccuracy\"q\n\x0cSensorConfig\x12\x18\n\x10sample_period_ms\x18\x01 \x01(\r\x12\x1a\n\x12\x65nable_temperature\x18\x02 \x01(\x08\x12\x17\n\x0f\x65nable_humidity\x18\x03 \x01(\x08\x12\x12\n\nenable_gas\x18\x04 \x01(\x08\"d\n\x0bSDCardState\x12\x10\n\x08\x64\x65tected\x18\x01 \x01(\x08\x12\x17\n\x0fspace_remaining\x18\x02 \x01(\x04\x12*\n\"estimated_remaining_recording_time\x18\x03 \x01(\x04\"N\n\tMarkState\x12\x14\n\x0c\x62\x65\x65p_enabled\x18\x01 \x01(\x08\x12\x13\n\x0bmark_number\x18\x02 \x01(\r\x12\x16\n\x0etimestamp_unix\x18\x03 \x01(\x04\"J\n\nMarkPacket\x12\x14\n\x0c\x62\x65\x65p_enabled\x18\x01 \x01(\x08\x12\x17\n\nannotation\x18\x02 \x01(\tH\x00\x88\x01\x01\x42\r\n\x0b_annotation\"\x7f\n\x11\x44iscoveredDevices\x12\x19\n\x11number_of_devices\x18\x01 \x01(\r\x12)\n\x06\x64\x65vice\x18\x02 \x03(\x0b\x32\x19.DiscoveredDevices.Device\x1a$\n\x06\x44\x65vice\x12\x0b\n\x03UID\x18\x01 \x01(\r\x12\r\n\x05range\x18\x02 \x01(\x02\"\x94\x02\n\x10SystemInfoPacket\x12!\n\x19number_discovered_devices\x18\x01 \x01(\r\x12\x33\n\x15simple_sensor_reading\x18\x02 \x01(\x0b\x32\x14.SimpleSensorReading\x12\x18\n\x10\x64\x65vice_recording\x18\x03 \x01(\x08\x12\"\n\x0csdcard_state\x18\x04 \x01(\x0b\x32\x0c.SDCardState\x12\x1e\n\nmark_state\x18\x05 \x01(\x0b\x32\n.MarkState\x12\x33\n\x12\x64iscovered_devices\x18\x06 \x01(\x0b\x32\x12.DiscoveredDevicesH\x00\x88\x01\x01\x42\x15\n\x13_discovered_devices\"?\n\x10\x41udioCompression\x12\x0f\n\x07\x65nabled\x18\x01 \x01(\x08\x12\x1a\n\x12\x63ompression_factor\x18\x02 \x01(\r\"\xb1\x01\n\x0b\x41udioConfig\x12\x11\n\tchannel_1\x18\x01 \x01(\x08\x12\x11\n\tchannel_2\x18\x02 \x01(\x08\x12#\n\x0bsample_freq\x18\x03 \x01(\x0e\x32\x0e.MicSampleFreq\x12)\n\x0e\x62it_resolution\x18\x04 \x01(\x0e\x32\x11.MicBitResolution\x12,\n\x11\x61udio_compression\x18\x05 \x01(\x0b\x32\x11.AudioCompression\"\xda\x01\n\x0eScheduleConfig\x12\x0e\n\x06Sunday\x18\x01 \x01(\x08\x12\x0e\n\x06Monday\x18\x02 \x01(\x08\x12\x0f\n\x07Tuesday\x18\x03 \x01(\x08\x12\x11\n\tWednesday\x18\x04 \x01(\x08\x12\x10\n\x08Thursday\x18\x05 \x01(\x08\x12\x0e\n\x06\x46riday\x18\x06 \x01(\x08\x12\x10\n\x08Saturday\x18\x07 \x01(\x08\x12\x12\n\nstart_hour\x18\x08 \x01(\r\x12\x14\n\x0cstart_minute\x18\t \x01(\r\x12\x11\n\tstop_hour\x18\n \x01(\r\x12\x13\n\x0bstop_minute\x18\x0b \x01(\r\"\x82\x01\n\x0c\x43onfigPacket\x12\"\n\x0c\x61udio_config\x18\x01 \x01(\x0b\x32\x0c.AudioConfig\x12(\n\x0fschedule_config\x18\x02 \x03(\x0b\x32\x0f.ScheduleConfig\x12$\n\rsensor_config\x18\x03 \x01(\x0b\x32\r.SensorConfig\"\xcf\x01\n\x0fSpecialFunction\x12\x17\n\rformat_sdcard\x18\x01 \x01(\x08H\x00\x12\x14\n\nfunction_2\x18\x02 \x01(\x08H\x00\x12\x14\n\nfunction_3\x18\x03 \x01(\x08H\x00\x12\x14\n\nfunction_4\x18\x04 \x01(\x08H\x00\x12\x14\n\nfunction_5\x18\x05 \x01(\x08H\x00\x12\x14\n\nfunction_6\x18\x06 \x01(\x08H\x00\x12\x14\n\nfunction_7\x18\x07 \x01(\x08H\x00\x12\x14\n\nfunction_8\x18\x08 \x01(\x08H\x00\x42\t\n\x07payload\"\xdd\x01\n\x06Packet\x12\x1d\n\x06header\x18\x01 \x01(\x0b\x32\r.PacketHeader\x12/\n\x12system_info_packet\x18\x02 \x01(\x0b\x32\x11.SystemInfoPacketH\x00\x12\"\n\x0bmark_packet\x18\x03 \x01(\x0b\x32\x0b.MarkPacketH\x00\x12&\n\rconfig_packet\x18\x04 \x01(\x0b\x32\r.ConfigPacketH\x00\x12,\n\x10special_function\x18\x05 \x01(\x0b\x32\x10.SpecialFunctionH\x00\x42\t\n\x07payload*\x94\x02\n\x10SignalIdentifier\x12\r\n\tUNDEFINED\x10\x00\x12\x07\n\x03IAQ\x10\x01\x12\x0e\n\nSTATIC_IAQ\x10\x02\x12\n\n\x06\x43O2_EQ\x10\x03\x12\x11\n\rBREATH_VOC_EQ\x10\x04\x12\x13\n\x0fRAW_TEMPERATURE\x10\x06\x12\x10\n\x0cRAW_PRESSURE\x10\x07\x12\x10\n\x0cRAW_HUMIDITY\x10\x08\x12\x0b\n\x07RAW_GAS\x10\t\x12\x18\n\x14STABILIZATION_STATUS\x10\x0c\x12\x11\n\rRUN_IN_STATUS\x10\r\x12\x1b\n\x17SENSOR_HEAT_COMPEN_TEMP\x10\x0e\x12\x15\n\x11HEAT_COMPEN_HUMID\x10\x0f\x12\x12\n\x0eGAS_PERCENTAGE\x10\x15*Z\n\x0eSensorAccuracy\x12\x0e\n\nUNRELIABLE\x10\x00\x12\x10\n\x0cLOW_ACCURACY\x10\x01\x12\x13\n\x0fMEDIUM_ACCURACY\x10\x02\x12\x11\n\rHIGH_ACCURACY\x10\x03*\x82\x01\n\rMicSampleFreq\x12\x15\n\x11SAMPLE_RATE_16000\x10\x00\x12\x15\n\x11SAMPLE_RATE_20500\x10\x01\x12\x15\n\x11SAMPLE_RATE_44100\x10\x02\x12\x15\n\x11SAMPLE_RATE_48000\x10\x03\x12\x15\n\x11SAMPLE_RATE_96000\x10\x04*1\n\x10MicBitResolution\x12\r\n\tBIT_RES_8\x10\x00\x12\x0e\n\nBIT_RES_16\x10\x01\x62\x06proto3')
 
 _SIGNALIDENTIFIER = DESCRIPTOR.enum_types_by_name['SignalIdentifier']
 SignalIdentifier = enum_type_wrapper.EnumTypeWrapper(_SIGNALIDENTIFIER)
@@ -60,12 +60,12 @@ _SENSORCONFIG = DESCRIPTOR.message_types_by_name['SensorConfig']
 _SDCARDSTATE = DESCRIPTOR.message_types_by_name['SDCardState']
 _MARKSTATE = DESCRIPTOR.message_types_by_name['MarkState']
 _MARKPACKET = DESCRIPTOR.message_types_by_name['MarkPacket']
+_DISCOVEREDDEVICES = DESCRIPTOR.message_types_by_name['DiscoveredDevices']
+_DISCOVEREDDEVICES_DEVICE = _DISCOVEREDDEVICES.nested_types_by_name['Device']
 _SYSTEMINFOPACKET = DESCRIPTOR.message_types_by_name['SystemInfoPacket']
 _AUDIOCOMPRESSION = DESCRIPTOR.message_types_by_name['AudioCompression']
 _AUDIOCONFIG = DESCRIPTOR.message_types_by_name['AudioConfig']
 _SCHEDULECONFIG = DESCRIPTOR.message_types_by_name['ScheduleConfig']
-_DISCOVEREDDEVICES = DESCRIPTOR.message_types_by_name['DiscoveredDevices']
-_DISCOVEREDDEVICES_DEVICE = _DISCOVEREDDEVICES.nested_types_by_name['Device']
 _CONFIGPACKET = DESCRIPTOR.message_types_by_name['ConfigPacket']
 _SPECIALFUNCTION = DESCRIPTOR.message_types_by_name['SpecialFunction']
 _PACKET = DESCRIPTOR.message_types_by_name['Packet']
@@ -126,6 +126,21 @@ MarkPacket = _reflection.GeneratedProtocolMessageType('MarkPacket', (_message.Me
   })
 _sym_db.RegisterMessage(MarkPacket)
 
+DiscoveredDevices = _reflection.GeneratedProtocolMessageType('DiscoveredDevices', (_message.Message,), {
+
+  'Device' : _reflection.GeneratedProtocolMessageType('Device', (_message.Message,), {
+    'DESCRIPTOR' : _DISCOVEREDDEVICES_DEVICE,
+    '__module__' : 'message_pb2'
+    # @@protoc_insertion_point(class_scope:DiscoveredDevices.Device)
+    })
+  ,
+  'DESCRIPTOR' : _DISCOVEREDDEVICES,
+  '__module__' : 'message_pb2'
+  # @@protoc_insertion_point(class_scope:DiscoveredDevices)
+  })
+_sym_db.RegisterMessage(DiscoveredDevices)
+_sym_db.RegisterMessage(DiscoveredDevices.Device)
+
 SystemInfoPacket = _reflection.GeneratedProtocolMessageType('SystemInfoPacket', (_message.Message,), {
   'DESCRIPTOR' : _SYSTEMINFOPACKET,
   '__module__' : 'message_pb2'
@@ -154,21 +169,6 @@ ScheduleConfig = _reflection.GeneratedProtocolMessageType('ScheduleConfig', (_me
   })
 _sym_db.RegisterMessage(ScheduleConfig)
 
-DiscoveredDevices = _reflection.GeneratedProtocolMessageType('DiscoveredDevices', (_message.Message,), {
-
-  'Device' : _reflection.GeneratedProtocolMessageType('Device', (_message.Message,), {
-    'DESCRIPTOR' : _DISCOVEREDDEVICES_DEVICE,
-    '__module__' : 'message_pb2'
-    # @@protoc_insertion_point(class_scope:DiscoveredDevices.Device)
-    })
-  ,
-  'DESCRIPTOR' : _DISCOVEREDDEVICES,
-  '__module__' : 'message_pb2'
-  # @@protoc_insertion_point(class_scope:DiscoveredDevices)
-  })
-_sym_db.RegisterMessage(DiscoveredDevices)
-_sym_db.RegisterMessage(DiscoveredDevices.Device)
-
 ConfigPacket = _reflection.GeneratedProtocolMessageType('ConfigPacket', (_message.Message,), {
   'DESCRIPTOR' : _CONFIGPACKET,
   '__module__' : 'message_pb2'
@@ -193,14 +193,14 @@ _sym_db.RegisterMessage(Packet)
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
-  _SIGNALIDENTIFIER._serialized_start=2358
-  _SIGNALIDENTIFIER._serialized_end=2634
-  _SENSORACCURACY._serialized_start=2636
-  _SENSORACCURACY._serialized_end=2726
-  _MICSAMPLEFREQ._serialized_start=2729
-  _MICSAMPLEFREQ._serialized_end=2859
-  _MICBITRESOLUTION._serialized_start=2861
-  _MICBITRESOLUTION._serialized_end=2910
+  _SIGNALIDENTIFIER._serialized_start=2335
+  _SIGNALIDENTIFIER._serialized_end=2611
+  _SENSORACCURACY._serialized_start=2613
+  _SENSORACCURACY._serialized_end=2703
+  _MICSAMPLEFREQ._serialized_start=2706
+  _MICSAMPLEFREQ._serialized_end=2836
+  _MICBITRESOLUTION._serialized_start=2838
+  _MICBITRESOLUTION._serialized_end=2887
   _PACKETHEADER._serialized_start=17
   _PACKETHEADER._serialized_end=89
   _SIMPLESENSORREADING._serialized_start=91
@@ -217,22 +217,22 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _MARKSTATE._serialized_end=815
   _MARKPACKET._serialized_start=817
   _MARKPACKET._serialized_end=891
-  _SYSTEMINFOPACKET._serialized_start=894
-  _SYSTEMINFOPACKET._serialized_end=1117
-  _AUDIOCOMPRESSION._serialized_start=1119
-  _AUDIOCOMPRESSION._serialized_end=1182
-  _AUDIOCONFIG._serialized_start=1185
-  _AUDIOCONFIG._serialized_end=1362
-  _SCHEDULECONFIG._serialized_start=1365
-  _SCHEDULECONFIG._serialized_end=1583
-  _DISCOVEREDDEVICES._serialized_start=1585
-  _DISCOVEREDDEVICES._serialized_end=1712
-  _DISCOVEREDDEVICES_DEVICE._serialized_start=1676
-  _DISCOVEREDDEVICES_DEVICE._serialized_end=1712
-  _CONFIGPACKET._serialized_start=1715
-  _CONFIGPACKET._serialized_end=1921
-  _SPECIALFUNCTION._serialized_start=1924
-  _SPECIALFUNCTION._serialized_end=2131
-  _PACKET._serialized_start=2134
-  _PACKET._serialized_end=2355
+  _DISCOVEREDDEVICES._serialized_start=893
+  _DISCOVEREDDEVICES._serialized_end=1020
+  _DISCOVEREDDEVICES_DEVICE._serialized_start=984
+  _DISCOVEREDDEVICES_DEVICE._serialized_end=1020
+  _SYSTEMINFOPACKET._serialized_start=1023
+  _SYSTEMINFOPACKET._serialized_end=1299
+  _AUDIOCOMPRESSION._serialized_start=1301
+  _AUDIOCOMPRESSION._serialized_end=1364
+  _AUDIOCONFIG._serialized_start=1367
+  _AUDIOCONFIG._serialized_end=1544
+  _SCHEDULECONFIG._serialized_start=1547
+  _SCHEDULECONFIG._serialized_end=1765
+  _CONFIGPACKET._serialized_start=1768
+  _CONFIGPACKET._serialized_end=1898
+  _SPECIALFUNCTION._serialized_start=1901
+  _SPECIALFUNCTION._serialized_end=2108
+  _PACKET._serialized_start=2111
+  _PACKET._serialized_end=2332
 # @@protoc_insertion_point(module_scope)

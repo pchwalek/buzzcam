@@ -31,6 +31,7 @@ BLE2902 *pDescriptor2902;
 bool deviceConnected = false;
 bool oldDeviceConnected = false;
 
+BLECharacteristic *pCharacteristicTx;
 BLECharacteristic *pCharacteristicRx;
 
 unsigned long myTime;
@@ -57,19 +58,20 @@ void setup() {
     // BLECharacteristic *pCharacteristic1 = pService->createCharacteristic(
     //     CHARACTERISTIC_UUID1, BLECharacteristic::PROPERTY_WRITE || BLECharacteristic::PROPERTY_READ);
 
-    pCharacteristicRx = pService->createCharacteristic(
+    pCharacteristicTx = pService->createCharacteristic(
         CHARACTERISTIC_UUID2,  BLECharacteristic::PROPERTY_NOTIFY);
-    pDescriptor2902 = new BLE2902();
-    pDescriptor2902->setNotifications(true);
-    pDescriptor2902->setIndications(true);
-    pCharacteristicRx->addDescriptor(pDescriptor2902);
-    data_8[0] = 0;
-    pCharacteristicRx->setValue(data_8, 1);
+    // pDescriptor2902 = new BLE2902();
+    // pDescriptor2902->setNotifications(true);
+    // pDescriptor2902->setIndications(true);
+    // pCharacteristicTx->addDescriptor(pDescriptor2902);
+    pCharacteristicTx->setReadProperty(true);
+    pCharacteristicTx->setNotifyProperty(true);
+    pCharacteristicTx->setIndicateProperty(true);
 
     // system state read value
-    BLECharacteristic *pCharacteristic3 = pService->createCharacteristic(
+    pCharacteristicRx = pService->createCharacteristic(
         CHARACTERISTIC_UUID3, BLECharacteristic::PROPERTY_WRITE);
-    data_16 = 0x0201;
+    pCharacteristicRx->setReadProperty(true);
 
   
 
@@ -119,7 +121,11 @@ void setup() {
     pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
     pb_encode(&stream, Packet_fields, &message);
 
-    pCharacteristic3->setValue(buffer, stream.bytes_written);
+    pCharacteristicTx->setValue(buffer, stream.bytes_written);
+    Serial.print("Setting characteristic. Byte size: ");
+    Serial.println( stream.bytes_written);
+    Serial.write(buffer, stream.bytes_written);
+    Serial.println();
 }
 
 void loop() {

@@ -3,7 +3,7 @@
 
 #ifndef PB_MESSAGE_PB_H_INCLUDED
 #define PB_MESSAGE_PB_H_INCLUDED
-#include </Users/chwalek/dev/buzzcam/protobuf/pb.h>
+#include <pb.h>
 
 #if PB_PROTO_HEADER_VERSION != 40
 #error Regenerate this file with the current version of nanopb generator.
@@ -105,6 +105,16 @@ typedef struct _MarkPacket {
     char annotation[100]; /* throttle max character count (e.g., 50) */
 } MarkPacket;
 
+typedef struct _DiscoveredDevices {
+    uint32_t number_of_devices;
+    pb_callback_t device;
+} DiscoveredDevices;
+
+typedef struct _DiscoveredDevices_Device {
+    uint32_t UID;
+    float range;
+} DiscoveredDevices_Device;
+
 typedef struct _SystemInfoPacket {
     uint32_t number_discovered_devices;
     bool has_simple_sensor_reading;
@@ -114,6 +124,8 @@ typedef struct _SystemInfoPacket {
     SDCardState sdcard_state;
     bool has_mark_state;
     MarkState mark_state;
+    bool has_discovered_devices;
+    DiscoveredDevices discovered_devices;
 } SystemInfoPacket;
 
 typedef struct _AudioCompression {
@@ -144,24 +156,12 @@ typedef struct _ScheduleConfig {
     uint32_t stop_minute;
 } ScheduleConfig;
 
-typedef struct _DiscoveredDevices {
-    uint32_t number_of_devices;
-    pb_callback_t device;
-} DiscoveredDevices;
-
-typedef struct _DiscoveredDevices_Device {
-    uint32_t UID;
-    float range;
-} DiscoveredDevices_Device;
-
 typedef struct _ConfigPacket {
     bool has_audio_config;
     AudioConfig audio_config;
     pb_callback_t schedule_config;
     bool has_sensor_config;
     SensorConfig sensor_config;
-    bool has_discovered_devices;
-    DiscoveredDevices discovered_devices;
 } ConfigPacket;
 
 typedef struct _SpecialFunction {
@@ -224,10 +224,10 @@ extern "C" {
 
 
 
+
+
 #define AudioConfig_sample_freq_ENUMTYPE MicSampleFreq
 #define AudioConfig_bit_resolution_ENUMTYPE MicBitResolution
-
-
 
 
 
@@ -243,13 +243,13 @@ extern "C" {
 #define SDCardState_init_default                 {0, 0, 0}
 #define MarkState_init_default                   {0, 0, 0}
 #define MarkPacket_init_default                  {0, false, ""}
-#define SystemInfoPacket_init_default            {0, false, SimpleSensorReading_init_default, 0, false, SDCardState_init_default, false, MarkState_init_default}
+#define DiscoveredDevices_init_default           {0, {{NULL}, NULL}}
+#define DiscoveredDevices_Device_init_default    {0, 0}
+#define SystemInfoPacket_init_default            {0, false, SimpleSensorReading_init_default, 0, false, SDCardState_init_default, false, MarkState_init_default, false, DiscoveredDevices_init_default}
 #define AudioCompression_init_default            {0, 0}
 #define AudioConfig_init_default                 {0, 0, _MicSampleFreq_MIN, _MicBitResolution_MIN, false, AudioCompression_init_default}
 #define ScheduleConfig_init_default              {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-#define DiscoveredDevices_init_default           {0, {{NULL}, NULL}}
-#define DiscoveredDevices_Device_init_default    {0, 0}
-#define ConfigPacket_init_default                {false, AudioConfig_init_default, {{NULL}, NULL}, false, SensorConfig_init_default, false, DiscoveredDevices_init_default}
+#define ConfigPacket_init_default                {false, AudioConfig_init_default, {{NULL}, NULL}, false, SensorConfig_init_default}
 #define SpecialFunction_init_default             {0, {0}}
 #define Packet_init_default                      {false, PacketHeader_init_default, 0, {SystemInfoPacket_init_default}}
 #define PacketHeader_init_zero                   {0, 0, 0}
@@ -260,13 +260,13 @@ extern "C" {
 #define SDCardState_init_zero                    {0, 0, 0}
 #define MarkState_init_zero                      {0, 0, 0}
 #define MarkPacket_init_zero                     {0, false, ""}
-#define SystemInfoPacket_init_zero               {0, false, SimpleSensorReading_init_zero, 0, false, SDCardState_init_zero, false, MarkState_init_zero}
+#define DiscoveredDevices_init_zero              {0, {{NULL}, NULL}}
+#define DiscoveredDevices_Device_init_zero       {0, 0}
+#define SystemInfoPacket_init_zero               {0, false, SimpleSensorReading_init_zero, 0, false, SDCardState_init_zero, false, MarkState_init_zero, false, DiscoveredDevices_init_zero}
 #define AudioCompression_init_zero               {0, 0}
 #define AudioConfig_init_zero                    {0, 0, _MicSampleFreq_MIN, _MicBitResolution_MIN, false, AudioCompression_init_zero}
 #define ScheduleConfig_init_zero                 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-#define DiscoveredDevices_init_zero              {0, {{NULL}, NULL}}
-#define DiscoveredDevices_Device_init_zero       {0, 0}
-#define ConfigPacket_init_zero                   {false, AudioConfig_init_zero, {{NULL}, NULL}, false, SensorConfig_init_zero, false, DiscoveredDevices_init_zero}
+#define ConfigPacket_init_zero                   {false, AudioConfig_init_zero, {{NULL}, NULL}, false, SensorConfig_init_zero}
 #define SpecialFunction_init_zero                {0, {0}}
 #define Packet_init_zero                         {false, PacketHeader_init_zero, 0, {SystemInfoPacket_init_zero}}
 
@@ -301,11 +301,16 @@ extern "C" {
 #define MarkState_timestamp_unix_tag             3
 #define MarkPacket_beep_enabled_tag              1
 #define MarkPacket_annotation_tag                2
+#define DiscoveredDevices_number_of_devices_tag  1
+#define DiscoveredDevices_device_tag             2
+#define DiscoveredDevices_Device_UID_tag         1
+#define DiscoveredDevices_Device_range_tag       2
 #define SystemInfoPacket_number_discovered_devices_tag 1
 #define SystemInfoPacket_simple_sensor_reading_tag 2
 #define SystemInfoPacket_device_recording_tag    3
 #define SystemInfoPacket_sdcard_state_tag        4
 #define SystemInfoPacket_mark_state_tag          5
+#define SystemInfoPacket_discovered_devices_tag  6
 #define AudioCompression_enabled_tag             1
 #define AudioCompression_compression_factor_tag  2
 #define AudioConfig_channel_1_tag                1
@@ -324,14 +329,9 @@ extern "C" {
 #define ScheduleConfig_start_minute_tag          9
 #define ScheduleConfig_stop_hour_tag             10
 #define ScheduleConfig_stop_minute_tag           11
-#define DiscoveredDevices_number_of_devices_tag  1
-#define DiscoveredDevices_device_tag             2
-#define DiscoveredDevices_Device_UID_tag         1
-#define DiscoveredDevices_Device_range_tag       2
 #define ConfigPacket_audio_config_tag            1
 #define ConfigPacket_schedule_config_tag         2
 #define ConfigPacket_sensor_config_tag           3
-#define ConfigPacket_discovered_devices_tag      4
 #define SpecialFunction_format_sdcard_tag        1
 #define SpecialFunction_function_2_tag           2
 #define SpecialFunction_function_3_tag           3
@@ -410,17 +410,32 @@ X(a, STATIC,   OPTIONAL, STRING,   annotation,        2)
 #define MarkPacket_CALLBACK NULL
 #define MarkPacket_DEFAULT NULL
 
+#define DiscoveredDevices_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, UINT32,   number_of_devices,   1) \
+X(a, CALLBACK, REPEATED, MESSAGE,  device,            2)
+#define DiscoveredDevices_CALLBACK pb_default_field_callback
+#define DiscoveredDevices_DEFAULT NULL
+#define DiscoveredDevices_device_MSGTYPE DiscoveredDevices_Device
+
+#define DiscoveredDevices_Device_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, UINT32,   UID,               1) \
+X(a, STATIC,   SINGULAR, FLOAT,    range,             2)
+#define DiscoveredDevices_Device_CALLBACK NULL
+#define DiscoveredDevices_Device_DEFAULT NULL
+
 #define SystemInfoPacket_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UINT32,   number_discovered_devices,   1) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  simple_sensor_reading,   2) \
 X(a, STATIC,   SINGULAR, BOOL,     device_recording,   3) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  sdcard_state,      4) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  mark_state,        5)
+X(a, STATIC,   OPTIONAL, MESSAGE,  mark_state,        5) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  discovered_devices,   6)
 #define SystemInfoPacket_CALLBACK NULL
 #define SystemInfoPacket_DEFAULT NULL
 #define SystemInfoPacket_simple_sensor_reading_MSGTYPE SimpleSensorReading
 #define SystemInfoPacket_sdcard_state_MSGTYPE SDCardState
 #define SystemInfoPacket_mark_state_MSGTYPE MarkState
+#define SystemInfoPacket_discovered_devices_MSGTYPE DiscoveredDevices
 
 #define AudioCompression_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, BOOL,     enabled,           1) \
@@ -453,30 +468,15 @@ X(a, STATIC,   SINGULAR, UINT32,   stop_minute,      11)
 #define ScheduleConfig_CALLBACK NULL
 #define ScheduleConfig_DEFAULT NULL
 
-#define DiscoveredDevices_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, UINT32,   number_of_devices,   1) \
-X(a, CALLBACK, REPEATED, MESSAGE,  device,            2)
-#define DiscoveredDevices_CALLBACK pb_default_field_callback
-#define DiscoveredDevices_DEFAULT NULL
-#define DiscoveredDevices_device_MSGTYPE DiscoveredDevices_Device
-
-#define DiscoveredDevices_Device_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, UINT32,   UID,               1) \
-X(a, STATIC,   SINGULAR, FLOAT,    range,             2)
-#define DiscoveredDevices_Device_CALLBACK NULL
-#define DiscoveredDevices_Device_DEFAULT NULL
-
 #define ConfigPacket_FIELDLIST(X, a) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  audio_config,      1) \
 X(a, CALLBACK, REPEATED, MESSAGE,  schedule_config,   2) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  sensor_config,     3) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  discovered_devices,   4)
+X(a, STATIC,   OPTIONAL, MESSAGE,  sensor_config,     3)
 #define ConfigPacket_CALLBACK pb_default_field_callback
 #define ConfigPacket_DEFAULT NULL
 #define ConfigPacket_audio_config_MSGTYPE AudioConfig
 #define ConfigPacket_schedule_config_MSGTYPE ScheduleConfig
 #define ConfigPacket_sensor_config_MSGTYPE SensorConfig
-#define ConfigPacket_discovered_devices_MSGTYPE DiscoveredDevices
 
 #define SpecialFunction_FIELDLIST(X, a) \
 X(a, STATIC,   ONEOF,    BOOL,     (payload,format_sdcard,payload.format_sdcard),   1) \
@@ -512,12 +512,12 @@ extern const pb_msgdesc_t SensorConfig_msg;
 extern const pb_msgdesc_t SDCardState_msg;
 extern const pb_msgdesc_t MarkState_msg;
 extern const pb_msgdesc_t MarkPacket_msg;
+extern const pb_msgdesc_t DiscoveredDevices_msg;
+extern const pb_msgdesc_t DiscoveredDevices_Device_msg;
 extern const pb_msgdesc_t SystemInfoPacket_msg;
 extern const pb_msgdesc_t AudioCompression_msg;
 extern const pb_msgdesc_t AudioConfig_msg;
 extern const pb_msgdesc_t ScheduleConfig_msg;
-extern const pb_msgdesc_t DiscoveredDevices_msg;
-extern const pb_msgdesc_t DiscoveredDevices_Device_msg;
 extern const pb_msgdesc_t ConfigPacket_msg;
 extern const pb_msgdesc_t SpecialFunction_msg;
 extern const pb_msgdesc_t Packet_msg;
@@ -531,12 +531,12 @@ extern const pb_msgdesc_t Packet_msg;
 #define SDCardState_fields &SDCardState_msg
 #define MarkState_fields &MarkState_msg
 #define MarkPacket_fields &MarkPacket_msg
+#define DiscoveredDevices_fields &DiscoveredDevices_msg
+#define DiscoveredDevices_Device_fields &DiscoveredDevices_Device_msg
 #define SystemInfoPacket_fields &SystemInfoPacket_msg
 #define AudioCompression_fields &AudioCompression_msg
 #define AudioConfig_fields &AudioConfig_msg
 #define ScheduleConfig_fields &ScheduleConfig_msg
-#define DiscoveredDevices_fields &DiscoveredDevices_msg
-#define DiscoveredDevices_Device_fields &DiscoveredDevices_Device_msg
 #define ConfigPacket_fields &ConfigPacket_msg
 #define SpecialFunction_fields &SpecialFunction_msg
 #define Packet_fields &Packet_msg
@@ -544,6 +544,7 @@ extern const pb_msgdesc_t Packet_msg;
 /* Maximum encoded size of messages (where known) */
 /* SensorReading_size depends on runtime parameters */
 /* DiscoveredDevices_size depends on runtime parameters */
+/* SystemInfoPacket_size depends on runtime parameters */
 /* ConfigPacket_size depends on runtime parameters */
 /* Packet_size depends on runtime parameters */
 #define AudioCompression_size                    8
@@ -558,7 +559,6 @@ extern const pb_msgdesc_t Packet_msg;
 #define SensorReading_Payload_size               41
 #define SimpleSensorReading_size                 27
 #define SpecialFunction_size                     2
-#define SystemInfoPacket_size                    84
 
 #ifdef __cplusplus
 } /* extern "C" */

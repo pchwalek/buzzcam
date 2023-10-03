@@ -86,13 +86,22 @@ message MarkPacket{
     optional string annotation = 2; // throttle max character count (e.g., 50)
 }
 
+message DiscoveredDevices{
+    uint32 number_of_devices = 1;
+    message Device{
+        uint32 UID = 1;
+        float range = 2;
+    }
+    repeated Device device = 2;
+}
+
 message SystemInfoPacket{
     uint32 number_discovered_devices = 1;
     SimpleSensorReading simple_sensor_reading = 2;
     bool device_recording = 3;
     SDCardState sdcard_state = 4;
     MarkState mark_state = 5;
-    
+    optional DiscoveredDevices discovered_devices = 6;
 }
 
 enum MicSampleFreq {
@@ -135,20 +144,10 @@ message ScheduleConfig{
     uint32 stop_minute = 11;
 }
 
-message DiscoveredDevices{
-    uint32 number_of_devices = 1;
-    message Device{
-        uint32 UID = 1;
-        float range = 2;
-    }
-    repeated Device device = 2;
-}
-
 message ConfigPacket{
     AudioConfig audio_config = 1;
     repeated ScheduleConfig schedule_config = 2;
     SensorConfig sensor_config = 3;
-    optional DiscoveredDevices discovered_devices = 4;
 }
 
 message SpecialFunction{

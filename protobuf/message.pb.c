@@ -30,6 +30,12 @@ PB_BIND(MarkState, MarkState, AUTO)
 PB_BIND(MarkPacket, MarkPacket, AUTO)
 
 
+PB_BIND(DiscoveredDevices, DiscoveredDevices, AUTO)
+
+
+PB_BIND(DiscoveredDevices_Device, DiscoveredDevices_Device, AUTO)
+
+
 PB_BIND(SystemInfoPacket, SystemInfoPacket, AUTO)
 
 
@@ -40,12 +46,6 @@ PB_BIND(AudioConfig, AudioConfig, AUTO)
 
 
 PB_BIND(ScheduleConfig, ScheduleConfig, AUTO)
-
-
-PB_BIND(DiscoveredDevices, DiscoveredDevices, AUTO)
-
-
-PB_BIND(DiscoveredDevices_Device, DiscoveredDevices_Device, AUTO)
 
 
 PB_BIND(ConfigPacket, ConfigPacket, AUTO)
