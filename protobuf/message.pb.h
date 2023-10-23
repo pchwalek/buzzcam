@@ -11,160 +11,235 @@
 
 /* Enum definitions */
 /* * defined by Bosch */
-typedef enum _SignalIdentifier {
-    SignalIdentifier_UNDEFINED = 0,
-    SignalIdentifier_IAQ = 1,
-    SignalIdentifier_STATIC_IAQ = 2,
-    SignalIdentifier_CO2_EQ = 3,
-    SignalIdentifier_BREATH_VOC_EQ = 4,
-    SignalIdentifier_RAW_TEMPERATURE = 6,
-    SignalIdentifier_RAW_PRESSURE = 7,
-    SignalIdentifier_RAW_HUMIDITY = 8,
-    SignalIdentifier_RAW_GAS = 9,
-    SignalIdentifier_STABILIZATION_STATUS = 12,
-    SignalIdentifier_RUN_IN_STATUS = 13,
-    SignalIdentifier_SENSOR_HEAT_COMPEN_TEMP = 14,
-    SignalIdentifier_HEAT_COMPEN_HUMID = 15,
-    SignalIdentifier_GAS_PERCENTAGE = 21
-} SignalIdentifier;
+typedef enum signal_identifier {
+    SIGNAL_IDENTIFIER_UNDEFINED = 0,
+    SIGNAL_IDENTIFIER_IAQ = 1,
+    SIGNAL_IDENTIFIER_STATIC_IAQ = 2,
+    SIGNAL_IDENTIFIER_CO2_EQ = 3,
+    SIGNAL_IDENTIFIER_BREATH_VOC_EQ = 4,
+    SIGNAL_IDENTIFIER_RAW_TEMPERATURE = 6,
+    SIGNAL_IDENTIFIER_RAW_PRESSURE = 7,
+    SIGNAL_IDENTIFIER_RAW_HUMIDITY = 8,
+    SIGNAL_IDENTIFIER_RAW_GAS = 9,
+    SIGNAL_IDENTIFIER_STABILIZATION_STATUS = 12,
+    SIGNAL_IDENTIFIER_RUN_IN_STATUS = 13,
+    SIGNAL_IDENTIFIER_SENSOR_HEAT_COMPEN_TEMP = 14,
+    SIGNAL_IDENTIFIER_HEAT_COMPEN_HUMID = 15,
+    SIGNAL_IDENTIFIER_GAS_PERCENTAGE = 21
+} signal_identifier_t;
 
 /* * defined by Bosch */
-typedef enum _SensorAccuracy {
-    SensorAccuracy_UNRELIABLE = 0,
-    SensorAccuracy_LOW_ACCURACY = 1,
-    SensorAccuracy_MEDIUM_ACCURACY = 2,
-    SensorAccuracy_HIGH_ACCURACY = 3
-} SensorAccuracy;
+typedef enum sensor_accuracy {
+    SENSOR_ACCURACY_UNRELIABLE = 0,
+    SENSOR_ACCURACY_LOW_ACCURACY = 1,
+    SENSOR_ACCURACY_MEDIUM_ACCURACY = 2,
+    SENSOR_ACCURACY_HIGH_ACCURACY = 3
+} sensor_accuracy_t;
 
-typedef enum _MicSampleFreq {
-    MicSampleFreq_SAMPLE_RATE_16000 = 0,
-    MicSampleFreq_SAMPLE_RATE_20500 = 1,
-    MicSampleFreq_SAMPLE_RATE_44100 = 2,
-    MicSampleFreq_SAMPLE_RATE_48000 = 3,
-    MicSampleFreq_SAMPLE_RATE_96000 = 4
-} MicSampleFreq;
+typedef enum mic_sample_freq {
+    MIC_SAMPLE_FREQ_SAMPLE_RATE_16000 = 0,
+    MIC_SAMPLE_FREQ_SAMPLE_RATE_20500 = 1,
+    MIC_SAMPLE_FREQ_SAMPLE_RATE_44100 = 2,
+    MIC_SAMPLE_FREQ_SAMPLE_RATE_48000 = 3,
+    MIC_SAMPLE_FREQ_SAMPLE_RATE_96000 = 4
+} mic_sample_freq_t;
 
-typedef enum _MicBitResolution {
-    MicBitResolution_BIT_RES_8 = 0,
-    MicBitResolution_BIT_RES_16 = 1
-} MicBitResolution;
+typedef enum mic_bit_resolution {
+    MIC_BIT_RESOLUTION_BIT_RES_8 = 0,
+    MIC_BIT_RESOLUTION_BIT_RES_16 = 1
+} mic_bit_resolution_t;
+
+typedef enum compression_type {
+    COMPRESSION_TYPE_OPUS = 0
+} compression_type_t;
 
 /* Struct definitions */
-typedef struct _PacketHeader {
+PB_PACKED_STRUCT_START
+typedef struct packet_header {
     uint32_t system_uid;
     uint32_t ms_from_start;
     uint64_t epoch;
-} PacketHeader;
+} pb_packed packet_header_t;
+PB_PACKED_STRUCT_END
 
-typedef struct _SimpleSensorReading {
+PB_PACKED_STRUCT_START
+typedef struct simple_sensor_reading {
     uint32_t index;
     uint32_t timestamp_unix;
     float temperature;
     float humidity;
     float co2;
-} SimpleSensorReading;
+} pb_packed simple_sensor_reading_t;
+PB_PACKED_STRUCT_END
 
-typedef struct _SensorReading {
+PB_PACKED_STRUCT_START
+typedef struct sensor_reading {
     uint32_t packet_index;
     uint32_t sample_period;
     pb_callback_t payload;
-} SensorReading;
+} pb_packed sensor_reading_t;
+PB_PACKED_STRUCT_END
 
-typedef struct _SensorReading_Payload {
+PB_PACKED_STRUCT_START
+typedef struct sensor_reading_payload {
     uint64_t timestamp_sensor;
     uint64_t timestamp_unix;
     uint32_t timestamp_ms_from_start;
     float signal;
     uint32_t signal_dimensions;
-    SignalIdentifier sensor_id;
-    SensorAccuracy accuracy;
-} SensorReading_Payload;
+    signal_identifier_t sensor_id;
+    sensor_accuracy_t accuracy;
+} pb_packed sensor_reading_payload_t;
+PB_PACKED_STRUCT_END
 
-typedef struct _SensorConfig {
+PB_PACKED_STRUCT_START
+typedef struct sensor_config {
     uint32_t sample_period_ms;
     bool enable_temperature;
     bool enable_humidity;
     bool enable_gas;
-} SensorConfig;
+} pb_packed sensor_config_t;
+PB_PACKED_STRUCT_END
 
-typedef struct _SDCardState {
+PB_PACKED_STRUCT_START
+typedef struct sd_card_state {
     bool detected;
     uint64_t space_remaining;
     uint64_t estimated_remaining_recording_time;
-} SDCardState;
+} pb_packed sd_card_state_t;
+PB_PACKED_STRUCT_END
 
-typedef struct _MarkState {
+PB_PACKED_STRUCT_START
+typedef struct mark_state {
     bool beep_enabled;
     uint32_t mark_number;
     uint64_t timestamp_unix;
-} MarkState;
+} pb_packed mark_state_t;
+PB_PACKED_STRUCT_END
 
-typedef struct _MarkPacket {
-    bool beep_enabled;
+PB_PACKED_STRUCT_START
+typedef struct mark_packet {
     bool has_annotation;
     char annotation[100]; /* throttle max character count (e.g., 50) */
-} MarkPacket;
+} pb_packed mark_packet_t;
+PB_PACKED_STRUCT_END
 
-typedef struct _DiscoveredDevices {
+PB_PACKED_STRUCT_START
+typedef struct discovered_devices {
     uint32_t number_of_devices;
     pb_callback_t device;
-} DiscoveredDevices;
+} pb_packed discovered_devices_t;
+PB_PACKED_STRUCT_END
 
-typedef struct _DiscoveredDevices_Device {
-    uint32_t UID;
+PB_PACKED_STRUCT_START
+typedef struct discovered_devices_device {
+    uint32_t uid;
     float range;
-} DiscoveredDevices_Device;
+} pb_packed discovered_devices_device_t;
+PB_PACKED_STRUCT_END
 
-typedef struct _SystemInfoPacket {
+PB_PACKED_STRUCT_START
+typedef struct battery_state {
+    bool charging;
+    float voltage;
+    bool has_percentage;
+    float percentage;
+} pb_packed battery_state_t;
+PB_PACKED_STRUCT_END
+
+PB_PACKED_STRUCT_START
+typedef struct system_info_packet {
     uint32_t number_discovered_devices;
     bool has_simple_sensor_reading;
-    SimpleSensorReading simple_sensor_reading;
+    simple_sensor_reading_t simple_sensor_reading;
     bool device_recording;
     bool has_sdcard_state;
-    SDCardState sdcard_state;
+    sd_card_state_t sdcard_state;
     bool has_mark_state;
-    MarkState mark_state;
+    mark_state_t mark_state;
+    bool has_battery_state;
+    battery_state_t battery_state;
     bool has_discovered_devices;
-    DiscoveredDevices discovered_devices;
-} SystemInfoPacket;
+    discovered_devices_t discovered_devices;
+} pb_packed system_info_packet_t;
+PB_PACKED_STRUCT_END
 
-typedef struct _AudioCompression {
+PB_PACKED_STRUCT_START
+typedef struct audio_compression {
     bool enabled;
+    compression_type_t compression_type;
     uint32_t compression_factor;
-} AudioCompression;
+} pb_packed audio_compression_t;
+PB_PACKED_STRUCT_END
 
-typedef struct _AudioConfig {
+PB_PACKED_STRUCT_START
+typedef struct audio_config {
     bool channel_1;
     bool channel_2;
-    MicSampleFreq sample_freq;
-    MicBitResolution bit_resolution;
+    mic_sample_freq_t sample_freq;
+    mic_bit_resolution_t bit_resolution;
     bool has_audio_compression;
-    AudioCompression audio_compression;
-} AudioConfig;
+    audio_compression_t audio_compression;
+    float estimated_record_time;
+} pb_packed audio_config_t;
+PB_PACKED_STRUCT_END
 
-typedef struct _ScheduleConfig {
-    bool Sunday;
-    bool Monday;
-    bool Tuesday;
-    bool Wednesday;
-    bool Thursday;
-    bool Friday;
-    bool Saturday;
+PB_PACKED_STRUCT_START
+typedef struct schedule_config {
+    bool sunday;
+    bool monday;
+    bool tuesday;
+    bool wednesday;
+    bool thursday;
+    bool friday;
+    bool saturday;
     uint32_t start_hour;
     uint32_t start_minute;
     uint32_t stop_hour;
     uint32_t stop_minute;
-} ScheduleConfig;
+} pb_packed schedule_config_t;
+PB_PACKED_STRUCT_END
 
-typedef struct _ConfigPacket {
+PB_PACKED_STRUCT_START
+typedef struct low_power_config {
+    bool low_power_mode;
+} pb_packed low_power_config_t;
+PB_PACKED_STRUCT_END
+
+PB_PACKED_STRUCT_START
+typedef struct camera_control {
+    bool pair_with_nearby_cameras;
+    bool wakeup_cameras;
+    bool capture;
+} pb_packed camera_control_t;
+PB_PACKED_STRUCT_END
+
+PB_PACKED_STRUCT_START
+typedef struct network_state {
+    uint32_t number_of_discovered_devices;
+    pb_callback_t discovered_device_uid;
+    bool force_rediscovery;
+} pb_packed network_state_t;
+PB_PACKED_STRUCT_END
+
+PB_PACKED_STRUCT_START
+typedef struct config_packet {
     bool has_audio_config;
-    AudioConfig audio_config;
+    audio_config_t audio_config;
     pb_callback_t schedule_config;
     bool has_sensor_config;
-    SensorConfig sensor_config;
-} ConfigPacket;
+    sensor_config_t sensor_config;
+    bool has_low_power_config;
+    low_power_config_t low_power_config;
+    bool has_camera_control;
+    camera_control_t camera_control;
+    bool has_network_state;
+    network_state_t network_state;
+} pb_packed config_packet_t;
+PB_PACKED_STRUCT_END
 
-typedef struct _SpecialFunction {
+PB_PACKED_STRUCT_START
+typedef struct special_function {
     pb_size_t which_payload;
     union {
         bool format_sdcard;
@@ -173,22 +248,23 @@ typedef struct _SpecialFunction {
         bool function_4;
         bool function_5;
         bool function_6;
-        bool function_7;
-        bool function_8;
     } payload;
-} SpecialFunction;
+} pb_packed special_function_t;
+PB_PACKED_STRUCT_END
 
-typedef struct _Packet {
+PB_PACKED_STRUCT_START
+typedef struct packet {
     bool has_header;
-    PacketHeader header;
+    packet_header_t header;
     pb_size_t which_payload;
     union {
-        SystemInfoPacket system_info_packet;
-        MarkPacket mark_packet;
-        ConfigPacket config_packet;
-        SpecialFunction special_function;
+        system_info_packet_t system_info_packet;
+        mark_packet_t mark_packet;
+        config_packet_t config_packet;
+        special_function_t special_function;
     } payload;
-} Packet;
+} pb_packed packet_t;
+PB_PACKED_STRUCT_END
 
 
 #ifdef __cplusplus
@@ -196,38 +272,47 @@ extern "C" {
 #endif
 
 /* Helper constants for enums */
-#define _SignalIdentifier_MIN SignalIdentifier_UNDEFINED
-#define _SignalIdentifier_MAX SignalIdentifier_GAS_PERCENTAGE
-#define _SignalIdentifier_ARRAYSIZE ((SignalIdentifier)(SignalIdentifier_GAS_PERCENTAGE+1))
+#define _SIGNAL_IDENTIFIER_MIN SIGNAL_IDENTIFIER_UNDEFINED
+#define _SIGNAL_IDENTIFIER_MAX SIGNAL_IDENTIFIER_GAS_PERCENTAGE
+#define _SIGNAL_IDENTIFIER_ARRAYSIZE ((signal_identifier_t)(SIGNAL_IDENTIFIER_GAS_PERCENTAGE+1))
 
-#define _SensorAccuracy_MIN SensorAccuracy_UNRELIABLE
-#define _SensorAccuracy_MAX SensorAccuracy_HIGH_ACCURACY
-#define _SensorAccuracy_ARRAYSIZE ((SensorAccuracy)(SensorAccuracy_HIGH_ACCURACY+1))
+#define _SENSOR_ACCURACY_MIN SENSOR_ACCURACY_UNRELIABLE
+#define _SENSOR_ACCURACY_MAX SENSOR_ACCURACY_HIGH_ACCURACY
+#define _SENSOR_ACCURACY_ARRAYSIZE ((sensor_accuracy_t)(SENSOR_ACCURACY_HIGH_ACCURACY+1))
 
-#define _MicSampleFreq_MIN MicSampleFreq_SAMPLE_RATE_16000
-#define _MicSampleFreq_MAX MicSampleFreq_SAMPLE_RATE_96000
-#define _MicSampleFreq_ARRAYSIZE ((MicSampleFreq)(MicSampleFreq_SAMPLE_RATE_96000+1))
+#define _MIC_SAMPLE_FREQ_MIN MIC_SAMPLE_FREQ_SAMPLE_RATE_16000
+#define _MIC_SAMPLE_FREQ_MAX MIC_SAMPLE_FREQ_SAMPLE_RATE_96000
+#define _MIC_SAMPLE_FREQ_ARRAYSIZE ((mic_sample_freq_t)(MIC_SAMPLE_FREQ_SAMPLE_RATE_96000+1))
 
-#define _MicBitResolution_MIN MicBitResolution_BIT_RES_8
-#define _MicBitResolution_MAX MicBitResolution_BIT_RES_16
-#define _MicBitResolution_ARRAYSIZE ((MicBitResolution)(MicBitResolution_BIT_RES_16+1))
+#define _MIC_BIT_RESOLUTION_MIN MIC_BIT_RESOLUTION_BIT_RES_8
+#define _MIC_BIT_RESOLUTION_MAX MIC_BIT_RESOLUTION_BIT_RES_16
+#define _MIC_BIT_RESOLUTION_ARRAYSIZE ((mic_bit_resolution_t)(MIC_BIT_RESOLUTION_BIT_RES_16+1))
 
-
-
-
-#define SensorReading_Payload_sensor_id_ENUMTYPE SignalIdentifier
-#define SensorReading_Payload_accuracy_ENUMTYPE SensorAccuracy
+#define _COMPRESSION_TYPE_MIN COMPRESSION_TYPE_OPUS
+#define _COMPRESSION_TYPE_MAX COMPRESSION_TYPE_OPUS
+#define _COMPRESSION_TYPE_ARRAYSIZE ((compression_type_t)(COMPRESSION_TYPE_OPUS+1))
 
 
 
 
+#define sensor_reading_payload_t_sensor_id_ENUMTYPE signal_identifier_t
+#define sensor_reading_payload_t_accuracy_ENUMTYPE sensor_accuracy_t
 
 
 
 
 
-#define AudioConfig_sample_freq_ENUMTYPE MicSampleFreq
-#define AudioConfig_bit_resolution_ENUMTYPE MicBitResolution
+
+
+
+
+#define audio_compression_t_compression_type_ENUMTYPE compression_type_t
+
+#define audio_config_t_sample_freq_ENUMTYPE mic_sample_freq_t
+#define audio_config_t_bit_resolution_ENUMTYPE mic_bit_resolution_t
+
+
+
 
 
 
@@ -235,143 +320,164 @@ extern "C" {
 
 
 /* Initializer values for message structs */
-#define PacketHeader_init_default                {0, 0, 0}
-#define SimpleSensorReading_init_default         {0, 0, 0, 0, 0}
-#define SensorReading_init_default               {0, 0, {{NULL}, NULL}}
-#define SensorReading_Payload_init_default       {0, 0, 0, 0, 0, _SignalIdentifier_MIN, _SensorAccuracy_MIN}
-#define SensorConfig_init_default                {0, 0, 0, 0}
-#define SDCardState_init_default                 {0, 0, 0}
-#define MarkState_init_default                   {0, 0, 0}
-#define MarkPacket_init_default                  {0, false, ""}
-#define DiscoveredDevices_init_default           {0, {{NULL}, NULL}}
-#define DiscoveredDevices_Device_init_default    {0, 0}
-#define SystemInfoPacket_init_default            {0, false, SimpleSensorReading_init_default, 0, false, SDCardState_init_default, false, MarkState_init_default, false, DiscoveredDevices_init_default}
-#define AudioCompression_init_default            {0, 0}
-#define AudioConfig_init_default                 {0, 0, _MicSampleFreq_MIN, _MicBitResolution_MIN, false, AudioCompression_init_default}
-#define ScheduleConfig_init_default              {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-#define ConfigPacket_init_default                {false, AudioConfig_init_default, {{NULL}, NULL}, false, SensorConfig_init_default}
-#define SpecialFunction_init_default             {0, {0}}
-#define Packet_init_default                      {false, PacketHeader_init_default, 0, {SystemInfoPacket_init_default}}
-#define PacketHeader_init_zero                   {0, 0, 0}
-#define SimpleSensorReading_init_zero            {0, 0, 0, 0, 0}
-#define SensorReading_init_zero                  {0, 0, {{NULL}, NULL}}
-#define SensorReading_Payload_init_zero          {0, 0, 0, 0, 0, _SignalIdentifier_MIN, _SensorAccuracy_MIN}
-#define SensorConfig_init_zero                   {0, 0, 0, 0}
-#define SDCardState_init_zero                    {0, 0, 0}
-#define MarkState_init_zero                      {0, 0, 0}
-#define MarkPacket_init_zero                     {0, false, ""}
-#define DiscoveredDevices_init_zero              {0, {{NULL}, NULL}}
-#define DiscoveredDevices_Device_init_zero       {0, 0}
-#define SystemInfoPacket_init_zero               {0, false, SimpleSensorReading_init_zero, 0, false, SDCardState_init_zero, false, MarkState_init_zero, false, DiscoveredDevices_init_zero}
-#define AudioCompression_init_zero               {0, 0}
-#define AudioConfig_init_zero                    {0, 0, _MicSampleFreq_MIN, _MicBitResolution_MIN, false, AudioCompression_init_zero}
-#define ScheduleConfig_init_zero                 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-#define ConfigPacket_init_zero                   {false, AudioConfig_init_zero, {{NULL}, NULL}, false, SensorConfig_init_zero}
-#define SpecialFunction_init_zero                {0, {0}}
-#define Packet_init_zero                         {false, PacketHeader_init_zero, 0, {SystemInfoPacket_init_zero}}
+#define PACKET_HEADER_INIT_DEFAULT               {0, 0, 0}
+#define SIMPLE_SENSOR_READING_INIT_DEFAULT       {0, 0, 0, 0, 0}
+#define SENSOR_READING_INIT_DEFAULT              {0, 0, {{NULL}, NULL}}
+#define SENSOR_READING_PAYLOAD_INIT_DEFAULT      {0, 0, 0, 0, 0, _SIGNAL_IDENTIFIER_MIN, _SENSOR_ACCURACY_MIN}
+#define SENSOR_CONFIG_INIT_DEFAULT               {0, 0, 0, 0}
+#define SD_CARD_STATE_INIT_DEFAULT               {0, 0, 0}
+#define MARK_STATE_INIT_DEFAULT                  {0, 0, 0}
+#define MARK_PACKET_INIT_DEFAULT                 {false, ""}
+#define DISCOVERED_DEVICES_INIT_DEFAULT          {0, {{NULL}, NULL}}
+#define DISCOVERED_DEVICES_DEVICE_INIT_DEFAULT   {0, 0}
+#define BATTERY_STATE_INIT_DEFAULT               {0, 0, false, 0}
+#define SYSTEM_INFO_PACKET_INIT_DEFAULT          {0, false, SIMPLE_SENSOR_READING_INIT_DEFAULT, 0, false, SD_CARD_STATE_INIT_DEFAULT, false, MARK_STATE_INIT_DEFAULT, false, BATTERY_STATE_INIT_DEFAULT, false, DISCOVERED_DEVICES_INIT_DEFAULT}
+#define AUDIO_COMPRESSION_INIT_DEFAULT           {0, _COMPRESSION_TYPE_MIN, 0}
+#define AUDIO_CONFIG_INIT_DEFAULT                {0, 0, _MIC_SAMPLE_FREQ_MIN, _MIC_BIT_RESOLUTION_MIN, false, AUDIO_COMPRESSION_INIT_DEFAULT, 0}
+#define SCHEDULE_CONFIG_INIT_DEFAULT             {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+#define LOW_POWER_CONFIG_INIT_DEFAULT            {0}
+#define CAMERA_CONTROL_INIT_DEFAULT              {0, 0, 0}
+#define NETWORK_STATE_INIT_DEFAULT               {0, {{NULL}, NULL}, 0}
+#define CONFIG_PACKET_INIT_DEFAULT               {false, AUDIO_CONFIG_INIT_DEFAULT, {{NULL}, NULL}, false, SENSOR_CONFIG_INIT_DEFAULT, false, LOW_POWER_CONFIG_INIT_DEFAULT, false, CAMERA_CONTROL_INIT_DEFAULT, false, NETWORK_STATE_INIT_DEFAULT}
+#define SPECIAL_FUNCTION_INIT_DEFAULT            {0, {0}}
+#define PACKET_INIT_DEFAULT                      {false, PACKET_HEADER_INIT_DEFAULT, 0, {SYSTEM_INFO_PACKET_INIT_DEFAULT}}
+#define PACKET_HEADER_INIT_ZERO                  {0, 0, 0}
+#define SIMPLE_SENSOR_READING_INIT_ZERO          {0, 0, 0, 0, 0}
+#define SENSOR_READING_INIT_ZERO                 {0, 0, {{NULL}, NULL}}
+#define SENSOR_READING_PAYLOAD_INIT_ZERO         {0, 0, 0, 0, 0, _SIGNAL_IDENTIFIER_MIN, _SENSOR_ACCURACY_MIN}
+#define SENSOR_CONFIG_INIT_ZERO                  {0, 0, 0, 0}
+#define SD_CARD_STATE_INIT_ZERO                  {0, 0, 0}
+#define MARK_STATE_INIT_ZERO                     {0, 0, 0}
+#define MARK_PACKET_INIT_ZERO                    {false, ""}
+#define DISCOVERED_DEVICES_INIT_ZERO             {0, {{NULL}, NULL}}
+#define DISCOVERED_DEVICES_DEVICE_INIT_ZERO      {0, 0}
+#define BATTERY_STATE_INIT_ZERO                  {0, 0, false, 0}
+#define SYSTEM_INFO_PACKET_INIT_ZERO             {0, false, SIMPLE_SENSOR_READING_INIT_ZERO, 0, false, SD_CARD_STATE_INIT_ZERO, false, MARK_STATE_INIT_ZERO, false, BATTERY_STATE_INIT_ZERO, false, DISCOVERED_DEVICES_INIT_ZERO}
+#define AUDIO_COMPRESSION_INIT_ZERO              {0, _COMPRESSION_TYPE_MIN, 0}
+#define AUDIO_CONFIG_INIT_ZERO                   {0, 0, _MIC_SAMPLE_FREQ_MIN, _MIC_BIT_RESOLUTION_MIN, false, AUDIO_COMPRESSION_INIT_ZERO, 0}
+#define SCHEDULE_CONFIG_INIT_ZERO                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+#define LOW_POWER_CONFIG_INIT_ZERO               {0}
+#define CAMERA_CONTROL_INIT_ZERO                 {0, 0, 0}
+#define NETWORK_STATE_INIT_ZERO                  {0, {{NULL}, NULL}, 0}
+#define CONFIG_PACKET_INIT_ZERO                  {false, AUDIO_CONFIG_INIT_ZERO, {{NULL}, NULL}, false, SENSOR_CONFIG_INIT_ZERO, false, LOW_POWER_CONFIG_INIT_ZERO, false, CAMERA_CONTROL_INIT_ZERO, false, NETWORK_STATE_INIT_ZERO}
+#define SPECIAL_FUNCTION_INIT_ZERO               {0, {0}}
+#define PACKET_INIT_ZERO                         {false, PACKET_HEADER_INIT_ZERO, 0, {SYSTEM_INFO_PACKET_INIT_ZERO}}
 
 /* Field tags (for use in manual encoding/decoding) */
-#define PacketHeader_system_uid_tag              1
-#define PacketHeader_ms_from_start_tag           2
-#define PacketHeader_epoch_tag                   3
-#define SimpleSensorReading_index_tag            1
-#define SimpleSensorReading_timestamp_unix_tag   2
-#define SimpleSensorReading_temperature_tag      3
-#define SimpleSensorReading_humidity_tag         4
-#define SimpleSensorReading_co2_tag              5
-#define SensorReading_packet_index_tag           1
-#define SensorReading_sample_period_tag          2
-#define SensorReading_payload_tag                3
-#define SensorReading_Payload_timestamp_sensor_tag 1
-#define SensorReading_Payload_timestamp_unix_tag 2
-#define SensorReading_Payload_timestamp_ms_from_start_tag 3
-#define SensorReading_Payload_signal_tag         4
-#define SensorReading_Payload_signal_dimensions_tag 5
-#define SensorReading_Payload_sensor_id_tag      6
-#define SensorReading_Payload_accuracy_tag       7
-#define SensorConfig_sample_period_ms_tag        1
-#define SensorConfig_enable_temperature_tag      2
-#define SensorConfig_enable_humidity_tag         3
-#define SensorConfig_enable_gas_tag              4
-#define SDCardState_detected_tag                 1
-#define SDCardState_space_remaining_tag          2
-#define SDCardState_estimated_remaining_recording_time_tag 3
-#define MarkState_beep_enabled_tag               1
-#define MarkState_mark_number_tag                2
-#define MarkState_timestamp_unix_tag             3
-#define MarkPacket_beep_enabled_tag              1
-#define MarkPacket_annotation_tag                2
-#define DiscoveredDevices_number_of_devices_tag  1
-#define DiscoveredDevices_device_tag             2
-#define DiscoveredDevices_Device_UID_tag         1
-#define DiscoveredDevices_Device_range_tag       2
-#define SystemInfoPacket_number_discovered_devices_tag 1
-#define SystemInfoPacket_simple_sensor_reading_tag 2
-#define SystemInfoPacket_device_recording_tag    3
-#define SystemInfoPacket_sdcard_state_tag        4
-#define SystemInfoPacket_mark_state_tag          5
-#define SystemInfoPacket_discovered_devices_tag  6
-#define AudioCompression_enabled_tag             1
-#define AudioCompression_compression_factor_tag  2
-#define AudioConfig_channel_1_tag                1
-#define AudioConfig_channel_2_tag                2
-#define AudioConfig_sample_freq_tag              3
-#define AudioConfig_bit_resolution_tag           4
-#define AudioConfig_audio_compression_tag        5
-#define ScheduleConfig_Sunday_tag                1
-#define ScheduleConfig_Monday_tag                2
-#define ScheduleConfig_Tuesday_tag               3
-#define ScheduleConfig_Wednesday_tag             4
-#define ScheduleConfig_Thursday_tag              5
-#define ScheduleConfig_Friday_tag                6
-#define ScheduleConfig_Saturday_tag              7
-#define ScheduleConfig_start_hour_tag            8
-#define ScheduleConfig_start_minute_tag          9
-#define ScheduleConfig_stop_hour_tag             10
-#define ScheduleConfig_stop_minute_tag           11
-#define ConfigPacket_audio_config_tag            1
-#define ConfigPacket_schedule_config_tag         2
-#define ConfigPacket_sensor_config_tag           3
-#define SpecialFunction_format_sdcard_tag        1
-#define SpecialFunction_function_2_tag           2
-#define SpecialFunction_function_3_tag           3
-#define SpecialFunction_function_4_tag           4
-#define SpecialFunction_function_5_tag           5
-#define SpecialFunction_function_6_tag           6
-#define SpecialFunction_function_7_tag           7
-#define SpecialFunction_function_8_tag           8
-#define Packet_header_tag                        1
-#define Packet_system_info_packet_tag            2
-#define Packet_mark_packet_tag                   3
-#define Packet_config_packet_tag                 4
-#define Packet_special_function_tag              5
+#define PACKET_HEADER_SYSTEM_UID_TAG             1
+#define PACKET_HEADER_MS_FROM_START_TAG          2
+#define PACKET_HEADER_EPOCH_TAG                  3
+#define SIMPLE_SENSOR_READING_INDEX_TAG          1
+#define SIMPLE_SENSOR_READING_TIMESTAMP_UNIX_TAG 2
+#define SIMPLE_SENSOR_READING_TEMPERATURE_TAG    3
+#define SIMPLE_SENSOR_READING_HUMIDITY_TAG       4
+#define SIMPLE_SENSOR_READING_CO2_TAG            5
+#define SENSOR_READING_PACKET_INDEX_TAG          1
+#define SENSOR_READING_SAMPLE_PERIOD_TAG         2
+#define SENSOR_READING_PAYLOAD_TAG               3
+#define SENSOR_READING_PAYLOAD_TIMESTAMP_SENSOR_TAG 1
+#define SENSOR_READING_PAYLOAD_TIMESTAMP_UNIX_TAG 2
+#define SENSOR_READING_PAYLOAD_TIMESTAMP_MS_FROM_START_TAG 3
+#define SENSOR_READING_PAYLOAD_SIGNAL_TAG        4
+#define SENSOR_READING_PAYLOAD_SIGNAL_DIMENSIONS_TAG 5
+#define SENSOR_READING_PAYLOAD_SENSOR_ID_TAG     6
+#define SENSOR_READING_PAYLOAD_ACCURACY_TAG      7
+#define SENSOR_CONFIG_SAMPLE_PERIOD_MS_TAG       1
+#define SENSOR_CONFIG_ENABLE_TEMPERATURE_TAG     2
+#define SENSOR_CONFIG_ENABLE_HUMIDITY_TAG        3
+#define SENSOR_CONFIG_ENABLE_GAS_TAG             4
+#define SD_CARD_STATE_DETECTED_TAG               1
+#define SD_CARD_STATE_SPACE_REMAINING_TAG        2
+#define SD_CARD_STATE_ESTIMATED_REMAINING_RECORDING_TIME_TAG 3
+#define MARK_STATE_BEEP_ENABLED_TAG              1
+#define MARK_STATE_MARK_NUMBER_TAG               2
+#define MARK_STATE_TIMESTAMP_UNIX_TAG            3
+#define MARK_PACKET_ANNOTATION_TAG               1
+#define DISCOVERED_DEVICES_NUMBER_OF_DEVICES_TAG 1
+#define DISCOVERED_DEVICES_DEVICE_TAG            2
+#define DISCOVERED_DEVICES_DEVICE_UID_TAG        1
+#define DISCOVERED_DEVICES_DEVICE_RANGE_TAG      2
+#define BATTERY_STATE_CHARGING_TAG               1
+#define BATTERY_STATE_VOLTAGE_TAG                2
+#define BATTERY_STATE_PERCENTAGE_TAG             3
+#define SYSTEM_INFO_PACKET_NUMBER_DISCOVERED_DEVICES_TAG 1
+#define SYSTEM_INFO_PACKET_SIMPLE_SENSOR_READING_TAG 2
+#define SYSTEM_INFO_PACKET_DEVICE_RECORDING_TAG  3
+#define SYSTEM_INFO_PACKET_SDCARD_STATE_TAG      4
+#define SYSTEM_INFO_PACKET_MARK_STATE_TAG        5
+#define SYSTEM_INFO_PACKET_BATTERY_STATE_TAG     6
+#define SYSTEM_INFO_PACKET_DISCOVERED_DEVICES_TAG 7
+#define AUDIO_COMPRESSION_ENABLED_TAG            1
+#define AUDIO_COMPRESSION_COMPRESSION_TYPE_TAG   2
+#define AUDIO_COMPRESSION_COMPRESSION_FACTOR_TAG 3
+#define AUDIO_CONFIG_CHANNEL_1_TAG               1
+#define AUDIO_CONFIG_CHANNEL_2_TAG               2
+#define AUDIO_CONFIG_SAMPLE_FREQ_TAG             3
+#define AUDIO_CONFIG_BIT_RESOLUTION_TAG          4
+#define AUDIO_CONFIG_AUDIO_COMPRESSION_TAG       5
+#define AUDIO_CONFIG_ESTIMATED_RECORD_TIME_TAG   6
+#define SCHEDULE_CONFIG_SUNDAY_TAG               1
+#define SCHEDULE_CONFIG_MONDAY_TAG               2
+#define SCHEDULE_CONFIG_TUESDAY_TAG              3
+#define SCHEDULE_CONFIG_WEDNESDAY_TAG            4
+#define SCHEDULE_CONFIG_THURSDAY_TAG             5
+#define SCHEDULE_CONFIG_FRIDAY_TAG               6
+#define SCHEDULE_CONFIG_SATURDAY_TAG             7
+#define SCHEDULE_CONFIG_START_HOUR_TAG           8
+#define SCHEDULE_CONFIG_START_MINUTE_TAG         9
+#define SCHEDULE_CONFIG_STOP_HOUR_TAG            10
+#define SCHEDULE_CONFIG_STOP_MINUTE_TAG          11
+#define LOW_POWER_CONFIG_LOW_POWER_MODE_TAG      1
+#define CAMERA_CONTROL_PAIR_WITH_NEARBY_CAMERAS_TAG 1
+#define CAMERA_CONTROL_WAKEUP_CAMERAS_TAG        2
+#define CAMERA_CONTROL_CAPTURE_TAG               3
+#define NETWORK_STATE_NUMBER_OF_DISCOVERED_DEVICES_TAG 1
+#define NETWORK_STATE_DISCOVERED_DEVICE_UID_TAG  2
+#define NETWORK_STATE_FORCE_REDISCOVERY_TAG      3
+#define CONFIG_PACKET_AUDIO_CONFIG_TAG           1
+#define CONFIG_PACKET_SCHEDULE_CONFIG_TAG        2
+#define CONFIG_PACKET_SENSOR_CONFIG_TAG          3
+#define CONFIG_PACKET_LOW_POWER_CONFIG_TAG       4
+#define CONFIG_PACKET_CAMERA_CONTROL_TAG         5
+#define CONFIG_PACKET_NETWORK_STATE_TAG          6
+#define SPECIAL_FUNCTION_FORMAT_SDCARD_TAG       1
+#define SPECIAL_FUNCTION_FUNCTION_2_TAG          2
+#define SPECIAL_FUNCTION_FUNCTION_3_TAG          3
+#define SPECIAL_FUNCTION_FUNCTION_4_TAG          4
+#define SPECIAL_FUNCTION_FUNCTION_5_TAG          5
+#define SPECIAL_FUNCTION_FUNCTION_6_TAG          6
+#define PACKET_HEADER_TAG                        1
+#define PACKET_SYSTEM_INFO_PACKET_TAG            2
+#define PACKET_MARK_PACKET_TAG                   3
+#define PACKET_CONFIG_PACKET_TAG                 4
+#define PACKET_SPECIAL_FUNCTION_TAG              5
 
 /* Struct field encoding specification for nanopb */
-#define PacketHeader_FIELDLIST(X, a) \
+#define PACKET_HEADER_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UINT32,   system_uid,        1) \
 X(a, STATIC,   SINGULAR, UINT32,   ms_from_start,     2) \
 X(a, STATIC,   SINGULAR, UINT64,   epoch,             3)
-#define PacketHeader_CALLBACK NULL
-#define PacketHeader_DEFAULT NULL
+#define PACKET_HEADER_CALLBACK NULL
+#define PACKET_HEADER_DEFAULT NULL
 
-#define SimpleSensorReading_FIELDLIST(X, a) \
+#define SIMPLE_SENSOR_READING_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UINT32,   index,             1) \
 X(a, STATIC,   SINGULAR, UINT32,   timestamp_unix,    2) \
 X(a, STATIC,   SINGULAR, FLOAT,    temperature,       3) \
 X(a, STATIC,   SINGULAR, FLOAT,    humidity,          4) \
 X(a, STATIC,   SINGULAR, FLOAT,    co2,               5)
-#define SimpleSensorReading_CALLBACK NULL
-#define SimpleSensorReading_DEFAULT NULL
+#define SIMPLE_SENSOR_READING_CALLBACK NULL
+#define SIMPLE_SENSOR_READING_DEFAULT NULL
 
-#define SensorReading_FIELDLIST(X, a) \
+#define SENSOR_READING_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UINT32,   packet_index,      1) \
 X(a, STATIC,   SINGULAR, UINT32,   sample_period,     2) \
 X(a, CALLBACK, REPEATED, MESSAGE,  payload,           3)
-#define SensorReading_CALLBACK pb_default_field_callback
-#define SensorReading_DEFAULT NULL
-#define SensorReading_payload_MSGTYPE SensorReading_Payload
+#define SENSOR_READING_CALLBACK pb_default_field_callback
+#define SENSOR_READING_DEFAULT NULL
+#define sensor_reading_t_payload_MSGTYPE sensor_reading_payload_t
 
-#define SensorReading_Payload_FIELDLIST(X, a) \
+#define SENSOR_READING_PAYLOAD_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, FIXED64,  timestamp_sensor,   1) \
 X(a, STATIC,   SINGULAR, UINT64,   timestamp_unix,    2) \
 X(a, STATIC,   SINGULAR, UINT32,   timestamp_ms_from_start,   3) \
@@ -379,186 +485,231 @@ X(a, STATIC,   SINGULAR, FLOAT,    signal,            4) \
 X(a, STATIC,   SINGULAR, UINT32,   signal_dimensions,   5) \
 X(a, STATIC,   SINGULAR, UENUM,    sensor_id,         6) \
 X(a, STATIC,   SINGULAR, UENUM,    accuracy,          7)
-#define SensorReading_Payload_CALLBACK NULL
-#define SensorReading_Payload_DEFAULT NULL
+#define SENSOR_READING_PAYLOAD_CALLBACK NULL
+#define SENSOR_READING_PAYLOAD_DEFAULT NULL
 
-#define SensorConfig_FIELDLIST(X, a) \
+#define SENSOR_CONFIG_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UINT32,   sample_period_ms,   1) \
 X(a, STATIC,   SINGULAR, BOOL,     enable_temperature,   2) \
 X(a, STATIC,   SINGULAR, BOOL,     enable_humidity,   3) \
 X(a, STATIC,   SINGULAR, BOOL,     enable_gas,        4)
-#define SensorConfig_CALLBACK NULL
-#define SensorConfig_DEFAULT NULL
+#define SENSOR_CONFIG_CALLBACK NULL
+#define SENSOR_CONFIG_DEFAULT NULL
 
-#define SDCardState_FIELDLIST(X, a) \
+#define SD_CARD_STATE_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, BOOL,     detected,          1) \
 X(a, STATIC,   SINGULAR, UINT64,   space_remaining,   2) \
 X(a, STATIC,   SINGULAR, UINT64,   estimated_remaining_recording_time,   3)
-#define SDCardState_CALLBACK NULL
-#define SDCardState_DEFAULT NULL
+#define SD_CARD_STATE_CALLBACK NULL
+#define SD_CARD_STATE_DEFAULT NULL
 
-#define MarkState_FIELDLIST(X, a) \
+#define MARK_STATE_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, BOOL,     beep_enabled,      1) \
 X(a, STATIC,   SINGULAR, UINT32,   mark_number,       2) \
 X(a, STATIC,   SINGULAR, UINT64,   timestamp_unix,    3)
-#define MarkState_CALLBACK NULL
-#define MarkState_DEFAULT NULL
+#define MARK_STATE_CALLBACK NULL
+#define MARK_STATE_DEFAULT NULL
 
-#define MarkPacket_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, BOOL,     beep_enabled,      1) \
-X(a, STATIC,   OPTIONAL, STRING,   annotation,        2)
-#define MarkPacket_CALLBACK NULL
-#define MarkPacket_DEFAULT NULL
+#define MARK_PACKET_FIELDLIST(X, a) \
+X(a, STATIC,   OPTIONAL, STRING,   annotation,        1)
+#define MARK_PACKET_CALLBACK NULL
+#define MARK_PACKET_DEFAULT NULL
 
-#define DiscoveredDevices_FIELDLIST(X, a) \
+#define DISCOVERED_DEVICES_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UINT32,   number_of_devices,   1) \
 X(a, CALLBACK, REPEATED, MESSAGE,  device,            2)
-#define DiscoveredDevices_CALLBACK pb_default_field_callback
-#define DiscoveredDevices_DEFAULT NULL
-#define DiscoveredDevices_device_MSGTYPE DiscoveredDevices_Device
+#define DISCOVERED_DEVICES_CALLBACK pb_default_field_callback
+#define DISCOVERED_DEVICES_DEFAULT NULL
+#define discovered_devices_t_device_MSGTYPE discovered_devices_device_t
 
-#define DiscoveredDevices_Device_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, UINT32,   UID,               1) \
+#define DISCOVERED_DEVICES_DEVICE_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, UINT32,   uid,               1) \
 X(a, STATIC,   SINGULAR, FLOAT,    range,             2)
-#define DiscoveredDevices_Device_CALLBACK NULL
-#define DiscoveredDevices_Device_DEFAULT NULL
+#define DISCOVERED_DEVICES_DEVICE_CALLBACK NULL
+#define DISCOVERED_DEVICES_DEVICE_DEFAULT NULL
 
-#define SystemInfoPacket_FIELDLIST(X, a) \
+#define BATTERY_STATE_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, BOOL,     charging,          1) \
+X(a, STATIC,   SINGULAR, FLOAT,    voltage,           2) \
+X(a, STATIC,   OPTIONAL, FLOAT,    percentage,        3)
+#define BATTERY_STATE_CALLBACK NULL
+#define BATTERY_STATE_DEFAULT NULL
+
+#define SYSTEM_INFO_PACKET_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UINT32,   number_discovered_devices,   1) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  simple_sensor_reading,   2) \
 X(a, STATIC,   SINGULAR, BOOL,     device_recording,   3) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  sdcard_state,      4) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  mark_state,        5) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  discovered_devices,   6)
-#define SystemInfoPacket_CALLBACK NULL
-#define SystemInfoPacket_DEFAULT NULL
-#define SystemInfoPacket_simple_sensor_reading_MSGTYPE SimpleSensorReading
-#define SystemInfoPacket_sdcard_state_MSGTYPE SDCardState
-#define SystemInfoPacket_mark_state_MSGTYPE MarkState
-#define SystemInfoPacket_discovered_devices_MSGTYPE DiscoveredDevices
+X(a, STATIC,   OPTIONAL, MESSAGE,  battery_state,     6) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  discovered_devices,   7)
+#define SYSTEM_INFO_PACKET_CALLBACK NULL
+#define SYSTEM_INFO_PACKET_DEFAULT NULL
+#define system_info_packet_t_simple_sensor_reading_MSGTYPE simple_sensor_reading_t
+#define system_info_packet_t_sdcard_state_MSGTYPE sd_card_state_t
+#define system_info_packet_t_mark_state_MSGTYPE mark_state_t
+#define system_info_packet_t_battery_state_MSGTYPE battery_state_t
+#define system_info_packet_t_discovered_devices_MSGTYPE discovered_devices_t
 
-#define AudioCompression_FIELDLIST(X, a) \
+#define AUDIO_COMPRESSION_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, BOOL,     enabled,           1) \
-X(a, STATIC,   SINGULAR, UINT32,   compression_factor,   2)
-#define AudioCompression_CALLBACK NULL
-#define AudioCompression_DEFAULT NULL
+X(a, STATIC,   SINGULAR, UENUM,    compression_type,   2) \
+X(a, STATIC,   SINGULAR, UINT32,   compression_factor,   3)
+#define AUDIO_COMPRESSION_CALLBACK NULL
+#define AUDIO_COMPRESSION_DEFAULT NULL
 
-#define AudioConfig_FIELDLIST(X, a) \
+#define AUDIO_CONFIG_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, BOOL,     channel_1,         1) \
 X(a, STATIC,   SINGULAR, BOOL,     channel_2,         2) \
 X(a, STATIC,   SINGULAR, UENUM,    sample_freq,       3) \
 X(a, STATIC,   SINGULAR, UENUM,    bit_resolution,    4) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  audio_compression,   5)
-#define AudioConfig_CALLBACK NULL
-#define AudioConfig_DEFAULT NULL
-#define AudioConfig_audio_compression_MSGTYPE AudioCompression
+X(a, STATIC,   OPTIONAL, MESSAGE,  audio_compression,   5) \
+X(a, STATIC,   SINGULAR, FLOAT,    estimated_record_time,   6)
+#define AUDIO_CONFIG_CALLBACK NULL
+#define AUDIO_CONFIG_DEFAULT NULL
+#define audio_config_t_audio_compression_MSGTYPE audio_compression_t
 
-#define ScheduleConfig_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, BOOL,     Sunday,            1) \
-X(a, STATIC,   SINGULAR, BOOL,     Monday,            2) \
-X(a, STATIC,   SINGULAR, BOOL,     Tuesday,           3) \
-X(a, STATIC,   SINGULAR, BOOL,     Wednesday,         4) \
-X(a, STATIC,   SINGULAR, BOOL,     Thursday,          5) \
-X(a, STATIC,   SINGULAR, BOOL,     Friday,            6) \
-X(a, STATIC,   SINGULAR, BOOL,     Saturday,          7) \
+#define SCHEDULE_CONFIG_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, BOOL,     sunday,            1) \
+X(a, STATIC,   SINGULAR, BOOL,     monday,            2) \
+X(a, STATIC,   SINGULAR, BOOL,     tuesday,           3) \
+X(a, STATIC,   SINGULAR, BOOL,     wednesday,         4) \
+X(a, STATIC,   SINGULAR, BOOL,     thursday,          5) \
+X(a, STATIC,   SINGULAR, BOOL,     friday,            6) \
+X(a, STATIC,   SINGULAR, BOOL,     saturday,          7) \
 X(a, STATIC,   SINGULAR, UINT32,   start_hour,        8) \
 X(a, STATIC,   SINGULAR, UINT32,   start_minute,      9) \
 X(a, STATIC,   SINGULAR, UINT32,   stop_hour,        10) \
 X(a, STATIC,   SINGULAR, UINT32,   stop_minute,      11)
-#define ScheduleConfig_CALLBACK NULL
-#define ScheduleConfig_DEFAULT NULL
+#define SCHEDULE_CONFIG_CALLBACK NULL
+#define SCHEDULE_CONFIG_DEFAULT NULL
 
-#define ConfigPacket_FIELDLIST(X, a) \
+#define LOW_POWER_CONFIG_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, BOOL,     low_power_mode,    1)
+#define LOW_POWER_CONFIG_CALLBACK NULL
+#define LOW_POWER_CONFIG_DEFAULT NULL
+
+#define CAMERA_CONTROL_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, BOOL,     pair_with_nearby_cameras,   1) \
+X(a, STATIC,   SINGULAR, BOOL,     wakeup_cameras,    2) \
+X(a, STATIC,   SINGULAR, BOOL,     capture,           3)
+#define CAMERA_CONTROL_CALLBACK NULL
+#define CAMERA_CONTROL_DEFAULT NULL
+
+#define NETWORK_STATE_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, UINT32,   number_of_discovered_devices,   1) \
+X(a, CALLBACK, REPEATED, UINT32,   discovered_device_uid,   2) \
+X(a, STATIC,   SINGULAR, BOOL,     force_rediscovery,   3)
+#define NETWORK_STATE_CALLBACK pb_default_field_callback
+#define NETWORK_STATE_DEFAULT NULL
+
+#define CONFIG_PACKET_FIELDLIST(X, a) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  audio_config,      1) \
 X(a, CALLBACK, REPEATED, MESSAGE,  schedule_config,   2) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  sensor_config,     3)
-#define ConfigPacket_CALLBACK pb_default_field_callback
-#define ConfigPacket_DEFAULT NULL
-#define ConfigPacket_audio_config_MSGTYPE AudioConfig
-#define ConfigPacket_schedule_config_MSGTYPE ScheduleConfig
-#define ConfigPacket_sensor_config_MSGTYPE SensorConfig
+X(a, STATIC,   OPTIONAL, MESSAGE,  sensor_config,     3) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  low_power_config,   4) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  camera_control,    5) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  network_state,     6)
+#define CONFIG_PACKET_CALLBACK pb_default_field_callback
+#define CONFIG_PACKET_DEFAULT NULL
+#define config_packet_t_audio_config_MSGTYPE audio_config_t
+#define config_packet_t_schedule_config_MSGTYPE schedule_config_t
+#define config_packet_t_sensor_config_MSGTYPE sensor_config_t
+#define config_packet_t_low_power_config_MSGTYPE low_power_config_t
+#define config_packet_t_camera_control_MSGTYPE camera_control_t
+#define config_packet_t_network_state_MSGTYPE network_state_t
 
-#define SpecialFunction_FIELDLIST(X, a) \
+#define SPECIAL_FUNCTION_FIELDLIST(X, a) \
 X(a, STATIC,   ONEOF,    BOOL,     (payload,format_sdcard,payload.format_sdcard),   1) \
 X(a, STATIC,   ONEOF,    BOOL,     (payload,function_2,payload.function_2),   2) \
 X(a, STATIC,   ONEOF,    BOOL,     (payload,function_3,payload.function_3),   3) \
 X(a, STATIC,   ONEOF,    BOOL,     (payload,function_4,payload.function_4),   4) \
 X(a, STATIC,   ONEOF,    BOOL,     (payload,function_5,payload.function_5),   5) \
-X(a, STATIC,   ONEOF,    BOOL,     (payload,function_6,payload.function_6),   6) \
-X(a, STATIC,   ONEOF,    BOOL,     (payload,function_7,payload.function_7),   7) \
-X(a, STATIC,   ONEOF,    BOOL,     (payload,function_8,payload.function_8),   8)
-#define SpecialFunction_CALLBACK NULL
-#define SpecialFunction_DEFAULT NULL
+X(a, STATIC,   ONEOF,    BOOL,     (payload,function_6,payload.function_6),   6)
+#define SPECIAL_FUNCTION_CALLBACK NULL
+#define SPECIAL_FUNCTION_DEFAULT NULL
 
-#define Packet_FIELDLIST(X, a) \
+#define PACKET_FIELDLIST(X, a) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,system_info_packet,payload.system_info_packet),   2) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,mark_packet,payload.mark_packet),   3) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,config_packet,payload.config_packet),   4) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,special_function,payload.special_function),   5)
-#define Packet_CALLBACK NULL
-#define Packet_DEFAULT NULL
-#define Packet_header_MSGTYPE PacketHeader
-#define Packet_payload_system_info_packet_MSGTYPE SystemInfoPacket
-#define Packet_payload_mark_packet_MSGTYPE MarkPacket
-#define Packet_payload_config_packet_MSGTYPE ConfigPacket
-#define Packet_payload_special_function_MSGTYPE SpecialFunction
+#define PACKET_CALLBACK NULL
+#define PACKET_DEFAULT NULL
+#define packet_t_header_MSGTYPE packet_header_t
+#define packet_t_payload_system_info_packet_MSGTYPE system_info_packet_t
+#define packet_t_payload_mark_packet_MSGTYPE mark_packet_t
+#define packet_t_payload_config_packet_MSGTYPE config_packet_t
+#define packet_t_payload_special_function_MSGTYPE special_function_t
 
-extern const pb_msgdesc_t PacketHeader_msg;
-extern const pb_msgdesc_t SimpleSensorReading_msg;
-extern const pb_msgdesc_t SensorReading_msg;
-extern const pb_msgdesc_t SensorReading_Payload_msg;
-extern const pb_msgdesc_t SensorConfig_msg;
-extern const pb_msgdesc_t SDCardState_msg;
-extern const pb_msgdesc_t MarkState_msg;
-extern const pb_msgdesc_t MarkPacket_msg;
-extern const pb_msgdesc_t DiscoveredDevices_msg;
-extern const pb_msgdesc_t DiscoveredDevices_Device_msg;
-extern const pb_msgdesc_t SystemInfoPacket_msg;
-extern const pb_msgdesc_t AudioCompression_msg;
-extern const pb_msgdesc_t AudioConfig_msg;
-extern const pb_msgdesc_t ScheduleConfig_msg;
-extern const pb_msgdesc_t ConfigPacket_msg;
-extern const pb_msgdesc_t SpecialFunction_msg;
-extern const pb_msgdesc_t Packet_msg;
+extern const pb_msgdesc_t packet_header_t_msg;
+extern const pb_msgdesc_t simple_sensor_reading_t_msg;
+extern const pb_msgdesc_t sensor_reading_t_msg;
+extern const pb_msgdesc_t sensor_reading_payload_t_msg;
+extern const pb_msgdesc_t sensor_config_t_msg;
+extern const pb_msgdesc_t sd_card_state_t_msg;
+extern const pb_msgdesc_t mark_state_t_msg;
+extern const pb_msgdesc_t mark_packet_t_msg;
+extern const pb_msgdesc_t discovered_devices_t_msg;
+extern const pb_msgdesc_t discovered_devices_device_t_msg;
+extern const pb_msgdesc_t battery_state_t_msg;
+extern const pb_msgdesc_t system_info_packet_t_msg;
+extern const pb_msgdesc_t audio_compression_t_msg;
+extern const pb_msgdesc_t audio_config_t_msg;
+extern const pb_msgdesc_t schedule_config_t_msg;
+extern const pb_msgdesc_t low_power_config_t_msg;
+extern const pb_msgdesc_t camera_control_t_msg;
+extern const pb_msgdesc_t network_state_t_msg;
+extern const pb_msgdesc_t config_packet_t_msg;
+extern const pb_msgdesc_t special_function_t_msg;
+extern const pb_msgdesc_t packet_t_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
-#define PacketHeader_fields &PacketHeader_msg
-#define SimpleSensorReading_fields &SimpleSensorReading_msg
-#define SensorReading_fields &SensorReading_msg
-#define SensorReading_Payload_fields &SensorReading_Payload_msg
-#define SensorConfig_fields &SensorConfig_msg
-#define SDCardState_fields &SDCardState_msg
-#define MarkState_fields &MarkState_msg
-#define MarkPacket_fields &MarkPacket_msg
-#define DiscoveredDevices_fields &DiscoveredDevices_msg
-#define DiscoveredDevices_Device_fields &DiscoveredDevices_Device_msg
-#define SystemInfoPacket_fields &SystemInfoPacket_msg
-#define AudioCompression_fields &AudioCompression_msg
-#define AudioConfig_fields &AudioConfig_msg
-#define ScheduleConfig_fields &ScheduleConfig_msg
-#define ConfigPacket_fields &ConfigPacket_msg
-#define SpecialFunction_fields &SpecialFunction_msg
-#define Packet_fields &Packet_msg
+#define PACKET_HEADER_FIELDS &packet_header_t_msg
+#define SIMPLE_SENSOR_READING_FIELDS &simple_sensor_reading_t_msg
+#define SENSOR_READING_FIELDS &sensor_reading_t_msg
+#define SENSOR_READING_PAYLOAD_FIELDS &sensor_reading_payload_t_msg
+#define SENSOR_CONFIG_FIELDS &sensor_config_t_msg
+#define SD_CARD_STATE_FIELDS &sd_card_state_t_msg
+#define MARK_STATE_FIELDS &mark_state_t_msg
+#define MARK_PACKET_FIELDS &mark_packet_t_msg
+#define DISCOVERED_DEVICES_FIELDS &discovered_devices_t_msg
+#define DISCOVERED_DEVICES_DEVICE_FIELDS &discovered_devices_device_t_msg
+#define BATTERY_STATE_FIELDS &battery_state_t_msg
+#define SYSTEM_INFO_PACKET_FIELDS &system_info_packet_t_msg
+#define AUDIO_COMPRESSION_FIELDS &audio_compression_t_msg
+#define AUDIO_CONFIG_FIELDS &audio_config_t_msg
+#define SCHEDULE_CONFIG_FIELDS &schedule_config_t_msg
+#define LOW_POWER_CONFIG_FIELDS &low_power_config_t_msg
+#define CAMERA_CONTROL_FIELDS &camera_control_t_msg
+#define NETWORK_STATE_FIELDS &network_state_t_msg
+#define CONFIG_PACKET_FIELDS &config_packet_t_msg
+#define SPECIAL_FUNCTION_FIELDS &special_function_t_msg
+#define PACKET_FIELDS &packet_t_msg
 
 /* Maximum encoded size of messages (where known) */
 /* SensorReading_size depends on runtime parameters */
 /* DiscoveredDevices_size depends on runtime parameters */
 /* SystemInfoPacket_size depends on runtime parameters */
+/* NetworkState_size depends on runtime parameters */
 /* ConfigPacket_size depends on runtime parameters */
 /* Packet_size depends on runtime parameters */
-#define AudioCompression_size                    8
-#define AudioConfig_size                         18
-#define DiscoveredDevices_Device_size            11
-#define MarkPacket_size                          103
-#define MarkState_size                           19
-#define PacketHeader_size                        23
-#define SDCardState_size                         24
-#define ScheduleConfig_size                      38
-#define SensorConfig_size                        12
-#define SensorReading_Payload_size               41
-#define SimpleSensorReading_size                 27
-#define SpecialFunction_size                     2
+#define AUDIO_COMPRESSION_SIZE                   10
+#define AUDIO_CONFIG_SIZE                        25
+#define BATTERY_STATE_SIZE                       12
+#define CAMERA_CONTROL_SIZE                      6
+#define DISCOVERED_DEVICES_DEVICE_SIZE           11
+#define LOW_POWER_CONFIG_SIZE                    2
+#define MARK_PACKET_SIZE                         101
+#define MARK_STATE_SIZE                          19
+#define PACKET_HEADER_SIZE                       23
+#define SCHEDULE_CONFIG_SIZE                     38
+#define SD_CARD_STATE_SIZE                       24
+#define SENSOR_CONFIG_SIZE                       12
+#define SENSOR_READING_PAYLOAD_SIZE              41
+#define SIMPLE_SENSOR_READING_SIZE               27
+#define SPECIAL_FUNCTION_SIZE                    2
 
 #ifdef __cplusplus
 } /* extern "C" */

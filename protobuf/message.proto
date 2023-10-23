@@ -82,8 +82,7 @@ message MarkState{
 }
 
 message MarkPacket{
-    bool beep_enabled = 1;
-    optional string annotation = 2; // throttle max character count (e.g., 50)
+    optional string annotation = 1; // throttle max character count (e.g., 50)
 }
 
 message DiscoveredDevices{
@@ -95,13 +94,20 @@ message DiscoveredDevices{
     repeated Device device = 2;
 }
 
+message BatteryState{
+    bool charging = 1;
+    float voltage = 2;
+    optional float percentage = 3;
+}
+
 message SystemInfoPacket{
     uint32 number_discovered_devices = 1;
     SimpleSensorReading simple_sensor_reading = 2;
     bool device_recording = 3;
     SDCardState sdcard_state = 4;
     MarkState mark_state = 5;
-    optional DiscoveredDevices discovered_devices = 6;
+    BatteryState battery_state = 6;
+    optional DiscoveredDevices discovered_devices = 7;
 }
 
 enum MicSampleFreq {
@@ -117,9 +123,14 @@ enum MicBitResolution{
     BIT_RES_16 = 1;
 }
 
+enum CompressionType{
+    OPUS = 0;
+}
+
 message AudioCompression{
     bool enabled = 1;
-    uint32 compression_factor = 2;
+    CompressionType compression_type = 2;
+    uint32 compression_factor = 3;
 }
 
 message AudioConfig{
@@ -128,6 +139,7 @@ message AudioConfig{
     MicSampleFreq sample_freq = 3;
     MicBitResolution bit_resolution = 4;
     AudioCompression audio_compression = 5;
+    float estimated_record_time = 6;
 }
 
 message ScheduleConfig{
@@ -138,16 +150,35 @@ message ScheduleConfig{
     bool Thursday = 5;
     bool Friday = 6;
     bool Saturday = 7;
-    uint32 start_hour = 8;
+    uint32 start_hour = 8; 
     uint32 start_minute = 9;
     uint32 stop_hour = 10;
     uint32 stop_minute = 11;
+}
+
+message LowPowerConfig{
+    bool lowPowerMode = 1;
+}
+
+message CameraControl{
+    bool pair_with_nearby_cameras = 1;
+    bool wakeup_cameras = 2;
+    bool capture = 3;
+}
+
+message NetworkState{
+    uint32 number_of_discovered_devices = 1;
+    repeated uint32 discovered_device_UID = 2;
+    bool force_rediscovery = 3;
 }
 
 message ConfigPacket{
     AudioConfig audio_config = 1;
     repeated ScheduleConfig schedule_config = 2;
     SensorConfig sensor_config = 3;
+    LowPowerConfig low_power_config = 4;
+    CameraControl camera_control = 5;
+    NetworkState network_state = 6;
 }
 
 message SpecialFunction{
@@ -158,8 +189,6 @@ message SpecialFunction{
         bool function_4 = 4;
         bool function_5 = 5;
         bool function_6 = 6;
-        bool function_7 = 7;
-        bool function_8 = 8;
     }
 }
 
