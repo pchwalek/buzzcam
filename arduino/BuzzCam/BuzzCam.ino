@@ -14,11 +14,16 @@
 #include "pb_encode.h"
 
 #define SERVICE_UUID "ce70"
-#define CHARACTERISTIC_UUID1 "ce71"
-#define CHARACTERISTIC_UUID2 "ce72"
-#define CHARACTERISTIC_UUID3 "ce73"
+#define CHARACTERISTIC_SYS_INFO "ce71"
+#define CHARACTERISTIC_SYS_CONFIG "ce72"
+#define CHARACTERISTIC_RX "ce73"
 
-Packet message;
+packet_t message;
+
+packet_t message_system_info;
+packet_t message_config;
+packet_t message_rx;
+
 uint8_t buffer[400];
 
 uint32_t data_32;
@@ -31,8 +36,9 @@ BLE2902 *pDescriptor2902;
 bool deviceConnected = false;
 bool oldDeviceConnected = false;
 
-BLECharacteristic *pCharacteristicTx;
 BLECharacteristic *pCharacteristicRx;
+BLECharacteristic *pCharacteristicSysInfo;
+BLECharacteristic *pCharacteristicSysConfig;
 
 unsigned long myTime;
 
@@ -58,19 +64,29 @@ void setup() {
     // BLECharacteristic *pCharacteristic1 = pService->createCharacteristic(
     //     CHARACTERISTIC_UUID1, BLECharacteristic::PROPERTY_WRITE || BLECharacteristic::PROPERTY_READ);
 
-    pCharacteristicTx = pService->createCharacteristic(
-        CHARACTERISTIC_UUID2,  BLECharacteristic::PROPERTY_NOTIFY);
+    pCharacteristicSysInfo = pService->createCharacteristic(
+        CHARACTERISTIC_SYS_INFO,  BLECharacteristic::PROPERTY_NOTIFY);
     // pDescriptor2902 = new BLE2902();
     // pDescriptor2902->setNotifications(true);
     // pDescriptor2902->setIndications(true);
     // pCharacteristicTx->addDescriptor(pDescriptor2902);
-    pCharacteristicTx->setReadProperty(true);
-    pCharacteristicTx->setNotifyProperty(true);
-    pCharacteristicTx->setIndicateProperty(true);
+    pCharacteristicSysInfo->setReadProperty(true);
+    pCharacteristicSysInfo->setNotifyProperty(true);
+    pCharacteristicSysInfo->setIndicateProperty(true);
+
+    pCharacteristicSysConfig = pService->createCharacteristic(
+    CHARACTERISTIC_SYS_CONFIG,  BLECharacteristic::PROPERTY_NOTIFY);
+    // pDescriptor2902 = new BLE2902();
+    // pDescriptor2902->setNotifications(true);
+    // pDescriptor2902->setIndications(true);
+    // pCharacteristicTx->addDescriptor(pDescriptor2902);
+    pCharacteristicSysConfig->setReadProperty(true);
+    pCharacteristicSysConfig->setNotifyProperty(true);
+    pCharacteristicSysConfig->setIndicateProperty(true);
 
     // system state read value
     pCharacteristicRx = pService->createCharacteristic(
-        CHARACTERISTIC_UUID3, BLECharacteristic::PROPERTY_WRITE);
+        CHARACTERISTIC_RX, BLECharacteristic::PROPERTY_WRITE);
     pCharacteristicRx->setReadProperty(true);
 
   
@@ -92,37 +108,50 @@ void setup() {
         "Characteristic defined! Now you can read it in your phone!");
 
 
-
-
     /* PROTOBUF SPECIFIC */
-    message.has_header = true;
-    message.header.epoch = 1213232; // unix timestamp
-    message.header.ms_from_start = millis();
-    message.header.system_uid = 0x1234; // UID
-    message.which_payload = Packet_system_info_packet_tag; // packet type is system_info
-    message.payload.system_info_packet.device_recording = false;
-    message.payload.system_info_packet.number_discovered_devices = 0;
-    message.payload.system_info_packet.has_mark_state = true;
-    message.payload.system_info_packet.mark_state.mark_number = 0;
-    message.payload.system_info_packet.mark_state.beep_enabled = false;
-    message.payload.system_info_packet.mark_state.timestamp_unix = 1232422;
-    message.payload.system_info_packet.has_sdcard_state = true;
-    message.payload.system_info_packet.sdcard_state.detected = 1;
-    message.payload.system_info_packet.sdcard_state.space_remaining = 123412342;
-    message.payload.system_info_packet.sdcard_state.estimated_remaining_recording_time = 214332;
-    message.payload.system_info_packet.has_simple_sensor_reading = true;
-    message.payload.system_info_packet.simple_sensor_reading.timestamp_unix = 12312421;
-    message.payload.system_info_packet.simple_sensor_reading.co2 = 300;
-    message.payload.system_info_packet.simple_sensor_reading.humidity = 40;
-    message.payload.system_info_packet.simple_sensor_reading.temperature = 70;
-    message.payload.system_info_packet.simple_sensor_reading.index = 3;
-
+    message_system_info.has_header = true;
+    message_system_info.header.epoch = 1213232; // unix timestamp
+    message_system_info.header.ms_from_start = millis();
+    message_system_info.header.system_uid = 0x1234; // UID
+    message_system_info.which_payload = Packet_system_info_packet_tag; // packet type is system_info
+    message_system_info.payload.system_info_packet.device_recording = false;
+    message_system_info.payload.system_info_packet.number_discovered_devices = 0;
+    message_system_info.payload.system_info_packet.has_mark_state = true;
+    message_system_info.payload.system_info_packet.mark_state.mark_number = 0;
+    message_system_info.payload.system_info_packet.mark_state.beep_enabled = false;
+    message_system_info.payload.system_info_packet.mark_state.timestamp_unix = 1232422;
+    message_system_info.payload.system_info_packet.has_sdcard_state = true;
+    message_system_info.payload.system_info_packet.sdcard_state.detected = 1;
+    message_system_info.payload.system_info_packet.sdcard_state.space_remaining = 123412342;
+    message_system_info.payload.system_info_packet.sdcard_state.estimated_remaining_recording_time = 214332;
+    message_system_info.payload.system_info_packet.has_simple_sensor_reading = true;
+    message_system_info.payload.system_info_packet.simple_sensor_reading.timestamp_unix = 12312421;
+    message_system_info.payload.system_info_packet.simple_sensor_reading.co2 = 300;
+    message_system_info.payload.system_info_packet.simple_sensor_reading.humidity = 40;
+    message_system_info.payload.system_info_packet.simple_sensor_reading.temperature = 70;
+    message_system_info.payload.system_info_packet.simple_sensor_reading.index = 3;
     // define stream and encode
     pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-    pb_encode(&stream, Packet_fields, &message);
+    pb_encode(&stream, Packet_fields, &message_system_info);
+    pCharacteristicSysInfo->setValue(buffer, stream.bytes_written);
 
-    pCharacteristicTx->setValue(buffer, stream.bytes_written);
-    Serial.print("Setting characteristic. Byte size: ");
+    Serial.print("Setting Info characteristic. Byte size: ");
+    Serial.println( stream.bytes_written);
+    Serial.write(buffer, stream.bytes_written);
+    Serial.println();
+
+        /* PROTOBUF SPECIFIC */
+    message_config.has_header = true;
+    message_config.header.epoch = 1213232; // unix timestamp
+    message_config.header.ms_from_start = millis();
+    message_config.header.system_uid = 0x1234; // UID
+    message_config.which_payload = Packet_config_packet_tag; // packet type is system_info
+    // define stream and encode
+    pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+    pb_encode(&stream, Packet_fields, &message_config);
+    pCharacteristicSysConfig->setValue(buffer, stream.bytes_written);
+
+    Serial.print("Setting Config characteristic. Byte size: ");
     Serial.println( stream.bytes_written);
     Serial.write(buffer, stream.bytes_written);
     Serial.println();

@@ -6,55 +6,68 @@
 #error Regenerate this file with the current version of nanopb generator.
 #endif
 
-PB_BIND(PacketHeader, PacketHeader, AUTO)
+PB_BIND(PACKET_HEADER, packet_header_t, AUTO)
 
 
-PB_BIND(SimpleSensorReading, SimpleSensorReading, AUTO)
+PB_BIND(SIMPLE_SENSOR_READING, simple_sensor_reading_t, AUTO)
 
 
-PB_BIND(SensorReading, SensorReading, AUTO)
+PB_BIND(SENSOR_READING, sensor_reading_t, AUTO)
 
 
-PB_BIND(SensorReading_Payload, SensorReading_Payload, AUTO)
+PB_BIND(SENSOR_READING_PAYLOAD, sensor_reading_payload_t, AUTO)
 
 
-PB_BIND(SensorConfig, SensorConfig, AUTO)
+PB_BIND(SENSOR_CONFIG, sensor_config_t, AUTO)
 
 
-PB_BIND(SDCardState, SDCardState, AUTO)
+PB_BIND(SD_CARD_STATE, sd_card_state_t, AUTO)
 
 
-PB_BIND(MarkState, MarkState, AUTO)
+PB_BIND(MARK_STATE, mark_state_t, AUTO)
 
 
-PB_BIND(MarkPacket, MarkPacket, AUTO)
+PB_BIND(MARK_PACKET, mark_packet_t, AUTO)
 
 
-PB_BIND(DiscoveredDevices, DiscoveredDevices, AUTO)
+PB_BIND(DISCOVERED_DEVICES, discovered_devices_t, AUTO)
 
 
-PB_BIND(DiscoveredDevices_Device, DiscoveredDevices_Device, AUTO)
+PB_BIND(DISCOVERED_DEVICES_DEVICE, discovered_devices_device_t, AUTO)
 
 
-PB_BIND(SystemInfoPacket, SystemInfoPacket, AUTO)
+PB_BIND(BATTERY_STATE, battery_state_t, AUTO)
 
 
-PB_BIND(AudioCompression, AudioCompression, AUTO)
+PB_BIND(SYSTEM_INFO_PACKET, system_info_packet_t, AUTO)
 
 
-PB_BIND(AudioConfig, AudioConfig, AUTO)
+PB_BIND(AUDIO_COMPRESSION, audio_compression_t, AUTO)
 
 
-PB_BIND(ScheduleConfig, ScheduleConfig, AUTO)
+PB_BIND(AUDIO_CONFIG, audio_config_t, AUTO)
 
 
-PB_BIND(ConfigPacket, ConfigPacket, AUTO)
+PB_BIND(SCHEDULE_CONFIG, schedule_config_t, AUTO)
 
 
-PB_BIND(SpecialFunction, SpecialFunction, AUTO)
+PB_BIND(LOW_POWER_CONFIG, low_power_config_t, AUTO)
 
 
-PB_BIND(Packet, Packet, AUTO)
+PB_BIND(CAMERA_CONTROL, camera_control_t, AUTO)
+
+
+PB_BIND(NETWORK_STATE, network_state_t, AUTO)
+
+
+PB_BIND(CONFIG_PACKET, config_packet_t, AUTO)
+
+
+PB_BIND(SPECIAL_FUNCTION, special_function_t, AUTO)
+
+
+PB_BIND(PACKET, packet_t, AUTO)
+
 
 
 
