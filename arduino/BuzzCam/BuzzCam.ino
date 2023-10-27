@@ -56,7 +56,7 @@ void setup() {
     Serial.begin(115200);
     Serial.println("Starting BLE work!");
 
-    BLEDevice::init("BuzzCam");
+    BLEDevice::init("BuzzCam_ABC123");
     pServer = BLEDevice::createServer();
     pServer->setCallbacks(new MyServerCallbacks());
 
@@ -113,7 +113,7 @@ void setup() {
     message_system_info.header.epoch = 1213232; // unix timestamp
     message_system_info.header.ms_from_start = millis();
     message_system_info.header.system_uid = 0x1234; // UID
-    message_system_info.which_payload = Packet_system_info_packet_tag; // packet type is system_info
+    message_system_info.which_payload = PACKET_SYSTEM_INFO_PACKET_TAG; // packet type is system_info
     message_system_info.payload.system_info_packet.device_recording = false;
     message_system_info.payload.system_info_packet.number_discovered_devices = 0;
     message_system_info.payload.system_info_packet.has_mark_state = true;
@@ -132,7 +132,7 @@ void setup() {
     message_system_info.payload.system_info_packet.simple_sensor_reading.index = 3;
     // define stream and encode
     pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-    pb_encode(&stream, Packet_fields, &message_system_info);
+    pb_encode(&stream, PACKET_FIELDS, &message_system_info);
     pCharacteristicSysInfo->setValue(buffer, stream.bytes_written);
 
     Serial.print("Setting Info characteristic. Byte size: ");
@@ -145,10 +145,10 @@ void setup() {
     message_config.header.epoch = 1213232; // unix timestamp
     message_config.header.ms_from_start = millis();
     message_config.header.system_uid = 0x1234; // UID
-    message_config.which_payload = Packet_config_packet_tag; // packet type is system_info
+    message_config.which_payload = PACKET_CONFIG_PACKET_TAG; // packet type is system_info
     // define stream and encode
-    pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-    pb_encode(&stream, Packet_fields, &message_config);
+    stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+    pb_encode(&stream, PACKET_FIELDS, &message_config);
     pCharacteristicSysConfig->setValue(buffer, stream.bytes_written);
 
     Serial.print("Setting Config characteristic. Byte size: ");
