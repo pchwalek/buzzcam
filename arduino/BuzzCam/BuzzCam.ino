@@ -62,10 +62,10 @@ void setup() {
 
     BLEService *pService = pServer->createService(SERVICE_UUID);
     // BLECharacteristic *pCharacteristic1 = pService->createCharacteristic(
-    //     CHARACTERISTIC_UUID1, BLECharacteristic::PROPERTY_WRITE || BLECharacteristic::PROPERTY_READ);
+    //     CHARACTERISTIC_UUID1, BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_READ);
 
     pCharacteristicSysInfo = pService->createCharacteristic(
-        CHARACTERISTIC_SYS_INFO,  BLECharacteristic::PROPERTY_NOTIFY);
+        CHARACTERISTIC_SYS_INFO,  BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ);
     // pDescriptor2902 = new BLE2902();
     // pDescriptor2902->setNotifications(true);
     // pDescriptor2902->setIndications(true);
@@ -75,7 +75,7 @@ void setup() {
     pCharacteristicSysInfo->setIndicateProperty(true);
 
     pCharacteristicSysConfig = pService->createCharacteristic(
-    CHARACTERISTIC_SYS_CONFIG,  BLECharacteristic::PROPERTY_NOTIFY);
+    CHARACTERISTIC_SYS_CONFIG,  BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ);
     // pDescriptor2902 = new BLE2902();
     // pDescriptor2902->setNotifications(true);
     // pDescriptor2902->setIndications(true);
