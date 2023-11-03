@@ -1,7 +1,7 @@
 /*
-    Author: Patrick Chwalek (09/22/2023)
-    Description: Example code used to control Insta360 X3 and RS 1-inch cameras
-*/
+Author: Patrick Chwalek (09/22/2023)
+Description: Example code used to control Insta360 X3 and RS 1-inch cameras
+ */
 
 #include <BLE2902.h>
 #include <BLEDevice.h>
@@ -12,6 +12,8 @@
 #include "pb.h"
 #include "message.pb.h"
 #include "pb_encode.h"
+#include "pb_decode.h"
+
 
 #define SERVICE_UUID "ce70"
 #define CHARACTERISTIC_SYS_INFO "ce71"
@@ -42,164 +44,226 @@ BLECharacteristic *pCharacteristicSysConfig;
 
 unsigned long myTime;
 
-class MyServerCallbacks : public BLEServerCallbacks {
-    void onConnect(BLEServer *pServer) {
-        deviceConnected = true;
-        myTime = millis();
-        BLEDevice::startAdvertising();
-    };
+size_t message_length;
 
-    void onDisconnect(BLEServer *pServer) { deviceConnected = false; }
+class MyServerCallbacks : public BLEServerCallbacks {
+	void onConnect(BLEServer *pServer) {
+		deviceConnected = true;
+		myTime = millis();
+		BLEDevice::startAdvertising();
+	};
+
+	void onDisconnect(BLEServer *pServer) { deviceConnected = false; }
+};
+
+// Define a callback class that inherits from BLECharacteristicCallbacks
+class MyCallback: public BLECharacteristicCallbacks {
+	// Override the onWrite method
+	void onWrite (BLECharacteristic *pCharacteristic) {
+		// Get the value of the characteristic as a string
+		std::string value = pCharacteristic->getValue ();
+
+		Serial.println("CE73 has been updated");
+		// Do something with the value, for example print it to serial monitor
+		Serial.println (value.c_str ());
+
+
+//		pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+
+    pb_istream_t stream_in = pb_istream_from_buffer(buffer, sizeof(buffer));
+
+
+		if (!pb_decode(&stream_in, PACKET_FIELDS, &message_rx))
+		{
+			Serial.print("Decode failed: ");
+			Serial.println(PB_GET_ERROR(&stream_in));
+		}
+
+    pb_ostream_t stream_out = pb_ostream_from_buffer(buffer, sizeof(buffer));
+
+		switch(message_rx.which_payload){
+    
+			case PACKET_SYSTEM_INFO_PACKET_TAG:
+				Serial.println("received an info packet!");
+				memcpy(&message_system_info,&message_rx,sizeof(packet_t));
+				pb_encode(&stream_out, PACKET_FIELDS, &message_system_info);
+				pCharacteristicSysInfo->setValue(buffer, stream_out.bytes_written);
+				break;
+        
+			case PACKET_CONFIG_PACKET_TAG:
+				Serial.println("received a config packet!");
+				memcpy(&message_config,&message_rx,sizeof(packet_t));
+				pb_encode(&stream_out, PACKET_FIELDS, &message_config);
+				pCharacteristicSysConfig->setValue(buffer, stream_out.bytes_written);
+				break;
+        
+			case PACKET_MARK_PACKET_TAG:
+				Serial.println("received a mark packet!");
+				break;
+        
+			case PACKET_SPECIAL_FUNCTION_TAG:
+				Serial.println("received a special function packet!");
+				break;
+		}
+
+
+	}
 };
 
 void setup() {
-    Serial.begin(115200);
-    Serial.println("Starting BLE work!");
+	Serial.begin(115200);
+	Serial.println("Starting BLE work!");
 
-    BLEDevice::init("BuzzCam_ABC123");
-    pServer = BLEDevice::createServer();
-    pServer->setCallbacks(new MyServerCallbacks());
+	BLEDevice::init("BuzzCam_ABC123");
+	pServer = BLEDevice::createServer();
+	pServer->setCallbacks(new MyServerCallbacks());
 
-    BLEService *pService = pServer->createService(SERVICE_UUID);
-    // BLECharacteristic *pCharacteristic1 = pService->createCharacteristic(
-    //     CHARACTERISTIC_UUID1, BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_READ);
+	BLEService *pService = pServer->createService(SERVICE_UUID);
+	// BLECharacteristic *pCharacteristic1 = pService->createCharacteristic(
+	//     CHARACTERISTIC_UUID1, BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_READ);
 
-    pCharacteristicSysInfo = pService->createCharacteristic(
-        CHARACTERISTIC_SYS_INFO,  BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ);
-    // pDescriptor2902 = new BLE2902();
-    // pDescriptor2902->setNotifications(true);
-    // pDescriptor2902->setIndications(true);
-    // pCharacteristicTx->addDescriptor(pDescriptor2902);
-    pCharacteristicSysInfo->setReadProperty(true);
-    pCharacteristicSysInfo->setNotifyProperty(true);
-    pCharacteristicSysInfo->setIndicateProperty(true);
+	pCharacteristicSysInfo = pService->createCharacteristic(
+			CHARACTERISTIC_SYS_INFO,  BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ);
+	// pDescriptor2902 = new BLE2902();
+	// pDescriptor2902->setNotifications(true);
+	// pDescriptor2902->setIndications(true);
+	// pCharacteristicTx->addDescriptor(pDescriptor2902);
+	pCharacteristicSysInfo->setReadProperty(true);
+	pCharacteristicSysInfo->setNotifyProperty(true);
+	pCharacteristicSysInfo->setIndicateProperty(true);
 
-    pCharacteristicSysConfig = pService->createCharacteristic(
-    CHARACTERISTIC_SYS_CONFIG,  BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ);
-    // pDescriptor2902 = new BLE2902();
-    // pDescriptor2902->setNotifications(true);
-    // pDescriptor2902->setIndications(true);
-    // pCharacteristicTx->addDescriptor(pDescriptor2902);
-    pCharacteristicSysConfig->setReadProperty(true);
-    pCharacteristicSysConfig->setNotifyProperty(true);
-    pCharacteristicSysConfig->setIndicateProperty(true);
+	pCharacteristicSysConfig = pService->createCharacteristic(
+			CHARACTERISTIC_SYS_CONFIG,  BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ);
+	// pDescriptor2902 = new BLE2902();
+	// pDescriptor2902->setNotifications(true);
+	// pDescriptor2902->setIndications(true);
+	// pCharacteristicTx->addDescriptor(pDescriptor2902);
+	pCharacteristicSysConfig->setReadProperty(true);
+	pCharacteristicSysConfig->setNotifyProperty(true);
+	pCharacteristicSysConfig->setIndicateProperty(true);
 
-    // system state read value
-    pCharacteristicRx = pService->createCharacteristic(
-        CHARACTERISTIC_RX, BLECharacteristic::PROPERTY_WRITE);
-    pCharacteristicRx->setReadProperty(true);
+	// system state read value
+	pCharacteristicRx = pService->createCharacteristic(
+			CHARACTERISTIC_RX, BLECharacteristic::PROPERTY_WRITE);
+	pCharacteristicRx->setReadProperty(true);
 
-  
+	// Create an instance of the callback class
+	MyCallback *pCallback = new MyCallback ();
 
-    pService->start();
-    // BLEAdvertising *pAdvertising = pServer->getAdvertising();  // this still
-    // is working for backward compatibility
-    BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
-    pAdvertising->addServiceUUID(SERVICE_UUID);
-    // pAdvertising->addServiceUUID(SECONDARY_SERVICE_UUID);
-
-    pAdvertising->setScanResponse(true);
-    pAdvertising->setMinPreferred(
-        0x06); // functions that help with iPhone connections issue
-    pAdvertising->setMinPreferred(0x12);
-
-    BLEDevice::startAdvertising();
-    Serial.println(
-        "Characteristic defined! Now you can read it in your phone!");
+	// Set the callback for the characteristic
+	pCharacteristicRx->setCallbacks (pCallback);
 
 
-    /* PROTOBUF SPECIFIC */
-    message_system_info.has_header = true;
-    message_system_info.header.epoch = 1213232; // unix timestamp
-    message_system_info.header.ms_from_start = millis();
-    message_system_info.header.system_uid = 0x1234; // UID
-    message_system_info.which_payload = PACKET_SYSTEM_INFO_PACKET_TAG; // packet type is system_info
-    message_system_info.payload.system_info_packet.device_recording = false;
-    message_system_info.payload.system_info_packet.number_discovered_devices = 0;
-    message_system_info.payload.system_info_packet.has_mark_state = true;
-    message_system_info.payload.system_info_packet.mark_state.mark_number = 0;
-    message_system_info.payload.system_info_packet.mark_state.beep_enabled = false;
-    message_system_info.payload.system_info_packet.mark_state.timestamp_unix = 1232422;
-    message_system_info.payload.system_info_packet.has_sdcard_state = true;
-    message_system_info.payload.system_info_packet.sdcard_state.detected = 1;
-    message_system_info.payload.system_info_packet.sdcard_state.space_remaining = 123412342;
-    message_system_info.payload.system_info_packet.sdcard_state.estimated_remaining_recording_time = 214332;
-    message_system_info.payload.system_info_packet.has_simple_sensor_reading = true;
-    message_system_info.payload.system_info_packet.simple_sensor_reading.timestamp_unix = 12312421;
-    message_system_info.payload.system_info_packet.simple_sensor_reading.co2 = 300;
-    message_system_info.payload.system_info_packet.simple_sensor_reading.humidity = 40;
-    message_system_info.payload.system_info_packet.simple_sensor_reading.temperature = 70;
-    message_system_info.payload.system_info_packet.simple_sensor_reading.index = 3;
-    // define stream and encode
-    pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-    pb_encode(&stream, PACKET_FIELDS, &message_system_info);
-    pCharacteristicSysInfo->setValue(buffer, stream.bytes_written);
 
-    Serial.print("Setting Info characteristic. Byte size: ");
-    Serial.println( stream.bytes_written);
-    Serial.write(buffer, stream.bytes_written);
-    Serial.println();
+	pService->start();
+	// BLEAdvertising *pAdvertising = pServer->getAdvertising();  // this still
+	// is working for backward compatibility
+	BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+	pAdvertising->addServiceUUID(SERVICE_UUID);
+	// pAdvertising->addServiceUUID(SECONDARY_SERVICE_UUID);
 
-        /* PROTOBUF SPECIFIC */
-    message_config.has_header = true;
-    message_config.header.epoch = 1213232; // unix timestamp
-    message_config.header.ms_from_start = millis();
-    message_config.header.system_uid = 0x1234; // UID
-    message_config.which_payload = PACKET_CONFIG_PACKET_TAG; // packet type is system_info
-    // define stream and encode
-    stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-    pb_encode(&stream, PACKET_FIELDS, &message_config);
-    pCharacteristicSysConfig->setValue(buffer, stream.bytes_written);
+	pAdvertising->setScanResponse(true);
+	pAdvertising->setMinPreferred(
+			0x06); // functions that help with iPhone connections issue
+	pAdvertising->setMinPreferred(0x12);
 
-    Serial.print("Setting Config characteristic. Byte size: ");
-    Serial.println( stream.bytes_written);
-    Serial.write(buffer, stream.bytes_written);
-    Serial.println();
+	BLEDevice::startAdvertising();
+	Serial.println(
+			"Characteristic defined! Now you can read it in your phone!");
+
+
+	/* PROTOBUF SPECIFIC */
+	message_system_info.has_header = true;
+	message_system_info.header.epoch = 1213232; // unix timestamp
+	message_system_info.header.ms_from_start = millis();
+	message_system_info.header.system_uid = 0x1234; // UID
+	message_system_info.which_payload = PACKET_SYSTEM_INFO_PACKET_TAG; // packet type is system_info
+	message_system_info.payload.system_info_packet.device_recording = false;
+	message_system_info.payload.system_info_packet.number_discovered_devices = 0;
+	message_system_info.payload.system_info_packet.has_mark_state = true;
+	message_system_info.payload.system_info_packet.mark_state.mark_number = 0;
+	message_system_info.payload.system_info_packet.mark_state.beep_enabled = false;
+	message_system_info.payload.system_info_packet.mark_state.timestamp_unix = 1232422;
+	message_system_info.payload.system_info_packet.has_sdcard_state = true;
+	message_system_info.payload.system_info_packet.sdcard_state.detected = 1;
+	message_system_info.payload.system_info_packet.sdcard_state.space_remaining = 123412342;
+	message_system_info.payload.system_info_packet.sdcard_state.estimated_remaining_recording_time = 214332;
+	message_system_info.payload.system_info_packet.has_simple_sensor_reading = true;
+	message_system_info.payload.system_info_packet.simple_sensor_reading.timestamp_unix = 12312421;
+	message_system_info.payload.system_info_packet.simple_sensor_reading.co2 = 300;
+	message_system_info.payload.system_info_packet.simple_sensor_reading.humidity = 40;
+	message_system_info.payload.system_info_packet.simple_sensor_reading.temperature = 70;
+	message_system_info.payload.system_info_packet.simple_sensor_reading.index = 3;
+	// define stream and encode
+	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+	pb_encode(&stream, PACKET_FIELDS, &message_system_info);
+	pCharacteristicSysInfo->setValue(buffer, stream.bytes_written);
+
+	Serial.print("Setting Info characteristic. Byte size: ");
+	Serial.println( stream.bytes_written);
+	Serial.write(buffer, stream.bytes_written);
+	Serial.println();
+
+	/* PROTOBUF SPECIFIC */
+	message_config.has_header = true;
+	message_config.header.epoch = 1213232; // unix timestamp
+	message_config.header.ms_from_start = millis();
+	message_config.header.system_uid = 0x1234; // UID
+	message_config.which_payload = PACKET_CONFIG_PACKET_TAG; // packet type is system_info
+								 // define stream and encode
+	stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+	pb_encode(&stream, PACKET_FIELDS, &message_config);
+	pCharacteristicSysConfig->setValue(buffer, stream.bytes_written);
+
+	Serial.print("Setting Config characteristic. Byte size: ");
+	Serial.println( stream.bytes_written);
+	Serial.write(buffer, stream.bytes_written);
+	Serial.println();
 }
 
 void loop() {
-    // notify changed value
-    if (deviceConnected) {
-        delay(10); // bluetooth stack will go into congestion, if too many packets
-    }
+	// notify changed value
+	if (deviceConnected) {
+		delay(10); // bluetooth stack will go into congestion, if too many packets
+	}
 
-    // disconnecting
-    if (!deviceConnected && oldDeviceConnected) {
-        delay(500); // give the bluetooth stack the chance to get things ready
-        pServer->startAdvertising(); // restart advertising
-        Serial.println("start advertising");
-        oldDeviceConnected = deviceConnected;
-    }
-    // connecting
-    if (deviceConnected && !oldDeviceConnected) {
-        // do stuff here on connecting
-        Serial.println("connecting");
-        oldDeviceConnected = deviceConnected;
-    }
+	// disconnecting
+	if (!deviceConnected && oldDeviceConnected) {
+		delay(500); // give the bluetooth stack the chance to get things ready
+		pServer->startAdvertising(); // restart advertising
+		Serial.println("start advertising");
+		oldDeviceConnected = deviceConnected;
+	}
+	// connecting
+	if (deviceConnected && !oldDeviceConnected) {
+		// do stuff here on connecting
+		Serial.println("connecting");
+		oldDeviceConnected = deviceConnected;
+	}
 
-    /* this loop just goes through all the features */
-    // if (((millis() - myTime) > CAPTURE_DELAY)) {
-    //     Serial.println("capture");
-    //     myTime = millis();
-        // shutterButton(pCharacteristicRx);
-        // delay(30000);
+	/* this loop just goes through all the features */
+	// if (((millis() - myTime) > CAPTURE_DELAY)) {
+	//     Serial.println("capture");
+	//     myTime = millis();
+	// shutterButton(pCharacteristicRx);
+	// delay(30000);
 
-        // Serial.println("screen off");
-        // screenToggle(pCharacteristicRx);
-        // delay(5000);
+	// Serial.println("screen off");
+	// screenToggle(pCharacteristicRx);
+	// delay(5000);
 
-        // Serial.println("screen on");
-        // screenToggle(pCharacteristicRx);
-        // delay(5000);
-        
-        // Serial.println("power off");
-        // powerOff(pCharacteristicRx);
-        // delay(30000);
+	// Serial.println("screen on");
+	// screenToggle(pCharacteristicRx);
+	// delay(5000);
 
-    //     Serial.println("power on");
-    //     BLEDevice::stopAdvertising();
-    //     powerOnPrevConnectedCameras();
-    // }
+	// Serial.println("power off");
+	// powerOff(pCharacteristicRx);
+	// delay(30000);
+
+	//     Serial.println("power on");
+	//     BLEDevice::stopAdvertising();
+	//     powerOnPrevConnectedCameras();
+	// }
 }
 
 
