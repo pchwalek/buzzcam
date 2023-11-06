@@ -317,6 +317,8 @@ public struct SimpleSensorReading {
 
   public var co2: Float = 0
 
+  public var lightLevel: Float = 0
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -1068,6 +1070,7 @@ extension SimpleSensorReading: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     3: .same(proto: "temperature"),
     4: .same(proto: "humidity"),
     5: .same(proto: "co2"),
+    6: .standard(proto: "light_level"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1081,6 +1084,7 @@ extension SimpleSensorReading: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
       case 3: try { try decoder.decodeSingularFloatField(value: &self.temperature) }()
       case 4: try { try decoder.decodeSingularFloatField(value: &self.humidity) }()
       case 5: try { try decoder.decodeSingularFloatField(value: &self.co2) }()
+      case 6: try { try decoder.decodeSingularFloatField(value: &self.lightLevel) }()
       default: break
       }
     }
@@ -1102,6 +1106,9 @@ extension SimpleSensorReading: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     if self.co2 != 0 {
       try visitor.visitSingularFloatField(value: self.co2, fieldNumber: 5)
     }
+    if self.lightLevel != 0 {
+      try visitor.visitSingularFloatField(value: self.lightLevel, fieldNumber: 6)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1111,6 +1118,7 @@ extension SimpleSensorReading: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     if lhs.temperature != rhs.temperature {return false}
     if lhs.humidity != rhs.humidity {return false}
     if lhs.co2 != rhs.co2 {return false}
+    if lhs.lightLevel != rhs.lightLevel {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

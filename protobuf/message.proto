@@ -18,6 +18,7 @@ message SimpleSensorReading{
     float temperature = 3;
     float humidity = 4;
     float co2 = 5;
+    float light_level = 6;
 }
 
 /** defined by Bosch */
