@@ -77,6 +77,7 @@ class MyCallback: public BLECharacteristicCallbacks {
 		{
 			Serial.print("Decode failed: ");
 			Serial.println(PB_GET_ERROR(&stream_in));
+      return;
 		}
 
     pb_ostream_t stream_out = pb_ostream_from_buffer(buffer, sizeof(buffer));
@@ -211,6 +212,22 @@ void setup() {
 	message_config.header.system_uid = 0x1234; // UID
 	message_config.which_payload = PACKET_CONFIG_PACKET_TAG; // packet type is system_info
 								 // define stream and encode
+
+  message_config.payload.config_packet.has_audio_config = true;
+  message_config.payload.config_packet.audio_config.channel_1 = true;
+  message_config.payload.config_packet.audio_config.channel_2 = true;
+  message_config.payload.config_packet.audio_config.sample_freq = MIC_SAMPLE_FREQ_SAMPLE_RATE_48000;
+  message_config.payload.config_packet.audio_config.bit_resolution = MIC_BIT_RESOLUTION_BIT_RES_16;
+  message_config.payload.config_packet.audio_config.has_audio_compression = true;
+  message_config.payload.config_packet.audio_config.audio_compression.enabled = false;
+  message_config.payload.config_packet.audio_config.estimated_record_time = 10302491;
+  
+  message_config.payload.config_packet.has_sensor_config = true;
+  message_config.payload.config_packet.sensor_config.sample_period_ms = 5000;
+  message_config.payload.config_packet.sensor_config.enable_temperature = true;
+  message_config.payload.config_packet.sensor_config.enable_humidity = true;
+  message_config.payload.config_packet.sensor_config.enable_gas = true;
+
 	stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
 	pb_encode(&stream, PACKET_FIELDS, &message_config);
 	pCharacteristicSysConfig->setValue(buffer, stream.bytes_written);
