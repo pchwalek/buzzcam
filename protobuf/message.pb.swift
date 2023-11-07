@@ -734,6 +734,11 @@ public struct ConfigPacket {
   /// Clears the value of `networkState`. Subsequent reads from it will return its default value.
   public mutating func clearNetworkState() {_uniqueStorage()._networkState = nil}
 
+  public var enableRecording: Bool {
+    get {return _storage._enableRecording}
+    set {_uniqueStorage()._enableRecording = newValue}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -1981,6 +1986,7 @@ extension ConfigPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     4: .standard(proto: "low_power_config"),
     5: .standard(proto: "camera_control"),
     6: .standard(proto: "network_state"),
+    7: .standard(proto: "enable_recording"),
   ]
 
   fileprivate class _StorageClass {
@@ -1990,6 +1996,7 @@ extension ConfigPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     var _lowPowerConfig: LowPowerConfig? = nil
     var _cameraControl: CameraControl? = nil
     var _networkState: NetworkState? = nil
+    var _enableRecording: Bool = false
 
     static let defaultInstance = _StorageClass()
 
@@ -2002,6 +2009,7 @@ extension ConfigPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       _lowPowerConfig = source._lowPowerConfig
       _cameraControl = source._cameraControl
       _networkState = source._networkState
+      _enableRecording = source._enableRecording
     }
   }
 
@@ -2026,6 +2034,7 @@ extension ConfigPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         case 4: try { try decoder.decodeSingularMessageField(value: &_storage._lowPowerConfig) }()
         case 5: try { try decoder.decodeSingularMessageField(value: &_storage._cameraControl) }()
         case 6: try { try decoder.decodeSingularMessageField(value: &_storage._networkState) }()
+        case 7: try { try decoder.decodeSingularBoolField(value: &_storage._enableRecording) }()
         default: break
         }
       }
@@ -2056,6 +2065,9 @@ extension ConfigPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       try { if let v = _storage._networkState {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
       } }()
+      if _storage._enableRecording != false {
+        try visitor.visitSingularBoolField(value: _storage._enableRecording, fieldNumber: 7)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -2071,6 +2083,7 @@ extension ConfigPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         if _storage._lowPowerConfig != rhs_storage._lowPowerConfig {return false}
         if _storage._cameraControl != rhs_storage._cameraControl {return false}
         if _storage._networkState != rhs_storage._networkState {return false}
+        if _storage._enableRecording != rhs_storage._enableRecording {return false}
         return true
       }
       if !storagesAreEqual {return false}

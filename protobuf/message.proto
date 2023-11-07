@@ -180,6 +180,7 @@ message ConfigPacket{
     LowPowerConfig low_power_config = 4;
     CameraControl camera_control = 5;
     NetworkState network_state = 6;
+    bool enable_recording = 7;
 }
 
 message SpecialFunction{

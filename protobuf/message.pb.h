@@ -236,6 +236,7 @@ typedef struct config_packet {
     camera_control_t camera_control;
     bool has_network_state;
     network_state_t network_state;
+    bool enable_recording;
 } pb_packed config_packet_t;
 PB_PACKED_STRUCT_END
 
@@ -339,7 +340,7 @@ extern "C" {
 #define LOW_POWER_CONFIG_INIT_DEFAULT            {0}
 #define CAMERA_CONTROL_INIT_DEFAULT              {0, 0, 0}
 #define NETWORK_STATE_INIT_DEFAULT               {0, {{NULL}, NULL}, 0}
-#define CONFIG_PACKET_INIT_DEFAULT               {false, AUDIO_CONFIG_INIT_DEFAULT, {{NULL}, NULL}, false, SENSOR_CONFIG_INIT_DEFAULT, false, LOW_POWER_CONFIG_INIT_DEFAULT, false, CAMERA_CONTROL_INIT_DEFAULT, false, NETWORK_STATE_INIT_DEFAULT}
+#define CONFIG_PACKET_INIT_DEFAULT               {false, AUDIO_CONFIG_INIT_DEFAULT, {{NULL}, NULL}, false, SENSOR_CONFIG_INIT_DEFAULT, false, LOW_POWER_CONFIG_INIT_DEFAULT, false, CAMERA_CONTROL_INIT_DEFAULT, false, NETWORK_STATE_INIT_DEFAULT, 0}
 #define SPECIAL_FUNCTION_INIT_DEFAULT            {0, {0}}
 #define PACKET_INIT_DEFAULT                      {false, PACKET_HEADER_INIT_DEFAULT, 0, {SYSTEM_INFO_PACKET_INIT_DEFAULT}}
 #define PACKET_HEADER_INIT_ZERO                  {0, 0, 0}
@@ -360,7 +361,7 @@ extern "C" {
 #define LOW_POWER_CONFIG_INIT_ZERO               {0}
 #define CAMERA_CONTROL_INIT_ZERO                 {0, 0, 0}
 #define NETWORK_STATE_INIT_ZERO                  {0, {{NULL}, NULL}, 0}
-#define CONFIG_PACKET_INIT_ZERO                  {false, AUDIO_CONFIG_INIT_ZERO, {{NULL}, NULL}, false, SENSOR_CONFIG_INIT_ZERO, false, LOW_POWER_CONFIG_INIT_ZERO, false, CAMERA_CONTROL_INIT_ZERO, false, NETWORK_STATE_INIT_ZERO}
+#define CONFIG_PACKET_INIT_ZERO                  {false, AUDIO_CONFIG_INIT_ZERO, {{NULL}, NULL}, false, SENSOR_CONFIG_INIT_ZERO, false, LOW_POWER_CONFIG_INIT_ZERO, false, CAMERA_CONTROL_INIT_ZERO, false, NETWORK_STATE_INIT_ZERO, 0}
 #define SPECIAL_FUNCTION_INIT_ZERO               {0, {0}}
 #define PACKET_INIT_ZERO                         {false, PACKET_HEADER_INIT_ZERO, 0, {SYSTEM_INFO_PACKET_INIT_ZERO}}
 
@@ -442,6 +443,7 @@ extern "C" {
 #define CONFIG_PACKET_LOW_POWER_CONFIG_TAG       4
 #define CONFIG_PACKET_CAMERA_CONTROL_TAG         5
 #define CONFIG_PACKET_NETWORK_STATE_TAG          6
+#define CONFIG_PACKET_ENABLE_RECORDING_TAG       7
 #define SPECIAL_FUNCTION_FORMAT_SDCARD_TAG       1
 #define SPECIAL_FUNCTION_FUNCTION_2_TAG          2
 #define SPECIAL_FUNCTION_FUNCTION_3_TAG          3
@@ -612,7 +614,8 @@ X(a, CALLBACK, REPEATED, MESSAGE,  schedule_config,   2) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  sensor_config,     3) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  low_power_config,   4) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  camera_control,    5) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  network_state,     6)
+X(a, STATIC,   OPTIONAL, MESSAGE,  network_state,     6) \
+X(a, STATIC,   SINGULAR, BOOL,     enable_recording,   7)
 #define CONFIG_PACKET_CALLBACK pb_default_field_callback
 #define CONFIG_PACKET_DEFAULT NULL
 #define config_packet_t_audio_config_MSGTYPE audio_config_t
