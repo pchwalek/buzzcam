@@ -3,7 +3,7 @@
 
 #ifndef PB_MESSAGE_PB_H_INCLUDED
 #define PB_MESSAGE_PB_H_INCLUDED
-#include <pb.h>
+#include "pb.h"
 
 #if PB_PROTO_HEADER_VERSION != 40
 #error Regenerate this file with the current version of nanopb generator.
@@ -69,7 +69,6 @@ typedef struct simple_sensor_reading {
     float temperature;
     float humidity;
     float co2;
-    float light_level;
 } pb_packed simple_sensor_reading_t;
 PB_PACKED_STRUCT_END
 
@@ -322,7 +321,7 @@ extern "C" {
 
 /* Initializer values for message structs */
 #define PACKET_HEADER_INIT_DEFAULT               {0, 0, 0}
-#define SIMPLE_SENSOR_READING_INIT_DEFAULT       {0, 0, 0, 0, 0, 0}
+#define SIMPLE_SENSOR_READING_INIT_DEFAULT       {0, 0, 0, 0, 0}
 #define SENSOR_READING_INIT_DEFAULT              {0, 0, {{NULL}, NULL}}
 #define SENSOR_READING_PAYLOAD_INIT_DEFAULT      {0, 0, 0, 0, 0, _SIGNAL_IDENTIFIER_MIN, _SENSOR_ACCURACY_MIN}
 #define SENSOR_CONFIG_INIT_DEFAULT               {0, 0, 0, 0}
@@ -343,7 +342,7 @@ extern "C" {
 #define SPECIAL_FUNCTION_INIT_DEFAULT            {0, {0}}
 #define PACKET_INIT_DEFAULT                      {false, PACKET_HEADER_INIT_DEFAULT, 0, {SYSTEM_INFO_PACKET_INIT_DEFAULT}}
 #define PACKET_HEADER_INIT_ZERO                  {0, 0, 0}
-#define SIMPLE_SENSOR_READING_INIT_ZERO          {0, 0, 0, 0, 0, 0}
+#define SIMPLE_SENSOR_READING_INIT_ZERO          {0, 0, 0, 0, 0}
 #define SENSOR_READING_INIT_ZERO                 {0, 0, {{NULL}, NULL}}
 #define SENSOR_READING_PAYLOAD_INIT_ZERO         {0, 0, 0, 0, 0, _SIGNAL_IDENTIFIER_MIN, _SENSOR_ACCURACY_MIN}
 #define SENSOR_CONFIG_INIT_ZERO                  {0, 0, 0, 0}
@@ -373,7 +372,6 @@ extern "C" {
 #define SIMPLE_SENSOR_READING_TEMPERATURE_TAG    3
 #define SIMPLE_SENSOR_READING_HUMIDITY_TAG       4
 #define SIMPLE_SENSOR_READING_CO2_TAG            5
-#define SIMPLE_SENSOR_READING_LIGHT_LEVEL_TAG    6
 #define SENSOR_READING_PACKET_INDEX_TAG          1
 #define SENSOR_READING_SAMPLE_PERIOD_TAG         2
 #define SENSOR_READING_PAYLOAD_TAG               3
@@ -467,8 +465,7 @@ X(a, STATIC,   SINGULAR, UINT32,   index,             1) \
 X(a, STATIC,   SINGULAR, UINT32,   timestamp_unix,    2) \
 X(a, STATIC,   SINGULAR, FLOAT,    temperature,       3) \
 X(a, STATIC,   SINGULAR, FLOAT,    humidity,          4) \
-X(a, STATIC,   SINGULAR, FLOAT,    co2,               5) \
-X(a, STATIC,   SINGULAR, FLOAT,    light_level,       6)
+X(a, STATIC,   SINGULAR, FLOAT,    co2,               5)
 #define SIMPLE_SENSOR_READING_CALLBACK NULL
 #define SIMPLE_SENSOR_READING_DEFAULT NULL
 
@@ -711,7 +708,7 @@ extern const pb_msgdesc_t packet_t_msg;
 #define SD_CARD_STATE_SIZE                       24
 #define SENSOR_CONFIG_SIZE                       12
 #define SENSOR_READING_PAYLOAD_SIZE              41
-#define SIMPLE_SENSOR_READING_SIZE               32
+#define SIMPLE_SENSOR_READING_SIZE               27
 #define SPECIAL_FUNCTION_SIZE                    2
 
 #ifdef __cplusplus

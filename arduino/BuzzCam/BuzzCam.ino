@@ -46,6 +46,13 @@ unsigned long myTime;
 
 size_t message_length;
 
+void printHex(uint8_t num) {
+  char hexCar[2];
+
+  sprintf(hexCar, "%02X", num);
+  Serial.print(hexCar);
+}
+
 class MyServerCallbacks : public BLEServerCallbacks {
 	void onConnect(BLEServer *pServer) {
 		deviceConnected = true;
@@ -70,13 +77,21 @@ class MyCallback: public BLECharacteristicCallbacks {
 
 //		pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
 
-    pb_istream_t stream_in = pb_istream_from_buffer(buffer, sizeof(buffer));
+    memset(buffer, 0, sizeof(buffer));
+    memcpy(buffer, value.data(), value.length());
+    
+//    int count = value.length();
+//    value.getBytes(buffer, count + 1);  
+    pb_istream_t stream_in = pb_istream_from_buffer(buffer , value.length());
 
 
 		if (!pb_decode(&stream_in, PACKET_FIELDS, &message_rx))
 		{
 			Serial.print("Decode failed: ");
 			Serial.println(PB_GET_ERROR(&stream_in));
+      for(int i=0; i<sizeof(buffer); i++){
+        printHex(buffer[i]);
+      }
       return;
 		}
 
