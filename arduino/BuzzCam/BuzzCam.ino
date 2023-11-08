@@ -72,7 +72,7 @@ class MyCallback: public BLECharacteristicCallbacks {
 
 		Serial.println("CE73 has been updated");
 		// Do something with the value, for example print it to serial monitor
-		Serial.println (value.c_str ());
+//		Serial.println (value.c_str ());
 
 
 //		pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
@@ -82,7 +82,7 @@ class MyCallback: public BLECharacteristicCallbacks {
     
 //    int count = value.length();
 //    value.getBytes(buffer, count + 1);  
-    pb_istream_t stream_in = pb_istream_from_buffer(buffer , value.length());
+    pb_istream_t stream_in = pb_istream_from_buffer(buffer, value.length());
 
 
 		if (!pb_decode(&stream_in, PACKET_FIELDS, &message_rx))
@@ -103,6 +103,8 @@ class MyCallback: public BLECharacteristicCallbacks {
 				Serial.println("received an info packet!");
 				memcpy(&message_system_info,&message_rx,sizeof(packet_t));
 				pb_encode(&stream_out, PACKET_FIELDS, &message_system_info);
+        Serial.print("Beep state: ");
+        Serial.println(message_system_info.payload.system_info_packet.mark_state.beep_enabled);
 				pCharacteristicSysInfo->setValue(buffer, stream_out.bytes_written);
 				break;
         
