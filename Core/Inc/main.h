@@ -35,7 +35,6 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -131,6 +130,8 @@ typedef struct {
 
 /* USER CODE BEGIN Private defines */
 #define SD_SPI_HANDLE hspi1
+
+#define CUSTOM_BT_PARAMETERS 1
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

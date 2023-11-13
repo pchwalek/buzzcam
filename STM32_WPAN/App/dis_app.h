@@ -1,9 +1,9 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    App/app_ble.h
+  * @file    App/dis_app.h
   * @author  MCD Application Team
-  * @brief   Header for ble application
+  * @brief   Header for dis_application.c module
   ******************************************************************************
   * @attention
   *
@@ -19,34 +19,21 @@
 /* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef APP_BLE_H
-#define APP_BLE_H
+#ifndef DIS_APP_H
+#define DIS_APP_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "hci_tl.h"
 
-/* Private includes ----------------------------------------------------------*/
+/* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
-
-typedef enum
-{
-  APP_BLE_IDLE,
-  APP_BLE_FAST_ADV,
-  APP_BLE_LP_ADV,
-  APP_BLE_SCAN,
-  APP_BLE_LP_CONNECTING,
-  APP_BLE_CONNECTED_SERVER,
-  APP_BLE_CONNECTED_CLIENT
-} APP_BLE_ConnStatus_t;
-
 /* USER CODE BEGIN ET */
 
 /* USER CODE END ET */
@@ -61,24 +48,27 @@ typedef enum
 
 /* USER CODE END EV */
 
-/* Exported macro ------------------------------------------------------------*/
+/* Exported macros -----------------------------------------------------------*/
+#define DISAPP_MANUFACTURER_NAME              "STM"
+#define DISAPP_MODEL_NUMBER                   "4502-1.0"
+#define DISAPP_SERIAL_NUMBER                  "1.0"
+#define DISAPP_HARDWARE_REVISION_NUMBER       "1.0"
+#define DISAPP_FIRMWARE_REVISION_NUMBER       "1.0"
+#define DISAPP_SOFTWARE_REVISION_NUMBER       "1.0"
+#define DISAPP_OUI                            0x123456
+#define DISAPP_MANUFACTURER_ID                0x9ABCDE
 /* USER CODE BEGIN EM */
 
 /* USER CODE END EM */
 
-/* Exported functions ---------------------------------------------*/
-void APP_BLE_Init(void);
-APP_BLE_ConnStatus_t APP_BLE_Get_Server_Connection_Status(void);
-
+/* Exported functions ------------------------------------------------------- */
+void DISAPP_Init(void);
 /* USER CODE BEGIN EF */
-#define BUZZCAM_SERVICE_UUID                                       (0xCE70)
-#define BUZZCAM_INFO_CHAR_UUID                                     (0xCE71)
-#define BUZZCAM_CONFIG_CHAR_UUID                                   (0xCE72)
-#define BUZZCAM_RX_CHAR_UUID                                       (0xCE73)
+
 /* USER CODE END EF */
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /*APP_BLE_H */
+#endif /*DIS_APP_H */
