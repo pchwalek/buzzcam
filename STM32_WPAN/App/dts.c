@@ -30,14 +30,18 @@
 //#include "lp5523.h"
 
 #include "time.h"
-#include "rtc.h"
+//#include "rtc.h"
 
 //#include "app_thread.h"
 #include "app_conf.h"
 
-#include "packet.h"
+#include "app_ble.h"
 
-#include "fram.h"
+#include "cmsis_os2.h"
+
+//#include "packet.h"
+
+//#include "fram.h"
 
 #define UUID_128_SUPPORTED 0
 #define	NUM_OF_CHARACTERISTICS 6 //https://community.st.com/s/question/0D50X00009XkYAvSAN/sensortile-bluenrgms-custom-service-aci
@@ -50,7 +54,7 @@
 
 #ifdef PROTOBUF_RX
 uint8_t rxBuffer[250];
-static air_spec_config_packet_t rxConfigPacket = AIR_SPEC_CONFIG_PACKET_INIT_ZERO;
+//static air_spec_config_packet_t rxConfigPacket = AIR_SPEC_CONFIG_PACKET_INIT_ZERO;
 //union ColorComplex airspecColors;
 #else
 RX_PacketHeader rxPacketHeader;
@@ -88,8 +92,10 @@ typedef struct {
 /* Private macros ------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
-static tBleStatus TX_Update_Char(DTS_STM_Payload_t *pDataValue);
-static tBleStatus SensorConfig_Update_Char(DTS_STM_Payload_t *pDataValue);
+//static tBleStatus TX_Update_Char(DTS_STM_Payload_t *pDataValue);
+//static tBleStatus SensorConfig_Update_Char(DTS_STM_Payload_t *pDataValue);
+static tBleStatus UpdateSystemInfo(DTS_STM_Payload_t* pPayload);
+static tBleStatus UpdateConfig(DTS_STM_Payload_t* pPayload);
 static SVCCTL_EvtAckStatus_t DTS_Event_Handler(void *pckt);
 static DataTransferSvcContext_t aDataTransferContext;
 extern uint16_t Att_Mtu_Exchanged;
@@ -102,7 +108,7 @@ extern uint16_t Att_Mtu_Exchanged;
 //blink_calibration_t blinkCalRX;
 //
 //red_flash_task_t redFlashRX;
-system_state_t tempState;
+//system_state_t tempState;
 #else
 struct LogMessage receivedCntrlPacket;
 union ColorComplex receivedColor;
@@ -124,7 +130,7 @@ volatile osThreadState_t threadState;
 static SVCCTL_EvtAckStatus_t DTS_Event_Handler(void *Event) {
 	SVCCTL_EvtAckStatus_t return_value;
 	hci_event_pckt *event_pckt;
-	evt_blue_aci *blue_evt;
+	evt_blecore_aci *blue_evt;
 	aci_gatt_attribute_modified_event_rp0 *attribute_modified;
 	aci_att_exchange_mtu_resp_event_rp0 *exchange_mtu_resp;
 	aci_gatt_write_permit_req_event_rp0 *write_permit_req;
@@ -135,11 +141,11 @@ static SVCCTL_EvtAckStatus_t DTS_Event_Handler(void *Event) {
 	event_pckt = (hci_event_pckt*) (((hci_uart_pckt*) Event)->data);
 
 	switch (event_pckt->evt) {
-	case EVT_VENDOR: {
-		blue_evt = (evt_blue_aci*) event_pckt->data;
+	case HCI_VENDOR_SPECIFIC_DEBUG_EVT_CODE: {
+		blue_evt = (evt_blecore_aci*) event_pckt->data;
 
 		switch (blue_evt->ecode) {
-		case EVT_BLUE_ATT_EXCHANGE_MTU_RESP:
+		case ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE:
 #ifdef NUCLEO_LED_ACTIVE
         	 BSP_LED_On(LED_BLUE);
 #endif
@@ -153,7 +159,7 @@ static SVCCTL_EvtAckStatus_t DTS_Event_Handler(void *Event) {
 #endif
 			break;
 			/* server */
-		case EVT_BLUE_GATT_ATTRIBUTE_MODIFIED: {
+		case ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE: {
 			attribute_modified =
 					(aci_gatt_attribute_modified_event_rp0*) blue_evt->data;
 //			if (attribute_modified->Attr_Handle
@@ -329,11 +335,11 @@ static SVCCTL_EvtAckStatus_t DTS_Event_Handler(void *Event) {
 
 		}
 			break;
-		case EVT_BLUE_GATT_TX_POOL_AVAILABLE:
+		case ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE:
 //			Resume_Notification();
 			break;
 
-		case EVT_BLUE_GATT_WRITE_PERMIT_REQ:
+		case ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE:
 			APP_DBG_MSG("write permit req\r\n");
 			write_permit_req =
 					(aci_gatt_write_permit_req_event_rp0*) blue_evt->data;
@@ -553,12 +559,12 @@ void DTS_STM_Init(void) {
 	return;
 }
 
-void UpdateSystemInfo(DTS_STM_Payload_t* pPayload){
-
+static tBleStatus UpdateSystemInfo(DTS_STM_Payload_t* pPayload){
+	return 0;
 }
 
-void UpdateConfig(DTS_STM_Payload_t* pPayload){
-
+static tBleStatus UpdateConfig(DTS_STM_Payload_t* pPayload){
+	return 0;
 }
 
 /**

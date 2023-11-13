@@ -58,6 +58,7 @@ typedef enum
 
 /* External variables --------------------------------------------------------*/
 /* USER CODE BEGIN EV */
+extern osThreadId_t LinkConfigProcessId;
 
 /* USER CODE END EV */
 

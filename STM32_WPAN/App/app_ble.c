@@ -288,6 +288,7 @@ AD_TYPE_MANUFACTURER_SPECIFIC_DATA, 0x01/*SKD version */, 0x00 /* Generic*/,
 osThreadId_t LinkConfigProcessId;
 osThreadId_t AdvCancelProcessId;
 osThreadId_t AdvReqProcessId;
+
 /* USER CODE END PV */
 
 /* Global variables ----------------------------------------------------------*/
@@ -338,6 +339,8 @@ CFG_TP_GENERIC_PROCESS_CB_MEM, .cb_size = CFG_TP_GENERIC_PROCESS_CB_SIZE,
 		CFG_TP_GENERIC_PROCESS_STACK_MEM, .priority =
 		CFG_TP_GENERIC_PROCESS_PRIORITY, .stack_size =
 		CFG_TP_GENERIC_PROCESS_STACK_SIZE * 2 };
+
+const char a_LocalName[30];
 /* USER CODE END PFP */
 
 /* External variables --------------------------------------------------------*/
@@ -1068,6 +1071,19 @@ static void Ble_Hci_Gap_Gatt_Init(void)
 #endif /* BLE_CFG_CENTRAL == 1 */
 
 /* USER CODE BEGIN Role_Mngt*/
+  uint32_t UID = LL_FLASH_GetUDN();
+
+  const char local_name[] = { AD_TYPE_COMPLETE_LOCAL_NAME, 'B','U','Z','Z','C','A','M','_',
+		  hexToAscii(UID >> 28),
+		  hexToAscii(UID >> 24),
+		  hexToAscii(UID >> 20),
+		  hexToAscii(UID >> 16),
+		  hexToAscii(UID >> 12),
+		  hexToAscii(UID >> 8),
+		  hexToAscii(UID >> 4),
+		  hexToAscii(UID)};
+
+  memcpy(a_LocalName,local_name,sizeof(local_name));
 
 /* USER CODE END Role_Mngt */
 
@@ -1207,18 +1223,6 @@ static void Adv_Request(APP_BLE_ConnStatus_t NewStatus)
     Max_Inter = CFG_LP_CONN_ADV_INTERVAL_MAX;
   }
 
-  uint32_t UID = LL_FLASH_GetUDN();
-
-  const char a_LocalName[] = { AD_TYPE_COMPLETE_LOCAL_NAME, 'B','U','Z','Z','C','A','M','_',
-		  hexToAscii(UID >> 28),
-		  hexToAscii(UID >> 24),
-		  hexToAscii(UID >> 20),
-		  hexToAscii(UID >> 16),
-		  hexToAscii(UID >> 12),
-		  hexToAscii(UID >> 8),
-		  hexToAscii(UID >> 4),
-		  hexToAscii(UID)};
-
   /**
    * Stop the timer, it will be restarted for a new shot
    * It does not hurt if the timer was not running
@@ -1291,13 +1295,6 @@ static void Adv_Request(APP_BLE_ConnStatus_t NewStatus)
   }
 
   return;
-}
-
-char hexToAscii(uint8_t val){
-	// only look at first 4 bits
-	val = val & (0x0F);
-	if(val<10) return val+48;
-	else return val+87;
 }
 
 const uint8_t* BleGetBdAddress(void)
@@ -1498,5 +1495,10 @@ void SVCCTL_ResumeUserEventFlow(void)
 }
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */
-
+char hexToAscii(uint8_t val){
+	// only look at first 4 bits
+	val = val & (0x0F);
+	if(val<10) return val+48;
+	else return val+87;
+}
 /* USER CODE END FD_WRAP_FUNCTIONS */
