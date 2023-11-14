@@ -266,7 +266,7 @@ void SendData(void *argument) {
 //	DataTransferServerContext.TxData.Length =  sizeof(Captivates_Test_Packet); //Att_Mtu_Exchanged-10;
 
 			osDelay(1000);
-			status = DTS_STM_UpdateChar(DATA_TRANSFER_TX_CHAR_UUID,
+			status = DTS_STM_UpdateChar(BUZZCAM_INFO_CHAR_UUID,
 					(uint8_t*) &DataTransferServerContext.TxData);
 			if (status == BLE_STATUS_INSUFFICIENT_RESOURCES) {
 				DataTransferServerContext.DtFlowStatus = DTS_APP_FLOW_OFF;

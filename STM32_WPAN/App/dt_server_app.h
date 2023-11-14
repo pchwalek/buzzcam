@@ -25,7 +25,7 @@
 extern "C" {
 #endif
 
-#include "captivate_config.h"
+//#include "captivate_config.h"
 
 #define BUTTON_PRESSED GPIO_PIN_RESET
 
@@ -39,7 +39,7 @@ typedef void (*IO_RECEIVE_DATA_USER_CALLBACK_TYPE)(uint8_t *rx_data,
 #include "app_conf.h"
 //#include "master_thread.h"
 #include "dts.h"
-#include "packet.h"
+//#include "packet.h"
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/

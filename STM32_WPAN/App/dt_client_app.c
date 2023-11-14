@@ -178,11 +178,11 @@ static SVCCTL_EvtAckStatus_t DTC_Event_Handler(void *Event) {
 	event_pckt = (hci_event_pckt*) (((hci_uart_pckt*) Event)->data);
 
 	switch (event_pckt->evt) {
-	case EVT_VENDOR: {
-		blue_evt = (evt_blue_aci*) event_pckt->data;
+	case HCI_VENDOR_SPECIFIC_DEBUG_EVT_CODE: {
+		blue_evt = (evt_blecore_aci*) event_pckt->data;
 		switch (blue_evt->ecode) {
 
-		case EVT_BLUE_ATT_READ_BY_GROUP_TYPE_RESP: {
+		case ACI_ATT_READ_BY_GROUP_TYPE_RESP_VSEVT_CODE: {
 			aci_att_read_by_group_type_resp_event_rp0 *pr =
 					(void*) blue_evt->data;
 			uint8_t numServ, i, idx;
@@ -270,7 +270,7 @@ static SVCCTL_EvtAckStatus_t DTC_Event_Handler(void *Event) {
 #else
               handle = UNPACK_2_BYTE_PARAMETER(&pr->Handle_Value_Pair_Data[idx - 2]);
 #endif
-					if (uuid == DATA_TRANSFER_TX_CHAR_UUID) {
+					if (uuid == BUZZCAM_INFO_CHAR_UUID) {
 						DataTransferClientContext.DataTransferTxCharHdle =
 								handle;
 					}
