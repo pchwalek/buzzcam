@@ -1,0 +1,727 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		21BEAA4B2AFEE135001B89E6 /* BluetoothModelHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21BEAA4A2AFEE135001B89E6 /* BluetoothModelHelper.swift */; };
+		21C0A2062AE3152800BA2ABC /* StatusesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C0A2052AE3152800BA2ABC /* StatusesView.swift */; };
+		21C0A2082AE320E000BA2ABC /* SensorReadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C0A2072AE320E000BA2ABC /* SensorReadingView.swift */; };
+		21C0A20A2AE320FE00BA2ABC /* NearbyDevices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C0A2092AE320FE00BA2ABC /* NearbyDevices.swift */; };
+		21C0A20C2AE7104800BA2ABC /* DiscoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C0A20B2AE7104800BA2ABC /* DiscoverView.swift */; };
+		21C0A2102AE7137100BA2ABC /* ConfigView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C0A20F2AE7137100BA2ABC /* ConfigView.swift */; };
+		21C0A2192AE71EE800BA2ABC /* BluetoothModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C0A2182AE71EE800BA2ABC /* BluetoothModel.swift */; };
+		21C0A21B2AEC4E1100BA2ABC /* BluetoothConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C0A21A2AEC4E1100BA2ABC /* BluetoothConstants.swift */; };
+		21C0A21E2AF04A4D00BA2ABC /* message.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C0A21D2AF04A4D00BA2ABC /* message.pb.swift */; };
+		21C0A2232AF0E50100BA2ABC /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = 21C0A2222AF0E50100BA2ABC /* SwiftProtobuf */; };
+		21C0A2252AF0E50500BA2ABC /* protoc-gen-swift in Frameworks */ = {isa = PBXBuildFile; productRef = 21C0A2242AF0E50500BA2ABC /* protoc-gen-swift */; };
+		21C0A2272AF0E50A00BA2ABC /* SwiftProtobufPluginLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = 21C0A2262AF0E50A00BA2ABC /* SwiftProtobufPluginLibrary */; };
+		21DAA5D52ADF221F00E70BF2 /* BuzzCam_AppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21DAA5D42ADF221F00E70BF2 /* BuzzCam_AppApp.swift */; };
+		21DAA5D72ADF221F00E70BF2 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21DAA5D62ADF221F00E70BF2 /* ContentView.swift */; };
+		21DAA5D92ADF222000E70BF2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 21DAA5D82ADF222000E70BF2 /* Assets.xcassets */; };
+		21DAA5DD2ADF222000E70BF2 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 21DAA5DC2ADF222000E70BF2 /* Preview Assets.xcassets */; };
+		21DAA5E72ADF222000E70BF2 /* BuzzCam_AppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21DAA5E62ADF222000E70BF2 /* BuzzCam_AppTests.swift */; };
+		21DAA5F12ADF222000E70BF2 /* BuzzCam_AppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21DAA5F02ADF222000E70BF2 /* BuzzCam_AppUITests.swift */; };
+		21DAA5F32ADF222000E70BF2 /* BuzzCam_AppUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21DAA5F22ADF222000E70BF2 /* BuzzCam_AppUITestsLaunchTests.swift */; };
+		21DAA6002AE0746B00E70BF2 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21DAA5FF2AE0746B00E70BF2 /* MainView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		21DAA5E32ADF222000E70BF2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 21DAA5C92ADF221F00E70BF2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 21DAA5D02ADF221F00E70BF2;
+			remoteInfo = "BuzzCam App";
+		};
+		21DAA5ED2ADF222000E70BF2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 21DAA5C92ADF221F00E70BF2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 21DAA5D02ADF221F00E70BF2;
+			remoteInfo = "BuzzCam App";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		21BEAA4A2AFEE135001B89E6 /* BluetoothModelHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothModelHelper.swift; sourceTree = "<group>"; };
+		21C0A2052AE3152800BA2ABC /* StatusesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusesView.swift; sourceTree = "<group>"; };
+		21C0A2072AE320E000BA2ABC /* SensorReadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SensorReadingView.swift; sourceTree = "<group>"; };
+		21C0A2092AE320FE00BA2ABC /* NearbyDevices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NearbyDevices.swift; sourceTree = "<group>"; };
+		21C0A20B2AE7104800BA2ABC /* DiscoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverView.swift; sourceTree = "<group>"; };
+		21C0A20F2AE7137100BA2ABC /* ConfigView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigView.swift; sourceTree = "<group>"; };
+		21C0A2182AE71EE800BA2ABC /* BluetoothModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothModel.swift; sourceTree = "<group>"; };
+		21C0A21A2AEC4E1100BA2ABC /* BluetoothConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothConstants.swift; sourceTree = "<group>"; };
+		21C0A21D2AF04A4D00BA2ABC /* message.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = message.pb.swift; path = ../../../../Downloads/message.pb.swift; sourceTree = "<group>"; };
+		21DAA5D12ADF221F00E70BF2 /* BuzzCam App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "BuzzCam App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		21DAA5D42ADF221F00E70BF2 /* BuzzCam_AppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuzzCam_AppApp.swift; sourceTree = "<group>"; };
+		21DAA5D62ADF221F00E70BF2 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		21DAA5D82ADF222000E70BF2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		21DAA5DA2ADF222000E70BF2 /* BuzzCam_App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BuzzCam_App.entitlements; sourceTree = "<group>"; };
+		21DAA5DC2ADF222000E70BF2 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		21DAA5E22ADF222000E70BF2 /* BuzzCam AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "BuzzCam AppTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		21DAA5E62ADF222000E70BF2 /* BuzzCam_AppTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuzzCam_AppTests.swift; sourceTree = "<group>"; };
+		21DAA5EC2ADF222000E70BF2 /* BuzzCam AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "BuzzCam AppUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		21DAA5F02ADF222000E70BF2 /* BuzzCam_AppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuzzCam_AppUITests.swift; sourceTree = "<group>"; };
+		21DAA5F22ADF222000E70BF2 /* BuzzCam_AppUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuzzCam_AppUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		21DAA5FF2AE0746B00E70BF2 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		21DAA5CE2ADF221F00E70BF2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				21C0A2272AF0E50A00BA2ABC /* SwiftProtobufPluginLibrary in Frameworks */,
+				21C0A2252AF0E50500BA2ABC /* protoc-gen-swift in Frameworks */,
+				21C0A2232AF0E50100BA2ABC /* SwiftProtobuf in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		21DAA5DF2ADF222000E70BF2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		21DAA5E92ADF222000E70BF2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		21C0A2112AE71BA300BA2ABC /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				21C0A2182AE71EE800BA2ABC /* BluetoothModel.swift */,
+				21BEAA4A2AFEE135001B89E6 /* BluetoothModelHelper.swift */,
+				21C0A21A2AEC4E1100BA2ABC /* BluetoothConstants.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		21C0A21C2AF04A3500BA2ABC /* Protobuf */ = {
+			isa = PBXGroup;
+			children = (
+				21C0A21D2AF04A4D00BA2ABC /* message.pb.swift */,
+			);
+			path = Protobuf;
+			sourceTree = "<group>";
+		};
+		21C0A2212AF0E50100BA2ABC /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		21DAA5C82ADF221F00E70BF2 = {
+			isa = PBXGroup;
+			children = (
+				21DAA5D32ADF221F00E70BF2 /* BuzzCam App */,
+				21DAA5E52ADF222000E70BF2 /* BuzzCam AppTests */,
+				21DAA5EF2ADF222000E70BF2 /* BuzzCam AppUITests */,
+				21DAA5D22ADF221F00E70BF2 /* Products */,
+				21C0A2212AF0E50100BA2ABC /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		21DAA5D22ADF221F00E70BF2 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				21DAA5D12ADF221F00E70BF2 /* BuzzCam App.app */,
+				21DAA5E22ADF222000E70BF2 /* BuzzCam AppTests.xctest */,
+				21DAA5EC2ADF222000E70BF2 /* BuzzCam AppUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		21DAA5D32ADF221F00E70BF2 /* BuzzCam App */ = {
+			isa = PBXGroup;
+			children = (
+				21C0A21C2AF04A3500BA2ABC /* Protobuf */,
+				21C0A2112AE71BA300BA2ABC /* Models */,
+				21DAA5D42ADF221F00E70BF2 /* BuzzCam_AppApp.swift */,
+				21DAA5D62ADF221F00E70BF2 /* ContentView.swift */,
+				21C0A20F2AE7137100BA2ABC /* ConfigView.swift */,
+				21C0A20B2AE7104800BA2ABC /* DiscoverView.swift */,
+				21DAA5FF2AE0746B00E70BF2 /* MainView.swift */,
+				21C0A2052AE3152800BA2ABC /* StatusesView.swift */,
+				21C0A2072AE320E000BA2ABC /* SensorReadingView.swift */,
+				21C0A2092AE320FE00BA2ABC /* NearbyDevices.swift */,
+				21DAA5D82ADF222000E70BF2 /* Assets.xcassets */,
+				21DAA5DA2ADF222000E70BF2 /* BuzzCam_App.entitlements */,
+				21DAA5DB2ADF222000E70BF2 /* Preview Content */,
+			);
+			path = "BuzzCam App";
+			sourceTree = "<group>";
+		};
+		21DAA5DB2ADF222000E70BF2 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				21DAA5DC2ADF222000E70BF2 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		21DAA5E52ADF222000E70BF2 /* BuzzCam AppTests */ = {
+			isa = PBXGroup;
+			children = (
+				21DAA5E62ADF222000E70BF2 /* BuzzCam_AppTests.swift */,
+			);
+			path = "BuzzCam AppTests";
+			sourceTree = "<group>";
+		};
+		21DAA5EF2ADF222000E70BF2 /* BuzzCam AppUITests */ = {
+			isa = PBXGroup;
+			children = (
+				21DAA5F02ADF222000E70BF2 /* BuzzCam_AppUITests.swift */,
+				21DAA5F22ADF222000E70BF2 /* BuzzCam_AppUITestsLaunchTests.swift */,
+			);
+			path = "BuzzCam AppUITests";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		21DAA5D02ADF221F00E70BF2 /* BuzzCam App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 21DAA5F62ADF222000E70BF2 /* Build configuration list for PBXNativeTarget "BuzzCam App" */;
+			buildPhases = (
+				21DAA5CD2ADF221F00E70BF2 /* Sources */,
+				21DAA5CE2ADF221F00E70BF2 /* Frameworks */,
+				21DAA5CF2ADF221F00E70BF2 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "BuzzCam App";
+			packageProductDependencies = (
+				21C0A2222AF0E50100BA2ABC /* SwiftProtobuf */,
+				21C0A2242AF0E50500BA2ABC /* protoc-gen-swift */,
+				21C0A2262AF0E50A00BA2ABC /* SwiftProtobufPluginLibrary */,
+			);
+			productName = "BuzzCam App";
+			productReference = 21DAA5D12ADF221F00E70BF2 /* BuzzCam App.app */;
+			productType = "com.apple.product-type.application";
+		};
+		21DAA5E12ADF222000E70BF2 /* BuzzCam AppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 21DAA5F92ADF222000E70BF2 /* Build configuration list for PBXNativeTarget "BuzzCam AppTests" */;
+			buildPhases = (
+				21DAA5DE2ADF222000E70BF2 /* Sources */,
+				21DAA5DF2ADF222000E70BF2 /* Frameworks */,
+				21DAA5E02ADF222000E70BF2 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				21DAA5E42ADF222000E70BF2 /* PBXTargetDependency */,
+			);
+			name = "BuzzCam AppTests";
+			productName = "BuzzCam AppTests";
+			productReference = 21DAA5E22ADF222000E70BF2 /* BuzzCam AppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		21DAA5EB2ADF222000E70BF2 /* BuzzCam AppUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 21DAA5FC2ADF222000E70BF2 /* Build configuration list for PBXNativeTarget "BuzzCam AppUITests" */;
+			buildPhases = (
+				21DAA5E82ADF222000E70BF2 /* Sources */,
+				21DAA5E92ADF222000E70BF2 /* Frameworks */,
+				21DAA5EA2ADF222000E70BF2 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				21DAA5EE2ADF222000E70BF2 /* PBXTargetDependency */,
+			);
+			name = "BuzzCam AppUITests";
+			productName = "BuzzCam AppUITests";
+			productReference = 21DAA5EC2ADF222000E70BF2 /* BuzzCam AppUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		21DAA5C92ADF221F00E70BF2 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					21DAA5D02ADF221F00E70BF2 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+					21DAA5E12ADF222000E70BF2 = {
+						CreatedOnToolsVersion = 15.0;
+						TestTargetID = 21DAA5D02ADF221F00E70BF2;
+					};
+					21DAA5EB2ADF222000E70BF2 = {
+						CreatedOnToolsVersion = 15.0;
+						TestTargetID = 21DAA5D02ADF221F00E70BF2;
+					};
+				};
+			};
+			buildConfigurationList = 21DAA5CC2ADF221F00E70BF2 /* Build configuration list for PBXProject "BuzzCam App" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 21DAA5C82ADF221F00E70BF2;
+			packageReferences = (
+				21C0A2202AF04DC800BA2ABC /* XCRemoteSwiftPackageReference "swift-protobuf" */,
+			);
+			productRefGroup = 21DAA5D22ADF221F00E70BF2 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				21DAA5D02ADF221F00E70BF2 /* BuzzCam App */,
+				21DAA5E12ADF222000E70BF2 /* BuzzCam AppTests */,
+				21DAA5EB2ADF222000E70BF2 /* BuzzCam AppUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		21DAA5CF2ADF221F00E70BF2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				21DAA5DD2ADF222000E70BF2 /* Preview Assets.xcassets in Resources */,
+				21DAA5D92ADF222000E70BF2 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		21DAA5E02ADF222000E70BF2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		21DAA5EA2ADF222000E70BF2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		21DAA5CD2ADF221F00E70BF2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				21C0A21B2AEC4E1100BA2ABC /* BluetoothConstants.swift in Sources */,
+				21C0A20A2AE320FE00BA2ABC /* NearbyDevices.swift in Sources */,
+				21C0A2062AE3152800BA2ABC /* StatusesView.swift in Sources */,
+				21C0A21E2AF04A4D00BA2ABC /* message.pb.swift in Sources */,
+				21BEAA4B2AFEE135001B89E6 /* BluetoothModelHelper.swift in Sources */,
+				21DAA5D72ADF221F00E70BF2 /* ContentView.swift in Sources */,
+				21DAA6002AE0746B00E70BF2 /* MainView.swift in Sources */,
+				21C0A2102AE7137100BA2ABC /* ConfigView.swift in Sources */,
+				21DAA5D52ADF221F00E70BF2 /* BuzzCam_AppApp.swift in Sources */,
+				21C0A20C2AE7104800BA2ABC /* DiscoverView.swift in Sources */,
+				21C0A2082AE320E000BA2ABC /* SensorReadingView.swift in Sources */,
+				21C0A2192AE71EE800BA2ABC /* BluetoothModel.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		21DAA5DE2ADF222000E70BF2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				21DAA5E72ADF222000E70BF2 /* BuzzCam_AppTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		21DAA5E82ADF222000E70BF2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				21DAA5F12ADF222000E70BF2 /* BuzzCam_AppUITests.swift in Sources */,
+				21DAA5F32ADF222000E70BF2 /* BuzzCam_AppUITestsLaunchTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		21DAA5E42ADF222000E70BF2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 21DAA5D02ADF221F00E70BF2 /* BuzzCam App */;
+			targetProxy = 21DAA5E32ADF222000E70BF2 /* PBXContainerItemProxy */;
+		};
+		21DAA5EE2ADF222000E70BF2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 21DAA5D02ADF221F00E70BF2 /* BuzzCam App */;
+			targetProxy = 21DAA5ED2ADF222000E70BF2 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		21DAA5F42ADF222000E70BF2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		21DAA5F52ADF222000E70BF2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		21DAA5F72ADF222000E70BF2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "BuzzCam App/BuzzCam_App.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"BuzzCam App/Preview Content\"";
+				DEVELOPMENT_TEAM = 2P5VBW3M66;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "App uses Bluetooth to find, connect and communicate with nearby devices. Please grant access.";
+				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "App uses Bluetooth to find, connect and communicate with nearby devices. Please grant access.";
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.izzy.BuzzCam-App";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		21DAA5F82ADF222000E70BF2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "BuzzCam App/BuzzCam_App.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"BuzzCam App/Preview Content\"";
+				DEVELOPMENT_TEAM = 2P5VBW3M66;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "App uses Bluetooth to find, connect and communicate with nearby devices. Please grant access.";
+				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "App uses Bluetooth to find, connect and communicate with nearby devices. Please grant access.";
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.izzy.BuzzCam-App";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		21DAA5FA2ADF222000E70BF2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.izzy.BuzzCam-AppTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BuzzCam App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/BuzzCam App";
+			};
+			name = Debug;
+		};
+		21DAA5FB2ADF222000E70BF2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.izzy.BuzzCam-AppTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BuzzCam App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/BuzzCam App";
+			};
+			name = Release;
+		};
+		21DAA5FD2ADF222000E70BF2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.izzy.BuzzCam-AppUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "BuzzCam App";
+			};
+			name = Debug;
+		};
+		21DAA5FE2ADF222000E70BF2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.izzy.BuzzCam-AppUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "BuzzCam App";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		21DAA5CC2ADF221F00E70BF2 /* Build configuration list for PBXProject "BuzzCam App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				21DAA5F42ADF222000E70BF2 /* Debug */,
+				21DAA5F52ADF222000E70BF2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		21DAA5F62ADF222000E70BF2 /* Build configuration list for PBXNativeTarget "BuzzCam App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				21DAA5F72ADF222000E70BF2 /* Debug */,
+				21DAA5F82ADF222000E70BF2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		21DAA5F92ADF222000E70BF2 /* Build configuration list for PBXNativeTarget "BuzzCam AppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				21DAA5FA2ADF222000E70BF2 /* Debug */,
+				21DAA5FB2ADF222000E70BF2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		21DAA5FC2ADF222000E70BF2 /* Build configuration list for PBXNativeTarget "BuzzCam AppUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				21DAA5FD2ADF222000E70BF2 /* Debug */,
+				21DAA5FE2ADF222000E70BF2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		21C0A2202AF04DC800BA2ABC /* XCRemoteSwiftPackageReference "swift-protobuf" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-protobuf.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.25.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		21C0A2222AF0E50100BA2ABC /* SwiftProtobuf */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 21C0A2202AF04DC800BA2ABC /* XCRemoteSwiftPackageReference "swift-protobuf" */;
+			productName = SwiftProtobuf;
+		};
+		21C0A2242AF0E50500BA2ABC /* protoc-gen-swift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 21C0A2202AF04DC800BA2ABC /* XCRemoteSwiftPackageReference "swift-protobuf" */;
+			productName = "protoc-gen-swift";
+		};
+		21C0A2262AF0E50A00BA2ABC /* SwiftProtobufPluginLibrary */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 21C0A2202AF04DC800BA2ABC /* XCRemoteSwiftPackageReference "swift-protobuf" */;
+			productName = SwiftProtobufPluginLibrary;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 21DAA5C92ADF221F00E70BF2 /* Project object */;
+}
