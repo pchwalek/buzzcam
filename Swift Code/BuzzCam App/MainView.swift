@@ -175,7 +175,7 @@ struct MainView: View {
     private func updateBeepOn(_ systemInfoPacketData: SystemInfoPacketData?) {
             // Update beepOn based on systemInfoPacketData
             beepOn = systemInfoPacketData?.beep_enabled ?? false
-        }
+    }
 }
 
 

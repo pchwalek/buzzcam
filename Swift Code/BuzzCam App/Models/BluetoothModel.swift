@@ -95,7 +95,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
 //        isReconnecting = false
         peripheral.delegate = self
         connectedPeripheral = peripheral
-        peripheral.discoverServices(nil)
+        peripheral.discoverServices([serviceUUID])
     }
     
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
@@ -105,66 +105,38 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
                         print("Service UUID: \(service.uuid)")
         
                         // After discovering services, also discover characteristics for each service
-                        peripheral.discoverCharacteristics(nil, for: service)
+                        peripheral.discoverCharacteristics([characteristicUUID_CE71, characteristicUUID_CE72, characteristicUUID_CE73], for: service)
                     }
                 }
         
     }
 
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
-        if let characteristics = service.characteristics {
-            print("Characteristics for Service \(service.uuid) of \(peripheral.name ?? "Unknown"):")
-            for characteristic in characteristics {
-                print("Characteristic UUID: \(characteristic.uuid)")
-            }
+        guard service.uuid == CBUUID(string: "CE70") else {
+            return
+        }
 
-            if let services = peripheral.services {
-                for service in services {
-                    if service.uuid == CBUUID(string: "CE70") {
-                        print("in CE70")
+        guard let characteristics = service.characteristics else {
+            print("Characteristics are nil for service \(service.uuid)")
+            return
+        }
 
-                        // Check if target characteristic is already set
-                        if let targetCharacteristic = targetCharacteristic {
-                            print("Target Characteristic is already set to \(targetCharacteristic.uuid)")
-                            
-                            // Check if the discovered characteristics contain the target characteristic
-                            if characteristics.contains(targetCharacteristic) {
-                                print("Target characteristic found.")
-                                // The target characteristic has been discovered, so we can now read from it
-                                readFromCharacteristic()
-                                // The target characteristic has been discovered, so we can now subscribe to notifications
-                                subscribeToCharacteristic(targetCharacteristic)
-                            } else {
-                                // The target characteristic hasn't been discovered yet; initiate discovery
-                                peripheral.discoverCharacteristics([targetCharacteristic.uuid], for: service)
-                            }
-                        } else {
-                            // If the targetCharacteristic isn't set, attempt to set it
-                            targetCharacteristic = service.characteristics?.first { $0.uuid == characteristicUUID_CE71 }
-                            print("found target char")
-                            if let targetCharacteristic = targetCharacteristic {
-                                print("reached targetCharacteristic")
-                                // Check if the discovered characteristics contain the target characteristic
-                                if characteristics.contains(targetCharacteristic) {
-                                    print("Target characteristic found.")
-                                    readFromCharacteristic()
-                                    subscribeToCharacteristic(targetCharacteristic)
-                                } else {
-                                    // The target characteristic hasn't been discovered yet; initiate discovery
-                                    peripheral.discoverCharacteristics([targetCharacteristic.uuid], for: service)
-                                }
-                            } else {
-                                print("Target Characteristic is not set.")
-                            }
-                        }
-                    }
+        for characteristic in characteristics {
+            switch characteristic.uuid {
+            case characteristicUUID_CE71, characteristicUUID_CE72:
+                if characteristics.contains(characteristic) {
+                    print("Target characteristic found: \(characteristic.uuid)")
+                    readFromCharacteristic(characteristic)
+                    subscribeToCharacteristic(characteristic)
+                } else {
+                    peripheral.discoverCharacteristics([characteristic.uuid], for: service)
                 }
+            default:
+                // Handle other characteristics if needed
+                break
             }
-
-            print("before target characteristic")
         }
     }
-    
     func subscribeToCharacteristic(_ characteristic: CBCharacteristic) {
         guard let peripheral = connectedPeripheral else {
             print("Peripheral is nil. Cannot subscribe to notifications.")
@@ -180,26 +152,25 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
         }
     }
     
-    func readFromCharacteristic() {
+    
+    func readFromCharacteristic(_ characteristic: CBCharacteristic) {
         print("in readFromCharacteristic")
-        guard let peripheral = connectedPeripheral, let characteristic = targetCharacteristic else {
-            print("Peripheral or characteristic is nil. Cannot read.")
+        guard let peripheral = connectedPeripheral else {
+            print("Peripheral not connected.")
             return
         }
 
         if peripheral.state == .connected {
             peripheral.readValue(for: characteristic)
-            //decodeAndPrintMessage(from: characteristic) // Print the message once it's read
         } else {
-            // Handle the case where the peripheral is not connected (e.g., reconnect)
+            // Handle the case where the peripheral is not connected (e.g., reconnect
             connectToPeripheral(peripheral)
         }
     }
     
-    
-    func writeToCharacteristic(message: Packet) {
-        guard let peripheral = connectedPeripheral, let characteristic = targetCharacteristic else {
-            print("Peripheral or characteristic is nil. Cannot write.")
+    func writeToCharacteristic(message: Packet, characteristic: CBCharacteristic) {
+        guard let peripheral = connectedPeripheral else {
+            print("Peripheral not connected.")
             return
         }
 
@@ -215,9 +186,8 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
             connectToPeripheral(peripheral)
         }
     }
-
+    
     func decodeAndPrintMessage(from characteristic: CBCharacteristic) {
-//        print("in decodeAndPrintMessage")
         guard let data = characteristic.value else {
             print("Characteristic value is nil. Cannot decode and print.")
             return
@@ -225,36 +195,56 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
 
         do {
             let message = try Packet(serializedData: data)
-            // add switch case here to decide based on which characteristic it's reading
-            DispatchQueue.main.async {
-                self.systemInfoPacketData = SystemInfoPacketData(index: message.systemInfoPacket.simpleSensorReading.index,
-                                                                 temperature: message.systemInfoPacket.simpleSensorReading.temperature,
-                                                                 humidity: message.systemInfoPacket.simpleSensorReading.humidity,
-                                                                 co2: message.systemInfoPacket.simpleSensorReading.co2,
-                                                                 light_level: message.systemInfoPacket.simpleSensorReading.lightLevel,
-                                                                 sd_detected: message.systemInfoPacket.sdcardState.detected,
-                                                                 space_remaining: message.systemInfoPacket.sdcardState.spaceRemaining,
-                                                                 estimated_recording_time: message.systemInfoPacket.sdcardState.estimatedRemainingRecordingTime,
-                                                                 battery_charging: message.systemInfoPacket.batteryState.charging,
-                                                                 battery_voltage: message.systemInfoPacket.batteryState.voltage,
-                                                                 device_recording: message.systemInfoPacket.deviceRecording,
-                                                                 mark_number: message.systemInfoPacket.markState.markNumber,
-                                                                 beep_enabled: message.systemInfoPacket.markState.beepEnabled)
+
+            // Use a switch statement to handle different characteristics
+            switch characteristic.uuid {
+            case characteristicUUID_CE71:
+                // Update systemInfoPacketData only when the characteristic is CE71
+                DispatchQueue.main.async {
+                    self.systemInfoPacketData = SystemInfoPacketData(
+                        index: message.systemInfoPacket.simpleSensorReading.index,
+                        temperature: message.systemInfoPacket.simpleSensorReading.temperature,
+                        humidity: message.systemInfoPacket.simpleSensorReading.humidity,
+                        co2: message.systemInfoPacket.simpleSensorReading.co2,
+                        light_level: message.systemInfoPacket.simpleSensorReading.lightLevel,
+                        sd_detected: message.systemInfoPacket.sdcardState.detected,
+                        space_remaining: message.systemInfoPacket.sdcardState.spaceRemaining,
+                        estimated_recording_time: message.systemInfoPacket.sdcardState.estimatedRemainingRecordingTime,
+                        battery_charging: message.systemInfoPacket.batteryState.charging,
+                        battery_voltage: message.systemInfoPacket.batteryState.voltage,
+                        device_recording: message.systemInfoPacket.deviceRecording,
+                        mark_number: message.systemInfoPacket.markState.markNumber,
+                        beep_enabled: message.systemInfoPacket.markState.beepEnabled
+                    )
+                }
+                print("Updated systemInfoPacketData with CE71 characteristic")
+            default:
+                // Handle other characteristics if needed
+                break
             }
-            print("updated packet data")
+
             print("Decoded Message: \(message)")
-            print("message.system_info_packet.simple_sensor_reading.temperature: \(message.systemInfoPacket.simpleSensorReading.temperature)")
-            print("message.systemInfoPacket.markState.beepEnabled: \(message.systemInfoPacket.markState.beepEnabled)")
+            print("Temperature: \(message.systemInfoPacket.simpleSensorReading.temperature)")
+            print("Beep Enabled: \(message.systemInfoPacket.markState.beepEnabled)")
         } catch {
             print("Failed to decode and print message: \(error)")
         }
     }
     
+    
+    
+    
+    
     // Then you can receive notifications through the didUpdateValueFor delegate method
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         print("in didUpdateValue")
-        if characteristic.uuid == targetCharacteristic?.uuid {
+
+        switch characteristic.uuid {
+        case characteristicUUID_CE71, characteristicUUID_CE72:
             decodeAndPrintMessage(from: characteristic)
+        default:
+            // Handle other characteristics if needed
+            break
         }
     }
     
