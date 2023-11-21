@@ -37,8 +37,8 @@
 #define MAX_INTENSITY 1000
 
 #define AUDIO_BUFFER_LEN		(48000)
+//#define AUDIO_BUFFER_LEN		(1000)
 #define AUDIO_BUFFER_HALF_LEN	(AUDIO_BUFFER_LEN >> 1)
-
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -69,7 +69,7 @@ osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 128 * 4
+  .stack_size = 256 * 4
 };
 /* USER CODE BEGIN PV */
 FATFS SDFatFs; /* File system object for SD card logical drive */
@@ -159,7 +159,6 @@ int main(void)
   MX_APPE_Config();
 
   /* USER CODE BEGIN Init */
-
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -192,204 +191,203 @@ int main(void)
   MX_MEMORYMAP_Init();
   MX_RF_Init();
   /* USER CODE BEGIN 2 */
-  /* start buzzer pwm */
-//  uint16_t index = 10;
-//  HAL_TIM_Base_Start(&htim16);
-//  HAL_TIM_PWM_Start(&htim16, TIM_CHANNEL_1);
 
-//  while(1){
+  /* start buzzer pwm */
+////  uint16_t index = 10;
+////  HAL_TIM_Base_Start(&htim16);
+////  HAL_TIM_PWM_Start(&htim16, TIM_CHANNEL_1);
 //
-////  htim16.Instance->CCR1 = index;
+////  while(1){
+////
+//////  htim16.Instance->CCR1 = index;
+////
+////  htim16.Instance->ARR = index;
+////  htim16.Instance->CCR1 = index >> 1;
+////
+////  HAL_Delay(50);
+////
+////  /* stop buzzer pwm */
+//////  HAL_TIM_PWM_Stop(&htim16, TIM_CHANNEL_1);
+//////  HAL_Delay(100);
+////
+////	index+=2;
+////	if(index == 500) index = 10;
+////  }
 //
-//  htim16.Instance->ARR = index;
-//  htim16.Instance->CCR1 = index >> 1;
+////while(1){
+////	  HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, GPIO_PIN_SET);
+////	  HAL_Delay(500);
+////	  HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, GPIO_PIN_RESET);
+////	  HAL_Delay(500);
+////
+////}
+//
+//	HAL_TIM_Base_Start(&htim2);
+//
+////for(int i = 0; i<500; i+=10){
+////	  setLED_Green(i);
+////	  HAL_Delay(100);
+////}
+//
+//
+////  setLED_Green(500);
+////  HAL_Delay(500);
+////  setLED_Blue(500);
+////  HAL_Delay(500);
+////  setLED_Red(500);
+////  HAL_Delay(500);
+////  setLED_Green(0);
+////  HAL_Delay(500);
+////  setLED_Blue(0);
+////  HAL_Delay(500);
+////  setLED_Red(0);
+////
+////  while(1);
+//
+//  /* turn on buzzer regulator */
+//  HAL_GPIO_WritePin(EN_BUZZER_PWR_GPIO_Port, EN_BUZZER_PWR_Pin, GPIO_PIN_SET);
+//
+//  /*Configure GPIO pin Output Level */
+//
+//  HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET);
+//  HAL_GPIO_WritePin(EN_UWB_REG_GPIO_Port, EN_UWB_REG_Pin, GPIO_PIN_SET);
+//  HAL_GPIO_WritePin(EN_SD_REG_GPIO_Port, EN_SD_REG_Pin, GPIO_PIN_SET);
 //
 //  HAL_Delay(50);
 //
-//  /* stop buzzer pwm */
-////  HAL_TIM_PWM_Stop(&htim16, TIM_CHANNEL_1);
-////  HAL_Delay(100);
+//  char folder_name[20] = "folder";
+////  char file_name[60];;
 //
-//	index+=2;
-//	if(index == 500) index = 10;
-//  }
-
-//while(1){
-//	  HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, GPIO_PIN_SET);
-//	  HAL_Delay(500);
-//	  HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, GPIO_PIN_RESET);
-//	  HAL_Delay(500);
+//  	int folder_number = 0;
+//    FILINFO fno;
 //
-//}
-
-	HAL_TIM_Base_Start(&htim2);
-
-//for(int i = 0; i<500; i+=10){
-//	  setLED_Green(i);
-//	  HAL_Delay(100);
-//}
-
-
-//  setLED_Green(500);
-//  HAL_Delay(500);
-//  setLED_Blue(500);
-//  HAL_Delay(500);
-//  setLED_Red(500);
-//  HAL_Delay(500);
-//  setLED_Green(0);
-//  HAL_Delay(500);
-//  setLED_Blue(0);
-//  HAL_Delay(500);
-//  setLED_Red(0);
+//  	FRESULT res;
 //
-//  while(1);
-
-  /* turn on buzzer regulator */
-  HAL_GPIO_WritePin(EN_BUZZER_PWR_GPIO_Port, EN_BUZZER_PWR_Pin, GPIO_PIN_SET);
-
-  /*Configure GPIO pin Output Level */
-
-  HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(EN_UWB_REG_GPIO_Port, EN_UWB_REG_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(EN_SD_REG_GPIO_Port, EN_SD_REG_Pin, GPIO_PIN_SET);
-
-  HAL_Delay(50);
-
-  char folder_name[20] = "folder";
-//  char file_name[60];;
-
-  	int folder_number = 0;
-    FILINFO fno;
-
-  	FRESULT res;
-
-  	//https://wiki.st.com/stm32mcu/wiki/Introduction_to_FILEX#Migration_from_FatFS_to_FileX
-  	//https://learn.microsoft.com/en-us/azure/rtos/filex/chapter5
-  	/* check if volume exists and can be opened */
-//  	if(FX_PTR_ERROR == fx_media_open(&sd_disk, "exFAT_DISK", fx_stm32_sd_driver, (VOID *)FX_NULL, (VOID *) media_memory, sizeof(media_memory))){
-
-//    HAL_GPIO_WritePin(SD_CS_GPIO_Port, SD_CS_Pin, GPIO_PIN_SET);
-  	res = f_mount(&SDFatFs, "", 1);
-  	if(res != FR_OK){
-  		Error_Handler();
-  	}else{
-
-//  		while (1) {
-  			// 		    sprintf(folder_name, "random_%d", folder_number);
-
-//  			status = fx_directory_name_test(
-//  					&sd_disk,
-//  					folder_name);
-
-  			// 		   HAL_Delay(1000);
-  			// 		    fresult = f_opendir(&fdirectory, folder_name);
-//  			if (status == FX_NOT_FOUND) {
-//  				status = fx_directory_create(&sd_disk, folder_name);
-//  				break;
-//  			}
-
-  			// 		    f_closedir(&fdirectory);
-//  		}
-
-		sprintf(folder_name, "/audio_%d", folder_number);
-		while(1){
-			res = f_stat(folder_name,&fno);
-			if(res == FR_OK){ //file exists so iterate on number
-				folder_number++;
-				sprintf(folder_name, "/audio_%d", folder_number);
-			}else{
-				res = f_mkdir(folder_name);
-				if(FR_OK == f_opendir(&dir, folder_name)){
-					f_chdir(folder_name);
-					break;
-				}else{
-					Error_Handler();
-				}
-			}
-//			while(1);
-////			res = f_mkdir(folder_name);
-////			res = f_opendir(&dir, folder_name);
-//			if((res == FR_NO_PATH) || (res == FR_NO_FILE)){
+//  	//https://wiki.st.com/stm32mcu/wiki/Introduction_to_FILEX#Migration_from_FatFS_to_FileX
+//  	//https://learn.microsoft.com/en-us/azure/rtos/filex/chapter5
+//  	/* check if volume exists and can be opened */
+////  	if(FX_PTR_ERROR == fx_media_open(&sd_disk, "exFAT_DISK", fx_stm32_sd_driver, (VOID *)FX_NULL, (VOID *) media_memory, sizeof(media_memory))){
+//
+////    HAL_GPIO_WritePin(SD_CS_GPIO_Port, SD_CS_Pin, GPIO_PIN_SET);
+//  	res = f_mount(&SDFatFs, "", 1);
+//  	if(res != FR_OK){
+//  		Error_Handler();
+//  	}else{
+//
+////  		while (1) {
+//  			// 		    sprintf(folder_name, "random_%d", folder_number);
+//
+////  			status = fx_directory_name_test(
+////  					&sd_disk,
+////  					folder_name);
+//
+//  			// 		   HAL_Delay(1000);
+//  			// 		    fresult = f_opendir(&fdirectory, folder_name);
+////  			if (status == FX_NOT_FOUND) {
+////  				status = fx_directory_create(&sd_disk, folder_name);
+////  				break;
+////  			}
+//
+//  			// 		    f_closedir(&fdirectory);
+////  		}
+//
+//		sprintf(folder_name, "/audio_%d", folder_number);
+//		while(1){
+//			res = f_stat(folder_name,&fno);
+//			if(res == FR_OK){ //file exists so iterate on number
+//				folder_number++;
+//				sprintf(folder_name, "/audio_%d", folder_number);
+//			}else{
 //				res = f_mkdir(folder_name);
 //				if(FR_OK == f_opendir(&dir, folder_name)){
+//					f_chdir(folder_name);
 //					break;
 //				}else{
 //					Error_Handler();
 //				}
-//
-//				sprintf(folder_name, "/audio_%d", folder_number);
-//				folder_number++;
 //			}
-//			if(res != FR_OK){
+////			while(1);
+//////			res = f_mkdir(folder_name);
+//////			res = f_opendir(&dir, folder_name);
+////			if((res == FR_NO_PATH) || (res == FR_NO_FILE)){
+////				res = f_mkdir(folder_name);
+////				if(FR_OK == f_opendir(&dir, folder_name)){
+////					break;
+////				}else{
+////					Error_Handler();
+////				}
+////
+////				sprintf(folder_name, "/audio_%d", folder_number);
+////				folder_number++;
+////			}
+////			if(res != FR_OK){
+////
+////			}else{
+////				break;
+////			}
 //
-//			}else{
-//				break;
-//			}
-
-		}
-
-  		/* set to recently created directory */
-//  		status = fx_directory_default_set(
-//  				&sd_disk,
-//  				folder_name);
-
-//  		if(status != FX_SUCCESS){
-//  			Error_Handler();
-//  		}
-
-		res = f_open(&file, "test.txt", FA_WRITE | FA_CREATE_ALWAYS);
-		if(res == FR_OK){
-				res = f_write(&file, "Hello, world!", 13, &bytes_written);
-		}else Error_Handler();
-	    if (res == FR_OK)
-	    {
-	        // Close the file
-	        f_close(&file);
-
-	        // Flush the cached data to the SD card
-	        f_sync(&file);
-	    }else Error_Handler();
-
-//  		char test_string[30] = "test_string!";
-//  		/* Open file for writing (Create) */
-//  		status = fx_file_create(&sd_disk, "STM32_filex.TXT");
-//  		if(status != FX_SUCCESS) Error_Handler();
-//  		status = fx_file_open(&sd_disk, &fx_file, "STM32_filex.TXT", FX_OPEN_FOR_WRITE);
-//  		if(status != FX_SUCCESS) Error_Handler();
-//  		/* Seek to the beginning of the test file.  */
-//  		status =  fx_file_seek(&fx_file, 0);
-//  		if(status != FX_SUCCESS) Error_Handler();
-//  		status = fx_file_write(&fx_file, "1234567890", 10);
-//  		if(status != FX_SUCCESS) Error_Handler();
-//  		status = fx_file_close(&fx_file);
-//  		if(status != FX_SUCCESS) Error_Handler();
-//  		/* flush data */
-//  		status = fx_media_flush(&sd_disk);
-//  		if(status != FX_SUCCESS) Error_Handler();
-
-//		while(1);
-  	}
-
-
-//  while(1){
-//	  HAL_GPIO_WritePin(BUZZER_PWM_GPIO_Port, BUZZER_PWM_Pin, GPIO_PIN_SET);
-//	  HAL_Delay(10);
-//	  HAL_GPIO_WritePin(BUZZER_PWM_GPIO_Port, BUZZER_PWM_Pin, GPIO_PIN_RESET);
-//	  HAL_Delay(10);
-//  }
-
-  Power_Enable_ADAU1979(true);
-  HAL_Delay(200);
-  run_ADC();
-
-//#define AUDIO_BUFFER_LEN 1000
-//  static uint8_t audioSample[4000];
-
-	WAV_RECORD_TEST();
-
-//  while(1){
-//	  HAL_SAI_Receive(&hsai_BlockA1, (uint8_t*) audioSample, AUDIO_BUFFER_LEN << 2, 2000);
-//  }
+//		}
+//
+//  		/* set to recently created directory */
+////  		status = fx_directory_default_set(
+////  				&sd_disk,
+////  				folder_name);
+//
+////  		if(status != FX_SUCCESS){
+////  			Error_Handler();
+////  		}
+//
+//		res = f_open(&file, "test.txt", FA_WRITE | FA_CREATE_ALWAYS);
+//		if(res == FR_OK){
+//				res = f_write(&file, "Hello, world!", 13, &bytes_written);
+//		}else Error_Handler();
+//	    if (res == FR_OK)
+//	    {
+//	        // Close the file
+//	        f_close(&file);
+//
+//	        // Flush the cached data to the SD card
+//	        f_sync(&file);
+//	    }else Error_Handler();
+//
+////  		char test_string[30] = "test_string!";
+////  		/* Open file for writing (Create) */
+////  		status = fx_file_create(&sd_disk, "STM32_filex.TXT");
+////  		if(status != FX_SUCCESS) Error_Handler();
+////  		status = fx_file_open(&sd_disk, &fx_file, "STM32_filex.TXT", FX_OPEN_FOR_WRITE);
+////  		if(status != FX_SUCCESS) Error_Handler();
+////  		/* Seek to the beginning of the test file.  */
+////  		status =  fx_file_seek(&fx_file, 0);
+////  		if(status != FX_SUCCESS) Error_Handler();
+////  		status = fx_file_write(&fx_file, "1234567890", 10);
+////  		if(status != FX_SUCCESS) Error_Handler();
+////  		status = fx_file_close(&fx_file);
+////  		if(status != FX_SUCCESS) Error_Handler();
+////  		/* flush data */
+////  		status = fx_media_flush(&sd_disk);
+////  		if(status != FX_SUCCESS) Error_Handler();
+//
+////		while(1);
+//  	}
+//
+//
+////  while(1){
+////	  HAL_GPIO_WritePin(BUZZER_PWM_GPIO_Port, BUZZER_PWM_Pin, GPIO_PIN_SET);
+////	  HAL_Delay(10);
+////	  HAL_GPIO_WritePin(BUZZER_PWM_GPIO_Port, BUZZER_PWM_Pin, GPIO_PIN_RESET);
+////	  HAL_Delay(10);
+////  }
+//
+//  //HAL_Delay(200);
+//
+//
+////#define AUDIO_BUFFER_LEN 1000
+////  static uint8_t audioSample[4000];
+//
+//
+////  while(1){
+////	  HAL_SAI_Receive(&hsai_BlockA1, (uint8_t*) audioSample, AUDIO_BUFFER_LEN << 2, 2000);
+////  }
 
   /* USER CODE END 2 */
 
@@ -523,7 +521,7 @@ void PeriphCommonClock_Config(void)
   PeriphClkInitStruct.PLLSAI1.PLLSAI1ClockOut = RCC_PLLSAI1_SAI1CLK|RCC_PLLSAI1_USBCLK;
   PeriphClkInitStruct.Sai1ClockSelection = RCC_SAI1CLKSOURCE_PLLSAI1;
   PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_PLLSAI1;
-  PeriphClkInitStruct.RFWakeUpClockSelection = RCC_RFWKPCLKSOURCE_LSE;
+  PeriphClkInitStruct.RFWakeUpClockSelection = RCC_RFWKPCLKSOURCE_HSE_DIV1024;
   PeriphClkInitStruct.SmpsClockSelection = RCC_SMPSCLKSOURCE_HSI;
   PeriphClkInitStruct.SmpsDivSelection = RCC_SMPSCLKDIV_RANGE1;
 
@@ -1131,14 +1129,14 @@ void run_ADC(){
 		data = S_RST;
 		status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_M_POWER,
 				1, &data, 1, 100);
-		HAL_Delay(50);
+		osDelay(50);
 
 		/* activate ADC */
 		data = PWUP;
 		status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_M_POWER,
 				1, &data, 1, 100);
 
-		HAL_Delay(50);
+		osDelay(50);
 
 	#define ADAU1979_BLOCK_POWER_SAI	0x04
 	#define LR_POL_LOW_HIGH				0x0 << 7
@@ -1287,6 +1285,7 @@ void run_ADC(){
 	#define ADAU1979_POSTADC_GAIN3		0x0C
 	#define ADAU1979_POSTADC_GAIN4		0x0D
 	#define GAIN_0_DB					0xA0
+	#define GAIN_5_625_DB				145 // (60 - x * 0.375) dB
 	#define GAIN_9_DB					136
 	#define GAIN_15_DB					120
 	#define GAIN_18_DB					112
@@ -1298,7 +1297,8 @@ void run_ADC(){
 
 		/* Channel 1 Gain */
 	//	data = GAIN_18_DB;
-		data = GAIN_25_5_DB;
+		data = GAIN_5_625_DB;
+//		data = GAIN_25_5_DB;
 		status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_POSTADC_GAIN1,
 				1, &data, 1, 100);
 
@@ -1532,6 +1532,9 @@ void WAV_RECORD_TEST(void){
 					//	 	    		        			 Error_Handler();
 					//	 	    		        		 }
 					//     	    	totalBytesWritten += AUDIO_BUFFER_HALF_LEN * 2 * 2;
+
+					// Wait for a notification
+					osThreadFlagsWait(0x0001U, osFlagsWaitAny, osWaitForever);
 
 					if(SAI_HALF_CALLBACK){
 						SAI_HALF_CALLBACK = 0;
@@ -1833,12 +1836,18 @@ static uint32_t WavProcess_HeaderUpdate(uint8_t* pHeader, uint32_t bytesWritten)
 void HAL_SAI_RxHalfCpltCallback(SAI_HandleTypeDef *hsai){
 	//	 f_write(&WavFile, audioSample, AUDIO_BUFFER_HALF_LEN, (void*)&byteswritten);
 	SAI_HALF_CALLBACK = 1;
+
+    // Trigger the notification for the task
+	osThreadFlagsSet(defaultTaskHandle, 0x0001U);
 }
 
 void HAL_SAI_RxCpltCallback(SAI_HandleTypeDef *hsai){
 	//	 f_write(&WavFile, &audioSample[AUDIO_BUFFER_HALF_LEN], AUDIO_BUFFER_HALF_LEN, (void*)&byteswritten);
 	sampleCntr++;
 	SAI_FULL_CALLBACK = 1;
+
+    // Trigger the notification for the task
+	osThreadFlagsSet(defaultTaskHandle, 0x0001U);
 
 }
 /* USER CODE END 4 */
@@ -1853,6 +1862,11 @@ void HAL_SAI_RxCpltCallback(SAI_HandleTypeDef *hsai){
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
+//  Power_Enable_ADAU1979(true);
+//  osDelay(200);
+//  run_ADC();
+//	WAV_RECORD_TEST();
+
   /* Infinite loop */
   for(;;)
   {

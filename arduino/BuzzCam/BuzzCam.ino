@@ -106,6 +106,7 @@ class MyCallback: public BLECharacteristicCallbacks {
         Serial.print("Beep state: ");
         Serial.println(message_system_info.payload.system_info_packet.mark_state.beep_enabled);
 				pCharacteristicSysInfo->setValue(buffer, stream_out.bytes_written);
+        pCharacteristicSysInfo->notify();
 				break;
         
 			case PACKET_CONFIG_PACKET_TAG:
@@ -113,6 +114,7 @@ class MyCallback: public BLECharacteristicCallbacks {
 				memcpy(&message_config,&message_rx,sizeof(packet_t));
 				pb_encode(&stream_out, PACKET_FIELDS, &message_config);
 				pCharacteristicSysConfig->setValue(buffer, stream_out.bytes_written);
+        pCharacteristicSysConfig->notify();
 				break;
         
 			case PACKET_MARK_PACKET_TAG:

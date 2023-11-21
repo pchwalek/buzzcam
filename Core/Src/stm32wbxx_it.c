@@ -57,6 +57,7 @@
 /* External variables --------------------------------------------------------*/
 extern IPCC_HandleTypeDef hipcc;
 extern DMA_HandleTypeDef hdma_sai1_a;
+extern SAI_HandleTypeDef hsai_BlockA1;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim16;
 extern TIM_HandleTypeDef htim1;
@@ -207,6 +208,20 @@ void TIM2_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles SAI1 global interrupt.
+  */
+void SAI1_IRQHandler(void)
+{
+  /* USER CODE BEGIN SAI1_IRQn 0 */
+
+  /* USER CODE END SAI1_IRQn 0 */
+  HAL_SAI_IRQHandler(&hsai_BlockA1);
+  /* USER CODE BEGIN SAI1_IRQn 1 */
+
+  /* USER CODE END SAI1_IRQn 1 */
+}
+
+/**
   * @brief This function handles IPCC RX occupied interrupt.
   */
 void IPCC_C1_RX_IRQHandler(void)
@@ -249,5 +264,8 @@ void HSEM_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
-
+void RTC_WKUP_IRQHandler(void)
+{
+  HW_TS_RTC_Wakeup_Handler();
+}
 /* USER CODE END 1 */
