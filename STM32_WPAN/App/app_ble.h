@@ -31,7 +31,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "cmsis_os2.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -58,6 +58,7 @@ typedef enum
 
 /* External variables --------------------------------------------------------*/
 /* USER CODE BEGIN EV */
+extern osThreadId_t LinkConfigProcessId;
 
 /* USER CODE END EV */
 
@@ -71,7 +72,10 @@ void APP_BLE_Init(void);
 APP_BLE_ConnStatus_t APP_BLE_Get_Server_Connection_Status(void);
 
 /* USER CODE BEGIN EF */
-
+#define BUZZCAM_SERVICE_UUID                                       (0xCE70)
+#define BUZZCAM_INFO_CHAR_UUID                                     (0xCE71)
+#define BUZZCAM_CONFIG_CHAR_UUID                                   (0xCE72)
+#define BUZZCAM_RX_CHAR_UUID                                       (0xCE73)
 /* USER CODE END EF */
 
 #ifdef __cplusplus
