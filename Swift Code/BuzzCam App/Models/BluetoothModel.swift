@@ -95,7 +95,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
 //        isReconnecting = false
         peripheral.delegate = self
         connectedPeripheral = peripheral
-        peripheral.discoverServices(nil)
+        peripheral.discoverServices([serviceUUID])
     }
     
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
@@ -105,7 +105,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
                         print("Service UUID: \(service.uuid)")
         
                         // After discovering services, also discover characteristics for each service
-                        peripheral.discoverCharacteristics(nil, for: service)
+                        peripheral.discoverCharacteristics([characteristicUUID_CE71, characteristicUUID_CE72, characteristicUUID_CE73], for: service)
                     }
                 }
         

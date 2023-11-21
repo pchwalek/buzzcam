@@ -6,11 +6,13 @@
 //
 
 import SwiftUI
+import Combine
 
 struct StatusesView: View {
     @State private var isExpanded = false //change to false after cleanup
     @State private var deviceEnabled = true
     @EnvironmentObject var bluetoothModel: BluetoothModel
+    @State private var cancellables: Set<AnyCancellable> = Set()
     
     var body: some View {
         VStack (alignment: .leading) {
@@ -33,7 +35,21 @@ struct StatusesView: View {
                         HStack {
                             Text("Device enabled").font(.title2)
                                 .fontWeight(.bold).padding()
-                            Toggle("",isOn: $deviceEnabled).labelsHidden()
+                            Toggle("",isOn: $deviceEnabled).labelsHidden().onAppear {
+                                // Add an observer to monitor changes to systemInfoPacketData
+                                bluetoothModel.$systemInfoPacketData
+                                    .sink { systemInfoPacketData in
+                                        // Update beepOn when systemInfoPacketData changes
+                                        self.updateDeviceEnabledOn(systemInfoPacketData)
+                                    }
+                                    .store(in: &cancellables) // Store the cancellable to avoid memory leaks
+
+                                // Trigger the initial update
+                                self.updateDeviceEnabledOn(bluetoothModel.systemInfoPacketData)
+                            }.onChange(of: deviceEnabled) {
+                                // Call your function when the toggle is changed
+                                bluetoothModel.deviceEnabledUpdates(deviceEnabled: deviceEnabled)
+                            }
                         }
                         
                         
@@ -90,7 +106,14 @@ struct StatusesView: View {
             .frame(maxWidth: .infinity)
             .background(Color(white:0.90))
     }
+    private func updateDeviceEnabledOn(_ systemInfoPacketData: SystemInfoPacketData?) {
+            // Update beepOn based on systemInfoPacketData
+        deviceEnabled = systemInfoPacketData?.device_recording ?? false
+    }
 }
+
+
+
 
 #Preview {
     StatusesView()

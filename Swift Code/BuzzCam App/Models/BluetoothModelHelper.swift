@@ -62,4 +62,34 @@ extension BluetoothModel {
         sendSystemInfoPacket()
         sendMarkPacket()
     }
+    
+    // send packet when device is disabled/enabled
+    func deviceEnabledUpdates(deviceEnabled: Bool) {
+        // Create new Packet
+
+        // Retrieve the current values of SystemInfoPacket (if they exist)
+        var currentSystemInfoPacket = systemInfoPacket ?? Packet()
+
+        // Set header to true
+        currentSystemInfoPacket.header = PacketHeader()
+
+        // Set unix time
+        let currentTimestamp = Date().timeIntervalSince1970
+        currentSystemInfoPacket.header.systemUid = UInt32(currentTimestamp)
+
+        // Set the currentMarkPacket fields
+        currentSystemInfoPacket.payload = .systemInfoPacket(SystemInfoPacket())
+
+        if (currentSystemInfoPacket.systemInfoPacket.deviceRecording != deviceEnabled) {
+            currentSystemInfoPacket.systemInfoPacket.deviceRecording = deviceEnabled
+        }
+        
+        // Update markPacket and systemInfoPacket
+        systemInfoPacket = currentSystemInfoPacket
+        
+        // Send both packets over BLE
+        // sendMarkPacket()
+        // usleep(100000)
+        sendSystemInfoPacket()
+    }
 }
