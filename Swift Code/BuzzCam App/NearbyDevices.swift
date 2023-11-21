@@ -6,12 +6,23 @@
 //
 
 import SwiftUI
+import CoreBluetooth
+
+
 
 struct NearbyDevices: View {
     @State private var isExpanded = false //change to false after cleanup
     @EnvironmentObject var bluetoothModel: BluetoothModel
     
     var body: some View {
+//        VStack {
+//            Text("test Discover Devices")
+//            // loop thru devices with "BuzzCam" in name
+//            List(bluetoothModel.peripherals) { peripheral in
+//                Text(peripheral.name ?? "Unknown")
+//                
+//            }
+//        }
         VStack (alignment: .leading) {
                 HStack {
                     Spacer()
@@ -29,9 +40,10 @@ struct NearbyDevices: View {
                 }
                 if isExpanded {
                     VStack {
-                        List(bluetoothModel.peripherals) { peripheral in
+                        List(bluetoothModel.filteredPeripherals) { peripheral in
                             Text(peripheral.name ?? "Unknown")
                         }
+                        Text("test nearby device")
                     }
                     .frame(maxWidth: .infinity)
                     .padding(30)

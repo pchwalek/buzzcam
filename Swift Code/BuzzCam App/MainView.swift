@@ -131,7 +131,7 @@ struct MainView: View {
                         // camera capture
                         VStack {
                             HStack {
-                                Button(action: {}) {
+                                Button(action: {bluetoothModel.forceCameraCapture()}) {
                                     Image("camera.circle.fill")
                                         .resizable()
                                         .frame(width: 100, height: 100)
@@ -152,13 +152,13 @@ struct MainView: View {
                         }.padding(.vertical, 25.0)
                         
                         // statuses dropdown
-                        StatusesView()
+                        StatusesView().environmentObject(bluetoothModel)
                         Spacer()
                         // sensor readings dropdown
-                        SensorReadingView()
+                        SensorReadingView().environmentObject(bluetoothModel)
                         Spacer()
                         // nearby devices dropdown
-                        NearbyDevices()
+                        NearbyDevices().environmentObject(bluetoothModel)
                         
                         Image("BuzzCam Logo").resizable()
                             .frame(width: 100, height: 100)

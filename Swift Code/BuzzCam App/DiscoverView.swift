@@ -28,7 +28,7 @@ struct DiscoverView: View {
             VStack {
                 Text("test Discover Devices")
                 // loop thru devices with "BuzzCam" in name
-                List(bluetoothModel.filteredPeripherals) { peripheral in
+                List(bluetoothModel.peripherals) { peripheral in
                     Text(peripheral.name ?? "Unknown")
                     
                     Button(action: {

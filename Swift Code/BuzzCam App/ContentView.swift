@@ -20,7 +20,7 @@ struct ContentView: View {
                         Label("Main", systemImage: "house.fill")
                     }
 
-                ConfigView()
+                ConfigView().environmentObject(bluetoothModel)
                     .tabItem {
                         Label("Config", systemImage: "gearshape.fill")
                     }

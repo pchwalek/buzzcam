@@ -12,9 +12,11 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
     @Published var connectedPeripheral: CBPeripheral?
     @Published var targetCharacteristic: CBCharacteristic?
     private var isReconnecting = false
-    @Published var systemInfoPacketData: SystemInfoPacketData?
     
-    @Published var characteristicValue: String = "" // A property to hold the characteristic value
+    // Structs to populate upon each read
+    @Published var systemInfoPacketData: SystemInfoPacketData?
+    @Published var configPacketData_Audio: ConfigPacketData_Audio?
+    
     
     var isScanning = true
     var isUserInitiatedDisconnect = false
@@ -28,6 +30,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
     // packets to send
     var markPacket: Packet?
     var systemInfoPacket: Packet?
+    var configPacket: Packet?
     
     override init() {
         super.init()
@@ -78,7 +81,6 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
         filteredPeripherals = []
         connectedPeripheral = nil
         targetCharacteristic = nil
-        characteristicValue = ""
         // reset packet
         systemInfoPacketData?.reset()
         // Reset the flag after performing the disconnect and reset logic
@@ -218,12 +220,27 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
                     )
                 }
                 print("Updated systemInfoPacketData with CE71 characteristic")
+            case characteristicUUID_CE72:
+                // Update configPacketData only when the characteristic is CE72
+                DispatchQueue.main.async {
+                    self.configPacketData_Audio = ConfigPacketData_Audio(
+                        channel1: message.configPacket.audioConfig.channel1,
+                        channel2: message.configPacket.audioConfig.channel2,
+                        sampleFreq: message.configPacket.audioConfig.sampleFreq,
+                        bitResolution: message.configPacket.audioConfig.bitResolution,
+                        audioCompressionEnabled: message.configPacket.audioConfig.audioCompression.enabled,
+                        audioCompressionType: message.configPacket.audioConfig.audioCompression.compressionType,
+                        audioCompressionFactor: message.configPacket.audioConfig.audioCompression.compressionFactor,
+                        estimatedRecordTime: message.configPacket.audioConfig.estimatedRecordTime
+                    )
+                }
+                print("Updated systemInfoPacketData with CE72 characteristic")
             default:
                 // Handle other characteristics if needed
                 break
             }
 
-            print("Decoded Message: \(message)")
+//            print("Decoded Message: \(message)")
             print("Temperature: \(message.systemInfoPacket.simpleSensorReading.temperature)")
             print("Beep Enabled: \(message.systemInfoPacket.markState.beepEnabled)")
         } catch {
@@ -282,6 +299,17 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
                 sendSystemInfoPacketData()
             } catch {
                 print("Error serializing SystemInfoPacket: \(error)")
+            }
+        }
+    }
+    
+    func sendConfigPacket() {
+        if let configPacket = configPacket {
+            do {
+                let configPacketData = try configPacket.serializedData()
+                sendConfigPacketData()
+            } catch {
+                print("Error serializing configPacket: \(error)")
             }
         }
     }
@@ -390,491 +418,35 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
         }
     }
     
+    func sendConfigPacketData() {
+        // Ensure that the peripheral is connected
+        guard let peripheral = connectedPeripheral else {
+            print("Peripheral not connected.")
+            return
+        }
+
+        // Check if the service and characteristic have been discovered
+        if let service = peripheral.services?.first(where: { $0.uuid == serviceUUID }),
+            let characteristic = service.characteristics?.first(where: { $0.uuid == characteristicUUID_CE73 }) {
+            // If discovered, proceed to send data
+            sendConfigPacketDataHelper(peripheral: peripheral, characteristic: characteristic)
+        } else {
+            // If not discovered, initiate service discovery
+            peripheral.discoverServices([serviceUUID])
+        }
+    }
+
+    // Helper method to send system info data when service and characteristic are available
+    func sendConfigPacketDataHelper(peripheral: CBPeripheral, characteristic: CBCharacteristic) {
+        do {
+            // Serialize the configPacket into Data
+            let configPacketData = try configPacket?.serializedData() ?? Data()
+            peripheral.writeValue(configPacketData, for: characteristic, type: .withResponse)
+            print("Config packet sent")
+        } catch {
+            print("Error serializing configPacket: \(error)")
+        }
+    }
+    
 }
-//------------------------
 
-//import CoreBluetooth
-//import Foundation
-//import SwiftUI
-//
-//class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate {
-//    private var centralManager: CBCentralManager!
-//    @Published var peripherals: [CBPeripheral] = []
-//    @Published var filteredPeripherals: [CBPeripheral] = []
-//    @Published var connectedPeripheral: CBPeripheral?
-//    @Published var targetCharacteristic: CBCharacteristic?
-//
-//    @Published var characteristicValue: String = "" // A property to hold the characteristic value
-//
-//    var isScanning = true
-//
-//    private let serviceUUID = CBUUID(string: "CE70")
-//    private let characteristicUUID_CE71 = CBUUID(string: "CE71")
-//    private let characteristicUUID_CE72 = CBUUID(string: "CE72")
-//    private let characteristicUUID_CE73 = CBUUID(string: "CE73")
-//
-//    enum ConnectionState {
-//        case disconnected
-//        case connecting
-//        case connected
-//    }
-//
-//    @Published var connectionState: ConnectionState = .disconnected
-//
-//    override init() {
-//        super.init()
-//        centralManager = CBCentralManager(delegate: self, queue: nil)
-//        print("initialized")
-//    }
-//
-//    func centralManagerDidUpdateState(_ central: CBCentralManager) {
-//        if central.state == .poweredOn && isScanning {
-//            centralManager.scanForPeripherals(withServices: nil, options: nil)
-//        } else {
-//            // Handle other states as needed
-//        }
-//    }
-//
-//    func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi: NSNumber) {
-//        if let peripheralName = peripheral.name, peripheralName.contains("BuzzCam") {
-//            if !filteredPeripherals.contains(peripheral) {
-//                filteredPeripherals.append(peripheral)
-//                print("Discovered Peripheral: \(peripheral.name ?? "Unknown") with Identifier: \(peripheral.identifier)")
-//            }
-//        }
-//    }
-//
-//    func connectToPeripheral(_ peripheral: CBPeripheral) {
-//        centralManager.connect(peripheral, options: nil)
-//        connectionState = .connecting
-//    }
-//
-//    func disconnect() {
-//        if let connectedPeripheral = connectedPeripheral {
-//            centralManager.cancelPeripheralConnection(connectedPeripheral)
-//            connectionState = .disconnected
-//        }
-//    }
-//
-//    func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-//        peripheral.delegate = self
-//        connectedPeripheral = peripheral
-//        peripheral.discoverServices(nil)
-//        connectionState = .connected
-//    }
-//
-//    func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
-//        if let services = peripheral.services {
-//            for service in services {
-//                if service.uuid == serviceUUID {
-//                    targetCharacteristic = service.characteristics?.first { $0.uuid == characteristicUUID_CE71 }
-//                    if let targetCharacteristic = targetCharacteristic {
-//                        peripheral.discoverCharacteristics([targetCharacteristic.uuid], for: service)
-//                    }
-//                }
-//            }
-//        }
-//    }
-//
-//    func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
-//        if let characteristics = service.characteristics {
-//            for characteristic in characteristics {
-//                print("Discovered Characteristic: \(characteristic.uuid)")
-//            }
-//        }
-//    }
-//
-//    func readFromCharacteristic() {
-//        guard let peripheral = connectedPeripheral, let characteristic = targetCharacteristic, connectionState == .connected else {
-//            print("Peripheral or characteristic is nil or not connected. Cannot read.")
-//            return
-//        }
-//
-//        peripheral.readValue(for: characteristic)
-//    }
-//
-//    func writeToCharacteristic(_ value: String) {
-//        guard let peripheral = connectedPeripheral, let characteristic = targetCharacteristic, connectionState == .connected else {
-//            print("Peripheral or characteristic is nil or not connected. Cannot write.")
-//            return
-//        }
-//
-//        if let data = value.data(using: .utf8) {
-//            peripheral.writeValue(data, for: characteristic, type: .withResponse)
-//        }
-//    }
-//
-//    func decodeAndPrintMessage(from characteristic: CBCharacteristic) {
-//        guard let data = characteristic.value, let message = String(data: data, encoding: .utf8) else {
-//            print("Failed to decode and print message.")
-//            return
-//        }
-//
-//        print("Decoded Message: \(message)")
-//    }
-//
-//    func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
-//        // Handle disconnection
-//        connectionState = .disconnected
-//    }
-//}
-
-
-
-
-//-----------------
-//    func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
-//        if let services = peripheral.services {
-//            print("Discovered Services for \(peripheral.name ?? "Unknown"):")
-//            for service in services {
-//                print("Service UUID: \(service.uuid)")
-//                
-//                // After discovering services, also discover characteristics for each service
-//                peripheral.discoverCharacteristics(nil, for: service)
-//            }
-//        }
-//    }
-
-//    func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
-//        if let characteristics = service.characteristics {
-//            print("Characteristics for Service \(service.uuid) of \(peripheral.name ?? "Unknown"):")
-//            for characteristic in characteristics {
-//                print("Characteristic UUID: \(characteristic.uuid)")
-//            }
-//        }
-//    }
-//}
-
-//////
-//////  BluetoothModel.swift
-//////  BuzzCam App
-//////
-//////  Created by Responsive Environments on 10/23/23.
-//////
-////
-//
-////
-////class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate {
-////    private var centralManager: CBCentralManager!
-////    @Published var discoveredDevices: [BluetoothDevice] = []
-////    
-////    override init() {
-////        super.init()
-////        centralManager = CBCentralManager(delegate: self, queue: nil)
-////    }
-////    
-////    func centralManagerDidUpdateState(_ central: CBCentralManager) {
-////        if central.state == .poweredOn {
-////            centralManager.scanForPeripherals(withServices: nil, options: nil)
-////        } else {
-////            // Handle Bluetooth not available
-////        }
-////    }
-////    
-////    func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi: NSNumber) {
-////        let device = BluetoothDevice(peripheral: peripheral, rssi: rssi.intValue)
-////        if !discoveredDevices.contains(device) {
-////            discoveredDevices.append(device)
-////        }
-////    }
-////    
-////    func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-////        peripheral.delegate = self
-////        peripheral.discoverServices(nil)
-////    }
-////    
-////    func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
-////        // Handle disconnection
-////    }
-////    
-////    func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
-////        guard let services = peripheral.services else { return }
-////        for service in services {
-////            peripheral.discoverCharacteristics(nil, for: service)
-////        }
-////    }
-////}
-////
-////struct BluetoothDevice: Identifiable, Equatable {
-////    let id = UUID()
-////    let peripheral: CBPeripheral
-////    let rssi: Int
-////    var characteristics: [CBCharacteristic] = []
-////    
-////    init(peripheral: CBPeripheral, rssi: Int) {
-////        self.peripheral = peripheral
-////        self.rssi = rssi
-////    }
-////}
-////
-////
-////class BluetoothViewModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate {
-////    private var centralManager: CBCentralManager!
-////    private var peripheral: CBPeripheral?
-////    private var characteristic: CBCharacteristic?
-////
-////    @Published var filteredPeripherals: [CBPeripheral] = []
-////    @Published var characteristicValue: String = ""
-////
-////    override init() {
-////        super.init()
-////        centralManager = CBCentralManager(delegate: self, queue: nil)
-////    }
-////
-////    func startScanning() {
-////        centralManager.scanForPeripherals(withServices: nil, options: nil)
-////    }
-////
-////    func connect(peripheral: CBPeripheral) {
-////        self.peripheral = peripheral
-////        centralManager.connect(peripheral, options: nil)
-////    }
-////
-////    func centralManagerDidUpdateState(_ central: CBCentralManager) {
-////        if central.state == .poweredOn {
-////            startScanning()
-////        }
-////    }
-////
-////    func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-////        if let peripheralName = peripheral.name, peripheralName.contains("BuzzCam") {
-////            filteredPeripherals.append(peripheral)
-////        }
-////    }
-////
-////    func readCharacteristic(peripheral: CBPeripheral) {
-////        guard let characteristic = characteristic else { return }
-////        peripheral.readValue(for: characteristic)
-////    }
-////
-////    func writeCharacteristic(peripheral: CBPeripheral, value: String) {
-////        guard let characteristic = characteristic else { return }
-////        let data = value.data(using: .utf8)!
-////        peripheral.writeValue(data, for: characteristic, type: .withResponse)
-////    }
-////
-////    func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-////        peripheral.delegate = self
-////        peripheral.discoverServices(nil)
-////    }
-////
-////    func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
-////        if let services = peripheral.services {
-////            for service in services {
-////                if service.uuid == CBUUID(string: "YourServiceUUID") {
-////                    peripheral.discoverCharacteristics(nil, for: service)
-////                }
-////            }
-////        }
-////    }
-////
-////    func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
-////        if let characteristics = service.characteristics {
-////            for characteristic in characteristics {
-////                if characteristic.uuid == CBUUID(string: "YourCharacteristicUUID") {
-////                    self.characteristic = characteristic
-////                }
-////            }
-////        }
-////    }
-////
-////    func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
-////        if let data = characteristic.value, let value = String(data: data, encoding: .utf8) {
-////            characteristicValue = value
-////        }
-////    }
-////}
-//
-//
-//import CoreBluetooth
-//import Combine
-//import Foundation
-//import SwiftUI
-//
-//class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate {
-//    private var centralManager: CBCentralManager!
-//    @Published var peripherals: [CBPeripheral] = []
-//    @Published var filteredPeripherals: [CBPeripheral] = []
-//    @Published var connectedPeripheral: CBPeripheral?
-//    @Published var targetCharacteristic: CBCharacteristic?
-//    
-//    @Published var characteristicValue: String = "" // A property to hold the characteristic value
-//    
-//    var isScanning = true
-////    var yourDesiredNumberOfDevices = 10
-//
-//    // Add your service and characteristic UUIDs here
-////    private let serviceUUID = CBUUID(string: "YourServiceUUID")
-////    private let characteristicUUID = CBUUID(string: "YourCharacteristicUUID")
-//
-//
-//    
-//    override init() {
-//        super.init()
-//        centralManager = CBCentralManager(delegate: self, queue: nil)
-//        print("initialized")
-//    }
-//    
-//    func centralManagerDidUpdateState(_ central: CBCentralManager) {
-//        if central.state == .poweredOn && isScanning {
-//            centralManager.scanForPeripherals(withServices: nil, options: nil)
-//        } else {
-//            // Handle other states as needed
-//        }
-//    }
-//    
-//    func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi: NSNumber) {
-//        if let peripheralName = peripheral.name, peripheralName.contains("BuzzCam") {
-//            if !filteredPeripherals.contains(peripheral) {
-//                filteredPeripherals.append(peripheral)
-//                print("Discovered Peripheral: \(peripheral.name ?? "Unknown") with Identifier: \(peripheral.identifier)")
-//                connectToPeripheral(peripheral)
-////                readFromCharacteristic()
-//                
-//            }
-//        }
-////    }
-//        
-//        // Check if you've discovered all the devices you need
-////        if peripherals.count >= yourDesiredNumberOfDevices {
-////            stopScanning()
-////        }
-//    }
-//    
-////    func stopScanning() {
-////        centralManager.stopScan()
-////        isScanning = false
-////    }
-//    
-//    func connectToPeripheral(_ peripheral: CBPeripheral) {
-//        connectedPeripheral = peripheral
-//        peripheral.delegate = self
-//        peripheral.discoverServices(nil)
-//    }
-//    
-//    func disconnect() {
-//        if let connectedPeripheral = connectedPeripheral {
-//            centralManager.cancelPeripheralConnection(connectedPeripheral)
-//        }
-//    }
-//    
-//    func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-//        peripheral.delegate = self
-//        connectedPeripheral = peripheral
-//        peripheral.discoverServices(nil)
-//        readFromCharacteristic()
-//    }
-//    
-//    func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
-//        if let services = peripheral.services {
-//            for service in services {
-//                if service.uuid == CBUUID(string:  "0000ce70-0000-1000-8000-00805f9b34fb") {
-//                    targetCharacteristic = service.characteristics?.first { $0.uuid == CBUUID(string: "0000ce72-0000-1000-8000-00805f9b34fb") }
-//                    if let targetCharacteristic = targetCharacteristic {
-//                        peripheral.discoverCharacteristics([targetCharacteristic.uuid], for: service)
-//                    }
-//                }
-//            }
-//        }
-//    }
-//
-//    func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
-//        if let characteristics = service.characteristics {
-//            for characteristic in characteristics {
-//                print("Discovered Characteristic: \(characteristic.uuid)")
-//            }
-//        }
-//    }
-//    
-//    func readFromCharacteristic() {
-//        guard let peripheral = connectedPeripheral, let characteristic = targetCharacteristic else {
-//            print("Peripheral or characteristic is nil. Cannot read.")
-//            return
-//        }
-//
-//        if peripheral.state == .connected {
-//            peripheral.readValue(for: characteristic)
-//        } else {
-//            // Handle the case where the peripheral is not connected (e.g., reconnect)
-//            connectToPeripheral(peripheral)
-//        }
-//    }
-//
-//    func writeToCharacteristic(_ value: String) {
-//        guard let peripheral = connectedPeripheral, let characteristic = targetCharacteristic else {
-//            print("Peripheral or characteristic is nil. Cannot write.")
-//            return
-//        }
-//
-//        if peripheral.state == .connected {
-//            if let data = value.data(using: .utf8) {
-//                peripheral.writeValue(data, for: characteristic, type: .withResponse)
-//            }
-//        } else {
-//            // Handle the case where the peripheral is not connected (e.g., reconnect)
-//            connectToPeripheral(peripheral)
-//        }
-//    }
-//    
-//    func decodeAndPrintMessage(from characteristic: CBCharacteristic) {
-//        guard let data = characteristic.value, let message = String(data: data, encoding: .utf8) else {
-//            print("Failed to decode and print message.")
-//            return
-//        }
-//
-//        print("Decoded Message: \(message)")
-//    }
-//    
-//    func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
-//        if characteristic.uuid == targetCharacteristic?.uuid {
-//            decodeAndPrintMessage(from: characteristic)
-//        }
-//    }
-//    
-////    func writeToCharacteristic(_ value: String) {
-////        guard let peripheral = connectedPeripheral, let characteristic = targetCharacteristic else {
-////            print("Peripheral or characteristic is nil. Cannot write.")
-////            return
-////        }
-////
-////        if let data = value.data(using: .utf8) {
-////            peripheral.writeValue(data, for: characteristic, type: .withResponse)
-////        }
-////    }
-//    
-//    
-//    
-////    func startScanning() {
-////         print("startScanning")
-////         myCentral.scanForPeripherals(withServices: nil, options: nil)
-////     }
-////    
-////    func stopScanning() {
-////        print("stopScanning")
-////        myCentral.stopScan()
-////    }
-//    
-//    // Implement characteristic reading and writing here
-//    
-////    // Function to read from the selected characteristic
-////    func readCharacteristic() {
-////        if let connectedPeripheral = connectedPeripheral,
-////           let characteristic = connectedPeripheral.services?.first(where: { $0.uuid == serviceUUID })?.characteristics?.first(where: { $0.uuid == characteristicUUID }) {
-////            connectedPeripheral.readValue(for: characteristic)
-////        }
-////    }
-////
-////    // Function to write to the selected characteristic
-////    func writeCharacteristic(_ value: Data) {
-////        if let connectedPeripheral = connectedPeripheral,
-////           let characteristic = connectedPeripheral.services?.first(where: { $0.uuid == serviceUUID })?.characteristics?.first(where: { $0.uuid == characteristicUUID }) {
-////            connectedPeripheral.writeValue(value, for: characteristic, type: .withResponse)
-////        }
-////    }
-////    
-////    func centralManager(_ central: CBCentralManager, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
-////        if let data = characteristic.value {
-////            characteristicValue = String(data: data, encoding: .utf8) ?? ""
-////        }
-////    }
-//}

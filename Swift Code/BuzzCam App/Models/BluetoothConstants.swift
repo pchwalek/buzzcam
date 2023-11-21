@@ -45,11 +45,16 @@ struct SystemInfoPacketData {
     }
 }
 
-struct SystemConfigPacketData {
-    // Define properties to store the decoded data
-    var index: UInt32
-    var temperature: Float
-    var humidity: Float
-    var co2: Float
-    
+// config data
+struct ConfigPacketData_Audio {
+    var channel1: Bool
+    var channel2: Bool
+    var sampleFreq: MicSampleFreq
+    var bitResolution: MicBitResolution
+    var audioCompressionEnabled: Bool
+    var audioCompressionType: CompressionType
+    var audioCompressionFactor: UInt32
+    var estimatedRecordTime: Float
 }
+
+

@@ -87,9 +87,36 @@ extension BluetoothModel {
         // Update markPacket and systemInfoPacket
         systemInfoPacket = currentSystemInfoPacket
         
-        // Send both packets over BLE
-        // sendMarkPacket()
-        // usleep(100000)
         sendSystemInfoPacket()
     }
+    
+    // send packet to force a camera capture
+    func forceCameraCapture() {
+        // Create new Packet
+
+        // Retrieve the current values of SystemInfoPacket (if they exist)
+        var currentConfigPacket = configPacket ?? Packet()
+
+        // Set header to true
+        currentConfigPacket.header = PacketHeader()
+
+        // Set unix time
+        let currentTimestamp = Date().timeIntervalSince1970
+        currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
+
+        // Set the currentMarkPacket fields
+        currentConfigPacket.payload = .configPacket(ConfigPacket())
+
+        if (!currentConfigPacket.configPacket.cameraControl.capture) {
+            currentConfigPacket.configPacket.cameraControl.capture = true
+        }
+        
+        // Update markPacket and systemInfoPacket
+        configPacket = currentConfigPacket
+        
+        print("Forced camera capture")
+        
+        sendConfigPacket()
+    }
+    
 }
