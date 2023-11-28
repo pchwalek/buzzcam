@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		21A5600B2B16A55D00292A6A /* message.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21A5600A2B16A55D00292A6A /* message.pb.swift */; };
 		21BEAA4B2AFEE135001B89E6 /* BluetoothModelHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21BEAA4A2AFEE135001B89E6 /* BluetoothModelHelper.swift */; };
 		21C0A2062AE3152800BA2ABC /* StatusesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C0A2052AE3152800BA2ABC /* StatusesView.swift */; };
 		21C0A2082AE320E000BA2ABC /* SensorReadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C0A2072AE320E000BA2ABC /* SensorReadingView.swift */; };
@@ -15,7 +16,6 @@
 		21C0A2102AE7137100BA2ABC /* ConfigView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C0A20F2AE7137100BA2ABC /* ConfigView.swift */; };
 		21C0A2192AE71EE800BA2ABC /* BluetoothModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C0A2182AE71EE800BA2ABC /* BluetoothModel.swift */; };
 		21C0A21B2AEC4E1100BA2ABC /* BluetoothConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C0A21A2AEC4E1100BA2ABC /* BluetoothConstants.swift */; };
-		21C0A21E2AF04A4D00BA2ABC /* message.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C0A21D2AF04A4D00BA2ABC /* message.pb.swift */; };
 		21C0A2232AF0E50100BA2ABC /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = 21C0A2222AF0E50100BA2ABC /* SwiftProtobuf */; };
 		21C0A2252AF0E50500BA2ABC /* protoc-gen-swift in Frameworks */ = {isa = PBXBuildFile; productRef = 21C0A2242AF0E50500BA2ABC /* protoc-gen-swift */; };
 		21C0A2272AF0E50A00BA2ABC /* SwiftProtobufPluginLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = 21C0A2262AF0E50A00BA2ABC /* SwiftProtobufPluginLibrary */; };
@@ -47,6 +47,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		21A5600A2B16A55D00292A6A /* message.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = message.pb.swift; sourceTree = "<group>"; };
 		21BEAA4A2AFEE135001B89E6 /* BluetoothModelHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothModelHelper.swift; sourceTree = "<group>"; };
 		21C0A2052AE3152800BA2ABC /* StatusesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusesView.swift; sourceTree = "<group>"; };
 		21C0A2072AE320E000BA2ABC /* SensorReadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SensorReadingView.swift; sourceTree = "<group>"; };
@@ -55,7 +56,6 @@
 		21C0A20F2AE7137100BA2ABC /* ConfigView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigView.swift; sourceTree = "<group>"; };
 		21C0A2182AE71EE800BA2ABC /* BluetoothModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothModel.swift; sourceTree = "<group>"; };
 		21C0A21A2AEC4E1100BA2ABC /* BluetoothConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothConstants.swift; sourceTree = "<group>"; };
-		21C0A21D2AF04A4D00BA2ABC /* message.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = message.pb.swift; path = ../../../../Downloads/message.pb.swift; sourceTree = "<group>"; };
 		21DAA5D12ADF221F00E70BF2 /* BuzzCam App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "BuzzCam App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		21DAA5D42ADF221F00E70BF2 /* BuzzCam_AppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuzzCam_AppApp.swift; sourceTree = "<group>"; };
 		21DAA5D62ADF221F00E70BF2 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -111,7 +111,7 @@
 		21C0A21C2AF04A3500BA2ABC /* Protobuf */ = {
 			isa = PBXGroup;
 			children = (
-				21C0A21D2AF04A4D00BA2ABC /* message.pb.swift */,
+				21A5600A2B16A55D00292A6A /* message.pb.swift */,
 			);
 			path = Protobuf;
 			sourceTree = "<group>";
@@ -329,8 +329,8 @@
 			files = (
 				21C0A21B2AEC4E1100BA2ABC /* BluetoothConstants.swift in Sources */,
 				21C0A20A2AE320FE00BA2ABC /* NearbyDevices.swift in Sources */,
+				21A5600B2B16A55D00292A6A /* message.pb.swift in Sources */,
 				21C0A2062AE3152800BA2ABC /* StatusesView.swift in Sources */,
-				21C0A21E2AF04A4D00BA2ABC /* message.pb.swift in Sources */,
 				21BEAA4B2AFEE135001B89E6 /* BluetoothModelHelper.swift in Sources */,
 				21DAA5D72ADF221F00E70BF2 /* ContentView.swift in Sources */,
 				21DAA6002AE0746B00E70BF2 /* MainView.swift in Sources */,

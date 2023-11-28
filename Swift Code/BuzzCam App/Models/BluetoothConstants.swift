@@ -41,7 +41,7 @@ struct SystemInfoPacketData {
         battery_voltage = 0.0
         device_recording = false
         mark_number = 0
-        beep_enabled = false
+//        beep_enabled = false
     }
 }
 

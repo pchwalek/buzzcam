@@ -215,8 +215,8 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
                         battery_charging: message.systemInfoPacket.batteryState.charging,
                         battery_voltage: message.systemInfoPacket.batteryState.voltage,
                         device_recording: message.systemInfoPacket.deviceRecording,
-                        mark_number: message.systemInfoPacket.markState.markNumber,
-                        beep_enabled: message.systemInfoPacket.markState.beepEnabled
+                        mark_number: message.systemInfoPacket.markState.markNumber
+//                        beep_enabled: message.systemInfoPacket.markState.beepEnabled
                     )
                 }
                 print("Updated systemInfoPacketData with CE71 characteristic")
@@ -242,7 +242,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
 
 //            print("Decoded Message: \(message)")
             print("Temperature: \(message.systemInfoPacket.simpleSensorReading.temperature)")
-            print("Beep Enabled: \(message.systemInfoPacket.markState.beepEnabled)")
+//            print("Beep Enabled: \(message.systemInfoPacket.markState.beepEnabled)")
         } catch {
             print("Failed to decode and print message: \(error)")
         }
