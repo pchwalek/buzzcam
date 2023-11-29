@@ -25,7 +25,7 @@ struct SystemInfoPacketData {
     var battery_voltage: Float
     var device_recording: Bool
     var mark_number: UInt32
-    var beep_enabled: Bool
+//    var beep_enabled: Bool
     
     mutating func reset() {
         // set property default values
@@ -55,6 +55,57 @@ struct ConfigPacketData_Audio {
     var audioCompressionType: CompressionType
     var audioCompressionFactor: UInt32
     var estimatedRecordTime: Float
+    
+    mutating func reset() {
+        channel1 = false
+        channel2 = false
+        sampleFreq = MicSampleFreq()
+        bitResolution = MicBitResolution()
+        audioCompressionEnabled = false
+        audioCompressionType = CompressionType()
+        audioCompressionFactor = 0
+        estimatedRecordTime = 0.0
+    }
+}
+
+struct ConfigPacketData_Schedule {
+    var scheduleConfig: [ScheduleConfig]
+    
+    mutating func reset() {
+        scheduleConfig = []
+    }
+}
+
+struct ConfigPacketData_Sensor {
+    var samplePeriodMs: UInt32 = 0
+    var enableTemperature: Bool = false
+    var enableHumidity: Bool = false
+    var enableGas: Bool = false
+    
+    mutating func reset() {
+        samplePeriodMs = 0
+        enableTemperature = false
+        enableHumidity = false
+        enableGas = false
+    }
+}
+
+struct ConfigPacketData_Discover {
+    var numberOfDiscoveredDevices: UInt32 = 0
+    var discoveredDeviceUid: [UInt32] = []
+    
+    mutating func reset() {
+        numberOfDiscoveredDevices = 0
+        discoveredDeviceUid = []
+    }
+}
+
+struct ConfigPacketData_LowPower {
+    var lowPowerMode: Bool = false
+    
+    mutating func reset() {
+        lowPowerMode = false
+    }
 }
 
 

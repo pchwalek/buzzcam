@@ -94,18 +94,19 @@ struct MainView: View {
                                 Toggle(isOn: $beepOn) {
                                     Text("Play Beep")
                                         .frame(maxWidth: .infinity, alignment: .trailing)
-                                }.onAppear {
-                                    // Add an observer to monitor changes to systemInfoPacketData
-                                    bluetoothModel.$systemInfoPacketData
-                                        .sink { systemInfoPacketData in
-                                            // Update beepOn when systemInfoPacketData changes
-                                            self.updateBeepOn(systemInfoPacketData)
-                                        }
-                                        .store(in: &cancellables) // Store the cancellable to avoid memory leaks
-
-                                    // Trigger the initial update
-                                    self.updateBeepOn(bluetoothModel.systemInfoPacketData)
                                 }
+//                                .onAppear {
+//                                    // Add an observer to monitor changes to systemInfoPacketData
+//                                    bluetoothModel.$systemInfoPacketData
+//                                        .sink { systemInfoPacketData in
+//                                            // Update beepOn when systemInfoPacketData changes
+//                                            self.updateBeepOn(systemInfoPacketData)
+//                                        }
+//                                        .store(in: &cancellables) // Store the cancellable to avoid memory leaks
+//
+//                                    // Trigger the initial update
+//                                    self.updateBeepOn(bluetoothModel.systemInfoPacketData)
+//                                }
                                 Spacer()
                             }
                             TextField(
@@ -172,10 +173,10 @@ struct MainView: View {
             }
         }
     }
-    private func updateBeepOn(_ systemInfoPacketData: SystemInfoPacketData?) {
-            // Update beepOn based on systemInfoPacketData
-            beepOn = systemInfoPacketData?.beep_enabled ?? false
-    }
+//    private func updateBeepOn(_ systemInfoPacketData: SystemInfoPacketData?) {
+//            // Update beepOn based on systemInfoPacketData
+//            beepOn = systemInfoPacketData?.beep_enabled ?? false
+//    }
 }
 
 

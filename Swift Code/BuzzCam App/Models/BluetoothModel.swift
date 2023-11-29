@@ -16,6 +16,10 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
     // Structs to populate upon each read
     @Published var systemInfoPacketData: SystemInfoPacketData?
     @Published var configPacketData_Audio: ConfigPacketData_Audio?
+    @Published var configPacketData_Schedule: ConfigPacketData_Schedule?
+    @Published var configPacketData_Sensor: ConfigPacketData_Sensor?
+    @Published var configPacketData_Discover: ConfigPacketData_Discover?
+    @Published var configPacketData_LowPower: ConfigPacketData_LowPower?
     
     
     var isScanning = true
@@ -83,6 +87,11 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
         targetCharacteristic = nil
         // reset packet
         systemInfoPacketData?.reset()
+        configPacketData_Audio?.reset()
+        configPacketData_Schedule?.reset()
+        configPacketData_Sensor?.reset()
+        configPacketData_Discover?.reset()
+        configPacketData_LowPower?.reset()
         // Reset the flag after performing the disconnect and reset logic
 //        isUserInitiatedDisconnect = false
         // start scanning again when reset and disconnected
@@ -233,6 +242,21 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
                         audioCompressionFactor: message.configPacket.audioConfig.audioCompression.compressionFactor,
                         estimatedRecordTime: message.configPacket.audioConfig.estimatedRecordTime
                     )
+                    
+                    self.configPacketData_Schedule = ConfigPacketData_Schedule(scheduleConfig: message.configPacket.scheduleConfig)
+                    
+                    self.configPacketData_Sensor = ConfigPacketData_Sensor(
+                        samplePeriodMs: message.configPacket.sensorConfig.samplePeriodMs,
+                        enableTemperature: message.configPacket.sensorConfig.enableTemperature,
+                        enableHumidity: message.configPacket.sensorConfig.enableHumidity,
+                        enableGas: message.configPacket.sensorConfig.enableGas)
+                    
+                    self.configPacketData_Discover = ConfigPacketData_Discover(
+                        numberOfDiscoveredDevices: message.configPacket.networkState.numberOfDiscoveredDevices,
+                        discoveredDeviceUid: message.configPacket.networkState.discoveredDeviceUid
+                        )
+                    
+                    self.configPacketData_LowPower = ConfigPacketData_LowPower(lowPowerMode: message.configPacket.lowPowerConfig.lowPowerMode)
                 }
                 print("Updated systemInfoPacketData with CE72 characteristic")
             default:
