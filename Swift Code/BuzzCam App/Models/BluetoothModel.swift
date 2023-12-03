@@ -258,7 +258,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
                     
                     self.configPacketData_LowPower = ConfigPacketData_LowPower(lowPowerMode: message.configPacket.lowPowerConfig.lowPowerMode)
                 }
-                print("Updated systemInfoPacketData with CE72 characteristic")
+                print("Updated configPacketData with CE72 characteristic")
             default:
                 // Handle other characteristics if needed
                 break
@@ -384,7 +384,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
         do {
             // Serialize the markPacket into Data
             let markPacketData = try markPacket?.serializedData() ?? Data()
-            peripheral.writeValue(markPacketData, for: characteristic, type: .withResponse)
+            peripheral.writeValue(markPacketData, for: characteristic, type: .withoutResponse)
             print("Mark packet sent")
         } catch {
             print("Error sending MarkPacket: \(error)")

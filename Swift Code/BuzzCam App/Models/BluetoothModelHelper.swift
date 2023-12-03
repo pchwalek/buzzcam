@@ -121,4 +121,128 @@ extension BluetoothModel {
         sendConfigPacket()
     }
     
+    //send packet to enable/disable audio channels
+    func enableAudioChannel1(channel1: Bool) {
+        // Create new Packet
+
+        // Retrieve the current values of SystemInfoPacket (if they exist)
+        var currentConfigPacket = configPacket ?? Packet()
+
+        // Set header to true
+        currentConfigPacket.header = PacketHeader()
+
+        // Set unix time
+        let currentTimestamp = Date().timeIntervalSince1970
+        currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
+
+        // Set the currentMarkPacket fields
+        currentConfigPacket.payload = .configPacket(ConfigPacket())
+        
+        if (currentConfigPacket.configPacket.audioConfig.channel1 != channel1) {
+            
+            // edit field if changed
+            currentConfigPacket.configPacket.audioConfig.channel1 = channel1
+            
+            // Update markPacket and systemInfoPacket
+            configPacket = currentConfigPacket
+            
+            print("in enableAudioChannel1, channel1 is \(channel1)")
+            print("Sent enable audio channel1")
+            
+            sendConfigPacket()
+        }
+    }
+    
+    //send packet to enable/disable audio channels
+    func enableAudioChannel2(channel2: Bool) {
+        // Create new Packet
+
+        // Retrieve the current values of SystemInfoPacket (if they exist)
+        var currentConfigPacket = configPacket ?? Packet()
+
+        // Set header to true
+        currentConfigPacket.header = PacketHeader()
+
+        // Set unix time
+        let currentTimestamp = Date().timeIntervalSince1970
+        currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
+
+        // Set the currentMarkPacket fields
+        currentConfigPacket.payload = .configPacket(ConfigPacket())
+        
+        // edit field if changed
+        if (currentConfigPacket.configPacket.audioConfig.channel2 != channel2) {
+            
+            currentConfigPacket.configPacket.audioConfig.channel2 = channel2
+            
+            // Update markPacket and systemInfoPacket
+            configPacket = currentConfigPacket
+            
+            print("in enableAudioChannel2, channel2 is \(channel2)")
+            
+            print("Sent enable audio channel2")
+            
+            sendConfigPacket()
+        }
+    }
+    
+    //send packet to set sample freq
+    func changeSampleFreq(sampleFreq: MicSampleFreq) {
+        // Create new Packet
+
+        // Retrieve the current values of SystemInfoPacket (if they exist)
+        var currentConfigPacket = configPacket ?? Packet()
+
+        // Set header to true
+        currentConfigPacket.header = PacketHeader()
+
+        // Set unix time
+        let currentTimestamp = Date().timeIntervalSince1970
+        currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
+
+        // Set the currentMarkPacket fields
+        currentConfigPacket.payload = .configPacket(ConfigPacket())
+        
+        // edit field if changed
+        if (currentConfigPacket.configPacket.audioConfig.sampleFreq != sampleFreq) {
+            currentConfigPacket.configPacket.audioConfig.sampleFreq = sampleFreq
+            
+            // Update markPacket and systemInfoPacket
+            configPacket = currentConfigPacket
+            
+            print("Sent new sample freq")
+            
+            sendConfigPacket()
+        }
+    }
+    
+    func setBitResolution(bitResolution: MicBitResolution) {
+        // Create new Packet
+
+        // Retrieve the current values of SystemInfoPacket (if they exist)
+        var currentConfigPacket = configPacket ?? Packet()
+
+        // Set header to true
+        currentConfigPacket.header = PacketHeader()
+
+        // Set unix time
+        let currentTimestamp = Date().timeIntervalSince1970
+        currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
+
+        // Set the currentMarkPacket fields
+        currentConfigPacket.payload = .configPacket(ConfigPacket())
+        
+        // edit field if changed
+        if(currentConfigPacket.configPacket.audioConfig.bitResolution != bitResolution) {
+            currentConfigPacket.configPacket.audioConfig.bitResolution = bitResolution
+            
+            // Update markPacket and systemInfoPacket
+            configPacket = currentConfigPacket
+            
+            print("Set bit resolution")
+            
+            sendConfigPacket()
+        }
+    }
+    
 }

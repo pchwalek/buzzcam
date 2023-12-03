@@ -8,8 +8,16 @@
 import SwiftUI
 
 struct ConfigView: View {
+    @EnvironmentObject var bluetoothModel: BluetoothModel
     var body: some View {
-        Text("Config placeholder")
+        
+        ScrollView(showsIndicators: false) {
+            ScrollViewReader(content: { proxy in
+                Text("Configuration").font(.title)
+                AudioView().environmentObject(bluetoothModel)
+                Spacer()
+            })
+        }
     }
 }
 
