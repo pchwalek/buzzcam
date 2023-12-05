@@ -14,9 +14,12 @@ struct AudioView: View {
     @State private var cancellables: Set<AnyCancellable> = Set()
     @State private var channel1 = false
     @State private var channel2 = false
+    @State private var audioCompressionEnabled = false
     let sampleFreq: [MicSampleFreq] = [.sampleRate16000, .sampleRate20500, .sampleRate44100, .sampleRate48000, .sampleRate96000]
     @State var selectedSampleFreq: MicSampleFreq? = .sampleRate16000
     @State var selectedBitResolution: MicBitResolution? = .bitRes8
+    let compressionType: [CompressionType] = [.opus]
+    @State var selectedCompressionType: CompressionType? = .opus
     
     var body: some View {
         VStack (alignment: .leading) {
@@ -106,12 +109,6 @@ struct AudioView: View {
                                     // Call your function here with the new selected sample frequency
                                     bluetoothModel.changeSampleFreq(sampleFreq: newSelectedSampleFreq)
                                 }
-//                                Text("Detected: " + String(bluetoothModel.systemInfoPacketData?.sd_detected ?? false))
-//                                    .font(.body)
-//                                Text("Space remaining: " + String(bluetoothModel.systemInfoPacketData?.space_remaining ?? 0))
-//                                    .font(.body)
-//                                Text("Estimated recording time: " + String(bluetoothModel.systemInfoPacketData?.estimated_recording_time ?? 0))
-//                                    .font(.body)
                             }
                             .padding()
                         }
@@ -160,8 +157,69 @@ struct AudioView: View {
                             selectedBitResolution = bluetoothModel.configPacketData_Audio?.bitResolution
                         }
                         
+                        
+                        
                         Text("Estimated recording time: " + String(bluetoothModel.configPacketData_Audio?.estimatedRecordTime ?? 0))
                             .font(.body)
+                        
+                        VStack(alignment: .leading) {
+                            
+                            Text("Audio compression")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                            VStack (alignment: .leading, spacing: 10){
+                                HStack {
+                                    Text("Enabled").padding()
+                                    Toggle("",isOn: $audioCompressionEnabled).labelsHidden().onAppear {
+                                        // Add an observer to monitor changes to systemInfoPacketData
+                                        bluetoothModel.$configPacketData_Audio
+                                            .sink { configPacketData_Audio in
+                                                // Update beepOn when systemInfoPacketData changes
+                                                self.updateAudioCompressionToggle(configPacketData_Audio)
+                                            }
+                                            .store(in: &cancellables) // Store the cancellable to avoid memory leaks
+
+                                        // Trigger the initial update
+                                        self.updateAudioCompressionToggle(bluetoothModel.configPacketData_Audio)
+                                    }.onChange(of: audioCompressionEnabled) {
+                                        // Call your function when the toggle is changed
+                                        bluetoothModel.enableAudioCompression(audioCompressionEnabled: audioCompressionEnabled)
+                                    }
+                                }
+                                
+                                VStack(alignment: .leading) {
+                                    Text("Type")
+                                        .font(.title2)
+                                        .fontWeight(.bold)
+                                    VStack (alignment: .leading, spacing: 10){
+                                        ScrollView {
+                                            VStack {
+                                                ForEach(compressionType, id: \.self) { item in
+                                                    CompressionTypeCell(compressionType: item, selectedCompressionType: self.$selectedCompressionType)
+                                                }
+                                            }
+                                        }.onAppear {
+                                            // Set the initial value of selectedSampleFreq based on the stored value in bluetoothModel
+                                            selectedCompressionType = bluetoothModel.configPacketData_Audio?.audioCompressionType
+                                        }
+                                        .onChange(of: selectedCompressionType ?? .opus) { newCompressionType in
+                                            // Call your function here with the new selected sample frequency
+                                            bluetoothModel.changeCompressionType(compressionType: newCompressionType)
+                                        }
+                                    }
+                                    .padding()
+                                }
+                                
+                            }
+                            .padding()
+                        }
+                        .padding()
+                        .frame(
+                              minWidth: 0,
+                              maxWidth: .infinity,
+                              alignment: .leading)
+                        .background(Color(white: 0.98))
+                        .cornerRadius(10)
                         
                     }
                     .padding()
@@ -180,6 +238,11 @@ struct AudioView: View {
         // Update channel2 based on configPacketData_Audio
         channel2 = configPacketData_Audio?.channel2 ?? false
     }
+    
+    private func updateAudioCompressionToggle(_ configPacketData_Audio: ConfigPacketData_Audio?) {
+        // Update channel2 based on configPacketData_Audio
+        audioCompressionEnabled = configPacketData_Audio?.audioCompressionEnabled ?? false
+    }
 
     }
 
@@ -187,10 +250,12 @@ struct FrequencyCell: View {
 
     let sampleFreq: MicSampleFreq
     @Binding var selectedSampleFreq: MicSampleFreq?
+    let sampleFreqInt: [Int] = [16000, 20500, 44100, 48000, 96000]
+
 
     var body: some View {
         HStack {
-            Text("Frequency: \(sampleFreq.rawValue)")
+            Text("\(sampleFreqInt[sampleFreq.rawValue])")
             Spacer()
             if sampleFreq == selectedSampleFreq {
                 Image(systemName: "largecircle.fill.circle")
@@ -202,6 +267,29 @@ struct FrequencyCell: View {
         }
         .onTapGesture {
             self.selectedSampleFreq = self.sampleFreq
+        }
+    }
+}
+
+struct CompressionTypeCell: View {
+
+    let compressionType: CompressionType
+    @Binding var selectedCompressionType: CompressionType?
+
+    var body: some View {
+        HStack {
+            Text("\(compressionType.rawValue)")
+            Spacer()
+            if compressionType == selectedCompressionType {
+                Image(systemName: "largecircle.fill.circle")
+                    .foregroundColor(.accentColor)
+            } else {
+                Image(systemName: "circle")
+                    .foregroundColor(.secondary)
+            }
+        }
+        .onTapGesture {
+            self.selectedCompressionType = self.compressionType
         }
     }
 }

@@ -21,6 +21,9 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
     @Published var configPacketData_Discover: ConfigPacketData_Discover?
     @Published var configPacketData_LowPower: ConfigPacketData_LowPower?
     
+    // Global message packet
+//    @Published var currentMessage: Packet?
+    
     
     var isScanning = true
     var isUserInitiatedDisconnect = false
@@ -51,7 +54,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
     }
     
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi: NSNumber) {
-        if let peripheralName = peripheral.name, peripheralName.contains("BuzzCam") {
+        if let peripheralName = peripheral.name, (peripheralName.contains("BuzzCam") ||  peripheralName.contains("STM")){
             if !filteredPeripherals.contains(peripheral) {
                 filteredPeripherals.append(peripheral)
                 print("Discovered Peripheral: \(peripheral.name ?? "Unknown") with Identifier: \(peripheral.identifier)")
@@ -206,6 +209,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
 
         do {
             let message = try Packet(serializedData: data)
+//            currentMessage = message
 
             // Use a switch statement to handle different characteristics
             switch characteristic.uuid {

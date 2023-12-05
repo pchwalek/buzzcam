@@ -73,14 +73,14 @@ extension BluetoothModel {
         var currentSystemInfoPacket = systemInfoPacket ?? Packet()
 
         // Set header to true
-        currentSystemInfoPacket.header = PacketHeader()
+//        currentSystemInfoPacket.header = PacketHeader()
 
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
         currentSystemInfoPacket.header.systemUid = UInt32(currentTimestamp)
 
         // Set the currentMarkPacket fields
-        currentSystemInfoPacket.payload = .systemInfoPacket(SystemInfoPacket())
+//        currentSystemInfoPacket.payload = .systemInfoPacket(SystemInfoPacket())
 
         if (currentSystemInfoPacket.systemInfoPacket.deviceRecording != deviceEnabled) {
             currentSystemInfoPacket.systemInfoPacket.deviceRecording = deviceEnabled
@@ -100,14 +100,14 @@ extension BluetoothModel {
         var currentConfigPacket = configPacket ?? Packet()
 
         // Set header to true
-        currentConfigPacket.header = PacketHeader()
+//        currentConfigPacket.header = PacketHeader()
 
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
         currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
 
         // Set the currentMarkPacket fields
-        currentConfigPacket.payload = .configPacket(ConfigPacket())
+//        currentConfigPacket.payload = .configPacket(ConfigPacket())
 
         if (!currentConfigPacket.configPacket.cameraControl.capture) {
             currentConfigPacket.configPacket.cameraControl.capture = true
@@ -129,14 +129,16 @@ extension BluetoothModel {
         var currentConfigPacket = configPacket ?? Packet()
 
         // Set header to true
-        currentConfigPacket.header = PacketHeader()
+//        currentConfigPacket.header = PacketHeader()
 
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
         currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
 
         // Set the currentMarkPacket fields
-        currentConfigPacket.payload = .configPacket(ConfigPacket())
+//        currentConfigPacket.payload = .configPacket(ConfigPacket())
+        
+//        currentConfigPacket.configPacket.audioConfig = currentMessage?.configPacket.audioConfig ?? AudioConfig()
         
         if (currentConfigPacket.configPacket.audioConfig.channel1 != channel1) {
             
@@ -156,29 +158,36 @@ extension BluetoothModel {
     //send packet to enable/disable audio channels
     func enableAudioChannel2(channel2: Bool) {
         // Create new Packet
+        print("1 in enableAudioChannel2, channel2 is \(channel2)")
 
         // Retrieve the current values of SystemInfoPacket (if they exist)
         var currentConfigPacket = configPacket ?? Packet()
+        print("1 in enableAudioChannel2, currentConfigPacket.configPacket.audioConfig.channel2 is \(currentConfigPacket.configPacket.audioConfig.channel2)")
 
-        // Set header to true
-        currentConfigPacket.header = PacketHeader()
+
+//        // Set header to true
+//        currentConfigPacket.header = PacketHeader()
 
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
         currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
+        // also add epoch
 
         // Set the currentMarkPacket fields
-        currentConfigPacket.payload = .configPacket(ConfigPacket())
+//        currentConfigPacket.payload = .configPacket(ConfigPacket())
+        print("1 in enableAudioChannel2, currentConfigPacket.configPacket.audioConfig.channel2 is \(currentConfigPacket.configPacket.audioConfig.channel2)")
+
         
         // edit field if changed
         if (currentConfigPacket.configPacket.audioConfig.channel2 != channel2) {
+            print("in if")
             
             currentConfigPacket.configPacket.audioConfig.channel2 = channel2
             
             // Update markPacket and systemInfoPacket
             configPacket = currentConfigPacket
             
-            print("in enableAudioChannel2, channel2 is \(channel2)")
+            print("2 in enableAudioChannel2, channel2 is \(channel2)")
             
             print("Sent enable audio channel2")
             
@@ -194,14 +203,14 @@ extension BluetoothModel {
         var currentConfigPacket = configPacket ?? Packet()
 
         // Set header to true
-        currentConfigPacket.header = PacketHeader()
+//        currentConfigPacket.header = PacketHeader()
 
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
         currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
 
         // Set the currentMarkPacket fields
-        currentConfigPacket.payload = .configPacket(ConfigPacket())
+//        currentConfigPacket.payload = .configPacket(ConfigPacket())
         
         // edit field if changed
         if (currentConfigPacket.configPacket.audioConfig.sampleFreq != sampleFreq) {
@@ -223,14 +232,14 @@ extension BluetoothModel {
         var currentConfigPacket = configPacket ?? Packet()
 
         // Set header to true
-        currentConfigPacket.header = PacketHeader()
+//        currentConfigPacket.header = PacketHeader()
 
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
         currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
 
         // Set the currentMarkPacket fields
-        currentConfigPacket.payload = .configPacket(ConfigPacket())
+//        currentConfigPacket.payload = .configPacket(ConfigPacket())
         
         // edit field if changed
         if(currentConfigPacket.configPacket.audioConfig.bitResolution != bitResolution) {
@@ -240,6 +249,69 @@ extension BluetoothModel {
             configPacket = currentConfigPacket
             
             print("Set bit resolution")
+            
+            sendConfigPacket()
+        }
+    }
+    
+    //send packet to enable/disable audio channels
+    func enableAudioCompression(audioCompressionEnabled: Bool) {
+        // Create new Packet
+
+        // Retrieve the current values of SystemInfoPacket (if they exist)
+        var currentConfigPacket = configPacket ?? Packet()
+
+        // Set header to true
+//        currentConfigPacket.header = PacketHeader()
+
+        // Set unix time
+        let currentTimestamp = Date().timeIntervalSince1970
+        currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
+
+        // Set the currentMarkPacket fields
+//        currentConfigPacket.payload = .configPacket(ConfigPacket())
+        
+        // edit field if changed
+        if (currentConfigPacket.configPacket.audioConfig.audioCompression.enabled != audioCompressionEnabled) {
+            
+            currentConfigPacket.configPacket.audioConfig.audioCompression.enabled = audioCompressionEnabled
+            
+            // Update markPacket and systemInfoPacket
+            configPacket = currentConfigPacket
+            
+//            print("in enableAudioCompression, audioCompressionEnabled is \(audioCompressionEnabled)")
+            
+            print("Sent enable audio compression")
+            
+            sendConfigPacket()
+        }
+    }
+    
+    //send packet to set compression type
+    func changeCompressionType(compressionType: CompressionType) {
+        // Create new Packet
+
+        // Retrieve the current values of SystemInfoPacket (if they exist)
+        var currentConfigPacket = configPacket ?? Packet()
+
+        // Set header to true
+//        currentConfigPacket.header = PacketHeader()
+
+        // Set unix time
+        let currentTimestamp = Date().timeIntervalSince1970
+        currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
+
+        // Set the currentMarkPacket fields
+//        currentConfigPacket.payload = .configPacket(ConfigPacket())
+        
+        // edit field if changed
+        if (currentConfigPacket.configPacket.audioConfig.audioCompression.compressionType != compressionType) {
+            currentConfigPacket.configPacket.audioConfig.audioCompression.compressionType = compressionType
+            
+            // Update markPacket and systemInfoPacket
+            configPacket = currentConfigPacket
+            
+            print("Sent new compression type")
             
             sendConfigPacket()
         }
