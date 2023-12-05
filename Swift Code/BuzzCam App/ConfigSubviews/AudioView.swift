@@ -20,7 +20,10 @@ struct AudioView: View {
     @State var selectedBitResolution: MicBitResolution? = .bitRes8
     let compressionType: [CompressionType] = [.opus]
     @State var selectedCompressionType: CompressionType? = .opus
+    @State var selectedCompressionFactor: Double = 5
     
+
+
     var body: some View {
         VStack (alignment: .leading) {
                 HStack {
@@ -39,50 +42,100 @@ struct AudioView: View {
                 }
                 if isExpanded {
                     VStack (alignment: .leading, spacing: 20) {
-                        HStack {
-                            Text("Enable channel 1").font(.title2)
-                                .fontWeight(.bold).padding()
-                            Toggle("",isOn: $channel1).labelsHidden().onAppear {
-                                // Add an observer to monitor changes to systemInfoPacketData
-                                bluetoothModel.$configPacketData_Audio
-                                    .sink { configPacketData_Audio in
-                                        // Update beepOn when systemInfoPacketData changes
-                                        self.updateChannel1(configPacketData_Audio)
-                                    }
-                                    .store(in: &cancellables) // Store the cancellable to avoid memory leaks
-
-                                // Trigger the initial update
-                                self.updateChannel1(bluetoothModel.configPacketData_Audio)
-                            }.onChange(of: channel1) {
-                                // Call your function when the toggle is changed
-                                print("calling enableAudioChannel1, channel1 is \(channel1)")
-                                bluetoothModel.enableAudioChannel1(channel1: channel1)
-                            }
-                            
-                        }
-                        HStack {
-                            Text("Enable channel 2").font(.title2)
-                                .fontWeight(.bold).padding()
-                            Toggle("",isOn: $channel2).labelsHidden().onAppear {
-                                // Add an observer to monitor changes to systemInfoPacketData
-                                bluetoothModel.$configPacketData_Audio
-                                    .sink { configPacketData_Audio in
-                                        // Update beepOn when systemInfoPacketData changes
-                                        self.updateChannel2(configPacketData_Audio)
-                                    }
-                                    .store(in: &cancellables) // Store the cancellable to avoid memory leaks
-
-                                // Trigger the initial update
-                                self.updateChannel2(bluetoothModel.configPacketData_Audio)
-                            }.onChange(of: channel2) {
-                                // Call your function when the toggle is changed
-                                print("calling enableAudioChannel2, channel2 is \(channel2)")
-                                bluetoothModel.enableAudioChannel2(channel2: channel2)
-                            }
-                            
-                        }
+//                        HStack {
+//                            Text("Enable channel 1").font(.title2)
+//                                .fontWeight(.bold).padding()
+//                            Toggle("",isOn: $channel1).labelsHidden().onAppear {
+//                                // Add an observer to monitor changes to systemInfoPacketData
+//                                bluetoothModel.$configPacketData_Audio
+//                                    .sink { configPacketData_Audio in
+//                                        // Update beepOn when systemInfoPacketData changes
+//                                        self.updateChannel1(configPacketData_Audio)
+//                                    }
+//                                    .store(in: &cancellables) // Store the cancellable to avoid memory leaks
+//
+//                                // Trigger the initial update
+//                                self.updateChannel1(bluetoothModel.configPacketData_Audio)
+//                            }.onChange(of: channel1) {
+//                                // Call your function when the toggle is changed
+//                                print("calling enableAudioChannel1, channel1 is \(channel1)")
+//                                bluetoothModel.enableAudioChannel1(channel1: channel1)
+//                            }
+//                            
+//                        }
+//                        HStack {
+//                            Text("Enable channel 2").font(.title2)
+//                                .fontWeight(.bold).padding()
+//                            Toggle("",isOn: $channel2).labelsHidden().onAppear {
+//                                // Add an observer to monitor changes to systemInfoPacketData
+//                                bluetoothModel.$configPacketData_Audio
+//                                    .sink { configPacketData_Audio in
+//                                        // Update beepOn when systemInfoPacketData changes
+//                                        self.updateChannel2(configPacketData_Audio)
+//                                    }
+//                                    .store(in: &cancellables) // Store the cancellable to avoid memory leaks
+//
+//                                // Trigger the initial update
+//                                self.updateChannel2(bluetoothModel.configPacketData_Audio)
+//                            }.onChange(of: channel2) {
+//                                // Call your function when the toggle is changed
+//                                print("calling enableAudioChannel2, channel2 is \(channel2)")
+//                                bluetoothModel.enableAudioChannel2(channel2: channel2)
+//                            }
+//                            
+//                        }
                         
-                        
+                        HStack {
+                            Text("Enable channel 1")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .padding()
+
+                            Toggle("", isOn: $channel1)
+                                .labelsHidden()
+                                .onAppear {
+                                    // Add an observer to monitor changes to configPacketData_Audio
+                                    bluetoothModel.$configPacketData_Audio
+                                        .sink { configPacketData_Audio in
+                                            self.updateChannel1(configPacketData_Audio)
+                                        }
+                                        .store(in: &cancellables)
+
+                                    // Trigger the initial update
+                                    self.updateChannel1(bluetoothModel.configPacketData_Audio)
+                                }
+                                .onChange(of: channel1) {
+                                    // Call your function when the toggle is changed
+                                    print("calling enableAudioChannel1, channel1 is \(channel1)")
+                                    bluetoothModel.enableAudioChannel1(channel1: channel1)
+                                }
+                        }
+
+                        HStack {
+                            Text("Enable channel 2")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .padding()
+
+                            Toggle("", isOn: $channel2)
+                                .labelsHidden()
+                                .onAppear {
+                                    // Add an observer to monitor changes to configPacketData_Audio
+                                    bluetoothModel.$configPacketData_Audio
+                                        .sink { configPacketData_Audio in
+                                            self.updateChannel2(configPacketData_Audio)
+                                        }
+                                        .store(in: &cancellables)
+
+                                    // Trigger the initial update
+                                    self.updateChannel2(bluetoothModel.configPacketData_Audio)
+                                }
+                                .onChange(of: channel2) {
+                                    // Call your function when the toggle is changed
+                                    print("calling enableAudioChannel2, channel2 is \(channel2)")
+                                    bluetoothModel.enableAudioChannel2(channel2: channel2)
+                                }
+                        }
                         
                         VStack(alignment: .leading) {
                             
@@ -159,17 +212,16 @@ struct AudioView: View {
                         
                         
                         
-                        Text("Estimated recording time: " + String(bluetoothModel.configPacketData_Audio?.estimatedRecordTime ?? 0))
-                            .font(.body)
+                        
                         
                         VStack(alignment: .leading) {
                             
                             Text("Audio compression")
                                 .font(.title2)
                                 .fontWeight(.bold)
-                            VStack (alignment: .leading, spacing: 10){
+                            VStack (alignment: .leading){
                                 HStack {
-                                    Text("Enabled").padding()
+                                    Text("Enabled").fontWeight(.bold)
                                     Toggle("",isOn: $audioCompressionEnabled).labelsHidden().onAppear {
                                         // Add an observer to monitor changes to systemInfoPacketData
                                         bluetoothModel.$configPacketData_Audio
@@ -184,20 +236,18 @@ struct AudioView: View {
                                     }.onChange(of: audioCompressionEnabled) {
                                         // Call your function when the toggle is changed
                                         bluetoothModel.enableAudioCompression(audioCompressionEnabled: audioCompressionEnabled)
-                                    }
+                                    }.padding()
                                 }
                                 
                                 VStack(alignment: .leading) {
-                                    Text("Type")
-                                        .font(.title2)
-                                        .fontWeight(.bold)
-                                    VStack (alignment: .leading, spacing: 10){
+                                    Text("Type").fontWeight(/*@START_MENU_TOKEN@*/.bold/*@END_MENU_TOKEN@*/)
+                                    VStack (alignment: .leading){
                                         ScrollView {
                                             VStack {
                                                 ForEach(compressionType, id: \.self) { item in
                                                     CompressionTypeCell(compressionType: item, selectedCompressionType: self.$selectedCompressionType)
                                                 }
-                                            }
+                                            }.padding()
                                         }.onAppear {
                                             // Set the initial value of selectedSampleFreq based on the stored value in bluetoothModel
                                             selectedCompressionType = bluetoothModel.configPacketData_Audio?.audioCompressionType
@@ -207,9 +257,34 @@ struct AudioView: View {
                                             bluetoothModel.changeCompressionType(compressionType: newCompressionType)
                                         }
                                     }
-                                    .padding()
                                 }
                                 
+                                VStack(alignment: .leading) {
+                                    Text("Compression Factor: \(Int(selectedCompressionFactor))").fontWeight(.bold)
+
+                                    Slider(value: Binding(
+                                                    get: {
+                                                        selectedCompressionFactor
+                                                    },
+                                                    set: { newValue in
+                                                        selectedCompressionFactor = newValue
+                                                        // Call your function with the new value
+                                                        bluetoothModel.changeCompressionFactor(compressionFactor: UInt32(newValue))
+                                                    }
+                                                ), in: 1...10, step: 1)
+                                        .onAppear {
+                                            if let initialFactor = bluetoothModel.configPacketData_Audio?.audioCompressionFactor {
+                                                selectedCompressionFactor = Double(initialFactor)
+                                            }
+                                        }
+                                        .padding()
+                                        .onChange(of: selectedCompressionFactor) { newValue in
+                                            // Call your function with the new value
+                                            bluetoothModel.changeCompressionFactor(compressionFactor: UInt32(selectedCompressionFactor))
+                                        }
+                                    Text("Estimated recording time: " + String(bluetoothModel.configPacketData_Audio?.estimatedRecordTime ?? 0))
+                                        .font(.body)
+                                }
                             }
                             .padding()
                         }
@@ -225,18 +300,38 @@ struct AudioView: View {
                     .padding()
                     
                 }
+            }.onAppear {
+                // Set the initial value of selectedSampleFreq based on the stored value in bluetoothModel
+                print("initialized")
+                selectedSampleFreq = bluetoothModel.configPacketData_Audio?.sampleFreq
             }
             .frame(maxWidth: .infinity)
             .background(Color(white:0.90))
     }
+//    private func updateChannel1(_ configPacketData_Audio: ConfigPacketData_Audio?) {
+//        // Update channel1 based on configPacketData_Audio
+//        channel1 = configPacketData_Audio?.channel1 ?? false
+//    }
+//
+//    private func updateChannel2(_ configPacketData_Audio: ConfigPacketData_Audio?) {
+//        // Update channel2 based on configPacketData_Audio
+//        channel2 = configPacketData_Audio?.channel2 ?? false
+//    }
+    
     private func updateChannel1(_ configPacketData_Audio: ConfigPacketData_Audio?) {
         // Update channel1 based on configPacketData_Audio
-        channel1 = configPacketData_Audio?.channel1 ?? false
+        guard let configData = configPacketData_Audio, channel1 != configData.channel1 else {
+            return
+        }
+        channel1 = configData.channel1
     }
 
     private func updateChannel2(_ configPacketData_Audio: ConfigPacketData_Audio?) {
         // Update channel2 based on configPacketData_Audio
-        channel2 = configPacketData_Audio?.channel2 ?? false
+        guard let configData = configPacketData_Audio, channel2 != configData.channel2 else {
+            return
+        }
+        channel2 = configData.channel2
     }
     
     private func updateAudioCompressionToggle(_ configPacketData_Audio: ConfigPacketData_Audio?) {
@@ -275,10 +370,11 @@ struct CompressionTypeCell: View {
 
     let compressionType: CompressionType
     @Binding var selectedCompressionType: CompressionType?
+    let compressionStrings: [String] = ["Opus"]
 
     var body: some View {
         HStack {
-            Text("\(compressionType.rawValue)")
+            Text("\(compressionStrings[compressionType.rawValue])")
             Spacer()
             if compressionType == selectedCompressionType {
                 Image(systemName: "largecircle.fill.circle")

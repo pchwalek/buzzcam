@@ -270,6 +270,9 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
 
 //            print("Decoded Message: \(message)")
             print("Temperature: \(message.systemInfoPacket.simpleSensorReading.temperature)")
+            print("Audio compression factor: \(message.configPacket.audioConfig.audioCompression.compressionFactor)")
+            print("Bit resolution: \(message.configPacket.audioConfig.bitResolution)")
+            print("Sampling Frequency: \(message.configPacket.audioConfig.sampleFreq)")
 //            print("Beep Enabled: \(message.systemInfoPacket.markState.beepEnabled)")
         } catch {
             print("Failed to decode and print message: \(error)")

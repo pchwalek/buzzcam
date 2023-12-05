@@ -153,13 +153,13 @@ struct MainView: View {
                         }.padding(.vertical, 25.0)
                         
                         // statuses dropdown
-                        StatusesView().environmentObject(bluetoothModel)
+                        StatusesView() //.environmentObject(bluetoothModel)
                         Spacer()
                         // sensor readings dropdown
-                        SensorReadingView().environmentObject(bluetoothModel)
+                        SensorReadingView() //.environmentObject(bluetoothModel)
                         Spacer()
                         // nearby devices dropdown
-                        NearbyDevices().environmentObject(bluetoothModel)
+                        NearbyDevices() //.environmentObject(bluetoothModel)
                         
                         Image("BuzzCam Logo").resizable()
                             .frame(width: 100, height: 100)

@@ -219,7 +219,7 @@ extension BluetoothModel {
             // Update markPacket and systemInfoPacket
             configPacket = currentConfigPacket
             
-            print("Sent new sample freq")
+            print("Sent new sample freq, \(sampleFreq)")
             
             sendConfigPacket()
         }
@@ -312,6 +312,36 @@ extension BluetoothModel {
             configPacket = currentConfigPacket
             
             print("Sent new compression type")
+            
+            sendConfigPacket()
+        }
+    }
+    
+    // send [packet to change compression factor
+    func changeCompressionFactor(compressionFactor: UInt32) {
+        // Create new Packet
+
+        // Retrieve the current values of SystemInfoPacket (if they exist)
+        var currentConfigPacket = configPacket ?? Packet()
+
+        // Set header to true
+//        currentConfigPacket.header = PacketHeader()
+
+        // Set unix time
+        let currentTimestamp = Date().timeIntervalSince1970
+        currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
+
+        // Set the currentMarkPacket fields
+//        currentConfigPacket.payload = .configPacket(ConfigPacket())
+        
+        // edit field if changed
+        if (currentConfigPacket.configPacket.audioConfig.audioCompression.compressionFactor != compressionFactor) {
+            currentConfigPacket.configPacket.audioConfig.audioCompression.compressionFactor = compressionFactor
+            
+            // Update markPacket and systemInfoPacket
+            configPacket = currentConfigPacket
+            
+            print("Sent new compression factor")
             
             sendConfigPacket()
         }
