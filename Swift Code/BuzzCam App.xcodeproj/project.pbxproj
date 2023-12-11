@@ -7,8 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		21152BC92B2790920078ADD4 /* NearbyDevicesConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21152BC82B2790920078ADD4 /* NearbyDevicesConfig.swift */; };
 		21A5600B2B16A55D00292A6A /* message.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21A5600A2B16A55D00292A6A /* message.pb.swift */; };
-		21A5600E2B1942AF00292A6A /* AudioView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21A5600D2B1942AF00292A6A /* AudioView.swift */; };
+		21A5600E2B1942AF00292A6A /* AudioConfigView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21A5600D2B1942AF00292A6A /* AudioConfigView.swift */; };
 		21BEAA4B2AFEE135001B89E6 /* BluetoothModelHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21BEAA4A2AFEE135001B89E6 /* BluetoothModelHelper.swift */; };
 		21C0A2062AE3152800BA2ABC /* StatusesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C0A2052AE3152800BA2ABC /* StatusesView.swift */; };
 		21C0A2082AE320E000BA2ABC /* SensorReadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C0A2072AE320E000BA2ABC /* SensorReadingView.swift */; };
@@ -28,6 +29,8 @@
 		21DAA5F12ADF222000E70BF2 /* BuzzCam_AppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21DAA5F02ADF222000E70BF2 /* BuzzCam_AppUITests.swift */; };
 		21DAA5F32ADF222000E70BF2 /* BuzzCam_AppUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21DAA5F22ADF222000E70BF2 /* BuzzCam_AppUITestsLaunchTests.swift */; };
 		21DAA6002AE0746B00E70BF2 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21DAA5FF2AE0746B00E70BF2 /* MainView.swift */; };
+		21F495E82B212DDF008E3808 /* SensingConfigView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21F495E72B212DDF008E3808 /* SensingConfigView.swift */; };
+		21F495EA2B2783DA008E3808 /* CameraConfigView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21F495E92B2783DA008E3808 /* CameraConfigView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -48,8 +51,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		21152BC82B2790920078ADD4 /* NearbyDevicesConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NearbyDevicesConfig.swift; sourceTree = "<group>"; };
 		21A5600A2B16A55D00292A6A /* message.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = message.pb.swift; sourceTree = "<group>"; };
-		21A5600D2B1942AF00292A6A /* AudioView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioView.swift; sourceTree = "<group>"; };
+		21A5600D2B1942AF00292A6A /* AudioConfigView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioConfigView.swift; sourceTree = "<group>"; };
 		21BEAA4A2AFEE135001B89E6 /* BluetoothModelHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothModelHelper.swift; sourceTree = "<group>"; };
 		21C0A2052AE3152800BA2ABC /* StatusesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusesView.swift; sourceTree = "<group>"; };
 		21C0A2072AE320E000BA2ABC /* SensorReadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SensorReadingView.swift; sourceTree = "<group>"; };
@@ -70,6 +74,8 @@
 		21DAA5F02ADF222000E70BF2 /* BuzzCam_AppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuzzCam_AppUITests.swift; sourceTree = "<group>"; };
 		21DAA5F22ADF222000E70BF2 /* BuzzCam_AppUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuzzCam_AppUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		21DAA5FF2AE0746B00E70BF2 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
+		21F495E72B212DDF008E3808 /* SensingConfigView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SensingConfigView.swift; sourceTree = "<group>"; };
+		21F495E92B2783DA008E3808 /* CameraConfigView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraConfigView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,7 +109,10 @@
 		21A5600C2B19429B00292A6A /* ConfigSubviews */ = {
 			isa = PBXGroup;
 			children = (
-				21A5600D2B1942AF00292A6A /* AudioView.swift */,
+				21A5600D2B1942AF00292A6A /* AudioConfigView.swift */,
+				21F495E72B212DDF008E3808 /* SensingConfigView.swift */,
+				21F495E92B2783DA008E3808 /* CameraConfigView.swift */,
+				21152BC82B2790920078ADD4 /* NearbyDevicesConfig.swift */,
 			);
 			path = ConfigSubviews;
 			sourceTree = "<group>";
@@ -343,13 +352,16 @@
 				21A5600B2B16A55D00292A6A /* message.pb.swift in Sources */,
 				21C0A2062AE3152800BA2ABC /* StatusesView.swift in Sources */,
 				21BEAA4B2AFEE135001B89E6 /* BluetoothModelHelper.swift in Sources */,
-				21A5600E2B1942AF00292A6A /* AudioView.swift in Sources */,
+				21A5600E2B1942AF00292A6A /* AudioConfigView.swift in Sources */,
+				21F495E82B212DDF008E3808 /* SensingConfigView.swift in Sources */,
 				21DAA5D72ADF221F00E70BF2 /* ContentView.swift in Sources */,
 				21DAA6002AE0746B00E70BF2 /* MainView.swift in Sources */,
 				21C0A2102AE7137100BA2ABC /* ConfigView.swift in Sources */,
 				21DAA5D52ADF221F00E70BF2 /* BuzzCam_AppApp.swift in Sources */,
 				21C0A20C2AE7104800BA2ABC /* DiscoverView.swift in Sources */,
 				21C0A2082AE320E000BA2ABC /* SensorReadingView.swift in Sources */,
+				21F495EA2B2783DA008E3808 /* CameraConfigView.swift in Sources */,
+				21152BC92B2790920078ADD4 /* NearbyDevicesConfig.swift in Sources */,
 				21C0A2192AE71EE800BA2ABC /* BluetoothModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -24,8 +24,8 @@ extension BluetoothModel {
 //        var currentSystemInfoPacket = systemInfoPacket ?? Packet()
 
         // Set header to true
-        currentMarkPacket.header = PacketHeader()
-        print("has header \(currentMarkPacket.header)" )
+//        currentMarkPacket.header = PacketHeader()
+//        print("has header \(currentMarkPacket.header)" )
 //        currentSystemInfoPacket.header = PacketHeader()
 
         // Set unix time
@@ -34,7 +34,7 @@ extension BluetoothModel {
 //        currentSystemInfoPacket.header.systemUid = UInt32(currentTimestamp)
 
         // Set the currentMarkPacket fields
-        currentMarkPacket.payload = .markPacket(MarkPacket())
+//        currentMarkPacket.payload = .markPacket(MarkPacket())
 //        currentSystemInfoPacket.payload = .systemInfoPacket(SystemInfoPacket())
 
         // Make changes to the specific fields
@@ -109,9 +109,7 @@ extension BluetoothModel {
         // Set the currentMarkPacket fields
 //        currentConfigPacket.payload = .configPacket(ConfigPacket())
 
-        if (!currentConfigPacket.configPacket.cameraControl.capture) {
-            currentConfigPacket.configPacket.cameraControl.capture = true
-        }
+        currentConfigPacket.configPacket.cameraControl.capture = true
         
         // Update markPacket and systemInfoPacket
         configPacket = currentConfigPacket
@@ -317,7 +315,7 @@ extension BluetoothModel {
         }
     }
     
-    // send [packet to change compression factor
+    // send packet to change compression factor
     func changeCompressionFactor(compressionFactor: UInt32) {
         // Create new Packet
 
@@ -345,6 +343,148 @@ extension BluetoothModel {
             
             sendConfigPacket()
         }
+    }
+    
+    // send [packet to change sample period
+    func changeSamplePeriod(samplePeriod: UInt32) {
+        // Create new Packet
+
+        // Retrieve the current values of SystemInfoPacket (if they exist)
+        var currentConfigPacket = configPacket ?? Packet()
+
+
+        // Set unix time
+        let currentTimestamp = Date().timeIntervalSince1970
+        currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
+        
+        // edit field if changed
+        if (currentConfigPacket.configPacket.sensorConfig.samplePeriodMs != samplePeriod) {
+            currentConfigPacket.configPacket.sensorConfig.samplePeriodMs = samplePeriod
+            
+            // Update markPacket and systemInfoPacket
+            configPacket = currentConfigPacket
+            
+            print("Sent new samplePeriod")
+            
+            sendConfigPacket()
+        }
+    }
+    
+    //send packet to enable/disable gas
+    func enableGasSensing(enableGas: Bool) {
+        // Create new Packet
+
+        // Retrieve the current values of SystemInfoPacket (if they exist)
+        var currentConfigPacket = configPacket ?? Packet()
+
+        // Set unix time
+        let currentTimestamp = Date().timeIntervalSince1970
+        currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
+
+        // edit field if changed
+        if (currentConfigPacket.configPacket.sensorConfig.enableGas != enableGas) {
+            
+            currentConfigPacket.configPacket.sensorConfig.enableGas = enableGas
+            
+            // Update markPacket and systemInfoPacket
+            configPacket = currentConfigPacket
+
+            print("Sent enableGas")
+            
+            sendConfigPacket()
+        }
+    }
+    
+    //send packet to enable/disable temperature
+    func enableTemperatureSensing(enableTemperature: Bool) {
+        // Create new Packet
+
+        // Retrieve the current values of SystemInfoPacket (if they exist)
+        var currentConfigPacket = configPacket ?? Packet()
+
+        // Set unix time
+        let currentTimestamp = Date().timeIntervalSince1970
+        currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
+
+        // edit field if changed
+        if (currentConfigPacket.configPacket.sensorConfig.enableTemperature != enableTemperature) {
+            
+            currentConfigPacket.configPacket.sensorConfig.enableTemperature = enableTemperature
+            
+            // Update markPacket and systemInfoPacket
+            configPacket = currentConfigPacket
+
+            print("Sent enableTemperature")
+            
+            sendConfigPacket()
+        }
+    }
+    
+    //send packet to enable/disable humidity
+    func enableHumiditySensing(enableHumidity: Bool) {
+        // Create new Packet
+
+        // Retrieve the current values of SystemInfoPacket (if they exist)
+        var currentConfigPacket = configPacket ?? Packet()
+
+        // Set unix time
+        let currentTimestamp = Date().timeIntervalSince1970
+        currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
+
+        // edit field if changed
+        if (currentConfigPacket.configPacket.sensorConfig.enableHumidity != enableHumidity) {
+            
+            currentConfigPacket.configPacket.sensorConfig.enableHumidity = enableHumidity
+            
+            // Update markPacket and systemInfoPacket
+            configPacket = currentConfigPacket
+
+            print("Sent enableHumidity")
+            
+            sendConfigPacket()
+        }
+    }
+    
+    // camera functions
+    
+    // send packet to pair with nearby cameras
+    func pairWithNearbyCameras() {
+        // Retrieve the current values of SystemInfoPacket (if they exist)
+        var currentConfigPacket = configPacket ?? Packet()
+
+        // Set unix time
+        let currentTimestamp = Date().timeIntervalSince1970
+        currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
+
+        currentConfigPacket.configPacket.cameraControl.pairWithNearbyCameras = true
+        
+        
+        // Update markPacket and systemInfoPacket
+        configPacket = currentConfigPacket
+        
+        print("Sent pairWithNearbyCameras")
+        
+        sendConfigPacket()
+    }
+    
+    // send packet to wakeup cameras
+    func wakeupCameras() {
+        // Retrieve the current values of SystemInfoPacket (if they exist)
+        var currentConfigPacket = configPacket ?? Packet()
+
+        // Set unix time
+        let currentTimestamp = Date().timeIntervalSince1970
+        currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
+
+        currentConfigPacket.configPacket.cameraControl.wakeupCameras = true
+        
+        
+        // Update markPacket and systemInfoPacket
+        configPacket = currentConfigPacket
+        
+        print("Sent wakeupCameras")
+        
+        sendConfigPacket()
     }
     
 }

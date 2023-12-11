@@ -273,6 +273,9 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
             print("Audio compression factor: \(message.configPacket.audioConfig.audioCompression.compressionFactor)")
             print("Bit resolution: \(message.configPacket.audioConfig.bitResolution)")
             print("Sampling Frequency: \(message.configPacket.audioConfig.sampleFreq)")
+            print("Channel 1 enabled: \(message.configPacket.audioConfig.channel1)")
+            print("Channel 2 enabled: \(message.configPacket.audioConfig.channel2)")
+//            print("Wakeup Cameras: \(message.configPacket.cameraControl.wakeupCameras)")
 //            print("Beep Enabled: \(message.systemInfoPacket.markState.beepEnabled)")
         } catch {
             print("Failed to decode and print message: \(error)")
