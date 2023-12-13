@@ -21,6 +21,8 @@ struct ConfigView: View {
                 CameraConfigView()
                 Spacer()
                 NearbyDevicesConfig()
+                Spacer()
+                SchedulesView()
             })
         }
     }

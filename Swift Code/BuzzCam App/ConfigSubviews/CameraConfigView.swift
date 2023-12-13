@@ -84,7 +84,6 @@ struct CameraConfigView: View {
                                 .background(Color.gray)
                                 .cornerRadius(8)
                             }
-                            .padding(.bottom, 10)
                         }
                     }
                 .padding()

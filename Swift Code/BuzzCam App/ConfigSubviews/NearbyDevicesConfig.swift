@@ -30,18 +30,56 @@ struct NearbyDevicesConfig: View {
             if isExpanded {
                 VStack (alignment: .leading, spacing: 20) {
                     VStack(alignment: .leading) {
-                        if let configPacketData = bluetoothModel.configPacketData_Discover {
-                            Text("Number of Discovered Devices: \(configPacketData.numberOfDiscoveredDevices)")
-                                .padding()
+                        HStack {
+                            Text("Number of Discovered Devices: ").fontWeight(.bold)
+                            Text("\(bluetoothModel.configPacketData_Discover?.numberOfDiscoveredDevices ?? 0)")
+                        }
+                        HStack {
+                            Text("Force rediscovery").fontWeight(.bold)
+                                .foregroundColor(.black)
 
-                            if !configPacketData.discoveredDeviceUid.isEmpty {
-                                List(configPacketData.discoveredDeviceUid, id: \.self) { uid in
-                                    Text("Device UID: \(uid)")
-                                }
-                            } else {
-                                Text("No devices discovered.")
-                                    .padding()
+                            Button(action: {
+                                // Call the associated function when the button is pressed
+                                bluetoothModel.forceRediscovery()
+                            }) {
+                                Image(systemName: "arrow.clockwise").padding()
+                                    .foregroundColor(.black)
                             }
+                            .buttonStyle(BorderlessButtonStyle())
+                            .background(Color.gray)
+                            .cornerRadius(8)
+                        }
+                    }
+                    .padding()
+                    .frame(
+                          minWidth: 0,
+                          maxWidth: .infinity,
+                          alignment: .leading)
+                    .background(Color(white: 0.98))
+                    .cornerRadius(10)
+                    
+                    
+                    
+                    VStack(alignment: .leading) {
+                        if let configPacketData = bluetoothModel.configPacketData_Discover {
+                            
+                            VStack (alignment: .leading) {
+                                Text("Discovered Devices: ").fontWeight(.bold).padding(.bottom)
+                                    .foregroundColor(.black)
+                                if !configPacketData.discoveredDeviceUid.isEmpty {
+                                    ForEach(configPacketData.discoveredDeviceUid, id: \.self) { uid in
+                                        HStack {
+                                            Image(systemName: "circle.fill") // You can use any bullet point icon here
+                                                .foregroundColor(.black)
+                                                .font(.system(size: 10))
+                                            Text("\(uid)")
+                                        }
+                                    }
+                                } else {
+                                    Text("No devices discovered.")
+                                        .padding()
+                                }
+                            }.padding()
                         } else {
                             Text("ConfigPacketData_Discover is nil.")
                                 .padding()
@@ -55,16 +93,7 @@ struct NearbyDevicesConfig: View {
                     .background(Color(white: 0.98))
                     .cornerRadius(10)
                     
-                    VStack(alignment: .leading) {
-                        
-                    }
-                    .padding()
-                    .frame(
-                          minWidth: 0,
-                          maxWidth: .infinity,
-                          alignment: .leading)
-                    .background(Color(white: 0.98))
-                    .cornerRadius(10)
+                    
                     
                     
                 
@@ -75,6 +104,8 @@ struct NearbyDevicesConfig: View {
         .frame(maxWidth: .infinity)
         .background(Color(white:0.90))
     }
+    
+
 }
 
 #Preview {

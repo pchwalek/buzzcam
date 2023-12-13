@@ -487,4 +487,46 @@ extension BluetoothModel {
         sendConfigPacket()
     }
     
+    // send packet to force rediscovery
+    func forceRediscovery() {
+        // Retrieve the current values of SystemInfoPacket (if they exist)
+        var currentConfigPacket = configPacket ?? Packet()
+
+        // Set unix time
+        let currentTimestamp = Date().timeIntervalSince1970
+        currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
+
+        currentConfigPacket.configPacket.networkState.forceRediscovery = true
+        
+        
+        // Update markPacket and systemInfoPacket
+        configPacket = currentConfigPacket
+        
+        print("Sent forceRediscovery")
+        
+        sendConfigPacket()
+    }
+    
+    // functions for schedule
+    
+    // send packet with schedules
+    func sendSchedules(_ schedules: [ScheduleConfig]) {
+        // Retrieve the current values of SystemInfoPacket (if they exist)
+        var currentConfigPacket = configPacket ?? Packet()
+
+        // Set unix time
+        let currentTimestamp = Date().timeIntervalSince1970
+        currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
+
+        currentConfigPacket.configPacket.scheduleConfig = schedules
+        
+        
+        // Update markPacket and systemInfoPacket
+        configPacket = currentConfigPacket
+        
+        print("Sent schedules")
+        
+        sendConfigPacket()
+    }
+    
 }

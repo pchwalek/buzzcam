@@ -24,6 +24,7 @@ struct ContentView: View {
                     .tabItem {
                         Label("Config", systemImage: "gearshape.fill")
                     }
+//                TestView().tabItem{Label("test tab", systemImage: "gearshape.fill")}
             }
         }
         else { // show discover devices
