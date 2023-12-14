@@ -42,6 +42,7 @@ struct SchedulesView: View {
                                 // Show the pop-up for adding a new schedule
                                 selectedIndex = nil
                                 isPopupPresented.toggle()
+                                print("add")
                             }
 
                             ForEach(schedules.indices, id: \.self) { index in
@@ -52,7 +53,9 @@ struct SchedulesView: View {
                                         Button("Edit") {
                                             // Show the pop-up for editing the schedule
                                             selectedIndex = index
+                                            print("index: \(index)")
                                             isPopupPresented.toggle()
+                                            print("edit")
                                         }
                                     }
                                     Text("Days: \(selectedDaysString(schedule: schedules[index]))")
@@ -75,6 +78,7 @@ struct SchedulesView: View {
                 SchedulePopupView(
                     isPresented: $isPopupPresented,
                     selectedIndex: selectedIndex,
+//                    schedules: schedules,
                     schedule: selectedIndex != nil ? schedules[selectedIndex!] : nil,
                     onSave: { newSchedule in
                         if let index = selectedIndex {
@@ -82,9 +86,8 @@ struct SchedulesView: View {
                         } else {
                             schedules.append(newSchedule)
                         }
-                        // Call sendSchedules to update the Bluetooth model
                         bluetoothModel.sendSchedules(schedules)
-                        isPopupPresented = false // Close the popup after saving
+                        isPopupPresented = false
                     }
                 )
                 .opacity(isPopupPresented ? 1 : 0) // Optionally, fade out when not presented
@@ -120,15 +123,102 @@ struct SchedulesView: View {
     }
 }
 
+//struct SchedulePopupView: View {
+//    @Binding var isPresented: Bool
+////    @State private var editedSchedule: ScheduleConfig
+//    let originalSchedule: ScheduleConfig
+//    let selectedIndex: Int?
+//    var onSave: (ScheduleConfig) -> Void
+//
+//    init(isPresented: Binding<Bool>, selectedIndex: Int?, schedule: ScheduleConfig? = nil, onSave: @escaping (ScheduleConfig) -> Void) {
+//        self._isPresented = isPresented
+//        self.originalSchedule = schedule ?? ScheduleConfig()
+//        self._editedSchedule = State(initialValue: selectedIndex != nil ? (schedule ?? ScheduleConfig()) : ScheduleConfig())
+//        self.selectedIndex = selectedIndex
+//        self.onSave = onSave
+//    }
+//
+//    // Computed property to initialize editedSchedule
+//        private var editedSchedule: ScheduleConfig {
+//            if let selectedIndex = selectedIndex {
+//                // If editing an existing schedule, use the original schedule
+//                return originalSchedule
+//            } else {
+//                // If adding a new schedule, use an empty ScheduleConfig
+//                return ScheduleConfig()
+//            }
+//        }
+//
+//        var body: some View {
+//            VStack {
+//                Text(selectedIndex != nil ? "Edit Schedule" : "Add Schedule")
+//                    .font(.title)
+//                    .padding()
+//
+//                // Checkboxes for days
+//                ForEach(DaysOfWeek.allCases, id: \.self) { day in
+//                    Button(action: {
+//                        toggleDay(day)
+//                    }) {
+//                        HStack {
+//                            Image(systemName: editedSchedule.isDaySelected(day) ? "checkmark.square" : "square")
+//                                .resizable()
+//                                .frame(width: 20, height: 20)
+//                            Text(day.rawValue.prefix(3))
+//                        }
+//                        .padding(.vertical, 5)
+//                    }
+//                }
+//
+//                // Time picker
+//                HStack {
+//                    Text("Start Time:")
+//                    TimePicker(selectedHour: $editedSchedule.startHour, selectedMinute: $editedSchedule.startMinute)
+//                }
+//
+//                HStack {
+//                    Text("End Time:")
+//                    TimePicker(selectedHour: $editedSchedule.stopHour, selectedMinute: $editedSchedule.stopMinute)
+//                }
+//
+//                Button("Save") {
+//                    onSave(editedSchedule)
+//                    isPresented.toggle()
+//                }
+//                .padding()
+//
+//                Button("Cancel") {
+//                    isPresented.toggle()
+//                }
+//                .padding()
+//            }
+//            .frame(width: 300, height: 600)
+//            .background(Color.white)
+//            .cornerRadius(10)
+//            .overlay(
+//                RoundedRectangle(cornerRadius: 10)
+//                    .stroke(Color.gray, lineWidth: 2)
+//            )
+//            .shadow(radius: 5)
+//            .padding()
+//        }
+//
+//    private func toggleDay(_ day: DaysOfWeek) {
+//        editedSchedule.toggleDay(day)
+//    }
+//}
+
 struct SchedulePopupView: View {
     @Binding var isPresented: Bool
     @State private var editedSchedule: ScheduleConfig
+    let originalSchedule: ScheduleConfig
     let selectedIndex: Int?
     var onSave: (ScheduleConfig) -> Void
 
     init(isPresented: Binding<Bool>, selectedIndex: Int?, schedule: ScheduleConfig? = nil, onSave: @escaping (ScheduleConfig) -> Void) {
         self._isPresented = isPresented
-        self._editedSchedule = State(initialValue: schedule ?? ScheduleConfig())
+        self.originalSchedule = schedule ?? ScheduleConfig()
+        self._editedSchedule = State(initialValue: selectedIndex != nil ? (schedule ?? ScheduleConfig()) : ScheduleConfig())
         self.selectedIndex = selectedIndex
         self.onSave = onSave
     }
@@ -168,6 +258,7 @@ struct SchedulePopupView: View {
             Button("Save") {
                 onSave(editedSchedule)
                 isPresented.toggle()
+                isPresented.toggle()
             }
             .padding()
 
@@ -176,10 +267,27 @@ struct SchedulePopupView: View {
             }
             .padding()
         }
-        .onAppear {
-            // Perform any setup if needed
+        .onChange(of: selectedIndex) {
+            // Update editedSchedule when selectedIndex changes
+            if let index = selectedIndex {
+                editedSchedule = originalSchedule
+            } else {
+                editedSchedule = ScheduleConfig()
+            }
         }
-        .frame(width: 400, height: 600)
+        .onAppear {
+            // Perform any setup if needed when the view appears
+            if let selectedIndex = selectedIndex {
+                // If editing an existing schedule, update editedSchedule with the original schedule
+                editedSchedule = originalSchedule
+                print("og schedule")
+            } else {
+                // If adding a new schedule, update editedSchedule with an empty ScheduleConfig
+                editedSchedule = ScheduleConfig()
+                print("new schedule")
+            }
+        }
+        .frame(width: 300, height: 600)
         .background(Color.white)
         .cornerRadius(10)
         .overlay(

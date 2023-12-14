@@ -525,6 +525,7 @@ extension BluetoothModel {
         configPacket = currentConfigPacket
         
         print("Sent schedules")
+        print("Schedules: \(schedules)")
         
         sendConfigPacket()
     }
