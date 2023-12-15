@@ -163,7 +163,7 @@ struct MainView: View {
                         
                         Image("BuzzCam Logo").resizable()
                             .frame(width: 100, height: 100)
-                            .scaledToFit() // replace with transparent background logo
+                            .scaledToFit().padding() // replace with transparent background logo
                     }
                     } else {
                                             // Placeholder view or loading indicator while the peripheral name is not available

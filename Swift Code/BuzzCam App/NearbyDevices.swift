@@ -40,10 +40,14 @@ struct NearbyDevices: View {
                 }
                 if isExpanded {
                     VStack {
-                        List(bluetoothModel.filteredPeripherals) { peripheral in
-                            Text(peripheral.name ?? "Unknown")
+//                        List(bluetoothModel.filteredPeripherals) { peripheral in
+//                            Text(peripheral.name ?? "Unknown")
+//                        }
+//                        Text("test nearby device")
+                        HStack {
+                            Text("Number of Nearby Devices: ").fontWeight(.bold)
+                            Text("\(bluetoothModel.configPacketData_Discover?.numberOfDiscoveredDevices ?? 0)")
                         }
-                        Text("test nearby device")
                     }
                     .frame(maxWidth: .infinity)
                     .padding(30)
