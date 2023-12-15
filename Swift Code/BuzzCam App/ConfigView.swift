@@ -14,7 +14,7 @@ struct ConfigView: View {
         ScrollView(showsIndicators: false) {
             ScrollViewReader(content: { proxy in
                 Text("Configuration").font(.title)
-                AudioConfigView() //.environmentObject(bluetoothModel)
+                AudioConfigView()
                 Spacer()
                 SensingConfigView()
                 Spacer()

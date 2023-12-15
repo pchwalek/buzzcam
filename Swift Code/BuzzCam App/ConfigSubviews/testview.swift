@@ -1,5 +1,7 @@
 import SwiftUI
 
+// View for testing popup, not actually used in app
+
 struct TestView: View {
     @State private var isPopupPresented = false
 

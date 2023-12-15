@@ -17,76 +17,41 @@ extension BluetoothModel {
     
     // send packets when mark is updated
     func markUpdates(annotationText: String, beep: Bool) {
-        // Create new Packet
-
         // Retrieve the current values of MarkPacket and SystemInfoPacket (if they exist)
         var currentMarkPacket = markPacket ?? Packet()
-//        var currentSystemInfoPacket = systemInfoPacket ?? Packet()
-
-        // Set header to true
-//        currentMarkPacket.header = PacketHeader()
-//        print("has header \(currentMarkPacket.header)" )
-//        currentSystemInfoPacket.header = PacketHeader()
 
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
         currentMarkPacket.header.systemUid = UInt32(currentTimestamp)
-//        currentSystemInfoPacket.header.systemUid = UInt32(currentTimestamp)
-
-        // Set the currentMarkPacket fields
-//        currentMarkPacket.payload = .markPacket(MarkPacket())
-//        currentSystemInfoPacket.payload = .systemInfoPacket(SystemInfoPacket())
-
-        // Make changes to the specific fields
+        
         // Set annotationText if it's not empty
         if !annotationText.isEmpty {
             currentMarkPacket.markPacket.annotation = annotationText
         }
-//        if (currentSystemInfoPacket.systemInfoPacket.markState.beepEnabled != beep) {
-//            currentSystemInfoPacket.systemInfoPacket.markState.beepEnabled = beep
-//        }
         
         currentMarkPacket.markPacket.beepEnabled = beep
         
-        // remove this later
-//        currentSystemInfoPacket.systemInfoPacket.simpleSensorReading.co2 = 10
-        
-        // Update markPacket and systemInfoPacket
-        markPacket = currentMarkPacket
-//        systemInfoPacket = currentSystemInfoPacket
-        
-//        print("markPacket.markPacket.annotation", markPacket?.markPacket.annotation)
-//        print("systemInfoPacket.systemInfoPacket.markState.beepEnabled", systemInfoPacket?.systemInfoPacket.markState.beepEnabled)
 
-        // Send both packets over BLE
-        // sendMarkPacket()
-        // usleep(100000)
+        // Update markPacket
+        markPacket = currentMarkPacket
+
         sendSystemInfoPacket()
         sendMarkPacket()
     }
     
     // send packet when device is disabled/enabled
     func deviceEnabledUpdates(deviceEnabled: Bool) {
-        // Create new Packet
-
         // Retrieve the current values of SystemInfoPacket (if they exist)
         var currentSystemInfoPacket = systemInfoPacket ?? Packet()
-
-        // Set header to true
-//        currentSystemInfoPacket.header = PacketHeader()
-
+        
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
         currentSystemInfoPacket.header.systemUid = UInt32(currentTimestamp)
-
-        // Set the currentMarkPacket fields
-//        currentSystemInfoPacket.payload = .systemInfoPacket(SystemInfoPacket())
-
+        
         if (currentSystemInfoPacket.systemInfoPacket.deviceRecording != deviceEnabled) {
             currentSystemInfoPacket.systemInfoPacket.deviceRecording = deviceEnabled
         }
         
-        // Update markPacket and systemInfoPacket
         systemInfoPacket = currentSystemInfoPacket
         
         sendSystemInfoPacket()
@@ -94,24 +59,15 @@ extension BluetoothModel {
     
     // send packet to force a camera capture
     func forceCameraCapture() {
-        // Create new Packet
-
         // Retrieve the current values of SystemInfoPacket (if they exist)
         var currentConfigPacket = configPacket ?? Packet()
-
-        // Set header to true
-//        currentConfigPacket.header = PacketHeader()
-
+        
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
         currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
-
-        // Set the currentMarkPacket fields
-//        currentConfigPacket.payload = .configPacket(ConfigPacket())
-
+        
         currentConfigPacket.configPacket.cameraControl.capture = true
         
-        // Update markPacket and systemInfoPacket
         configPacket = currentConfigPacket
         
         print("Forced camera capture")
@@ -121,29 +77,17 @@ extension BluetoothModel {
     
     //send packet to enable/disable audio channels
     func enableAudioChannel1(channel1: Bool) {
-        // Create new Packet
-
         // Retrieve the current values of SystemInfoPacket (if they exist)
         var currentConfigPacket = configPacket ?? Packet()
-
-        // Set header to true
-//        currentConfigPacket.header = PacketHeader()
-
+        
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
         currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
-
-        // Set the currentMarkPacket fields
-//        currentConfigPacket.payload = .configPacket(ConfigPacket())
-        
-//        currentConfigPacket.configPacket.audioConfig = currentMessage?.configPacket.audioConfig ?? AudioConfig()
         
         if (currentConfigPacket.configPacket.audioConfig.channel1 != channel1) {
-            
             // edit field if changed
             currentConfigPacket.configPacket.audioConfig.channel1 = channel1
             
-            // Update markPacket and systemInfoPacket
             configPacket = currentConfigPacket
             
             print("in enableAudioChannel1, channel1 is \(channel1)")
@@ -155,26 +99,13 @@ extension BluetoothModel {
     
     //send packet to enable/disable audio channels
     func enableAudioChannel2(channel2: Bool) {
-        // Create new Packet
-        print("1 in enableAudioChannel2, channel2 is \(channel2)")
-
         // Retrieve the current values of SystemInfoPacket (if they exist)
         var currentConfigPacket = configPacket ?? Packet()
-        print("1 in enableAudioChannel2, currentConfigPacket.configPacket.audioConfig.channel2 is \(currentConfigPacket.configPacket.audioConfig.channel2)")
-
-
-//        // Set header to true
-//        currentConfigPacket.header = PacketHeader()
 
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
         currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
         // also add epoch
-
-        // Set the currentMarkPacket fields
-//        currentConfigPacket.payload = .configPacket(ConfigPacket())
-        print("1 in enableAudioChannel2, currentConfigPacket.configPacket.audioConfig.channel2 is \(currentConfigPacket.configPacket.audioConfig.channel2)")
-
         
         // edit field if changed
         if (currentConfigPacket.configPacket.audioConfig.channel2 != channel2) {
@@ -182,11 +113,9 @@ extension BluetoothModel {
             
             currentConfigPacket.configPacket.audioConfig.channel2 = channel2
             
-            // Update markPacket and systemInfoPacket
             configPacket = currentConfigPacket
             
             print("2 in enableAudioChannel2, channel2 is \(channel2)")
-            
             print("Sent enable audio channel2")
             
             sendConfigPacket()
@@ -195,26 +124,17 @@ extension BluetoothModel {
     
     //send packet to set sample freq
     func changeSampleFreq(sampleFreq: MicSampleFreq) {
-        // Create new Packet
-
         // Retrieve the current values of SystemInfoPacket (if they exist)
         var currentConfigPacket = configPacket ?? Packet()
-
-        // Set header to true
-//        currentConfigPacket.header = PacketHeader()
-
+        
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
         currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
-
-        // Set the currentMarkPacket fields
-//        currentConfigPacket.payload = .configPacket(ConfigPacket())
         
         // edit field if changed
         if (currentConfigPacket.configPacket.audioConfig.sampleFreq != sampleFreq) {
             currentConfigPacket.configPacket.audioConfig.sampleFreq = sampleFreq
             
-            // Update markPacket and systemInfoPacket
             configPacket = currentConfigPacket
             
             print("Sent new sample freq, \(sampleFreq)")
@@ -224,26 +144,17 @@ extension BluetoothModel {
     }
     
     func setBitResolution(bitResolution: MicBitResolution) {
-        // Create new Packet
-
         // Retrieve the current values of SystemInfoPacket (if they exist)
         var currentConfigPacket = configPacket ?? Packet()
-
-        // Set header to true
-//        currentConfigPacket.header = PacketHeader()
-
+        
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
         currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
-
-        // Set the currentMarkPacket fields
-//        currentConfigPacket.payload = .configPacket(ConfigPacket())
         
         // edit field if changed
         if(currentConfigPacket.configPacket.audioConfig.bitResolution != bitResolution) {
             currentConfigPacket.configPacket.audioConfig.bitResolution = bitResolution
             
-            // Update markPacket and systemInfoPacket
             configPacket = currentConfigPacket
             
             print("Set bit resolution")
@@ -254,31 +165,20 @@ extension BluetoothModel {
     
     //send packet to enable/disable audio channels
     func enableAudioCompression(audioCompressionEnabled: Bool) {
-        // Create new Packet
-
         // Retrieve the current values of SystemInfoPacket (if they exist)
         var currentConfigPacket = configPacket ?? Packet()
-
-        // Set header to true
-//        currentConfigPacket.header = PacketHeader()
-
+        
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
         currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
-
-        // Set the currentMarkPacket fields
-//        currentConfigPacket.payload = .configPacket(ConfigPacket())
         
         // edit field if changed
         if (currentConfigPacket.configPacket.audioConfig.audioCompression.enabled != audioCompressionEnabled) {
             
             currentConfigPacket.configPacket.audioConfig.audioCompression.enabled = audioCompressionEnabled
             
-            // Update markPacket and systemInfoPacket
             configPacket = currentConfigPacket
-            
-//            print("in enableAudioCompression, audioCompressionEnabled is \(audioCompressionEnabled)")
-            
+                        
             print("Sent enable audio compression")
             
             sendConfigPacket()
@@ -287,26 +187,17 @@ extension BluetoothModel {
     
     //send packet to set compression type
     func changeCompressionType(compressionType: CompressionType) {
-        // Create new Packet
-
         // Retrieve the current values of SystemInfoPacket (if they exist)
         var currentConfigPacket = configPacket ?? Packet()
-
-        // Set header to true
-//        currentConfigPacket.header = PacketHeader()
-
+        
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
         currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
-
-        // Set the currentMarkPacket fields
-//        currentConfigPacket.payload = .configPacket(ConfigPacket())
         
         // edit field if changed
         if (currentConfigPacket.configPacket.audioConfig.audioCompression.compressionType != compressionType) {
             currentConfigPacket.configPacket.audioConfig.audioCompression.compressionType = compressionType
             
-            // Update markPacket and systemInfoPacket
             configPacket = currentConfigPacket
             
             print("Sent new compression type")
@@ -317,26 +208,17 @@ extension BluetoothModel {
     
     // send packet to change compression factor
     func changeCompressionFactor(compressionFactor: UInt32) {
-        // Create new Packet
-
         // Retrieve the current values of SystemInfoPacket (if they exist)
         var currentConfigPacket = configPacket ?? Packet()
-
-        // Set header to true
-//        currentConfigPacket.header = PacketHeader()
-
+        
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
         currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
-
-        // Set the currentMarkPacket fields
-//        currentConfigPacket.payload = .configPacket(ConfigPacket())
         
         // edit field if changed
         if (currentConfigPacket.configPacket.audioConfig.audioCompression.compressionFactor != compressionFactor) {
             currentConfigPacket.configPacket.audioConfig.audioCompression.compressionFactor = compressionFactor
             
-            // Update markPacket and systemInfoPacket
             configPacket = currentConfigPacket
             
             print("Sent new compression factor")
@@ -347,12 +229,10 @@ extension BluetoothModel {
     
     // send [packet to change sample period
     func changeSamplePeriod(samplePeriod: UInt32) {
-        // Create new Packet
-
         // Retrieve the current values of SystemInfoPacket (if they exist)
         var currentConfigPacket = configPacket ?? Packet()
-
-
+        
+        
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
         currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
@@ -361,7 +241,6 @@ extension BluetoothModel {
         if (currentConfigPacket.configPacket.sensorConfig.samplePeriodMs != samplePeriod) {
             currentConfigPacket.configPacket.sensorConfig.samplePeriodMs = samplePeriod
             
-            // Update markPacket and systemInfoPacket
             configPacket = currentConfigPacket
             
             print("Sent new samplePeriod")
@@ -372,23 +251,20 @@ extension BluetoothModel {
     
     //send packet to enable/disable gas
     func enableGasSensing(enableGas: Bool) {
-        // Create new Packet
-
         // Retrieve the current values of SystemInfoPacket (if they exist)
         var currentConfigPacket = configPacket ?? Packet()
-
+        
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
         currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
-
+        
         // edit field if changed
         if (currentConfigPacket.configPacket.sensorConfig.enableGas != enableGas) {
             
             currentConfigPacket.configPacket.sensorConfig.enableGas = enableGas
             
-            // Update markPacket and systemInfoPacket
             configPacket = currentConfigPacket
-
+            
             print("Sent enableGas")
             
             sendConfigPacket()
@@ -397,23 +273,20 @@ extension BluetoothModel {
     
     //send packet to enable/disable temperature
     func enableTemperatureSensing(enableTemperature: Bool) {
-        // Create new Packet
-
         // Retrieve the current values of SystemInfoPacket (if they exist)
         var currentConfigPacket = configPacket ?? Packet()
-
+        
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
         currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
-
+        
         // edit field if changed
         if (currentConfigPacket.configPacket.sensorConfig.enableTemperature != enableTemperature) {
             
             currentConfigPacket.configPacket.sensorConfig.enableTemperature = enableTemperature
             
-            // Update markPacket and systemInfoPacket
             configPacket = currentConfigPacket
-
+            
             print("Sent enableTemperature")
             
             sendConfigPacket()
@@ -422,23 +295,20 @@ extension BluetoothModel {
     
     //send packet to enable/disable humidity
     func enableHumiditySensing(enableHumidity: Bool) {
-        // Create new Packet
-
         // Retrieve the current values of SystemInfoPacket (if they exist)
         var currentConfigPacket = configPacket ?? Packet()
-
+        
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
         currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
-
+        
         // edit field if changed
         if (currentConfigPacket.configPacket.sensorConfig.enableHumidity != enableHumidity) {
             
             currentConfigPacket.configPacket.sensorConfig.enableHumidity = enableHumidity
             
-            // Update markPacket and systemInfoPacket
             configPacket = currentConfigPacket
-
+            
             print("Sent enableHumidity")
             
             sendConfigPacket()
@@ -451,15 +321,14 @@ extension BluetoothModel {
     func pairWithNearbyCameras() {
         // Retrieve the current values of SystemInfoPacket (if they exist)
         var currentConfigPacket = configPacket ?? Packet()
-
+        
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
         currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
-
+        
         currentConfigPacket.configPacket.cameraControl.pairWithNearbyCameras = true
         
         
-        // Update markPacket and systemInfoPacket
         configPacket = currentConfigPacket
         
         print("Sent pairWithNearbyCameras")
@@ -471,15 +340,13 @@ extension BluetoothModel {
     func wakeupCameras() {
         // Retrieve the current values of SystemInfoPacket (if they exist)
         var currentConfigPacket = configPacket ?? Packet()
-
+        
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
         currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
-
+        
         currentConfigPacket.configPacket.cameraControl.wakeupCameras = true
         
-        
-        // Update markPacket and systemInfoPacket
         configPacket = currentConfigPacket
         
         print("Sent wakeupCameras")
@@ -491,15 +358,13 @@ extension BluetoothModel {
     func forceRediscovery() {
         // Retrieve the current values of SystemInfoPacket (if they exist)
         var currentConfigPacket = configPacket ?? Packet()
-
+        
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
         currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
-
+        
         currentConfigPacket.configPacket.networkState.forceRediscovery = true
         
-        
-        // Update markPacket and systemInfoPacket
         configPacket = currentConfigPacket
         
         print("Sent forceRediscovery")
@@ -513,15 +378,13 @@ extension BluetoothModel {
     func sendSchedules(_ schedules: [ScheduleConfig]) {
         // Retrieve the current values of SystemInfoPacket (if they exist)
         var currentConfigPacket = configPacket ?? Packet()
-
+        
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
         currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
-
+        
         currentConfigPacket.configPacket.scheduleConfig = schedules
         
-        
-        // Update markPacket and systemInfoPacket
         configPacket = currentConfigPacket
         
         print("Sent schedules")

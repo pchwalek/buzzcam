@@ -22,7 +22,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
     @Published var configPacketData_LowPower: ConfigPacketData_LowPower?
     
     // Global message packet
-//    @Published var currentMessage: Packet?
+    //    @Published var currentMessage: Packet?
     
     
     var isScanning = true
@@ -58,7 +58,6 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
             if !filteredPeripherals.contains(peripheral) {
                 filteredPeripherals.append(peripheral)
                 print("Discovered Peripheral: \(peripheral.name ?? "Unknown") with Identifier: \(peripheral.identifier)")
-//                connectToPeripheral(peripheral)
             }
         }
         if !peripherals.contains(peripheral) { // for testing purposes
@@ -72,9 +71,6 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
     }
     
     func disconnect() {
-        // Set the flag to indicate user-initiated disconnect
-//        isUserInitiatedDisconnect = true
-
         if let connectedPeripheral = connectedPeripheral {
             centralManager.cancelPeripheralConnection(connectedPeripheral)
         }
@@ -88,15 +84,14 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
         filteredPeripherals = []
         connectedPeripheral = nil
         targetCharacteristic = nil
-        // reset packet
+        
+        // reset packets
         systemInfoPacketData?.reset()
         configPacketData_Audio?.reset()
         configPacketData_Schedule?.reset()
         configPacketData_Sensor?.reset()
         configPacketData_Discover?.reset()
         configPacketData_LowPower?.reset()
-        // Reset the flag after performing the disconnect and reset logic
-//        isUserInitiatedDisconnect = false
         // start scanning again when reset and disconnected
         if centralManager.state == .poweredOn {
             centralManager.scanForPeripherals(withServices: nil, options: nil)
@@ -105,36 +100,34 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
     }
     
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-        // Handle the reconnection
-//        isReconnecting = false
         peripheral.delegate = self
         connectedPeripheral = peripheral
         peripheral.discoverServices([serviceUUID])
     }
     
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
-                if let services = peripheral.services {
-                    print("Discovered Services for \(peripheral.name ?? "Unknown"):")
-                    for service in services {
-                        print("Service UUID: \(service.uuid)")
-        
-                        // After discovering services, also discover characteristics for each service
-                        peripheral.discoverCharacteristics([characteristicUUID_CE71, characteristicUUID_CE72, characteristicUUID_CE73], for: service)
-                    }
-                }
+        if let services = peripheral.services {
+            print("Discovered Services for \(peripheral.name ?? "Unknown"):")
+            for service in services {
+                print("Service UUID: \(service.uuid)")
+                
+                // After discovering services, also discover characteristics for each service
+                peripheral.discoverCharacteristics([characteristicUUID_CE71, characteristicUUID_CE72, characteristicUUID_CE73], for: service)
+            }
+        }
         
     }
-
+    
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         guard service.uuid == CBUUID(string: "CE70") else {
             return
         }
-
+        
         guard let characteristics = service.characteristics else {
             print("Characteristics are nil for service \(service.uuid)")
             return
         }
-
+        
         for characteristic in characteristics {
             switch characteristic.uuid {
             case characteristicUUID_CE71, characteristicUUID_CE72:
@@ -156,7 +149,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
             print("Peripheral is nil. Cannot subscribe to notifications.")
             return
         }
-
+        
         if peripheral.state == .connected {
             peripheral.setNotifyValue(true, for: characteristic)
             print("Subscribed to characteristic: \(characteristic.uuid)")
@@ -173,7 +166,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
             print("Peripheral not connected.")
             return
         }
-
+        
         if peripheral.state == .connected {
             peripheral.readValue(for: characteristic)
         } else {
@@ -187,7 +180,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
             print("Peripheral not connected.")
             return
         }
-
+        
         if peripheral.state == .connected {
             do {
                 let data = try message.serializedData()
@@ -206,11 +199,10 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
             print("Characteristic value is nil. Cannot decode and print.")
             return
         }
-
+        
         do {
             let message = try Packet(serializedData: data)
-//            currentMessage = message
-
+            
             // Use a switch statement to handle different characteristics
             switch characteristic.uuid {
             case characteristicUUID_CE71:
@@ -229,7 +221,6 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
                         battery_voltage: message.systemInfoPacket.batteryState.voltage,
                         device_recording: message.systemInfoPacket.deviceRecording,
                         mark_number: message.systemInfoPacket.markState.markNumber
-//                        beep_enabled: message.systemInfoPacket.markState.beepEnabled
                     )
                 }
                 print("Updated systemInfoPacketData with CE71 characteristic")
@@ -258,7 +249,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
                     self.configPacketData_Discover = ConfigPacketData_Discover(
                         numberOfDiscoveredDevices: message.configPacket.networkState.numberOfDiscoveredDevices,
                         discoveredDeviceUid: message.configPacket.networkState.discoveredDeviceUid
-                        )
+                    )
                     
                     self.configPacketData_LowPower = ConfigPacketData_LowPower(lowPowerMode: message.configPacket.lowPowerConfig.lowPowerMode)
                 }
@@ -267,16 +258,16 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
                 // Handle other characteristics if needed
                 break
             }
-
-//            print("Decoded Message: \(message)")
-            print("Temperature: \(message.systemInfoPacket.simpleSensorReading.temperature)")
-            print("Audio compression factor: \(message.configPacket.audioConfig.audioCompression.compressionFactor)")
-            print("Bit resolution: \(message.configPacket.audioConfig.bitResolution)")
-            print("Sampling Frequency: \(message.configPacket.audioConfig.sampleFreq)")
-            print("Channel 1 enabled: \(message.configPacket.audioConfig.channel1)")
-            print("Channel 2 enabled: \(message.configPacket.audioConfig.channel2)")
-//            print("Wakeup Cameras: \(message.configPacket.cameraControl.wakeupCameras)")
-//            print("Beep Enabled: \(message.systemInfoPacket.markState.beepEnabled)")
+            
+            //            //            print("Decoded Message: \(message)")
+            //            print("Temperature: \(message.systemInfoPacket.simpleSensorReading.temperature)")
+            //            print("Audio compression factor: \(message.configPacket.audioConfig.audioCompression.compressionFactor)")
+            //            print("Bit resolution: \(message.configPacket.audioConfig.bitResolution)")
+            //            print("Sampling Frequency: \(message.configPacket.audioConfig.sampleFreq)")
+            //            print("Channel 1 enabled: \(message.configPacket.audioConfig.channel1)")
+            //            print("Channel 2 enabled: \(message.configPacket.audioConfig.channel2)")
+            //            //            print("Wakeup Cameras: \(message.configPacket.cameraControl.wakeupCameras)")
+            //            //            print("Beep Enabled: \(message.systemInfoPacket.markState.beepEnabled)")
         } catch {
             print("Failed to decode and print message: \(error)")
         }
@@ -289,7 +280,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
     // Then you can receive notifications through the didUpdateValueFor delegate method
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         print("in didUpdateValue")
-
+        
         switch characteristic.uuid {
         case characteristicUUID_CE71, characteristicUUID_CE72:
             decodeAndPrintMessage(from: characteristic)
@@ -300,16 +291,16 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
     }
     
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
-//      // Attempt to reconnect after a delay if not already in progress
+        //      // Attempt to reconnect after a delay if not already in progress
         // Attempt automatic reconnection only if it's not a user-initiated disconnect
-//        if !isUserInitiatedDisconnect {
-//            if !isReconnecting {
-//                isReconnecting = true
-//                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-//                    central.connect(peripheral, options: nil)
-//                }
-//            }
-//        }
+        //        if !isUserInitiatedDisconnect {
+        //            if !isReconnecting {
+        //                isReconnecting = true
+        //                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+        //                    central.connect(peripheral, options: nil)
+        //                }
+        //            }
+        //        }
     }
     
     
@@ -348,39 +339,16 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
         }
     }
     
-//    func sendMarkPacketData() {
-//        // Ensure that the peripheral has the service and characteristic
-//        guard let peripheral = connectedPeripheral,
-//              let service = peripheral.services?.first(where: { $0.uuid == serviceUUID }),
-//              let characteristic = service.characteristics?.first(where: { $0.uuid == characteristicUUID_CE73 }) else {
-//            print("Service or characteristic not found on the peripheral.")
-//            return
-//        }
-//
-//        do {
-//            // Serialize the markPacket into Data
-////            print("markPacketData \(markPacket)")
-//            let markPacketData = try markPacket?.serializedData() ?? Data()
-////            
-////            let hexString = markPacketData.map { String(format: "%02x", $0) }.joined()
-////            print("Serialized Data as Hex String: \(hexString)")
-//            peripheral.writeValue(markPacketData, for: characteristic, type: .withResponse)
-//            print("Mark packet sent")
-//        } catch {
-//            print("Error sending MarkPacket: \(error)")
-//        }
-//    }
-    
     func sendMarkPacketData() {
         // Ensure that the peripheral is connected
         guard let peripheral = connectedPeripheral else {
             print("Peripheral not connected.")
             return
         }
-
+        
         // Check if the service and characteristic have been discovered
         if let service = peripheral.services?.first(where: { $0.uuid == serviceUUID }),
-            let characteristic = service.characteristics?.first(where: { $0.uuid == characteristicUUID_CE73 }) {
+           let characteristic = service.characteristics?.first(where: { $0.uuid == characteristicUUID_CE73 }) {
             // If discovered, proceed to send data
             sendMarkPacketDataHelper(peripheral: peripheral, characteristic: characteristic)
         } else {
@@ -388,7 +356,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
             peripheral.discoverServices([serviceUUID])
         }
     }
-
+    
     // Helper method to send data when service and characteristic are available
     func sendMarkPacketDataHelper(peripheral: CBPeripheral, characteristic: CBCharacteristic) {
         do {
@@ -401,37 +369,16 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
         }
     }
     
-//    func sendSystemInfoPacketData() {
-//        // Ensure that the peripheral has the service and characteristic
-//        guard let peripheral = connectedPeripheral,
-//              let service = peripheral.services?.first(where: { $0.uuid == serviceUUID }),
-//              let characteristic = service.characteristics?.first(where: { $0.uuid == characteristicUUID_CE73 }) else {
-//            print("Service or characteristic not found on the peripheral.")
-//            return
-//        }
-//
-//        do {
-//            // Serialize the systemInfoPacket into Data
-//            let systemInfoPacketData = try systemInfoPacket?.serializedData() ?? Data()
-////            let hexString = systemInfoPacketData.map { String(format: "%02x", $0) }.joined()
-////            print("Serialized Data as Hex String: \(hexString)")
-//            peripheral.writeValue(systemInfoPacketData, for: characteristic, type: .withResponse)
-//            print("System info packet sent")
-//        } catch {
-//            print("Error serializing SystemInfoPacket: \(error)")
-//        }
-//    }
-    
     func sendSystemInfoPacketData() {
         // Ensure that the peripheral is connected
         guard let peripheral = connectedPeripheral else {
             print("Peripheral not connected.")
             return
         }
-
+        
         // Check if the service and characteristic have been discovered
         if let service = peripheral.services?.first(where: { $0.uuid == serviceUUID }),
-            let characteristic = service.characteristics?.first(where: { $0.uuid == characteristicUUID_CE73 }) {
+           let characteristic = service.characteristics?.first(where: { $0.uuid == characteristicUUID_CE73 }) {
             // If discovered, proceed to send data
             sendSystemInfoPacketDataHelper(peripheral: peripheral, characteristic: characteristic)
         } else {
@@ -439,7 +386,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
             peripheral.discoverServices([serviceUUID])
         }
     }
-
+    
     // Helper method to send system info data when service and characteristic are available
     func sendSystemInfoPacketDataHelper(peripheral: CBPeripheral, characteristic: CBCharacteristic) {
         do {
@@ -458,10 +405,10 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
             print("Peripheral not connected.")
             return
         }
-
+        
         // Check if the service and characteristic have been discovered
         if let service = peripheral.services?.first(where: { $0.uuid == serviceUUID }),
-            let characteristic = service.characteristics?.first(where: { $0.uuid == characteristicUUID_CE73 }) {
+           let characteristic = service.characteristics?.first(where: { $0.uuid == characteristicUUID_CE73 }) {
             // If discovered, proceed to send data
             sendConfigPacketDataHelper(peripheral: peripheral, characteristic: characteristic)
         } else {
@@ -469,7 +416,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
             peripheral.discoverServices([serviceUUID])
         }
     }
-
+    
     // Helper method to send system info data when service and characteristic are available
     func sendConfigPacketDataHelper(peripheral: CBPeripheral, characteristic: CBCharacteristic) {
         do {

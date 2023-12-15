@@ -37,7 +37,7 @@ struct NearbyDevicesConfig: View {
                         HStack {
                             Text("Force rediscovery").fontWeight(.bold)
                                 .foregroundColor(.black)
-
+                            
                             Button(action: {
                                 // Call the associated function when the button is pressed
                                 bluetoothModel.forceRediscovery()
@@ -52,9 +52,9 @@ struct NearbyDevicesConfig: View {
                     }
                     .padding()
                     .frame(
-                          minWidth: 0,
-                          maxWidth: .infinity,
-                          alignment: .leading)
+                        minWidth: 0,
+                        maxWidth: .infinity,
+                        alignment: .leading)
                     .background(Color(white: 0.98))
                     .cornerRadius(10)
                     
@@ -69,7 +69,7 @@ struct NearbyDevicesConfig: View {
                                 if !configPacketData.discoveredDeviceUid.isEmpty {
                                     ForEach(configPacketData.discoveredDeviceUid, id: \.self) { uid in
                                         HStack {
-                                            Image(systemName: "circle.fill") // You can use any bullet point icon here
+                                            Image(systemName: "circle.fill") // Bullet point icon here
                                                 .foregroundColor(.black)
                                                 .font(.system(size: 10))
                                             Text("\(uid)")
@@ -87,25 +87,25 @@ struct NearbyDevicesConfig: View {
                     }
                     .padding()
                     .frame(
-                          minWidth: 0,
-                          maxWidth: .infinity,
-                          alignment: .leading)
+                        minWidth: 0,
+                        maxWidth: .infinity,
+                        alignment: .leading)
                     .background(Color(white: 0.98))
                     .cornerRadius(10)
                     
                     
                     
                     
-                
+                    
                 }
-            .padding()
+                .padding()
             }
         }
         .frame(maxWidth: .infinity)
         .background(Color(white:0.90))
     }
     
-
+    
 }
 
 #Preview {

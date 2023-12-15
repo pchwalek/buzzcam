@@ -8,54 +8,40 @@
 import SwiftUI
 import CoreBluetooth
 
-
-
 struct NearbyDevices: View {
-    @State private var isExpanded = false //change to false after cleanup
+    @State private var isExpanded = false
     @EnvironmentObject var bluetoothModel: BluetoothModel
     
     var body: some View {
-//        VStack {
-//            Text("test Discover Devices")
-//            // loop thru devices with "BuzzCam" in name
-//            List(bluetoothModel.peripherals) { peripheral in
-//                Text(peripheral.name ?? "Unknown")
-//                
-//            }
-//        }
         VStack (alignment: .leading) {
-                HStack {
-                    Spacer()
-                    Text("Nearby Devices")
-                        .font(.title)
-                        .padding()
-                    
-                    Image(systemName: "chevron.down")
-                        .rotationEffect(.degrees(isExpanded ? 180 : 0))
-                    Spacer()
-                }.background(Color(white:0.75)).onTapGesture {
-                    withAnimation {
-                        isExpanded.toggle()
-                    }
-                }
-                if isExpanded {
-                    VStack {
-//                        List(bluetoothModel.filteredPeripherals) { peripheral in
-//                            Text(peripheral.name ?? "Unknown")
-//                        }
-//                        Text("test nearby device")
-                        HStack {
-                            Text("Number of Nearby Devices: ").fontWeight(.bold)
-                            Text("\(bluetoothModel.configPacketData_Discover?.numberOfDiscoveredDevices ?? 0)")
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(30)
-                    
+            HStack {
+                Spacer()
+                Text("Nearby Devices")
+                    .font(.title)
+                    .padding()
+                
+                Image(systemName: "chevron.down")
+                    .rotationEffect(.degrees(isExpanded ? 180 : 0))
+                Spacer()
+            }.background(Color(white:0.75)).onTapGesture {
+                withAnimation {
+                    isExpanded.toggle()
                 }
             }
-            .frame(maxWidth: .infinity)
-            .background(Color(white:0.90))
+            if isExpanded {
+                VStack {
+                    HStack {
+                        Text("Number of Nearby Devices: ").fontWeight(.bold)
+                        Text("\(bluetoothModel.configPacketData_Discover?.numberOfDiscoveredDevices ?? 0)")
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding(30)
+                
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .background(Color(white:0.90))
     }
 }
 

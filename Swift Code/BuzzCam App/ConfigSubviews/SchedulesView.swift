@@ -19,87 +19,87 @@ struct SchedulesView: View {
     
     
     var body: some View {
-            VStack (alignment: .leading) {
-                HStack {
-                    Spacer()
-                    Text("Schedules")
-                        .font(.title)
-                        .padding()
-
-                    Image(systemName: "chevron.down")
-                        .rotationEffect(.degrees(isExpanded ? 180 : 0))
-                    Spacer()
-                }.background(Color(white:0.75)).onTapGesture {
-                    withAnimation {
-                        isExpanded.toggle()
-                    }
+        VStack (alignment: .leading) {
+            HStack {
+                Spacer()
+                Text("Schedules")
+                    .font(.title)
+                    .padding()
+                
+                Image(systemName: "chevron.down")
+                    .rotationEffect(.degrees(isExpanded ? 180 : 0))
+                Spacer()
+            }.background(Color(white:0.75)).onTapGesture {
+                withAnimation {
+                    isExpanded.toggle()
                 }
-
-                if isExpanded {
-                    VStack (alignment: .leading, spacing: 20) {
-                        VStack(alignment: .leading) {
-                            Button("Add Schedule") {
-                                // Show the pop-up for adding a new schedule
-                                selectedIndex = nil
-                                isPopupPresented.toggle()
-                                print("add")
-                            }
-
-                            ForEach(schedules.indices, id: \.self) { index in
-                                VStack {
-                                    HStack {
-                                        Text("Schedule #\(index)").fontWeight(.bold)
-                                        Spacer()
-                                        Button("Edit") {
-                                            // Show the pop-up for editing the schedule
-                                            selectedIndex = index
-                                            print("index: \(index)")
-                                            isPopupPresented.toggle()
-                                            print("edit")
-                                        }
+            }
+            
+            if isExpanded {
+                VStack (alignment: .leading, spacing: 20) {
+                    VStack(alignment: .leading) {
+                        Button("Add Schedule") {
+                            // Show the pop-up for adding a new schedule
+                            selectedIndex = nil
+                            isPopupPresented.toggle()
+                            print("add")
+                        }
+                        
+                        ForEach(schedules.indices, id: \.self) { index in
+                            VStack {
+                                HStack {
+                                    Text("Schedule #\(index)").fontWeight(.bold)
+                                    Spacer()
+                                    Button("Edit") {
+                                        // Show the pop-up for editing the schedule
+                                        selectedIndex = index
+                                        print("index: \(index)")
+                                        isPopupPresented.toggle()
+                                        print("edit")
                                     }
-                                    Text("Days: \(selectedDaysString(schedule: schedules[index]))")
-                                    Text("Time: \(selectedTimeString(schedule: schedules[index]))")
                                 }
+                                Text("Days: \(selectedDaysString(schedule: schedules[index]))")
+                                Text("Time: \(selectedTimeString(schedule: schedules[index]))")
                             }
                         }
-                        .padding()
-                        .frame(
-                              minWidth: 0,
-                              maxWidth: .infinity,
-                              alignment: .leading)
-                        .background(Color(white: 0.98))
-                        .cornerRadius(10)
                     }
                     .padding()
+                    .frame(
+                        minWidth: 0,
+                        maxWidth: .infinity,
+                        alignment: .leading)
+                    .background(Color(white: 0.98))
+                    .cornerRadius(10)
                 }
-
-                // Unified view for editing/creating schedules
-                SchedulePopupView(
-                    isPresented: $isPopupPresented,
-                    selectedIndex: selectedIndex,
-//                    schedules: schedules,
-                    schedule: selectedIndex != nil ? schedules[selectedIndex!] : nil,
-                    onSave: { newSchedule in
-                        if let index = selectedIndex {
-                            schedules[index] = newSchedule
-                        } else {
-                            schedules.append(newSchedule)
-                        }
-                        bluetoothModel.sendSchedules(schedules)
-                        isPopupPresented = false
+                .padding()
+            }
+            
+            // Unified view for editing/creating schedules
+            SchedulePopupView(
+                isPresented: $isPopupPresented,
+                selectedIndex: selectedIndex,
+                //                    schedules: schedules,
+                schedule: selectedIndex != nil ? schedules[selectedIndex!] : nil,
+                onSave: { newSchedule in
+                    if let index = selectedIndex {
+                        schedules[index] = newSchedule
+                    } else {
+                        schedules.append(newSchedule)
                     }
-                )
-                .opacity(isPopupPresented ? 1 : 0) // Optionally, fade out when not presented
-                .animation(.easeInOut, value: 1)
-            }
-            .onAppear {
-                // Initialize schedules when the view appears
-                schedules = bluetoothModel.configPacketData_Schedule?.scheduleConfig ?? []
-            }
-            .frame(maxWidth: .infinity)
-            .background(Color(white:0.90))
+                    bluetoothModel.sendSchedules(schedules)
+                    isPopupPresented = false
+                }
+            )
+            .opacity(isPopupPresented ? 1 : 0) // Optionally, fade out when not presented
+            .animation(.easeInOut, value: 1)
         }
+        .onAppear {
+            // Initialize schedules when the view appears
+            schedules = bluetoothModel.configPacketData_Schedule?.scheduleConfig ?? []
+        }
+        .frame(maxWidth: .infinity)
+        .background(Color(white:0.90))
+    }
     
     private func selectedDaysString(schedule: ScheduleConfig) -> String {
         let selectedDays = ["S", "M", "T", "W", "Th", "F", "Sa"]
@@ -117,96 +117,11 @@ struct SchedulesView: View {
             }
         return selectedDays.joined(separator: ", ")
     }
-
+    
     private func selectedTimeString(schedule: ScheduleConfig) -> String {
         return "\(schedule.startHour):\(schedule.startMinute) - \(schedule.stopHour):\(schedule.stopMinute)"
     }
 }
-
-//struct SchedulePopupView: View {
-//    @Binding var isPresented: Bool
-////    @State private var editedSchedule: ScheduleConfig
-//    let originalSchedule: ScheduleConfig
-//    let selectedIndex: Int?
-//    var onSave: (ScheduleConfig) -> Void
-//
-//    init(isPresented: Binding<Bool>, selectedIndex: Int?, schedule: ScheduleConfig? = nil, onSave: @escaping (ScheduleConfig) -> Void) {
-//        self._isPresented = isPresented
-//        self.originalSchedule = schedule ?? ScheduleConfig()
-//        self._editedSchedule = State(initialValue: selectedIndex != nil ? (schedule ?? ScheduleConfig()) : ScheduleConfig())
-//        self.selectedIndex = selectedIndex
-//        self.onSave = onSave
-//    }
-//
-//    // Computed property to initialize editedSchedule
-//        private var editedSchedule: ScheduleConfig {
-//            if let selectedIndex = selectedIndex {
-//                // If editing an existing schedule, use the original schedule
-//                return originalSchedule
-//            } else {
-//                // If adding a new schedule, use an empty ScheduleConfig
-//                return ScheduleConfig()
-//            }
-//        }
-//
-//        var body: some View {
-//            VStack {
-//                Text(selectedIndex != nil ? "Edit Schedule" : "Add Schedule")
-//                    .font(.title)
-//                    .padding()
-//
-//                // Checkboxes for days
-//                ForEach(DaysOfWeek.allCases, id: \.self) { day in
-//                    Button(action: {
-//                        toggleDay(day)
-//                    }) {
-//                        HStack {
-//                            Image(systemName: editedSchedule.isDaySelected(day) ? "checkmark.square" : "square")
-//                                .resizable()
-//                                .frame(width: 20, height: 20)
-//                            Text(day.rawValue.prefix(3))
-//                        }
-//                        .padding(.vertical, 5)
-//                    }
-//                }
-//
-//                // Time picker
-//                HStack {
-//                    Text("Start Time:")
-//                    TimePicker(selectedHour: $editedSchedule.startHour, selectedMinute: $editedSchedule.startMinute)
-//                }
-//
-//                HStack {
-//                    Text("End Time:")
-//                    TimePicker(selectedHour: $editedSchedule.stopHour, selectedMinute: $editedSchedule.stopMinute)
-//                }
-//
-//                Button("Save") {
-//                    onSave(editedSchedule)
-//                    isPresented.toggle()
-//                }
-//                .padding()
-//
-//                Button("Cancel") {
-//                    isPresented.toggle()
-//                }
-//                .padding()
-//            }
-//            .frame(width: 300, height: 600)
-//            .background(Color.white)
-//            .cornerRadius(10)
-//            .overlay(
-//                RoundedRectangle(cornerRadius: 10)
-//                    .stroke(Color.gray, lineWidth: 2)
-//            )
-//            .shadow(radius: 5)
-//            .padding()
-//        }
-//
-//    private func toggleDay(_ day: DaysOfWeek) {
-//        editedSchedule.toggleDay(day)
-//    }
-//}
 
 struct SchedulePopupView: View {
     @Binding var isPresented: Bool
@@ -214,7 +129,7 @@ struct SchedulePopupView: View {
     let originalSchedule: ScheduleConfig
     let selectedIndex: Int?
     var onSave: (ScheduleConfig) -> Void
-
+    
     init(isPresented: Binding<Bool>, selectedIndex: Int?, schedule: ScheduleConfig? = nil, onSave: @escaping (ScheduleConfig) -> Void) {
         self._isPresented = isPresented
         self.originalSchedule = schedule ?? ScheduleConfig()
@@ -222,13 +137,13 @@ struct SchedulePopupView: View {
         self.selectedIndex = selectedIndex
         self.onSave = onSave
     }
-
+    
     var body: some View {
         VStack {
             Text(selectedIndex != nil ? "Edit Schedule" : "Add Schedule")
                 .font(.title)
                 .padding()
-
+            
             // Checkboxes for days
             ForEach(DaysOfWeek.allCases, id: \.self) { day in
                 Button(action: {
@@ -243,25 +158,25 @@ struct SchedulePopupView: View {
                     .padding(.vertical, 5)
                 }
             }
-
+            
             // Time picker
             HStack {
                 Text("Start Time:")
                 TimePicker(selectedHour: $editedSchedule.startHour, selectedMinute: $editedSchedule.startMinute)
             }
-
+            
             HStack {
                 Text("End Time:")
                 TimePicker(selectedHour: $editedSchedule.stopHour, selectedMinute: $editedSchedule.stopMinute)
             }
-
+            
             Button("Save") {
                 onSave(editedSchedule)
                 isPresented.toggle()
                 isPresented.toggle()
             }
             .padding()
-
+            
             Button("Cancel") {
                 isPresented.toggle()
             }
@@ -269,7 +184,7 @@ struct SchedulePopupView: View {
         }
         .onChange(of: selectedIndex) {
             // Update editedSchedule when selectedIndex changes
-            if let index = selectedIndex {
+            if selectedIndex != nil {
                 editedSchedule = originalSchedule
             } else {
                 editedSchedule = ScheduleConfig()
@@ -277,7 +192,7 @@ struct SchedulePopupView: View {
         }
         .onAppear {
             // Perform any setup if needed when the view appears
-            if let selectedIndex = selectedIndex {
+            if selectedIndex != nil {
                 // If editing an existing schedule, update editedSchedule with the original schedule
                 editedSchedule = originalSchedule
                 print("og schedule")
@@ -297,7 +212,7 @@ struct SchedulePopupView: View {
         .shadow(radius: 5)
         .padding()
     }
-
+    
     private func toggleDay(_ day: DaysOfWeek) {
         editedSchedule.toggleDay(day)
     }
@@ -306,7 +221,7 @@ struct SchedulePopupView: View {
 struct TimePicker: View {
     @Binding var selectedHour: UInt32
     @Binding var selectedMinute: UInt32
-
+    
     var body: some View {
         HStack {
             Picker("", selection: $selectedHour) {
@@ -317,9 +232,9 @@ struct TimePicker: View {
             }
             .frame(width: 50)
             .clipped()
-
+            
             Text(":")
-
+            
             Picker("", selection: $selectedMinute) {
                 ForEach(0..<60, id: \.self) { minute in
                     Text("\(minute)")
@@ -337,7 +252,7 @@ struct WheelPicker: View {
     let range: Range<Int>
     @Binding var selection: Int
     let label: String
-
+    
     var body: some View {
         VStack {
             Text(label)
@@ -364,7 +279,7 @@ extension ScheduleConfig {
         case .saturday: return saturday
         }
     }
-
+    
     mutating func toggleDay(_ day: DaysOfWeek) {
         switch day {
         case .sunday: sunday.toggle()
@@ -386,65 +301,9 @@ enum DaysOfWeek: String, CaseIterable, Identifiable {
     case thursday = "Thu"
     case friday = "Fri"
     case saturday = "Sat"
-
+    
     var id: String { self.rawValue }
 }
-
-//struct SchedulePopupView: View {
-//    @Binding var isPresented: Bool
-//    @State private var editedSchedule: ScheduleConfig
-//    let selectedIndex: Int?
-////    let schedules: [ScheduleConfig]
-//    var onSave: (ScheduleConfig) -> Void
-////    let bluetoothModel: BluetoothModel
-//
-//    init(isPresented: Binding<Bool>, selectedIndex: Int?, schedule: ScheduleConfig? = nil, onSave: @escaping (ScheduleConfig) -> Void) {
-//        //schedules: [ScheduleConfig], bluetoothModel: BluetoothModel) {
-//        self._isPresented = isPresented
-//        self._editedSchedule = State(initialValue: schedule ?? ScheduleConfig())
-//        self.selectedIndex = selectedIndex
-//        self.onSave = onSave
-////        self.schedules = schedules
-////        self.bluetoothModel = bluetoothModel
-//    }
-//
-//    var body: some View {
-//        VStack {
-//            Text(selectedIndex != nil ? "Edit Schedule" : "Add Schedule")
-//                .font(.title)
-//                .padding()
-//
-//            // Add controls for editing ScheduleConfig properties
-//            // Use editedSchedule binding to modify the properties (e.g., sliders, text fields)
-//
-//            Button("Save") {
-//                onSave(editedSchedule)
-//                isPresented.toggle()
-//                isPresented.toggle()
-//                editedSchedule = ScheduleConfig()
-////                bluetoothModel.sendSchedules(schedules)
-//            }
-//            .padding()
-//
-//            Button("Cancel") {
-//                isPresented.toggle()
-//            }
-//            .padding()
-//        }
-//        .onAppear {
-//            // Perform any setup if needed
-//        }
-//        .frame(width: 300, height: 200) // Adjust the size as needed
-//        .background(Color.white)
-//        .cornerRadius(10)
-//        .overlay(
-//            RoundedRectangle(cornerRadius: 10)
-//                .stroke(Color.gray, lineWidth: 2)
-//        )
-//        .shadow(radius: 5)
-//        .padding()
-//    }
-//}
 
 #Preview {
     SchedulesView()

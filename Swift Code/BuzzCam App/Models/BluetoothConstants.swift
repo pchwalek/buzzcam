@@ -8,10 +8,6 @@
 import Foundation
 import CoreBluetooth
 
-enum BluetoothConstants {
-    
-}
-
 struct SystemInfoPacketData {
     var index: UInt32
     var temperature: Float

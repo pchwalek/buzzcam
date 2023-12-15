@@ -10,7 +10,7 @@ import SwiftUI
 struct CameraConfigView: View {
     @EnvironmentObject var bluetoothModel: BluetoothModel
     @State private var isExpanded = false
-
+    
     var body: some View {
         VStack (alignment: .leading) {
             HStack {
@@ -35,7 +35,7 @@ struct CameraConfigView: View {
                                 Text("Pair with Nearby Cameras")
                                     .padding()
                                     .foregroundColor(.black)
-
+                                
                                 Button(action: {
                                     // Call the associated function when the button is pressed
                                     bluetoothModel.pairWithNearbyCameras()
@@ -53,7 +53,7 @@ struct CameraConfigView: View {
                                 Text("Force Camera Capture")
                                     .padding()
                                     .foregroundColor(.black)
-
+                                
                                 Button(action: {
                                     // Call the associated function when the button is pressed
                                     bluetoothModel.forceCameraCapture()
@@ -72,7 +72,7 @@ struct CameraConfigView: View {
                                 Text("Wakeup Cameras")
                                     .padding()
                                     .foregroundColor(.black)
-
+                                
                                 Button(action: {
                                     // Call the associated function when the button is pressed
                                     bluetoothModel.wakeupCameras()
@@ -86,25 +86,25 @@ struct CameraConfigView: View {
                             }
                         }
                     }
-                .padding()
-                .frame(
-                      minWidth: 0,
-                      maxWidth: .infinity,
-                      alignment: .leading)
-                .background(Color(white: 0.98))
-                .cornerRadius(10)
-                
-        
-                
+                    .padding()
+                    .frame(
+                        minWidth: 0,
+                        maxWidth: .infinity,
+                        alignment: .leading)
+                    .background(Color(white: 0.98))
+                    .cornerRadius(10)
+                    
+                    
+                    
                 }
-            .padding()
+                .padding()
             }
         }
         .frame(maxWidth: .infinity)
         .background(Color(white:0.90))
-            
-    }
         
+    }
+    
 }
 
 #Preview {
