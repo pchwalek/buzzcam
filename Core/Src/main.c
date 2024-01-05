@@ -23,8 +23,20 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "stdbool.h"
+#include <stdio.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <string.h>
 
+#include "ble_types.h"
+#include "pb.h"
+#include "pb_decode.h"
+#include "pb_encode.h"
+#include "message.pb.h"
+
+#include "dts.h"
+
+#include "app_ble.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -34,11 +46,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define MAX_INTENSITY 1000
 
-#define AUDIO_BUFFER_LEN		(48000)
-//#define AUDIO_BUFFER_LEN		(1000)
-#define AUDIO_BUFFER_HALF_LEN	(AUDIO_BUFFER_LEN >> 1)
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -72,35 +80,9 @@ const osThreadAttr_t defaultTask_attributes = {
   .stack_size = 256 * 4
 };
 /* USER CODE BEGIN PV */
-FATFS SDFatFs; /* File system object for SD card logical drive */
-FIL MyFile; /* File object */
-FIL	WavFile;
-DIR dir;
-FIL file;
-UINT bytes_written;
-char SDPath[4]; /* SD card logical drive path */
-
-//FX_MEDIA        sd_disk;
-//FX_FILE         fx_file;
-//FX_FILE			WavFile;
-
-uint32_t media_memory[512 / sizeof(uint32_t)];
-
-WAVE_FormatTypeDef WaveFormat;
-
-uint8_t pHeaderBuff[44];
-
 uint16_t redVal = 0;
 uint16_t greenVal = 0;
 uint16_t blueVal = 0;
-
-uint32_t byteswritten = 0;
-volatile uint32_t sampleCntr = 0;
-
-uint16_t audioSample[AUDIO_BUFFER_LEN] = {0};
-
-volatile uint8_t SAI_HALF_CALLBACK = 0;
-volatile uint8_t SAI_FULL_CALLBACK = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -122,23 +104,19 @@ static void MX_RF_Init(void);
 void StartDefaultTask(void *argument);
 
 /* USER CODE BEGIN PFP */
-void run_ADC();
-void Power_Enable_ADAU1979(bool state);
-void setLED_Green(uint32_t intensity);
-void setLED_Blue(uint32_t intensity);
-void setLED_Red(uint32_t intensity);
-void disableLEDs();
 
-void WAV_RECORD_TEST(void);
-static uint32_t WavProcess_HeaderInit(uint8_t* pHeader, WAVE_FormatTypeDef* pWaveFormatStruct);
-static uint32_t WavProcess_EncInit(uint32_t Freq, uint8_t *pHeader);
-static uint32_t WavProcess_HeaderUpdate(uint8_t* pHeader, uint32_t bytesWritten);
-static void WavUpdateHeaderSize(uint64_t totalBytesWritten);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+static DTS_STM_Payload_t PackedPayload;
 
+
+packet_t configPacket = PACKET_INIT_ZERO;
+packet_t infoPacket = PACKET_INIT_ZERO;
+uint8_t buffer[500];
+size_t message_length;
+bool status;
 /* USER CODE END 0 */
 
 /**
@@ -159,6 +137,7 @@ int main(void)
   MX_APPE_Config();
 
   /* USER CODE BEGIN Init */
+
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -171,223 +150,151 @@ int main(void)
   MX_IPCC_Init();
 
   /* USER CODE BEGIN SysInit */
+  configPacket.has_header = true;
+  configPacket.header.epoch = 1111;
+  configPacket.header.system_uid = LL_FLASH_GetUDN();
+  configPacket.header.ms_from_start = HAL_GetTick();
 
+  configPacket.which_payload = PACKET_CONFIG_PACKET_TAG;
+
+  configPacket.payload.config_packet.has_audio_config=true;
+  configPacket.payload.config_packet.audio_config.bit_resolution=MIC_BIT_RESOLUTION_BIT_RES_16;
+  configPacket.payload.config_packet.audio_config.channel_1=true;
+  configPacket.payload.config_packet.audio_config.channel_2=true;
+  configPacket.payload.config_packet.audio_config.has_audio_compression=true;
+  configPacket.payload.config_packet.audio_config.audio_compression.compression_factor=0;
+  configPacket.payload.config_packet.audio_config.audio_compression.compression_type=COMPRESSION_TYPE_OPUS;
+  configPacket.payload.config_packet.audio_config.audio_compression.enabled=false;
+  configPacket.payload.config_packet.audio_config.estimated_record_time=12345678; //placeholder
+  configPacket.payload.config_packet.audio_config.sample_freq=MIC_SAMPLE_FREQ_SAMPLE_RATE_48000;
+
+  configPacket.payload.config_packet.has_camera_control=true;
+  configPacket.payload.config_packet.camera_control.capture=false;
+  configPacket.payload.config_packet.camera_control.pair_with_nearby_cameras=false;
+  configPacket.payload.config_packet.camera_control.wakeup_cameras=false;
+
+  configPacket.payload.config_packet.has_low_power_config=true;
+  configPacket.payload.config_packet.low_power_config.low_power_mode=false;
+
+  configPacket.payload.config_packet.has_network_state=true;
+  configPacket.payload.config_packet.network_state.discovered_device_uid_count=12;
+  configPacket.payload.config_packet.network_state.number_of_discovered_devices=configPacket.payload.config_packet.network_state.discovered_device_uid_count;
+  configPacket.payload.config_packet.network_state.discovered_device_uid[0] = 0xDEADBEEF;
+  configPacket.payload.config_packet.network_state.discovered_device_uid[1] = 0xDEADBEAF;
+  configPacket.payload.config_packet.network_state.discovered_device_uid[2] = 0xDEADBEBF;
+  configPacket.payload.config_packet.network_state.discovered_device_uid[3] = 0xDEADBECF;
+  configPacket.payload.config_packet.network_state.discovered_device_uid[4] = 0xDEADBEDF;
+  configPacket.payload.config_packet.network_state.discovered_device_uid[5] = 0xDEADBEEF;
+  configPacket.payload.config_packet.network_state.discovered_device_uid[6] = 0xDEADBEFF;
+  configPacket.payload.config_packet.network_state.discovered_device_uid[7] = 0xDEADBAEF;
+  configPacket.payload.config_packet.network_state.discovered_device_uid[8] = 0xDEADBBEF;
+  configPacket.payload.config_packet.network_state.discovered_device_uid[9] = 0xDEADBCEF;
+  configPacket.payload.config_packet.network_state.discovered_device_uid[10] = 0xDEADBDEF;
+  configPacket.payload.config_packet.network_state.discovered_device_uid[11] = 0xDEADBFEF;
+  configPacket.payload.config_packet.network_state.number_of_discovered_devices=123;
+  configPacket.payload.config_packet.network_state.force_rediscovery=false;
+
+  configPacket.payload.config_packet.has_sensor_config=true;
+  configPacket.payload.config_packet.sensor_config.enable_gas=true;
+  configPacket.payload.config_packet.sensor_config.enable_humidity=true;
+  configPacket.payload.config_packet.sensor_config.enable_temperature=true;
+  configPacket.payload.config_packet.sensor_config.sample_period_ms=1000;
+
+  configPacket.payload.config_packet.schedule_config_count = 2;
+  configPacket.payload.config_packet.schedule_config[0].monday = true;
+  configPacket.payload.config_packet.schedule_config[0].wednesday = true;
+  configPacket.payload.config_packet.schedule_config[0].start_hour = 7;
+  configPacket.payload.config_packet.schedule_config[0].start_minute = 35;
+  configPacket.payload.config_packet.schedule_config[0].stop_hour = 10;
+  configPacket.payload.config_packet.schedule_config[0].stop_minute = 05;
+  configPacket.payload.config_packet.schedule_config[1].tuesday = true;
+  configPacket.payload.config_packet.schedule_config[1].wednesday = true;
+  configPacket.payload.config_packet.schedule_config[1].thursday = true;
+  configPacket.payload.config_packet.schedule_config[1].friday = true;
+  configPacket.payload.config_packet.schedule_config[1].start_hour = 13;
+  configPacket.payload.config_packet.schedule_config[1].start_minute = 03;
+  configPacket.payload.config_packet.schedule_config[1].stop_hour = 17;
+  configPacket.payload.config_packet.schedule_config[1].stop_minute = 47;
+
+  infoPacket.has_header = true;
+  infoPacket.header.epoch = 1111;
+  infoPacket.header.system_uid = LL_FLASH_GetUDN();
+  infoPacket.header.ms_from_start = HAL_GetTick();
+
+  infoPacket.which_payload = PACKET_SYSTEM_INFO_PACKET_TAG;
+  infoPacket.payload.system_info_packet.has_battery_state = true;
+  infoPacket.payload.system_info_packet.battery_state.charging=false;
+  infoPacket.payload.system_info_packet.battery_state.has_percentage=true;
+  infoPacket.payload.system_info_packet.battery_state.percentage=50.0;
+  infoPacket.payload.system_info_packet.battery_state.voltage=3.75;
+
+  infoPacket.payload.system_info_packet.has_discovered_devices = true;
+  infoPacket.payload.system_info_packet.discovered_devices.device_count=12;
+  infoPacket.payload.system_info_packet.discovered_devices.number_of_devices=infoPacket.payload.system_info_packet.discovered_devices.device_count;
+  infoPacket.payload.system_info_packet.discovered_devices.device[0].uid = 0xDEADBEEF;
+  infoPacket.payload.system_info_packet.discovered_devices.device[1].uid = 0xDEADBEAF;
+  infoPacket.payload.system_info_packet.discovered_devices.device[2].uid = 0xDEADBEBF;
+  infoPacket.payload.system_info_packet.discovered_devices.device[3].uid = 0xDEADBECF;
+  infoPacket.payload.system_info_packet.discovered_devices.device[4].uid = 0xDEADBEDF;
+  infoPacket.payload.system_info_packet.discovered_devices.device[5].uid = 0xDEADBEEF;
+  infoPacket.payload.system_info_packet.discovered_devices.device[6].uid = 0xDEADBEFF;
+  infoPacket.payload.system_info_packet.discovered_devices.device[7].uid = 0xDEADBAEF;
+  infoPacket.payload.system_info_packet.discovered_devices.device[8].uid = 0xDEADBBEF;
+  infoPacket.payload.system_info_packet.discovered_devices.device[9].uid = 0xDEADBCEF;
+  infoPacket.payload.system_info_packet.discovered_devices.device[10].uid = 0xDEADBDEF;
+  infoPacket.payload.system_info_packet.discovered_devices.device[11].uid = 0xDEADBFEF;
+  infoPacket.payload.system_info_packet.discovered_devices.device[0].range = 1.0;
+  infoPacket.payload.system_info_packet.discovered_devices.device[1].range = 2;
+  infoPacket.payload.system_info_packet.discovered_devices.device[2].range = 3;
+  infoPacket.payload.system_info_packet.discovered_devices.device[3].range = 4;
+  infoPacket.payload.system_info_packet.discovered_devices.device[4].range = 5;
+  infoPacket.payload.system_info_packet.discovered_devices.device[5].range = 6;
+  infoPacket.payload.system_info_packet.discovered_devices.device[6].range = 7;
+  infoPacket.payload.system_info_packet.discovered_devices.device[7].range = 8;
+  infoPacket.payload.system_info_packet.discovered_devices.device[8].range = 9.12;
+  infoPacket.payload.system_info_packet.discovered_devices.device[9].range = 10.2321;
+  infoPacket.payload.system_info_packet.discovered_devices.device[10].range =11.2;
+  infoPacket.payload.system_info_packet.discovered_devices.device[11].range = 12.1;
+
+  infoPacket.payload.system_info_packet.has_mark_state = true;
+//  infoPacket.payload.system_info_packet.mark_state.beep_enabled=false;
+  infoPacket.payload.system_info_packet.mark_state.mark_number=123;
+  infoPacket.payload.system_info_packet.mark_state.timestamp_unix=123;
+
+  infoPacket.payload.system_info_packet.has_sdcard_state = true;
+  infoPacket.payload.system_info_packet.sdcard_state.detected=true;
+  infoPacket.payload.system_info_packet.sdcard_state.estimated_remaining_recording_time=1234;
+  infoPacket.payload.system_info_packet.sdcard_state.space_remaining=1234;
+
+  infoPacket.payload.system_info_packet.has_simple_sensor_reading = true;
+  infoPacket.payload.system_info_packet.simple_sensor_reading.co2=458.0;
+  infoPacket.payload.system_info_packet.simple_sensor_reading.humidity=40.0;
+  infoPacket.payload.system_info_packet.simple_sensor_reading.index=123;
+  infoPacket.payload.system_info_packet.simple_sensor_reading.light_level=100.0;
+  infoPacket.payload.system_info_packet.simple_sensor_reading.temperature=76;
+  infoPacket.payload.system_info_packet.simple_sensor_reading.timestamp_unix=1234;
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
-//  MX_GPIO_Init();
-//  MX_DMA_Init();
-//  MX_I2C3_Init();
+  MX_GPIO_Init();
+  MX_DMA_Init();
+  MX_I2C3_Init();
   MX_RTC_Init();
-//  MX_SAI1_Init();
-//  MX_SPI1_Init();
-//  MX_TIM2_Init();
-//  MX_TIM16_Init();
-//  if (MX_FATFS_Init() != APP_OK) {
-//    Error_Handler();
-//  }
-//  MX_USB_PCD_Init();
-//  MX_I2C1_Init();
+  MX_SAI1_Init();
+  MX_SPI1_Init();
+  MX_TIM2_Init();
+  MX_TIM16_Init();
+  if (MX_FATFS_Init() != APP_OK) {
+    Error_Handler();
+  }
+  MX_USB_PCD_Init();
+  MX_I2C1_Init();
   MX_MEMORYMAP_Init();
   MX_RF_Init();
   /* USER CODE BEGIN 2 */
 
-  /* start buzzer pwm */
-////  uint16_t index = 10;
-////  HAL_TIM_Base_Start(&htim16);
-////  HAL_TIM_PWM_Start(&htim16, TIM_CHANNEL_1);
-//
-////  while(1){
-////
-//////  htim16.Instance->CCR1 = index;
-////
-////  htim16.Instance->ARR = index;
-////  htim16.Instance->CCR1 = index >> 1;
-////
-////  HAL_Delay(50);
-////
-////  /* stop buzzer pwm */
-//////  HAL_TIM_PWM_Stop(&htim16, TIM_CHANNEL_1);
-//////  HAL_Delay(100);
-////
-////	index+=2;
-////	if(index == 500) index = 10;
-////  }
-//
-////while(1){
-////	  HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, GPIO_PIN_SET);
-////	  HAL_Delay(500);
-////	  HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, GPIO_PIN_RESET);
-////	  HAL_Delay(500);
-////
-////}
-//
-//	HAL_TIM_Base_Start(&htim2);
-//
-////for(int i = 0; i<500; i+=10){
-////	  setLED_Green(i);
-////	  HAL_Delay(100);
-////}
-//
-//
-////  setLED_Green(500);
-////  HAL_Delay(500);
-////  setLED_Blue(500);
-////  HAL_Delay(500);
-////  setLED_Red(500);
-////  HAL_Delay(500);
-////  setLED_Green(0);
-////  HAL_Delay(500);
-////  setLED_Blue(0);
-////  HAL_Delay(500);
-////  setLED_Red(0);
-////
-////  while(1);
-//
-//  /* turn on buzzer regulator */
-//  HAL_GPIO_WritePin(EN_BUZZER_PWR_GPIO_Port, EN_BUZZER_PWR_Pin, GPIO_PIN_SET);
-//
-//  /*Configure GPIO pin Output Level */
-//
-//  HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET);
-//  HAL_GPIO_WritePin(EN_UWB_REG_GPIO_Port, EN_UWB_REG_Pin, GPIO_PIN_SET);
-//  HAL_GPIO_WritePin(EN_SD_REG_GPIO_Port, EN_SD_REG_Pin, GPIO_PIN_SET);
-//
-//  HAL_Delay(50);
-//
-//  char folder_name[20] = "folder";
-////  char file_name[60];;
-//
-//  	int folder_number = 0;
-//    FILINFO fno;
-//
-//  	FRESULT res;
-//
-//  	//https://wiki.st.com/stm32mcu/wiki/Introduction_to_FILEX#Migration_from_FatFS_to_FileX
-//  	//https://learn.microsoft.com/en-us/azure/rtos/filex/chapter5
-//  	/* check if volume exists and can be opened */
-////  	if(FX_PTR_ERROR == fx_media_open(&sd_disk, "exFAT_DISK", fx_stm32_sd_driver, (VOID *)FX_NULL, (VOID *) media_memory, sizeof(media_memory))){
-//
-////    HAL_GPIO_WritePin(SD_CS_GPIO_Port, SD_CS_Pin, GPIO_PIN_SET);
-//  	res = f_mount(&SDFatFs, "", 1);
-//  	if(res != FR_OK){
-//  		Error_Handler();
-//  	}else{
-//
-////  		while (1) {
-//  			// 		    sprintf(folder_name, "random_%d", folder_number);
-//
-////  			status = fx_directory_name_test(
-////  					&sd_disk,
-////  					folder_name);
-//
-//  			// 		   HAL_Delay(1000);
-//  			// 		    fresult = f_opendir(&fdirectory, folder_name);
-////  			if (status == FX_NOT_FOUND) {
-////  				status = fx_directory_create(&sd_disk, folder_name);
-////  				break;
-////  			}
-//
-//  			// 		    f_closedir(&fdirectory);
-////  		}
-//
-//		sprintf(folder_name, "/audio_%d", folder_number);
-//		while(1){
-//			res = f_stat(folder_name,&fno);
-//			if(res == FR_OK){ //file exists so iterate on number
-//				folder_number++;
-//				sprintf(folder_name, "/audio_%d", folder_number);
-//			}else{
-//				res = f_mkdir(folder_name);
-//				if(FR_OK == f_opendir(&dir, folder_name)){
-//					f_chdir(folder_name);
-//					break;
-//				}else{
-//					Error_Handler();
-//				}
-//			}
-////			while(1);
-//////			res = f_mkdir(folder_name);
-//////			res = f_opendir(&dir, folder_name);
-////			if((res == FR_NO_PATH) || (res == FR_NO_FILE)){
-////				res = f_mkdir(folder_name);
-////				if(FR_OK == f_opendir(&dir, folder_name)){
-////					break;
-////				}else{
-////					Error_Handler();
-////				}
-////
-////				sprintf(folder_name, "/audio_%d", folder_number);
-////				folder_number++;
-////			}
-////			if(res != FR_OK){
-////
-////			}else{
-////				break;
-////			}
-//
-//		}
-//
-//  		/* set to recently created directory */
-////  		status = fx_directory_default_set(
-////  				&sd_disk,
-////  				folder_name);
-//
-////  		if(status != FX_SUCCESS){
-////  			Error_Handler();
-////  		}
-//
-//		res = f_open(&file, "test.txt", FA_WRITE | FA_CREATE_ALWAYS);
-//		if(res == FR_OK){
-//				res = f_write(&file, "Hello, world!", 13, &bytes_written);
-//		}else Error_Handler();
-//	    if (res == FR_OK)
-//	    {
-//	        // Close the file
-//	        f_close(&file);
-//
-//	        // Flush the cached data to the SD card
-//	        f_sync(&file);
-//	    }else Error_Handler();
-//
-////  		char test_string[30] = "test_string!";
-////  		/* Open file for writing (Create) */
-////  		status = fx_file_create(&sd_disk, "STM32_filex.TXT");
-////  		if(status != FX_SUCCESS) Error_Handler();
-////  		status = fx_file_open(&sd_disk, &fx_file, "STM32_filex.TXT", FX_OPEN_FOR_WRITE);
-////  		if(status != FX_SUCCESS) Error_Handler();
-////  		/* Seek to the beginning of the test file.  */
-////  		status =  fx_file_seek(&fx_file, 0);
-////  		if(status != FX_SUCCESS) Error_Handler();
-////  		status = fx_file_write(&fx_file, "1234567890", 10);
-////  		if(status != FX_SUCCESS) Error_Handler();
-////  		status = fx_file_close(&fx_file);
-////  		if(status != FX_SUCCESS) Error_Handler();
-////  		/* flush data */
-////  		status = fx_media_flush(&sd_disk);
-////  		if(status != FX_SUCCESS) Error_Handler();
-//
-////		while(1);
-//  	}
-//
-//
-////  while(1){
-////	  HAL_GPIO_WritePin(BUZZER_PWM_GPIO_Port, BUZZER_PWM_Pin, GPIO_PIN_SET);
-////	  HAL_Delay(10);
-////	  HAL_GPIO_WritePin(BUZZER_PWM_GPIO_Port, BUZZER_PWM_Pin, GPIO_PIN_RESET);
-////	  HAL_Delay(10);
-////  }
-//
-//  //HAL_Delay(200);
-//
-//
-////#define AUDIO_BUFFER_LEN 1000
-////  static uint8_t audioSample[4000];
-//
-//
-////  while(1){
-////	  HAL_SAI_Receive(&hsai_BlockA1, (uint8_t*) audioSample, AUDIO_BUFFER_LEN << 2, 2000);
-////  }
+
+
 
   /* USER CODE END 2 */
 
@@ -412,10 +319,9 @@ int main(void)
 
   /* Create the thread(s) */
   /* creation of defaultTask */
-  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
-
+//  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
   /* USER CODE BEGIN RTOS_THREADS */
-  /* add threads, ... */
+  mainSystemThreadId = osThreadNew(mainSystemTask, NULL, &mainSystemTask_attributes);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -446,107 +352,64 @@ int main(void)
   */
 void SystemClock_Config(void)
 {
-//  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-//  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-//
-//  /** Macro to configure the PLL multiplication factor
-//  */
-//  __HAL_RCC_PLL_PLLM_CONFIG(RCC_PLLM_DIV2);
-//
-//  /** Macro to configure the PLL clock source
-//  */
-//  __HAL_RCC_PLL_PLLSOURCE_CONFIG(RCC_PLLSOURCE_MSI);
-//
-//  /** Configure LSE Drive Capability
-//  */
-//  HAL_PWR_EnableBkUpAccess();
-//  __HAL_RCC_LSEDRIVE_CONFIG(RCC_LSEDRIVE_MEDIUMHIGH);
-//
-//  /** Configure the main internal regulator output voltage
-//  */
-//  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-//
-//  /** Initializes the RCC Oscillators according to the specified parameters
-//  * in the RCC_OscInitTypeDef structure.
-//  */
-//  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSI1
-//                              |RCC_OSCILLATORTYPE_HSE|RCC_OSCILLATORTYPE_LSE
-//                              |RCC_OSCILLATORTYPE_MSI;
-//  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-//  RCC_OscInitStruct.LSEState = RCC_LSE_ON;
-//  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-//  RCC_OscInitStruct.MSIState = RCC_MSI_ON;
-//  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-//  RCC_OscInitStruct.MSICalibrationValue = RCC_MSICALIBRATION_DEFAULT;
-//  RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_10;
-//  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
-//  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
-//  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-//  {
-//    Error_Handler();
-//  }
-//
-//  /** Configure the SYSCLKSource, HCLK, PCLK1 and PCLK2 clocks dividers
-//  */
-//  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK4|RCC_CLOCKTYPE_HCLK2
-//                              |RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-//                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-//  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_MSI;
-//  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-//  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-//  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
-//  RCC_ClkInitStruct.AHBCLK2Divider = RCC_SYSCLK_DIV1;
-//  RCC_ClkInitStruct.AHBCLK4Divider = RCC_SYSCLK_DIV1;
-//
-//  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
-//  {
-//    Error_Handler();
-//  }
-//
-//  /** Enable MSI Auto calibration
-//  */
-//  HAL_RCCEx_EnableMSIPLLMode();
-	 RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-	  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-	  /** Configure the main internal regulator output voltage
-	  */
-	  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+  /** Macro to configure the PLL multiplication factor
+  */
+  __HAL_RCC_PLL_PLLM_CONFIG(RCC_PLLM_DIV2);
 
-	  /** Initializes the RCC Oscillators according to the specified parameters
-	  * in the RCC_OscInitTypeDef structure.
-	  */
-	  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSI1
-	                              |RCC_OSCILLATORTYPE_HSE|RCC_OSCILLATORTYPE_MSI;
-	  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-	  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-	  RCC_OscInitStruct.MSIState = RCC_MSI_ON;
-	  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-	  RCC_OscInitStruct.MSICalibrationValue = RCC_MSICALIBRATION_DEFAULT;
-	  RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_10;
-	  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
-	  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
-	  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-	  {
-	    Error_Handler();
-	  }
+  /** Macro to configure the PLL clock source
+  */
+  __HAL_RCC_PLL_PLLSOURCE_CONFIG(RCC_PLLSOURCE_MSI);
 
-	  /** Configure the SYSCLKSource, HCLK, PCLK1 and PCLK2 clocks dividers
-	  */
-	  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK4|RCC_CLOCKTYPE_HCLK2
-	                              |RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-	                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-	  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_MSI;
-	  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-	  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-	  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
-	  RCC_ClkInitStruct.AHBCLK2Divider = RCC_SYSCLK_DIV1;
-	  RCC_ClkInitStruct.AHBCLK4Divider = RCC_SYSCLK_DIV1;
+  /** Configure LSE Drive Capability
+  */
+  HAL_PWR_EnableBkUpAccess();
+  __HAL_RCC_LSEDRIVE_CONFIG(RCC_LSEDRIVE_MEDIUMHIGH);
 
-	  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
-	  {
-	    Error_Handler();
-	  }
+  /** Configure the main internal regulator output voltage
+  */
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+
+  /** Initializes the RCC Oscillators according to the specified parameters
+  * in the RCC_OscInitTypeDef structure.
+  */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_HSE
+                              |RCC_OSCILLATORTYPE_LSE|RCC_OSCILLATORTYPE_MSI;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.MSIState = RCC_MSI_ON;
+  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.MSICalibrationValue = RCC_MSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_10;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure the SYSCLKSource, HCLK, PCLK1 and PCLK2 clocks dividers
+  */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK4|RCC_CLOCKTYPE_HCLK2
+                              |RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSE;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.AHBCLK2Divider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.AHBCLK4Divider = RCC_SYSCLK_DIV1;
+
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Enable MSI Auto calibration
+  */
+  HAL_RCCEx_EnableMSIPLLMode();
 }
 
 /**
@@ -555,36 +418,22 @@ void SystemClock_Config(void)
   */
 void PeriphCommonClock_Config(void)
 {
-//  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
-//
-//  /** Initializes the peripherals clock
-//  */
-//  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SMPS|RCC_PERIPHCLK_RFWAKEUP
-//                              |RCC_PERIPHCLK_SAI1|RCC_PERIPHCLK_USB;
-//  PeriphClkInitStruct.PLLSAI1.PLLN = 6;
-//  PeriphClkInitStruct.PLLSAI1.PLLP = RCC_PLLP_DIV2;
-//  PeriphClkInitStruct.PLLSAI1.PLLQ = RCC_PLLQ_DIV2;
-//  PeriphClkInitStruct.PLLSAI1.PLLR = RCC_PLLR_DIV2;
-//  PeriphClkInitStruct.PLLSAI1.PLLSAI1ClockOut = RCC_PLLSAI1_SAI1CLK|RCC_PLLSAI1_USBCLK;
-//  PeriphClkInitStruct.Sai1ClockSelection = RCC_SAI1CLKSOURCE_PLLSAI1;
-//  PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_PLLSAI1;
-//  PeriphClkInitStruct.RFWakeUpClockSelection = RCC_RFWKPCLKSOURCE_HSE_DIV1024;
-//  PeriphClkInitStruct.SmpsClockSelection = RCC_SMPSCLKSOURCE_HSI;
-//  PeriphClkInitStruct.SmpsDivSelection = RCC_SMPSCLKDIV_RANGE1;
-//
-//  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-//  {
-//    Error_Handler();
-//  }
-
   RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
   /** Initializes the peripherals clock
   */
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SMPS|RCC_PERIPHCLK_RFWAKEUP;
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SMPS|RCC_PERIPHCLK_RFWAKEUP
+                              |RCC_PERIPHCLK_SAI1|RCC_PERIPHCLK_USB;
+  PeriphClkInitStruct.PLLSAI1.PLLN = 6;
+  PeriphClkInitStruct.PLLSAI1.PLLP = RCC_PLLP_DIV2;
+  PeriphClkInitStruct.PLLSAI1.PLLQ = RCC_PLLQ_DIV2;
+  PeriphClkInitStruct.PLLSAI1.PLLR = RCC_PLLR_DIV2;
+  PeriphClkInitStruct.PLLSAI1.PLLSAI1ClockOut = RCC_PLLSAI1_SAI1CLK|RCC_PLLSAI1_USBCLK;
+  PeriphClkInitStruct.Sai1ClockSelection = RCC_SAI1CLKSOURCE_PLLSAI1;
+  PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_PLLSAI1;
   PeriphClkInitStruct.RFWakeUpClockSelection = RCC_RFWKPCLKSOURCE_HSE_DIV1024;
-  PeriphClkInitStruct.SmpsClockSelection = RCC_SMPSCLKSOURCE_HSI;
-  PeriphClkInitStruct.SmpsDivSelection = RCC_SMPSCLKDIV_RANGE1;
+  PeriphClkInitStruct.SmpsClockSelection = RCC_SMPSCLKSOURCE_HSE;
+  PeriphClkInitStruct.SmpsDivSelection = RCC_SMPSCLKDIV_RANGE0;
 
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
   {
@@ -799,25 +648,25 @@ static void MX_RTC_Init(void)
 
   /** Initialize RTC and set the Time and Date
   */
-//  sTime.Hours = 0x0;
-//  sTime.Minutes = 0x0;
-//  sTime.Seconds = 0x0;
-//  sTime.SubSeconds = 0x0;
-//  sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
-//  sTime.StoreOperation = RTC_STOREOPERATION_RESET;
-//  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
-//  {
-//    Error_Handler();
-//  }
-//  sDate.WeekDay = RTC_WEEKDAY_MONDAY;
-//  sDate.Month = RTC_MONTH_JANUARY;
-//  sDate.Date = 0x1;
-//  sDate.Year = 0x0;
-//
-//  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
-//  {
-//    Error_Handler();
-//  }
+  sTime.Hours = 0x0;
+  sTime.Minutes = 0x0;
+  sTime.Seconds = 0x0;
+  sTime.SubSeconds = 0x0;
+  sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+  sTime.StoreOperation = RTC_STOREOPERATION_RESET;
+  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sDate.WeekDay = RTC_WEEKDAY_MONDAY;
+  sDate.Month = RTC_MONTH_JANUARY;
+  sDate.Date = 0x1;
+  sDate.Year = 0x0;
+
+  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
+  {
+    Error_Handler();
+  }
   /* USER CODE BEGIN RTC_Init 2 */
 
   /* USER CODE END RTC_Init 2 */
@@ -1164,278 +1013,263 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
-//  HAL_GPIO_WritePin(BUZZER_PWM_GPIO_Port, BUZZER_PWM_Pin, GPIO_PIN_RESET);
-//  GPIO_InitStruct.Pin = BUZZER_PWM_Pin;
-//  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-//  GPIO_InitStruct.Pull = GPIO_PULLUP;
-//  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-//  HAL_GPIO_Init(BUZZER_PWM_GPIO_Port, &GPIO_InitStruct);
 /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
-void run_ADC(){
-
-	uint8_t data;
-	HAL_StatusTypeDef status;
-
-	#define ADAU1979_ADDR				0x11 << 1
-
-	#define ADAU1979_M_POWER			0x00
-	#define S_RST						0x01 << 7
-	#define PWUP						0x01 << 0
-	#define PWDOWN						0x00 << 0
-
-		/* RESET ADAU1979 */
-		data = S_RST;
-		status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_M_POWER,
-				1, &data, 1, 100);
-		osDelay(50);
-
-		/* activate ADC */
-		data = PWUP;
-		status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_M_POWER,
-				1, &data, 1, 100);
-
-		osDelay(50);
-
-	#define ADAU1979_BLOCK_POWER_SAI	0x04
-	#define LR_POL_LOW_HIGH				0x0 << 7
-	#define LR_POL_HIGH_LOW				0x1 << 7
-	#define BCLKEDGE_FALLING			0x0 << 6
-	#define BCLKEDGE_RISING				0x1 << 6
-	#define LDO_EN						0x1 << 5
-	#define VREF_EN						0x1 << 4
-	#define ADC_EN4						0x1 << 3
-	#define ADC_EN3						0x1 << 2
-	#define ADC_EN2						0x1 << 1
-	#define ADC_EN1						0x1 << 0
-
-		//  data = LDO_EN | VREF_EN | ADC_EN4 | ADC_EN3 | ADC_EN2 | ADC_EN1;
-
-		// ADC 2 and 4 are disabled
-		data = LDO_EN | VREF_EN | ADC_EN3 | ADC_EN1;
-		//    data = LDO_EN | VREF_EN | ADC_EN3 | ADC_EN1;
-
-		status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_BLOCK_POWER_SAI,
-				1, &data, 1, 100);
-
-	#define ADAU1979_SAI_CTRL0			0x05
-	#define I2S_FORMAT					0x0 << 6
-	#define LEFT_JUSTIFIED				0x1 << 6
-	#define STEREO						0x0 << 3
-	#define TDM_2						0x1 << 3
-	#define TDM_4						0x2 << 3
-	#define TDM_8						0x3 << 3
-	#define TDM_16						0x4 << 3
-	#define SAMPLING_RATE_8_12_KHZ		0x0 << 0
-	#define SAMPLING_RATE_16_24_KHZ		0x1 << 0
-	#define SAMPLING_RATE_32_48_KHZ		0x2 << 0
-	#define SAMPLING_RATE_64_96_KHZ		0x3 << 0
-	#define SAMPLING_RATE_128_192_KHZ	0x4 << 0
-
-	//	/* activate ADC */
-	//	//  data = I2S_FORMAT | STEREO | SAMPLING_RATE_32_48_KHZ;
-	//	data = LEFT_JUSTIFIED | TDM_16 | SAMPLING_RATE_32_48_KHZ;
-	//	//  status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CTRL0,
-	//	//                                     1, &data, 1, 100);
-	//
-	//	//  data = LEFT_JUSTIFIED | TDM_8 | SAMPLING_RATE_32_48_KHZ;
-	//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CTRL0,
-	//			1, &data, 1, 100);
-
-		/* ONLY FOR WIND TUNNEL TESTING */
-		data = I2S_FORMAT | STEREO | SAMPLING_RATE_32_48_KHZ;
-		status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CTRL0,
-				1, &data, 1, 100);
-
-	#define ADAU1979_SAI_CTRL1			0x06
-	#define SDATAOUT1_OUTPUT			0x0 << 7
-	#define SDATAOUT2_OUTPUT			0x1 << 7
-	#define SLOT_WIDTH_32				0x0 << 5
-	#define SLOT_WIDTH_24				0x1 << 5
-	#define SLOT_WIDTH_16				0x2 << 5
-	#define DATA_WIDTH_24				0x0 << 4
-	#define DATA_WIDTH_16				0x1 << 4
-	#define LRCLK_50_DUTY_CYCLE			0x0 << 3
-	#define LRCLK_PULSE					0x1 << 3
-	#define MSB_FIRST					0x0 << 2
-	#define LSB_FIRST					0x1 << 2
-	#define BCLKRATE_32_PER_CHANNEL		0x0 << 1
-	#define BCLKRATE_16_PER_CHANNEL		0x1 << 1
-	#define SAI_SLAVE					0x0 << 0
-	#define SAI_MASTER					0x1 << 0
-
-		/* TDM Configuration */
-	//	//  data = SDATAOUT1_OUTPUT | SLOT_WIDTH_16 | DATA_WIDTH_16 | LRCLK_50_DUTY_CYCLE | MSB_FIRST | BCLKRATE_16_PER_CHANNEL | SAI_SLAVE;
-	//	//  data = SDATAOUT1_OUTPUT | SLOT_WIDTH_16 | DATA_WIDTH_16 | LRCLK_PULSE | MSB_FIRST | BCLKRATE_16_PER_CHANNEL | SAI_SLAVE;
-	//	data = SDATAOUT2_OUTPUT | SLOT_WIDTH_16 | DATA_WIDTH_16 | LRCLK_PULSE | MSB_FIRST | BCLKRATE_16_PER_CHANNEL | SAI_SLAVE;
-	//
-	//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CTRL1,
-	//			1, &data, 1, 100);
-
-		/* ONLY FOR WIND TUNNEL TESTING */
-		data = SDATAOUT1_OUTPUT | SLOT_WIDTH_16 | DATA_WIDTH_16 | LRCLK_PULSE | MSB_FIRST | BCLKRATE_16_PER_CHANNEL | SAI_SLAVE;
-		status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CTRL1,
-				1, &data, 1, 100);
-
-	#define ADAU1979_SAI_CMAP12			0x07
-	#define TDM_CH2_SLOT_10				0x9 << 4
-	#define TDM_CH2_SLOT_3				0x3 << 4
-	#define TDM_CH1_SLOT_15				0xE << 0
-	#define TDM_CH1_SLOT_9				0x8 << 0
-	#define TDM_CH1_SLOT_0				0x0 << 0
-	#define TDM_CH1_SLOT_1				0x1
-
-		/* TDM Config Slots */
-	//	//  data = TDM_CH1_SLOT_0 | TDM_CH2_SLOT_3;
-	//	data = TDM_CH1_SLOT_9;
-	//	//    data = TDM_CH1_SLOT_9 | TDM_CH2_SLOT_10;
-	//
-	//	//  data = TDM_CH1_SLOT_0 | TDM_CH2_SLOT_10;
-	//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CMAP12,
-	//			1, &data, 1, 100);
-
-		/* ONLY FOR WIND TUNNEL TESTING */
-		data = TDM_CH1_SLOT_0;
-		status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CMAP12,
-				1, &data, 1, 100);
-
-	#define ADAU1979_SAI_CMAP34			0x08
-	#define TDM_CH4_SLOT_12				0xB << 4
-	#define TDM_CH4_SLOT_2				0x2 << 4
-	#define TDM_CH4_SLOT_1				0x1 << 4
-	#define TDM_CH3_SLOT_16				0xF << 0
-	#define TDM_CH3_SLOT_11				0xA << 0
-	#define TDM_CH3_SLOT_10				0x9 << 0
-	#define TDM_CH3_SLOT_2				0x2 << 0
-	#define TDM_CH3_SLOT_1				0x1 << 0
-
-		/* TDM Config Slots */
-	//	//  data = TDM_CH4_SLOT_1 | TDM_CH3_SLOT_2;
-	//	//  data = 0x7 | TDM_CH4_SLOT_12;
-	//	data = TDM_CH3_SLOT_10;
-	//	//  data = TDM_CH3_SLOT_1;
-	//	//    data = TDM_CH3_SLOT_11 | TDM_CH4_SLOT_12;
-	//
-	//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CMAP34,
-	//			1, &data, 1, 100);
-
-		/* ONLY FOR WIND TUNNEL TESTING */
-		data = TDM_CH3_SLOT_1;
-		status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CMAP34,
-				1, &data, 1, 100);
-
-	#define ADAU1979_SAI_OVERTEMP		0x09
-	#define CH4_EN_OUT					0x1 << 7
-	#define CH3_EN_OUT					0x1 << 6
-	#define CH2_EN_OUT					0x1 << 5
-	#define CH1_EN_OUT					0x1 << 4
-	#define DRV_HIZ_EN					0x1 << 3
-
-		/* TDM Channel Configuration */
-		//  data = DRV_HIZ_EN | CH4_EN_OUT | CH3_EN_OUT | CH2_EN_OUT | CH1_EN_OUT;
-
-		//disable channels 2 and 4
-		data = DRV_HIZ_EN | CH3_EN_OUT | CH1_EN_OUT;
-		status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_OVERTEMP,
-				1, &data, 1, 100);
-
-	#define ADAU1979_POSTADC_GAIN1		0x0A
-	#define ADAU1979_POSTADC_GAIN2		0x0B
-	#define ADAU1979_POSTADC_GAIN3		0x0C
-	#define ADAU1979_POSTADC_GAIN4		0x0D
-	#define GAIN_0_DB					0xA0
-	#define GAIN_5_625_DB				145 // (60 - x * 0.375) dB
-	#define GAIN_9_DB					136
-	#define GAIN_15_DB					120
-	#define GAIN_18_DB					112
-	#define GAIN_25_5_DB				92
-	#define GAIN_25_875_DB				91
-	#define GAIN_60_DB					0x0
-
-		/* Gain = 60dB - (gain_register) * 0.375dB */
-
-		/* Channel 1 Gain */
-	//	data = GAIN_18_DB;
-		data = GAIN_5_625_DB;
-//		data = GAIN_25_5_DB;
-		status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_POSTADC_GAIN1,
-				1, &data, 1, 100);
-
-		/* Channel 2 Gain */
-	//	data = GAIN_18_DB;
-		data = GAIN_25_5_DB;
-		status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_POSTADC_GAIN2,
-				1, &data, 1, 100);
-
-		/* Channel 3 Gain */
-	//	data = GAIN_18_DB; // gain = 18dB
-		data = GAIN_25_5_DB;
-		status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_POSTADC_GAIN3,
-				1, &data, 1, 100);
-
-		/* Channel 4 Gain */
-	//	data = GAIN_18_DB; // gain = 18dB
-		data = GAIN_25_5_DB;
-		status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_POSTADC_GAIN4,
-				1, &data, 1, 100);
-
-	#define ADAU1979_MISC_CONTROL		0x0E
-	#define MODE_4_CHANNEL				0x0 << 6
-	#define MODE_2_CHANNEL_SUM_MODE		0x1 << 6
-	#define MODE_1_CHANNEL_SUM_MODE		0x2 << 6
-
-		/* 4-channel mode, normal operation, */
-		data = MODE_4_CHANNEL | (0x1 <<1); // the 2nd set bit is some reserved spot found on the datasheet
-		status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_MISC_CONTROL,
-				1, &data, 1, 100);
-
-	#define ADAU1979_ASDC_CLIP			0x19
-	#define ADAU1979_DC_HPF_CAL			0x1A
-	#define DC_HPF_C4_ON				0x1 << 3
-	#define DC_HPF_C3_ON				0x1 << 2
-	#define DC_HPF_C2_ON				0x1 << 1
-	#define DC_HPF_C1_ON				0x1 << 0
-
-		//	/* HPF on for all channels */
-		//	data = DC_HPF_C4_ON | DC_HPF_C3_ON | DC_HPF_C2_ON | DC_HPF_C1_ON;
-		//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_DC_HPF_CAL,
-		//									 1, &data, 1, 100);
-
-	#define ADAU1979_PLL_CONTROL		0x01
-	#define PLL_LOCK_REG				0x1 << 7
-	#define PLL_NO_AUTO_MUTE			0x0 << 6
-	#define PLL_INPUT_MCLK				0x0 << 4
-	#define PLL_INPUT_LRCLK				0x1 << 4
-	#define PLL_MCS_DIV_256				0x1 << 0
-	#define PLL_MCS_DIV_384				0x2 << 0
-	#define PLL_MCS_DIV_512				0x3 << 0
-	#define PLL_MCS_DIV_768				0x4 << 0
-	#define PLL_MCS_DIV_128				0x0 << 0
-
-		//  /* PLL Configuration (MCLK = BCLK = 256 * 22.05kHz, ADC SAMPLE RATE = 22.05 kHz)*/
-		/* PLL Configuration (MCLK = BCLK = 128 * 44.6kHz, ADC SAMPLE RATE = 44.6 kHz)*/
-		//  data = PLL_NO_AUTO_MUTE | PLL_INPUT_MCLK | PLL_MCS_DIV_256;
-
-		data = PLL_NO_AUTO_MUTE | PLL_INPUT_LRCLK;
-		//
-		status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_PLL_CONTROL,
-				1, &data, 1, 100);
-
+uint64_t GetEpoch(){
+	return 1234;
 }
 
-void Power_Enable_ADAU1979(bool state){
-	if(state){
-		HAL_GPIO_WritePin(ADC_PD_RST_GPIO_Port, ADC_PD_RST_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_SET);
-	}else{
-		HAL_GPIO_WritePin(ADC_PD_RST_GPIO_Port, ADC_PD_RST_Pin, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_RESET);
+void sampleTask(void *argument){
+	audio_config_t audio_config;
+	memcpy((uint8_t*) &audio_config,(uint8_t*)argument,sizeof(audio_config_t));
+
+//	if(audio_config.has_audio_compression){}
+//	if(audio_config.sample_freq == MIC_SAMPLE_FREQ_SAMPLE_RATE_44100){}
+//	if(audio_config.channel_1){}
+//	if(audio_config.channel_2){}
+//	if(audio_config.estimated_record_time){}
+
+	uint32_t flags = 0;
+
+	while(1){
+		osDelay(100);
+
+		flags = osThreadFlagsWait(TERMINATE_EVENT, osFlagsWaitAny, 0);
+		if(flags & TERMINATE_EVENT){
+//		    osThreadFlagsSet(sampleThreadId, COMPLETE_EVENT);
+//			osThreadExit();
+			vTaskDelete(NULL);
+		}
 
 	}
 }
 
+void mainSystemTask(void *argument){
+	 uint32_t flags = 0;
+
+	/* read current config from SD card */
+
+	/* initiate system */
+	if(configPacket.payload.config_packet.has_audio_config & configPacket.payload.config_packet.enable_recording){
+		osThreadState_t state = osThreadGetState(sampleThreadId);
+		if( (state != osThreadReady) || (state != osThreadRunning) || (state != osThreadInactive) || (state != osThreadBlocked) ){
+			sampleThreadId = osThreadNew(sampleTask, &configPacket.payload.config_packet.audio_config, &sampleTask_attributes);
+		}
+	}
+
+	while(1){
+		tBleStatus ret = BLE_STATUS_INVALID_PARAMS;
+		while(1){
+			setLED_Red(150);
+			osDelay(500);
+			setLED_Red(0);
+			osDelay(500);
+
+			setLED_Green(150);
+			osDelay(500);
+			setLED_Green(0);
+			osDelay(500);
+
+			setLED_Blue(150);
+			osDelay(500);
+			setLED_Blue(0);
+			osDelay(500);
+//			deactivateCameraMode();
+////			activateCameraMode();
+//			osDelay(30000);
+//			DTS_CamCtrl(POWER_LONG_PRESS);
+//			osDelay(30000);
+//			DTS_CamCtrl(WAKEUP_CAMERAS);
+//			osDelay(60000);
+//			Adv_Request(APP_BLE_LP_ADV);
+//			osDelay(10000);
+//			DTS_CamCtrl(SCREEN_TOGGLE);
+//			osDelay(30000);
+//			DTS_CamCtrl(SHUTTER);
+//			osDelay(10000);
+//			DTS_CamCtrl(SCREEN_TOGGLE);
+//			osDelay(60000);
+//			DTS_CamCtrl(SHUTTER);
+//			osDelay(30000);
+//			deactivateCameraMode();
+//			osDelay(30000);
+//
+////			Adv_Request(APP_BLE_LP_ADV);
+////			ret = aci_gap_update_adv_data(sizeof(a_ManufData), (uint8_t*) a_ManufData);
+		}
+
+		/* wait for an event to occur */
+		flags = osThreadFlagsWait(CONFIG_UPDATED_EVENT, osFlagsWaitAny, osWaitForever);
+		if(flags & CONFIG_UPDATED_EVENT){
+			/* system config has been updated. Restart system with new config */
+
+			/* turn off active threads and wait until finished */
+			// alert threads via flags
+			osThreadFlagsSet(sampleThreadId, TERMINATE_EVENT);
+
+			// wait for threads to call osThreadExit()
+			while(osThreadTerminated != osThreadGetState(sampleThreadId)){
+				osDelay(100);
+			}
+			/* reinitiate system */
+
+		}
+	}
+
+	while(1){
+		osDelay(10);
+	}
+
+	vTaskDelete(NULL);
+}
+
+void updateSystemConfig(void *argument){
+	config_packet_t new_config;
+	memcpy((uint8_t*) &new_config,(uint8_t*)argument,sizeof(config_packet_t));
+
+	/* (1) update config */
+
+	 configPacket.has_header = true;
+	 configPacket.header.epoch = GetEpoch();
+	 configPacket.header.system_uid = LL_FLASH_GetUDN();
+	 configPacket.header.ms_from_start = HAL_GetTick();
+
+	 if(new_config.has_audio_config){
+		 memcpy((uint8_t*)&configPacket.payload.config_packet.audio_config,
+	 				(uint8_t*)&new_config.audio_config,
+						sizeof(new_config.audio_config));
+	 }
+	 if(new_config.has_camera_control){
+		 if(configPacket.payload.config_packet.camera_control.capture){
+			 /* trigger a capture */
+		 }
+		 if(configPacket.payload.config_packet.camera_control.pair_with_nearby_cameras){
+			 /* pair with nearby cameras */
+		 }
+		 if(configPacket.payload.config_packet.camera_control.wakeup_cameras){
+			 /* wake up cameras */
+		 }
+	 }
+	 if(new_config.has_low_power_config){
+		 memcpy((uint8_t*)&configPacket.payload.config_packet.low_power_config,
+		 	 				(uint8_t*)&new_config.low_power_config,
+		 						sizeof(new_config.low_power_config));
+
+	 		 if( configPacket.payload.config_packet.low_power_config.low_power_mode){
+	 			 /* enable low power mode settings */
+	 		 }else{
+	 			/* disable low power mode settings */
+	 		 }
+	 }
+
+	 if(new_config.has_network_state){
+	 		 if(configPacket.payload.config_packet.network_state.force_rediscovery){
+	 			 /* trigger UWB rediscovery */
+	 		 }
+	 	 }
+	 if(new_config.has_sensor_config){
+	 		 memcpy((uint8_t*)&configPacket.payload.config_packet.sensor_config,
+	 				(uint8_t*)&new_config.sensor_config,
+						sizeof(new_config.sensor_config));
+	 	 }
+
+	 if(new_config.schedule_config_count != 0){
+		 memcpy((uint8_t*)&configPacket.payload.config_packet.schedule_config,
+			 				(uint8_t*)&new_config.schedule_config,
+								sizeof(new_config.schedule_config));
+		 configPacket.payload.config_packet.schedule_config_count = new_config.schedule_config_count;
+	 }
+
+	/* (2) alert master thread that new config exists */
+
+	 osThreadFlagsSet(mainSystemThreadId, CONFIG_UPDATED_EVENT);
+
+
+	/* (3) update config characteristic */
+
+	tBleStatus ret;
+	/* Create a stream that will write to our buffer. */
+	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+	/* Now we are ready to encode the message! */
+	status = pb_encode(&stream, PACKET_FIELDS, &configPacket);
+	PackedPayload.pPayload = (uint8_t*) buffer;
+	PackedPayload.Length = stream.bytes_written;
+	if(status) ret = DTS_STM_UpdateChar(BUZZCAM_CONFIG_CHAR_UUID, &PackedPayload);
+
+	vTaskDelete(NULL);
+}
+
+void triggerMark(void *argument){
+	mark_packet_t new_mark;
+	memcpy((uint8_t*) &new_mark,(uint8_t*)argument,sizeof(mark_packet_t));
+	infoPacket.payload.system_info_packet.mark_state.mark_number++;
+	infoPacket.payload.system_info_packet.mark_state.timestamp_unix=GetEpoch();
+
+	infoPacket.has_header = true;
+	infoPacket.header.epoch = infoPacket.payload.system_info_packet.mark_state.timestamp_unix;
+	infoPacket.header.ms_from_start = HAL_GetTick();
+
+	/* Create a stream that will write to our buffer. */
+	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+	/* Now we are ready to encode the message! */
+	status = pb_encode(&stream, PACKET_FIELDS, &infoPacket);
+	PackedPayload.pPayload = (uint8_t*) buffer;
+	PackedPayload.Length = stream.bytes_written;
+	tBleStatus ret;
+	if(status) ret = DTS_STM_UpdateChar(BUZZCAM_INFO_CHAR_UUID, &PackedPayload);
+
+	/* trigger beep if enabled */
+	if(new_mark.beep_enabled){
+		 /* start buzzer pwm */
+		  uint16_t index = 10;
+		  HAL_TIM_Base_Start(&htim16);
+		  HAL_TIM_PWM_Start(&htim16, TIM_CHANNEL_1);
+
+		  while(1){
+
+		  htim16.Instance->ARR = index;
+		  htim16.Instance->CCR1 = index >> 1;
+
+		  osDelay(5);
+
+			index+=2;
+			if(index == 500) {
+				/* stop buzzer pwm */
+				HAL_TIM_PWM_Stop(&htim16, TIM_CHANNEL_1);
+				osDelay(10);
+				break;
+			}
+		  }
+	}
+
+	size_t buffer_size;
+	if(new_mark.has_annotation){
+		buffer_size = 20 + 1 + 10 + 1 + 1 + strlen(new_mark.annotation) + 1;
+	}else{
+		buffer_size = 20 + 1 + 10 + 1 + 1 + 1;
+	}
+
+//	char result[buffer_size];
+//	if(new_mark.has_annotation){
+//		sprintf(result, "%lu,%lu,%d,%s", infoPacket.payload.system_info_packet.mark_state.timestamp_unix, infoPacket.header.ms_from_start, new_mark.beep_enabled, new_mark.annotation);
+//	}else{
+//		sprintf(result, "%lu,%lu,%d,", infoPacket.payload.system_info_packet.mark_state.timestamp_unix, infoPacket.header.ms_from_start, new_mark.beep_enabled);
+//	}
+
+
+	/* save to file */
+
+
+    // Terminate the thread
+	  HAL_TIM_Base_Stop(&htim16);
+	  HAL_TIM_PWM_Stop(&htim16, TIM_CHANNEL_1);
+//    osThreadExit();
+    vTaskDelete( NULL );
+}
+
+/* USER CODE END 4 */
 void setLED_Green(uint32_t intensity){
 	if(intensity > MAX_INTENSITY) intensity = MAX_INTENSITY;
 
@@ -1509,410 +1343,6 @@ void disableLEDs(){
 	HAL_TIM_Base_Stop(&htim2);
 }
 
-#define MAX_BYTES_PER_WAV_FILE 2000000000
-//#define MAX_BYTES_PER_WAV_FILE 10000000
-
-void WAV_RECORD_TEST(void){
-
-
-	uint64_t totalBytesWritten = 0;
-	HAL_StatusTypeDef hal_status;
-
-
-	char file_name[20] = "wav_";
-	uint32_t file_index = 0;
-
-	sprintf(file_name, "wav_%u.wav", file_index);
-
-	/* Create a new file */
-//	if(FX_SUCCESS != fx_file_create(&sd_disk, file_name)){
-//		Error_Handler();
-//	}
-
-//	if(FX_SUCCESS == fx_file_open(&sd_disk, &WavFile, file_name, FX_OPEN_FOR_WRITE))
-//			{
-			  if(f_open(&WavFile, file_name, FA_CREATE_ALWAYS | FA_WRITE) == FR_OK)
-			  {
-//		status =  fx_file_seek(&WavFile, 0);
-		f_lseek(&WavFile,0);
-//		if(status != FX_SUCCESS) Error_Handler();
-
-		/* Initialize header file */
-		WavProcess_EncInit(hsai_BlockA1.Init.AudioFrequency, pHeaderBuff);
-
-		/* Write header file */
-//		if(FX_SUCCESS ==  fx_file_write(&WavFile, pHeaderBuff, 44))
-		if(f_write(&WavFile, pHeaderBuff, 44, (void*)&byteswritten) == FR_OK)
-		{
-			totalBytesWritten += 44;
-
-			////	         uint32_t testCntr = 0;
-
-			//        	 HAL_SAI_Receive_DMA(&hsai_BlockA1, (uint8_t*) audioSample, AUDIO_BUFFER_LEN);
-			//        	  HAL_I2S_Receive_DMA(&hi2s1, audioSample, AUDIO_BUFFER_LEN);
-
-			HAL_SAI_Receive(&hsai_BlockA1, (uint8_t*) audioSample, AUDIO_BUFFER_LEN, 2000);
-
-			//        	  uint8_t data;
-			//        	  do{
-			//        	  status = HAL_I2C_Mem_Read(&hi2c2, ADAU1979_ADDR, ADAU1979_PLL_CONTROL,
-			//        	                                       1, &data, 1, 100);
-			//        	  HAL_Delay(100);
-			//        	  }while( (data & PLL_LOCK_REG) != PLL_LOCK_REG);
-
-			//        	  while(1);
-
-			//	    	hal_status = HAL_SAI_Receive_DMA(&hsai_BlockA1, (uint8_t*) audioSample, AUDIO_BUFFER_LEN);
-			//	    	hal_status = HAL_SAI_Receive_IT(&hsai_BlockA1, (uint8_t*) audioSample, AUDIO_BUFFER_LEN);
-			//	    	HAL_Delay(1000);
-			hal_status = HAL_SAI_Receive_DMA(&hsai_BlockA1, (uint8_t*) audioSample, AUDIO_BUFFER_LEN);
-
-			//			 while(1);
-
-			// 24000 samples @ 10 channels of audio = 2400 samples of audio
-			//   this effectively means one buffer can store 75 ms of audio at 32kHz sampling freq
-
-			/* note: ref hsai_BlockA1.Init.AudioFrequency for exact audio frequency */
-
-			// run forever until power is shut off
-			while(1){
-				while(sampleCntr < ((100 * 2)/4)){
-					//	        	 HAL_SAI_Receive(&hsai_BlockA1,  (uint8_t*) audioSample, AUDIO_BUFFER_LEN * 2, 1000);
-
-
-					//	        	 f_write(&WavFile, testVar, 2048*4, (void*)&byteswritten);
-					//	        	 testCntr++;
-					//
-					//	        	 if(testCntr>20){
-					//	        		 break;
-					//	        	 }
-
-					//	 	    	HAL_SAI_Receive(&hsai_BlockA1, (uint8_t*) audioSample, AUDIO_BUFFER_LEN, 2000);
-					//	 	    	sampleCntr++;
-					//	 	    	if(FX_SUCCESS != fx_file_write(&WavFile, audioSample, 2*AUDIO_BUFFER_HALF_LEN * 2)){
-					//	 	    		        			 Error_Handler();
-					//	 	    		        		 }
-					//     	    	totalBytesWritten += AUDIO_BUFFER_HALF_LEN * 2 * 2;
-
-					// Wait for a notification
-					osThreadFlagsWait(0x0001U, osFlagsWaitAny, osWaitForever);
-
-					if(SAI_HALF_CALLBACK){
-						SAI_HALF_CALLBACK = 0;
-
-//						if(FX_SUCCESS != fx_file_write(&WavFile, audioSample, AUDIO_BUFFER_HALF_LEN * 2)){
-//							Error_Handler();
-//						}
-						f_write(&WavFile, audioSample, AUDIO_BUFFER_HALF_LEN * 2, (void*)&byteswritten);
-						totalBytesWritten += AUDIO_BUFFER_HALF_LEN * 2;
-
-					}
-					if(SAI_FULL_CALLBACK){
-						SAI_FULL_CALLBACK = 0;
-//
-//						if(FX_SUCCESS != fx_file_write(&WavFile, &audioSample[AUDIO_BUFFER_HALF_LEN], AUDIO_BUFFER_HALF_LEN * 2)){
-//							Error_Handler();
-//						}
-						f_write(&WavFile, &audioSample[AUDIO_BUFFER_HALF_LEN], AUDIO_BUFFER_HALF_LEN * 2, (void*)&byteswritten);
-						totalBytesWritten += AUDIO_BUFFER_HALF_LEN * 2;
-
-					}
-
-
-				}
-
-
-				sampleCntr = 0;
-				WavUpdateHeaderSize(totalBytesWritten);
-
-				if(totalBytesWritten > MAX_BYTES_PER_WAV_FILE){
-
-			        // Close the file
-			        f_close(&WavFile);
-
-			        // Flush the cached data to the SD card
-			        f_sync(&WavFile);
-
-//					fx_file_close(&WavFile);
-					totalBytesWritten = 0;
-					WavProcess_EncInit(hsai_BlockA1.Init.AudioFrequency, pHeaderBuff);
-					file_index++;
-					sprintf(file_name, "wav_%u.wav", file_index);
-					if(f_open(&WavFile, file_name, FA_CREATE_ALWAYS | FA_WRITE) != FR_OK){
-						Error_Handler();
-					}
-//					if(FX_SUCCESS != fx_file_create(&sd_disk, file_name)){
-//						Error_Handler();
-//					}
-//					if(FX_SUCCESS != fx_file_open(&sd_disk, &WavFile, file_name, FX_OPEN_FOR_WRITE)){
-//						Error_Handler();
-//					}
-//					fx_file_seek(&WavFile, 0);
-					f_lseek(&WavFile,0);
-
-					if(f_write(&WavFile, pHeaderBuff, 44, (void*)&byteswritten) != FR_OK){
-//					if(FX_SUCCESS !=  fx_file_write(&WavFile, pHeaderBuff, 44)){
-						Error_Handler();
-					}
-					totalBytesWritten += 44;
-
-				}
-
-			}
-			HAL_SAI_DMAStop(&hsai_BlockA1);
-			//	         HAL_I2S_DMAStop(&hi2s1);
-
-//			if(FX_SUCCESS == fx_file_seek(&WavFile, 0))
-//			{
-			 if(f_lseek(&WavFile, 0) == FR_OK)
-			 {
-				/* Update the wav file header save it into wav file */
-				WavProcess_HeaderUpdate(pHeaderBuff, totalBytesWritten);
-
-//				if(FX_SUCCESS != fx_file_write(&WavFile, pHeaderBuff, 44))
-//				{
-//					Error_Handler();
-//				}
-				   if(f_write(&WavFile, pHeaderBuff, 44, (void*)&byteswritten) == FR_OK)
-				   {
-
-				   }
-			}
-			//			status = HAL_SAI_Receive(&hsai_BlockA1, (uint8_t*) audioSample, AUDIO_BUFFER_LEN * 2, 4000);
-			//			status = HAL_SAI_Receive(&hsai_BlockA1, (uint8_t*) audioSample, AUDIO_BUFFER_LEN * 2, 4000);
-			//        	f_write(&WavFile, audioSample, AUDIO_BUFFER_LEN * 2, (void*)&byteswritten);
-			//			status = HAL_SAI_Receive(&hsai_BlockA1, (uint8_t*) audioSample, AUDIO_BUFFER_LEN * 2, 4000);
-			//        	f_write(&WavFile, audioSample, AUDIO_BUFFER_LEN * 2, (void*)&byteswritten);
-			//			status = HAL_SAI_Receive(&hsai_BlockA1, (uint8_t*) audioSample, AUDIO_BUFFER_LEN * 2, 4000);
-			//        	f_write(&WavFile, audioSample, AUDIO_BUFFER_LEN * 2, (void*)&byteswritten);
-			//			status = HAL_SAI_Receive(&hsai_BlockA1, (uint8_t*) audioSample, AUDIO_BUFFER_LEN * 2, 4000);
-			//        	f_write(&WavFile, audioSample, AUDIO_BUFFER_LEN * 2, (void*)&byteswritten);
-			//			status = HAL_SAI_Receive(&hsai_BlockA1, (uint8_t*) audioSample, AUDIO_BUFFER_LEN * 2, 4000);
-			//        	f_write(&WavFile, audioSample, AUDIO_BUFFER_LEN * 2, (void*)&byteswritten);
-
-//			fx_file_close(&WavFile);
-
-	        // Close the file
-	        f_close(&WavFile);
-
-	        // Flush the cached data to the SD card
-	        f_sync(&WavFile);
-
-			//			f_close(&WavFile);
-
-			/* flush data */
-//			status = fx_media_flush(&sd_disk);
-//			if(status != FX_SUCCESS) Error_Handler();
-
-			//			  HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin, GPIO_PIN_RESET);
-			//	         LED_Cycle(1000);
-			return;
-
-			//      }
-		}else Error_Handler();
-			}else{
-				Error_Handler();
-			}
-}
-
-uint64_t current_offset;
-static void WavUpdateHeaderSize(uint64_t totalBytesWritten){
-//	current_offset = WavFile.fx_file_current_file_offset;
-	current_offset = WavFile.fptr;
-	if(f_lseek(&WavFile,0) == FR_OK)
-	{
-//	if(FX_SUCCESS == fx_file_seek(&WavFile, 0))
-//	{
-		/* Update the wav file header save it into wav file */
-		WavProcess_HeaderUpdate(pHeaderBuff, totalBytesWritten);
-
-		if((f_write(&WavFile, pHeaderBuff, 44, (void*)&byteswritten)) != FR_OK){
-//		if(FX_SUCCESS != fx_file_write(&WavFile, pHeaderBuff, 44))
-//		{
-			Error_Handler();
-		}
-	}else{
-		Error_Handler();
-	}
-
-	/* flush data */
-	f_sync(&WavFile);
-//	status = fx_media_flush(&sd_disk);
-//	if(status != FX_SUCCESS) Error_Handler();
-
-	if(f_lseek(&WavFile,current_offset) != FR_OK)
-	{
-		Error_Handler();
-	}
-//	if(FX_SUCCESS != fx_file_seek(&WavFile, current_offset)){
-//		Error_Handler();
-//	}
-}
-
-/*******************************************************************************
-                            Static Functions
- *******************************************************************************/
-
-/**
- * @brief  Encoder initialization.
- * @param  Freq: Sampling frequency.
- * @param  pHeader: Pointer to the WAV file header to be written.
- * @retval 0 if success, !0 else.
- */
-static uint32_t WavProcess_EncInit(uint32_t Freq, uint8_t *pHeader)
-{
-	/* Initialize the encoder structure */
-	WaveFormat.SampleRate = Freq;        /* Audio sampling frequency */
-	WaveFormat.NbrChannels = 2;          /* Number of channels: 1:Mono or 2:Stereo */
-	WaveFormat.BitPerSample = 16;        /* Number of bits per sample (16, 24 or 32) */
-	WaveFormat.FileSize = 0x001D4C00;    /* Total length of useful audio data (payload) */
-	WaveFormat.SubChunk1Size = 44;       /* The file header chunk size */
-	WaveFormat.ByteRate = (WaveFormat.SampleRate * \
-			(WaveFormat.BitPerSample/8) * \
-			WaveFormat.NbrChannels);     /* Number of bytes per second  (sample rate * block align)  */
-	WaveFormat.BlockAlign = WaveFormat.NbrChannels * \
-			(WaveFormat.BitPerSample/8); /* channels * bits/sample / 8 */
-
-	/* Parse the wav file header and extract required information */
-	if(WavProcess_HeaderInit(pHeader, &WaveFormat))
-	{
-		return 1;
-	}
-	return 0;
-}
-
-/**
- * @brief  Initialize the wave header file
- * @param  pHeader: Header Buffer to be filled
- * @param  pWaveFormatStruct: Pointer to the wave structure to be filled.
- * @retval 0 if passed, !0 if failed.
- */
-static uint32_t WavProcess_HeaderInit(uint8_t* pHeader, WAVE_FormatTypeDef* pWaveFormatStruct)
-{
-	/* Write chunkID, must be 'RIFF'  ------------------------------------------*/
-	pHeader[0] = 'R';
-	pHeader[1] = 'I';
-	pHeader[2] = 'F';
-	pHeader[3] = 'F';
-
-	/* Write the file length ---------------------------------------------------*/
-	/* The sampling time: this value will be written back at the end of the
-     recording operation.  application: 661500 Btyes = 0x000A17FC, byte[7]=0x00, byte[4]=0xFC */
-	pHeader[4] = 0x00;
-	pHeader[5] = 0x4C;
-	pHeader[6] = 0x1D;
-	pHeader[7] = 0x00;
-	/* Write the file format, must be 'WAVE' -----------------------------------*/
-	pHeader[8]  = 'W';
-	pHeader[9]  = 'A';
-	pHeader[10] = 'V';
-	pHeader[11] = 'E';
-
-	/* Write the format chunk, must be'fmt ' -----------------------------------*/
-	pHeader[12]  = 'f';
-	pHeader[13]  = 'm';
-	pHeader[14]  = 't';
-	pHeader[15]  = ' ';
-
-	/* Write the length of the 'fmt' data, must be 0x10 ------------------------*/
-	pHeader[16]  = 0x10;
-	pHeader[17]  = 0x00;
-	pHeader[18]  = 0x00;
-	pHeader[19]  = 0x00;
-
-	/* Write the audio format, must be 0x01 (PCM) ------------------------------*/
-	pHeader[20]  = 0x01;
-	pHeader[21]  = 0x00;
-
-	/* Write the number of channels, ie. 0x01 (Mono) ---------------------------*/
-	pHeader[22]  = pWaveFormatStruct->NbrChannels;
-	pHeader[23]  = 0x00;
-
-	/* Write the Sample Rate in Hz ---------------------------------------------*/
-	/* Write Little Endian ie. 8000 = 0x00001F40 => byte[24]=0x40, byte[27]=0x00*/
-	pHeader[24]  = (uint8_t)((pWaveFormatStruct->SampleRate & 0xFF));
-	pHeader[25]  = (uint8_t)((pWaveFormatStruct->SampleRate >> 8) & 0xFF);
-	pHeader[26]  = (uint8_t)((pWaveFormatStruct->SampleRate >> 16) & 0xFF);
-	pHeader[27]  = (uint8_t)((pWaveFormatStruct->SampleRate >> 24) & 0xFF);
-
-	/* Write the Byte Rate -----------------------------------------------------*/
-	pHeader[28]  = (uint8_t)((pWaveFormatStruct->ByteRate & 0xFF));
-	pHeader[29]  = (uint8_t)((pWaveFormatStruct->ByteRate >> 8) & 0xFF);
-	pHeader[30]  = (uint8_t)((pWaveFormatStruct->ByteRate >> 16) & 0xFF);
-	pHeader[31]  = (uint8_t)((pWaveFormatStruct->ByteRate >> 24) & 0xFF);
-
-	/* Write the block alignment -----------------------------------------------*/
-	pHeader[32]  = pWaveFormatStruct->BlockAlign;
-	pHeader[33]  = 0x00;
-
-	/* Write the number of bits per sample -------------------------------------*/
-	pHeader[34]  = pWaveFormatStruct->BitPerSample;
-	pHeader[35]  = 0x00;
-
-	/* Write the Data chunk, must be 'data' ------------------------------------*/
-	pHeader[36]  = 'd';
-	pHeader[37]  = 'a';
-	pHeader[38]  = 't';
-	pHeader[39]  = 'a';
-
-	/* Write the number of sample data -----------------------------------------*/
-	/* This variable will be written back at the end of the recording operation */
-	pHeader[40]  = 0x00;
-	pHeader[41]  = 0x4C;
-	pHeader[42]  = 0x1D;
-	pHeader[43]  = 0x00;
-
-	/* Return 0 if all operations are OK */
-	return 0;
-}
-
-/**
- * @brief  Initialize the wave header file
- * @param  pHeader: Header Buffer to be filled
- * @param  pWaveFormatStruct: Pointer to the wave structure to be filled.
- * @retval 0 if passed, !0 if failed.
- */
-static uint32_t WavProcess_HeaderUpdate(uint8_t* pHeader, uint32_t bytesWritten)
-{
-	/* Write the file length ---------------------------------------------------*/
-	/* The sampling time: this value will be written back at the end of the
-     recording operation.  application: 661500 Btyes = 0x000A17FC, byte[7]=0x00, byte[4]=0xFC */
-	pHeader[4] = (uint8_t)(bytesWritten);
-	pHeader[5] = (uint8_t)(bytesWritten >> 8);
-	pHeader[6] = (uint8_t)(bytesWritten >> 16);
-	pHeader[7] = (uint8_t)(bytesWritten >> 24);
-	/* Write the number of sample data -----------------------------------------*/
-	/* This variable will be written back at the end of the recording operation */
-	bytesWritten -=44;
-	pHeader[40] = (uint8_t)(bytesWritten);
-	pHeader[41] = (uint8_t)(bytesWritten >> 8);
-	pHeader[42] = (uint8_t)(bytesWritten >> 16);
-	pHeader[43] = (uint8_t)(bytesWritten >> 24);
-
-	/* Return 0 if all operations are OK */
-	return 0;
-}
-
-//volatile uint32_t byteswritten = 0;
-void HAL_SAI_RxHalfCpltCallback(SAI_HandleTypeDef *hsai){
-	//	 f_write(&WavFile, audioSample, AUDIO_BUFFER_HALF_LEN, (void*)&byteswritten);
-	SAI_HALF_CALLBACK = 1;
-
-    // Trigger the notification for the task
-	osThreadFlagsSet(defaultTaskHandle, 0x0001U);
-}
-
-void HAL_SAI_RxCpltCallback(SAI_HandleTypeDef *hsai){
-	//	 f_write(&WavFile, &audioSample[AUDIO_BUFFER_HALF_LEN], AUDIO_BUFFER_HALF_LEN, (void*)&byteswritten);
-	sampleCntr++;
-	SAI_FULL_CALLBACK = 1;
-
-    // Trigger the notification for the task
-	osThreadFlagsSet(defaultTaskHandle, 0x0001U);
-
-}
-/* USER CODE END 4 */
-
 /* USER CODE BEGIN Header_StartDefaultTask */
 /**
   * @brief  Function implementing the defaultTask thread.
@@ -1923,11 +1353,6 @@ void HAL_SAI_RxCpltCallback(SAI_HandleTypeDef *hsai){
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
-//  Power_Enable_ADAU1979(true);
-//  osDelay(200);
-//  run_ADC();
-//	WAV_RECORD_TEST();
-
   /* Infinite loop */
   for(;;)
   {

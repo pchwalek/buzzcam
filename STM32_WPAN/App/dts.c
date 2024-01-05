@@ -43,6 +43,15 @@
 
 //#include "fram.h"
 
+#include "pb.h"
+#include "pb_decode.h"
+#include "pb_encode.h"
+#include "message.pb.h"
+
+#include "main.h"
+
+static DTS_STM_Payload_t PackedPayload;
+
 #define UUID_128_SUPPORTED 0
 #define	NUM_OF_CHARACTERISTICS 6 //https://community.st.com/s/question/0D50X00009XkYAvSAN/sensortile-bluenrgms-custom-service-aci
 
@@ -54,7 +63,7 @@
 
 #ifdef PROTOBUF_RX
 uint8_t rxBuffer[250];
-//static air_spec_config_packet_t rxConfigPacket = AIR_SPEC_CONFIG_PACKET_INIT_ZERO;
+static packet_t rxPacket = PACKET_INIT_ZERO;
 //union ColorComplex airspecColors;
 #else
 RX_PacketHeader rxPacketHeader;
@@ -68,11 +77,21 @@ RX_PacketHeader rxPacketHeader;
 #define DT_UUID_LENGTH  UUID_TYPE_16
 #endif
 
+
+const uint8_t SHUTTER_CODE[9] = { 0xFC, 0xEF, 0xFE, 0x86, 0x00, 0x03, 0x01, 0x02, 0x00};
+const uint8_t MODE_CODE[9] = { 0xFC, 0xEF, 0xFE, 0x86, 0x00, 0x03, 0x01, 0x01, 0x00};
+const uint8_t POWER_SHORT_PRESS_CODE[9] = { 0xFC, 0xEF, 0xFE, 0x86, 0x00, 0x03, 0x01, 0x00, 0x00};
+const uint8_t POWER_LONG_PRESS_CODE[9] = { 0xFC, 0xEF, 0xFE, 0x86, 0x00, 0x03, 0x01, 0x00, 0x03};
+
+
 const uint8_t DT_REQ_CHAR_INFO_UUID[2] = { 0x71, 0xCE };
 const uint8_t DT_REQ_CHAR_CONFIG_UUID[2] = { 0x72, 0xCE };
 const uint8_t DT_REQ_CHAR_RX_UUID[2] = { 0x73, 0xCE };
-const uint8_t DT_REQ_SERV_UUID[2] = { 0x70, 0xCE };
-
+//const uint8_t DT_REQ_SERV_UUID[2] = { 0x70, 0xCE };
+const uint8_t DT_REQ_SERV_UUID[2] = { 0x80, 0xCE };
+const uint8_t DT_CAMERA_CTRL_UUID[2] = { 0x82, 0xCE };
+const uint8_t DT_CAMERA_CE81_UUID[2] = { 0x81, 0xCE };
+const uint8_t DT_CAMERA_CE83_UUID[2] = { 0x83, 0xCE };
 
 /* Private typedef -----------------------------------------------------------*/
 typedef enum {
@@ -84,6 +103,9 @@ typedef struct {
 	uint16_t DataTransferRxCharHdle; /**< Characteristic handle */
 	uint16_t DataTransferCharControlHdle; /**< Characteristic handle */
 	uint16_t DataTransferCharInfoHdle;
+	uint16_t DataCameraCtrlCharHdle;
+	uint16_t DataCameraCE81CharHdle;
+	uint16_t DataCameraCE83CharHdle;
 } DataTransferSvcContext_t;
 
 /* Private defines -----------------------------------------------------------*/
@@ -94,8 +116,8 @@ typedef struct {
 /* Private function prototypes -----------------------------------------------*/
 //static tBleStatus TX_Update_Char(DTS_STM_Payload_t *pDataValue);
 //static tBleStatus SensorConfig_Update_Char(DTS_STM_Payload_t *pDataValue);
-static tBleStatus UpdateSystemInfo(DTS_STM_Payload_t* pPayload);
-static tBleStatus UpdateConfig(DTS_STM_Payload_t* pPayload);
+static tBleStatus BLE_UpdateSystemInfo(DTS_STM_Payload_t* pPayload);
+static tBleStatus BLE_UpdateConfig(DTS_STM_Payload_t* pPayload);
 static SVCCTL_EvtAckStatus_t DTS_Event_Handler(void *pckt);
 static DataTransferSvcContext_t aDataTransferContext;
 extern uint16_t Att_Mtu_Exchanged;
@@ -162,6 +184,46 @@ static SVCCTL_EvtAckStatus_t DTS_Event_Handler(void *Event) {
 		case ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE: {
 			attribute_modified =
 					(aci_gatt_attribute_modified_event_rp0*) blue_evt->data;
+			if (attribute_modified->Attr_Handle
+					== (aDataTransferContext.DataTransferRxCharHdle + 1)) {
+				/* received update */
+				volatile uint8_t status;
+
+				/* Create a stream that reads from the buffer. */
+				pb_istream_t stream = pb_istream_from_buffer(attribute_modified->Attr_Data, attribute_modified->Attr_Data_Length);
+
+				/* Now we are ready to decode the message. */
+				status = pb_decode(&stream, PACKET_FIELDS, &rxPacket);
+
+				osThreadState_t state;
+				if(status){
+					// update system
+					switch(rxPacket.which_payload){
+					case PACKET_MARK_PACKET_TAG:
+						state = osThreadGetState(markThreadId);
+						if( (state != osThreadReady) || (state != osThreadRunning) || (state != osThreadInactive) || (state != osThreadBlocked) ){
+							markThreadId = osThreadNew(triggerMark, &rxPacket.payload.mark_packet, &markTask_attributes);
+						}
+						break;
+					case PACKET_SYSTEM_INFO_PACKET_TAG:
+											break;
+					case PACKET_CONFIG_PACKET_TAG:
+						// start thread that interrupts systems, updates parameters, and restarts system
+						state = osThreadGetState(configThreadId);
+						if( (state != osThreadReady) || (state != osThreadRunning) || (state != osThreadInactive) || (state != osThreadBlocked) ){
+							configThreadId = osThreadNew(updateSystemConfig, &rxPacket.payload.config_packet, &configTask_attributes);
+						}
+											break;
+					case PACKET_SPECIAL_FUNCTION_TAG:
+											break;
+					default: break;
+					}
+				}else{
+					// decode failed. Invalid packet likely received.
+
+				}
+
+			}
 //			if (attribute_modified->Attr_Handle
 //					== (aDataTransferContext.DataTransferTxCharHdle + 2)) {
 //				/**
@@ -539,7 +601,8 @@ void DTS_STM_Init(void) {
 
 	hciCmdResult = aci_gatt_add_char(aDataTransferContext.DataTransferSvcHdle,
 	DT_UUID_LENGTH, (Char_UUID_t*) DT_REQ_CHAR_RX_UUID, DATA_TRANSFER_NOTIFICATION_LEN_MAX, /* DATA_TRANSFER_NOTIFICATION_LEN_MAX, */
-	CHAR_PROP_WRITE_WITHOUT_RESP | CHAR_PROP_NOTIFY | CHAR_PROP_READ,
+//	CHAR_PROP_WRITE_WITHOUT_RESP,
+	CHAR_PROP_WRITE,
 	ATTR_PERMISSION_NONE,
 	GATT_NOTIFY_ATTRIBUTE_WRITE, //GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP, /* gattEvtMask */
 			10, /* encryKeySize */
@@ -547,6 +610,68 @@ void DTS_STM_Init(void) {
 			&(aDataTransferContext.DataTransferRxCharHdle));
 
 //	updateSystemConfig_BLE(&sysState);
+
+
+	// add camera control characteristic
+	//CE81 (WRITE)
+	hciCmdResult = aci_gatt_add_char(aDataTransferContext.DataTransferSvcHdle,
+	DT_UUID_LENGTH, (Char_UUID_t*) DT_CAMERA_CE81_UUID, 20, /* DATA_TRANSFER_NOTIFICATION_LEN_MAX, */
+//	CHAR_PROP_WRITE_WITHOUT_RESP,
+	CHAR_PROP_WRITE,
+	ATTR_PERMISSION_NONE,
+	GATT_NOTIFY_ATTRIBUTE_WRITE, //GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP, /* gattEvtMask */
+			10, /* encryKeySize */
+			1, /* isVariable */
+			&(aDataTransferContext.DataCameraCE81CharHdle));
+
+
+	//CE83 (READ) -> curr value: 0x0102
+	hciCmdResult = aci_gatt_add_char(aDataTransferContext.DataTransferSvcHdle,
+	DT_UUID_LENGTH, (Char_UUID_t*) DT_CAMERA_CE83_UUID, 20, /* DATA_TRANSFER_NOTIFICATION_LEN_MAX, */
+//	CHAR_PROP_WRITE_WITHOUT_RESP,
+	CHAR_PROP_READ,
+	ATTR_PERMISSION_NONE,
+	GATT_NOTIFY_ATTRIBUTE_WRITE, //GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP, /* gattEvtMask */
+			10, /* encryKeySize */
+			1, /* isVariable */
+			&(aDataTransferContext.DataCameraCE83CharHdle));
+
+	tBleStatus ret;
+	uint8_t stock_val[4] = {1,2};
+	ret = aci_gatt_update_char_value(aDataTransferContext.DataTransferSvcHdle,
+					  aDataTransferContext.DataCameraCE83CharHdle, 0, /* charValOffset */
+					  2, /* charValueLen */
+					  (uint8_t*) stock_val);
+
+	//CE82
+	hciCmdResult = aci_gatt_add_char(aDataTransferContext.DataTransferSvcHdle,
+	DT_UUID_LENGTH, (Char_UUID_t*) DT_CAMERA_CTRL_UUID, 60, /* DATA_TRANSFER_NOTIFICATION_LEN_MAX, */
+//	CHAR_PROP_WRITE_WITHOUT_RESP,
+	CHAR_PROP_NOTIFY | CHAR_PROP_READ,
+	ATTR_PERMISSION_NONE,
+	GATT_NOTIFY_ATTRIBUTE_WRITE, //GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP, /* gattEvtMask */
+			10, /* encryKeySize */
+			1, /* isVariable */
+			&(aDataTransferContext.DataCameraCtrlCharHdle));
+
+    DTS_CamCtrl(SHUTTER);
+
+	/* Create a stream that will write to our buffer. */
+	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+	/* Now we are ready to encode the message! */
+	status = pb_encode(&stream, PACKET_FIELDS, &infoPacket);
+	PackedPayload.pPayload = (uint8_t*) buffer;
+	PackedPayload.Length = stream.bytes_written;
+    if(status) ret = DTS_STM_UpdateChar(BUZZCAM_INFO_CHAR_UUID, &PackedPayload);
+
+	/* Create a stream that will write to our buffer. */
+	stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+	/* Now we are ready to encode the message! */
+	status = pb_encode(&stream, PACKET_FIELDS, &configPacket);
+	PackedPayload.pPayload = (uint8_t*) buffer;
+	PackedPayload.Length = stream.bytes_written;
+    if(status) ret = DTS_STM_UpdateChar(BUZZCAM_CONFIG_CHAR_UUID,&PackedPayload);
+
 
 	if (hciCmdResult != 0) {
 		APP_DBG_MSG("error add char Tx\n");
@@ -559,13 +684,87 @@ void DTS_STM_Init(void) {
 	return;
 }
 
-static tBleStatus UpdateSystemInfo(DTS_STM_Payload_t* pPayload){
-	return 0;
+static tBleStatus BLE_UpdateSystemInfo(DTS_STM_Payload_t* pPayload){
+	tBleStatus ret;
+
+	if(pPayload->Length < MAX_PACKET_LENGTH){
+		  ret = aci_gatt_update_char_value(aDataTransferContext.DataTransferSvcHdle,
+				  aDataTransferContext.DataTransferCharInfoHdle, 0, /* charValOffset */
+				  pPayload->Length, /* charValueLen */
+				  (uint8_t*) pPayload->pPayload);
+		}
+		else if(pPayload->Length <= DATA_NOTIFICATION_MAX_PACKET_SIZE){
+
+		    uint16_t packetLen = pPayload->Length;
+		    uint16_t offset = 0;
+
+		    while(packetLen > MAX_PACKET_LENGTH){
+		      aci_gatt_update_char_value_ext (0,
+					       aDataTransferContext.DataTransferSvcHdle,
+					       aDataTransferContext.DataTransferCharInfoHdle,
+						0x00, //dont notify
+						pPayload->Length,
+						offset,
+						MAX_PACKET_LENGTH,
+						((uint8_t*) pPayload->pPayload) + offset);
+		      offset += MAX_PACKET_LENGTH;
+		      packetLen -= MAX_PACKET_LENGTH;
+		    }
+
+		    ret = aci_gatt_update_char_value_ext (0,
+			 aDataTransferContext.DataTransferSvcHdle,
+			 aDataTransferContext.DataTransferCharInfoHdle,
+		    	0x01, //notify
+				pPayload->Length,
+			offset,
+			packetLen,
+		    	((uint8_t*) pPayload->pPayload) + offset);
+		}
+
+		return ret;
 }
 
-static tBleStatus UpdateConfig(DTS_STM_Payload_t* pPayload){
-	return 0;
+static tBleStatus BLE_UpdateConfig(DTS_STM_Payload_t* pPayload){
+	tBleStatus ret;
+
+
+	if(pPayload->Length < MAX_PACKET_LENGTH){
+		  ret = aci_gatt_update_char_value(aDataTransferContext.DataTransferSvcHdle,
+				  aDataTransferContext.DataTransferCharControlHdle, 0, /* charValOffset */
+				  pPayload->Length, /* charValueLen */
+				  (uint8_t*) pPayload->pPayload);
+		}
+		else if(pPayload->Length <= DATA_NOTIFICATION_MAX_PACKET_SIZE){
+
+		    uint16_t packetLen = pPayload->Length;
+		    uint16_t offset = 0;
+
+		    while(packetLen > MAX_PACKET_LENGTH){
+		      aci_gatt_update_char_value_ext (0,
+					       aDataTransferContext.DataTransferSvcHdle,
+					       aDataTransferContext.DataTransferCharControlHdle,
+						0x00, //dont notify
+						pPayload->Length,
+						offset,
+						MAX_PACKET_LENGTH,
+						((uint8_t*) pPayload->pPayload) + offset);
+		      offset += MAX_PACKET_LENGTH;
+		      packetLen -= MAX_PACKET_LENGTH;
+		    }
+
+		    ret = aci_gatt_update_char_value_ext (0,
+				 aDataTransferContext.DataTransferSvcHdle,
+				 aDataTransferContext.DataTransferCharControlHdle,
+		    	0x01, //notify
+				pPayload->Length,
+			offset,
+			packetLen,
+		    	((uint8_t*) pPayload->pPayload) + offset);
+		}
+
+		return ret;
 }
+
 
 /**
  * @brief  Characteristic update
@@ -577,14 +776,100 @@ tBleStatus DTS_STM_UpdateChar(uint16_t UUID, uint8_t *pPayload) {
 	tBleStatus result = BLE_STATUS_INVALID_PARAMS;
 	switch (UUID) {
 	case BUZZCAM_INFO_CHAR_UUID:
-		result = UpdateSystemInfo((DTS_STM_Payload_t*) pPayload);
+		result = BLE_UpdateSystemInfo((DTS_STM_Payload_t*) pPayload);
 	case BUZZCAM_CONFIG_CHAR_UUID:
-		result = UpdateConfig((DTS_STM_Payload_t*) pPayload);
+		result = BLE_UpdateConfig((DTS_STM_Payload_t*) pPayload);
 	default:
 		break;
 	}
 	return result;
 }/* end DTS_STM_UpdateChar() */
+
+tBleStatus DTS_CamCtrl(cameraFn camera_control) {
+	tBleStatus result = BLE_STATUS_INVALID_PARAMS;
+	switch (camera_control) {
+	case SHUTTER:
+		result = aci_gatt_update_char_value(aDataTransferContext.DataTransferSvcHdle,
+						  aDataTransferContext.DataCameraCtrlCharHdle, 0, /* charValOffset */
+						  9, /* charValueLen */
+						  (uint8_t*) SHUTTER_CODE);
+		break;
+	case MODE:
+		result = aci_gatt_update_char_value(aDataTransferContext.DataTransferSvcHdle,
+						  aDataTransferContext.DataCameraCtrlCharHdle, 0, /* charValOffset */
+						  9, /* charValueLen */
+						  (uint8_t*) MODE_CODE);
+		break;
+	case SCREEN_TOGGLE:
+		result = aci_gatt_update_char_value(aDataTransferContext.DataTransferSvcHdle,
+						  aDataTransferContext.DataCameraCtrlCharHdle, 0, /* charValOffset */
+						  9, /* charValueLen */
+						  (uint8_t*) POWER_SHORT_PRESS_CODE);
+		break;
+	case POWER_LONG_PRESS:
+		result = aci_gatt_update_char_value(aDataTransferContext.DataTransferSvcHdle,
+						  aDataTransferContext.DataCameraCtrlCharHdle, 0, /* charValOffset */
+						  9, /* charValueLen */
+						  (uint8_t*) POWER_LONG_PRESS_CODE);
+		break;
+	case WAKEUP_CAMERAS:
+		// stop advertising
+
+		// change advertising data
+
+		// start advertising
+
+		wakeupConnectedCameras();
+
+		break;
+	default:
+		break;
+	}
+	return result;
+}/* end DTS_CamCtrl() */
+
+void wakeupConnectedCameras(void){
+	/* used for Insta360 X3 */
+	a_ManufDataCameraWakeup[16] = 0x37;
+	a_ManufDataCameraWakeup[17] = 0x4b;
+	a_ManufDataCameraWakeup[18] = 0x43;
+	a_ManufDataCameraWakeup[19] = 0x4d;
+	a_ManufDataCameraWakeup[20] = 0x54;
+	a_ManufDataCameraWakeup[21] = 0x4b;
+
+//	tBleStatus ret = BLE_STATUS_INVALID_PARAMS;
+//	ret = aci_gap_set_non_discoverable();
+//	ret = aci_gap_update_adv_data(sizeof(a_ManufDataCameraWakeup), (uint8_t*) a_ManufDataCameraWakeup);
+//	a_ManufDataCameraWakeup[0] = 9;
+
+	Adv_Request(APP_BLE_CAM_LP_ADV);
+
+	///* used for Insta360 RS 1-inch */
+	//manuf_data[14] = 0x38;
+	//manuf_data[15] = 0x51;
+	//manuf_data[16] = 0x53;
+	//manuf_data[17] = 0x4a;
+	//manuf_data[18] = 0x38;
+	//manuf_data[19] = 0x52;
+}
+
+void resetAdvertisingAfterConnectedCamera(void){
+	tBleStatus ret = BLE_STATUS_INVALID_PARAMS;
+	ret = aci_gap_update_adv_data(sizeof(a_ManufData), (uint8_t*) a_ManufData);
+}
+
+void activateCameraMode(void){
+	memset(a_LocalName, 0, sizeof(a_LocalName));
+    memcpy(a_LocalName,a_camName,sizeof(a_camName));
+    Adv_Request(APP_BLE_LP_ADV);
+}
+
+void deactivateCameraMode(void){
+	memset(a_LocalName, 0, sizeof(a_LocalName));
+    memcpy(a_LocalName,a_buzzCamName,sizeof(a_buzzCamName));
+    Adv_Request(APP_BLE_LP_ADV);
+
+}
 
 
 //tBleStatus DTS_STM_UpdateCharThroughput(DTS_STM_Payload_t *pDataValue) {

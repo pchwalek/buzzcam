@@ -784,7 +784,7 @@ uint32_t osThreadFlagsClear (uint32_t flags) {
   return (rflags);
 }
 
-uint32_t osThreadFlagsGet (void) {
+uint32_t flags  (void) {
   TaskHandle_t hTask;
   uint32_t rflags;
 

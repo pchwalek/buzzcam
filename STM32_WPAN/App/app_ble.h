@@ -32,23 +32,27 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "cmsis_os2.h"
+#ifndef CUSTOM_BT_PARAMETERS
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
 
+
+
+/* USER CODE BEGIN ET */
+#else
 typedef enum
 {
   APP_BLE_IDLE,
   APP_BLE_FAST_ADV,
   APP_BLE_LP_ADV,
+  APP_BLE_CAM_LP_ADV,
   APP_BLE_SCAN,
   APP_BLE_LP_CONNECTING,
   APP_BLE_CONNECTED_SERVER,
   APP_BLE_CONNECTED_CLIENT
 } APP_BLE_ConnStatus_t;
-
-/* USER CODE BEGIN ET */
-
+#endif
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -59,7 +63,11 @@ typedef enum
 /* External variables --------------------------------------------------------*/
 /* USER CODE BEGIN EV */
 extern osThreadId_t LinkConfigProcessId;
-
+extern uint8_t a_ManufDataCameraWakeup[28];
+extern uint8_t a_ManufData[14];
+extern char a_buzzCamName[20];
+extern char a_camName[20];
+extern char a_LocalName[20];
 /* USER CODE END EV */
 
 /* Exported macro ------------------------------------------------------------*/
@@ -72,7 +80,9 @@ void APP_BLE_Init(void);
 APP_BLE_ConnStatus_t APP_BLE_Get_Server_Connection_Status(void);
 
 /* USER CODE BEGIN EF */
-#define BUZZCAM_SERVICE_UUID                                       (0xCE70)
+void Adv_Request(APP_BLE_ConnStatus_t NewStatus);
+
+#define BUZZCAM_SERVICE_UUID                                       (0xCE80)
 #define BUZZCAM_INFO_CHAR_UUID                                     (0xCE71)
 #define BUZZCAM_CONFIG_CHAR_UUID                                   (0xCE72)
 #define BUZZCAM_RX_CHAR_UUID                                       (0xCE73)

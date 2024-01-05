@@ -56,6 +56,14 @@ typedef struct {
 	DTS_STM_Payload_t DataTransfered;
 } DTS_STM_App_Notification_evt_t;
 
+typedef enum {
+  SHUTTER = 1,
+  MODE,
+  SCREEN_TOGGLE,
+  POWER_LONG_PRESS,
+  WAKEUP_CAMERAS
+} cameraFn;
+
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 /* External variables --------------------------------------------------------*/
@@ -63,12 +71,17 @@ typedef struct {
 /* Exported functions ------------------------------------------------------- */
 void DTS_STM_Init(void);
 tBleStatus DTS_STM_UpdateChar(uint16_t UUID, uint8_t *pPayload);
+tBleStatus DTS_CamCtrl(cameraFn camera_control);
 void DTS_Notification(DTS_STM_App_Notification_evt_t *pNotification);
 void BLE_SVC_GAP_Change_PHY(void);
 void BLE_SVC_GAP_Security_Req(void);
 void BLE_SVC_GAP_Clear_DataBase(void);
 void Resume_Notification(void);
 void enterDFUMode(void);
+void wakeupConnectedCameras(void);
+void resetAdvertisingAfterConnectedCamera(void);
+void activateCameraMode(void);
+void deactivateCameraMode(void);
 
 tBleStatus DTS_STM_UpdateCharThroughput(DTS_STM_Payload_t *pDataValue);
 

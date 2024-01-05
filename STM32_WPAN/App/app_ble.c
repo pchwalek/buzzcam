@@ -168,6 +168,7 @@ typedef struct
 
 /* USER CODE BEGIN PTD */
 #ifndef CUSTOM_BT_PARAMETERS
+
 /* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
@@ -247,6 +248,7 @@ uint8_t a_ManufData[14] = {sizeof(a_ManufData)-1,
                           };
 
 /* USER CODE BEGIN PV */
+/* USER CODE BEGIN PV */
 #else
 PLACE_IN_SECTION("MB_MEM1") ALIGN(4) static TL_CmdPacket_t BleCmdBuffer;
 
@@ -292,12 +294,14 @@ AD_TYPE_MANUFACTURER_SPECIFIC_DATA, 0x01/*SKD version */, 0x00 /* Generic*/,
 		0x00, 0x00, 0x00, 0x00, 0x00, /* BLE MAC stop */
 
 };
+
+uint8_t a_ManufDataCameraWakeup[28];
+
 #endif
 
 osThreadId_t LinkConfigProcessId;
 osThreadId_t AdvCancelProcessId;
 osThreadId_t AdvReqProcessId;
-
 /* USER CODE END PV */
 
 /* Global variables ----------------------------------------------------------*/
@@ -333,23 +337,16 @@ static void BLE_StatusNot(HCI_TL_CmdStatus_t Status);
 static void Ble_Tl_Init(void);
 static void Ble_Hci_Gap_Gatt_Init(void);
 static const uint8_t* BleGetBdAddress(void);
-static void Adv_Request(APP_BLE_ConnStatus_t NewStatus);
+//static void Adv_Request(APP_BLE_ConnStatus_t NewStatus);
 static void Add_Advertisment_Service_UUID(uint16_t servUUID);
 static void Adv_Mgr(void);
 static void AdvUpdateProcess(void *argument);
 static void Adv_Update(void);
 
 /* USER CODE BEGIN PFP */
-//const osThreadAttr_t LinkConfigProcess_attr = { .name =
-//CFG_TP_LINK_CONFIG_PROCESS_NAME, .attr_bits =
-//CFG_TP_GENERIC_PROCESS_ATTR_BITS, .cb_mem =
-//CFG_TP_GENERIC_PROCESS_CB_MEM, .cb_size = CFG_TP_GENERIC_PROCESS_CB_SIZE,
-//		.stack_mem =
-//		CFG_TP_GENERIC_PROCESS_STACK_MEM, .priority =
-//		CFG_TP_GENERIC_PROCESS_PRIORITY, .stack_size =
-//		CFG_TP_GENERIC_PROCESS_STACK_SIZE * 2 };
-
 char a_LocalName[20];
+char a_buzzCamName[20];
+char a_camName[20];
 /* USER CODE END PFP */
 
 /* External variables --------------------------------------------------------*/
@@ -468,6 +465,7 @@ void APP_BLE_Init(void)
   HRSAPP_Init();
 
   /* USER CODE BEGIN APP_BLE_Init_3 */
+  /* USER CODE BEGIN APP_BLE_Init_3 */
 #else
   SHCI_C2_Ble_Init_Cmd_Packet_t ble_init_cmd_packet =
    {
@@ -502,6 +500,31 @@ void APP_BLE_Init(void)
       CFG_BLE_OPTIONS_EXT
      }
    };
+
+  a_ManufDataCameraWakeup[0] = sizeof(a_ManufDataCameraWakeup) - 1;
+  a_ManufDataCameraWakeup[1] = AD_TYPE_MANUFACTURER_SPECIFIC_DATA;
+  /* set the manufacturing data for wakeon packet */
+  a_ManufDataCameraWakeup[2] = 0x4c;
+  a_ManufDataCameraWakeup[3] = 0x00;
+  a_ManufDataCameraWakeup[4] = 0x02;
+  a_ManufDataCameraWakeup[5] = 0x15;
+  a_ManufDataCameraWakeup[6] = 0x09;
+  a_ManufDataCameraWakeup[7] = 0x4f;
+  a_ManufDataCameraWakeup[8] = 0x52;
+  a_ManufDataCameraWakeup[9] = 0x42;
+  a_ManufDataCameraWakeup[10] = 0x49;
+  a_ManufDataCameraWakeup[11] = 0x54;
+  a_ManufDataCameraWakeup[12] = 0x09;
+  a_ManufDataCameraWakeup[13] = 0xff;
+  a_ManufDataCameraWakeup[14] = 0x0f;
+  a_ManufDataCameraWakeup[15] = 0x00;
+    /* note: see powerOnPrevConnectedCameras() for bytes 16-21 */
+  a_ManufDataCameraWakeup[22] = 0x00;
+  a_ManufDataCameraWakeup[23] = 0x00;
+  a_ManufDataCameraWakeup[24] = 0x00;
+  a_ManufDataCameraWakeup[25] = 0x00;
+  a_ManufDataCameraWakeup[26] = 0xe4;
+  a_ManufDataCameraWakeup[27] = 0x01;
 
    /**
     * Initialize Ble Transport Layer
@@ -586,6 +609,7 @@ void APP_BLE_Init(void)
    */
   Adv_Request(APP_BLE_FAST_ADV);
 
+  /* USER CODE BEGIN APP_BLE_Init_2 */
   /* USER CODE BEGIN APP_BLE_Init_2 */
 #else
   /**
@@ -868,7 +892,6 @@ void SVCCTL_SvcInit(void)
   return;
 }
 
-
 /* USER CODE END FD*/
 
 /*************************************************************
@@ -1082,23 +1105,37 @@ static void Ble_Hci_Gap_Gatt_Init(void)
 /* USER CODE BEGIN Role_Mngt*/
   uint32_t UID = LL_FLASH_GetUDN();
 
-  const char local_name[] = { AD_TYPE_COMPLETE_LOCAL_NAME, 'B','U','Z','Z','C','A','M','_',
-		  hexToAscii(UID >> 28),
-		  hexToAscii(UID >> 24),
-		  hexToAscii(UID >> 20),
-		  hexToAscii(UID >> 16),
-		  hexToAscii(UID >> 12),
-		  hexToAscii(UID >> 8),
-		  hexToAscii(UID >> 4),
-		  hexToAscii(UID)};
+    const char local_name_buzzcam[] = { AD_TYPE_COMPLETE_LOCAL_NAME, 'B','u','z','z','C','a','m','_',
+  		  hexToAscii(UID >> 28),
+  		  hexToAscii(UID >> 24),
+  		  hexToAscii(UID >> 20),
+  		  hexToAscii(UID >> 16),
+  		  hexToAscii(UID >> 12),
+  		  hexToAscii(UID >> 8),
+  		  hexToAscii(UID >> 4),
+  		  hexToAscii(UID)};
+    memcpy(a_buzzCamName,local_name_buzzcam,sizeof(local_name_buzzcam));
 
-  memcpy(a_LocalName,local_name,sizeof(local_name));
+    const char local_name[] = { AD_TYPE_COMPLETE_LOCAL_NAME,'I','n','s','t','a','3','6','0',' ','G','P','S',' ','R','e','m','o','t','e'};
+    memcpy(a_camName,local_name,sizeof(local_name));
+
+//    		'_',
+//    		  hexToAscii(UID >> 28),
+//			  hexToAscii(UID >> 24),
+//			  hexToAscii(UID >> 20),
+//			  hexToAscii(UID >> 16),
+//			  hexToAscii(UID >> 12),
+//			  hexToAscii(UID >> 8),
+//			  hexToAscii(UID >> 4),
+//			  hexToAscii(UID)};
+
+    memcpy(a_LocalName,local_name_buzzcam,sizeof(local_name_buzzcam));
 
 /* USER CODE END Role_Mngt */
 
   if (role > 0)
   {
-    const char *name = "BUZZC";
+//    const char *name = "Buzz";
     ret = aci_gap_init(role,
                        CFG_PRIVACY,
                        APPBLE_GAP_DEVICE_NAME_LENGTH,
@@ -1115,7 +1152,7 @@ static void Ble_Hci_Gap_Gatt_Init(void)
       APP_DBG_MSG("  Success: aci_gap_init command\n");
     }
 
-    ret = aci_gatt_update_char_value(gap_service_handle, gap_dev_name_char_handle, 0, strlen(name), (uint8_t *) name);
+    ret = aci_gatt_update_char_value(gap_service_handle, gap_dev_name_char_handle, 0, strlen(a_LocalName), (uint8_t *) a_LocalName);
     if (ret != BLE_STATUS_SUCCESS)
     {
       BLE_DBG_SVCCTL_MSG("  Fail   : aci_gatt_update_char_value - Device Name\n");
@@ -1216,7 +1253,7 @@ static void Ble_Hci_Gap_Gatt_Init(void)
   APP_DBG_MSG("==>> End Ble_Hci_Gap_Gatt_Init function\n\r");
 }
 
-static void Adv_Request(APP_BLE_ConnStatus_t NewStatus)
+void Adv_Request(APP_BLE_ConnStatus_t NewStatus)
 {
   tBleStatus ret = BLE_STATUS_INVALID_PARAMS;
   uint16_t Min_Inter, Max_Inter;
@@ -1238,7 +1275,7 @@ static void Adv_Request(APP_BLE_ConnStatus_t NewStatus)
    */
   HW_TS_Stop(BleApplicationContext.Advertising_mgr_timer_Id);
 
-  if ((NewStatus == APP_BLE_LP_ADV)
+  if (( (NewStatus == APP_BLE_LP_ADV || NewStatus == APP_BLE_CAM_LP_ADV))
       && ((BleApplicationContext.Device_Connection_Status == APP_BLE_FAST_ADV)
           || (BleApplicationContext.Device_Connection_Status == APP_BLE_LP_ADV)))
   {
@@ -1254,7 +1291,18 @@ static void Adv_Request(APP_BLE_ConnStatus_t NewStatus)
     }
   }
 
-  BleApplicationContext.Device_Connection_Status = NewStatus;
+  if(NewStatus == APP_BLE_LP_ADV){
+	ret = aci_gap_update_adv_data(sizeof(a_ManufData), (uint8_t*) a_ManufData);
+  }
+
+  if(NewStatus != APP_BLE_CAM_LP_ADV){
+	  BleApplicationContext.Device_Connection_Status = NewStatus;
+  }else if(NewStatus == APP_BLE_LP_ADV){
+	  BleApplicationContext.Device_Connection_Status = APP_BLE_LP_ADV;
+  }
+
+
+
   /* Start Fast or Low Power Advertising */
   ret = aci_gap_set_discoverable(ADV_IND,
                                  Min_Inter,
@@ -1276,8 +1324,41 @@ static void Adv_Request(APP_BLE_ConnStatus_t NewStatus)
     APP_DBG_MSG("==>> aci_gap_set_discoverable - Success\n");
   }
 
+
+
   /* Update Advertising data */
-  ret = aci_gap_update_adv_data(sizeof(a_ManufData), (uint8_t*) a_ManufData);
+
+  if(NewStatus == APP_BLE_CAM_LP_ADV){
+	  aci_gap_delete_ad_type(AD_TYPE_16_BIT_SERV_UUID);
+		aci_gap_delete_ad_type(AD_TYPE_16_BIT_SERV_UUID_CMPLT_LIST);
+		aci_gap_delete_ad_type(AD_TYPE_32_BIT_SERV_UUID);
+		aci_gap_delete_ad_type(AD_TYPE_32_BIT_SERV_UUID_CMPLT_LIST);
+		aci_gap_delete_ad_type(AD_TYPE_128_BIT_SERV_UUID);
+		aci_gap_delete_ad_type(AD_TYPE_128_BIT_SERV_UUID_CMPLT_LIST);
+		aci_gap_delete_ad_type(AD_TYPE_SHORTENED_LOCAL_NAME);
+		aci_gap_delete_ad_type(AD_TYPE_COMPLETE_LOCAL_NAME);
+		aci_gap_delete_ad_type(AD_TYPE_TX_POWER_LEVEL);
+		aci_gap_delete_ad_type(AD_TYPE_CLASS_OF_DEVICE);
+		aci_gap_delete_ad_type(AD_TYPE_SEC_MGR_TK_VALUE);
+		aci_gap_delete_ad_type(AD_TYPE_SEC_MGR_OOB_FLAGS);
+		aci_gap_delete_ad_type(AD_TYPE_PERIPHERAL_CONN_INTERVAL);
+		aci_gap_delete_ad_type(AD_TYPE_SERV_SOLICIT_16_BIT_UUID_LIST);
+		aci_gap_delete_ad_type(AD_TYPE_SERV_SOLICIT_128_BIT_UUID_LIST);
+		aci_gap_delete_ad_type(AD_TYPE_SERVICE_DATA);
+		aci_gap_delete_ad_type(AD_TYPE_APPEARANCE);
+		aci_gap_delete_ad_type(AD_TYPE_ADVERTISING_INTERVAL);
+		aci_gap_delete_ad_type(AD_TYPE_LE_ROLE);
+		aci_gap_delete_ad_type(AD_TYPE_SERV_SOLICIT_32_BIT_UUID_LIST);
+	  aci_gap_delete_ad_type(AD_TYPE_URI);
+
+		ret = aci_gap_update_adv_data(sizeof(a_ManufDataCameraWakeup), (uint8_t*) a_ManufDataCameraWakeup);
+
+  }else{
+	  ret = aci_gap_update_adv_data(sizeof(a_ManufData), (uint8_t*) a_ManufData);
+
+  }
+
+
   if (ret != BLE_STATUS_SUCCESS)
   {
     if (NewStatus == APP_BLE_FAST_ADV)
@@ -1355,7 +1436,7 @@ const uint8_t* BleGetBdAddress(void)
 }
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTION */
-//
+
 /* USER CODE END FD_LOCAL_FUNCTION */
 
 /*************************************************************
@@ -1417,7 +1498,7 @@ static void HciUserEvtProcess(void *argument)
 }
 
 /* USER CODE BEGIN FD_SPECIFIC_FUNCTIONS */
-//
+
 /* USER CODE END FD_SPECIFIC_FUNCTIONS */
 /*************************************************************
  *
@@ -1475,20 +1556,20 @@ static void BLE_StatusNot(HCI_TL_CmdStatus_t Status)
     case HCI_TL_CmdBusy:
       osMutexAcquire(MtxHciId, osWaitForever);
       /* USER CODE BEGIN HCI_TL_CmdBusy */
-//
+
       /* USER CODE END HCI_TL_CmdBusy */
       break;
 
     case HCI_TL_CmdAvailable:
       osMutexRelease(MtxHciId);
       /* USER CODE BEGIN HCI_TL_CmdAvailable */
-//
+
       /* USER CODE END HCI_TL_CmdAvailable */
       break;
 
     default:
       /* USER CODE BEGIN Status */
-//
+
       /* USER CODE END Status */
       break;
   }

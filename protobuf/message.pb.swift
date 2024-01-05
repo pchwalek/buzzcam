@@ -403,8 +403,7 @@ public struct MarkState {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var beepEnabled: Bool = false
-
+  ///bool beep_enabled = 1;
   public var markNumber: UInt32 = 0
 
   public var timestampUnix: UInt64 = 0
@@ -419,7 +418,7 @@ public struct MarkPacket {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  /// throttle max character count (e.g., 50)
+  ///optional string annotation = 1 [(nanopb).max_length = 50];// throttle max character count (e.g., 50)
   public var annotation: String {
     get {return _annotation ?? String()}
     set {_annotation = newValue}
@@ -428,6 +427,8 @@ public struct MarkPacket {
   public var hasAnnotation: Bool {return self._annotation != nil}
   /// Clears the value of `annotation`. Subsequent reads from it will return its default value.
   public mutating func clearAnnotation() {self._annotation = nil}
+
+  public var beepEnabled: Bool = false
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -443,6 +444,7 @@ public struct DiscoveredDevices {
 
   public var numberOfDevices: UInt32 = 0
 
+  ///repeated Device device = 2 [(nanopb).max_count = 20];
   public var device: [DiscoveredDevices.Device] = []
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -670,6 +672,7 @@ public struct NetworkState {
 
   public var numberOfDiscoveredDevices: UInt32 = 0
 
+  ///repeated uint32 discovered_device_UID = 2 [(nanopb).max_count = 20];
   public var discoveredDeviceUid: [UInt32] = []
 
   public var forceRediscovery: Bool = false
@@ -1338,9 +1341,8 @@ extension SDCardState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
 extension MarkState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = "MarkState"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "beep_enabled"),
-    2: .standard(proto: "mark_number"),
-    3: .standard(proto: "timestamp_unix"),
+    1: .standard(proto: "mark_number"),
+    2: .standard(proto: "timestamp_unix"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1349,29 +1351,24 @@ extension MarkState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularBoolField(value: &self.beepEnabled) }()
-      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.markNumber) }()
-      case 3: try { try decoder.decodeSingularUInt64Field(value: &self.timestampUnix) }()
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.markNumber) }()
+      case 2: try { try decoder.decodeSingularUInt64Field(value: &self.timestampUnix) }()
       default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if self.beepEnabled != false {
-      try visitor.visitSingularBoolField(value: self.beepEnabled, fieldNumber: 1)
-    }
     if self.markNumber != 0 {
-      try visitor.visitSingularUInt32Field(value: self.markNumber, fieldNumber: 2)
+      try visitor.visitSingularUInt32Field(value: self.markNumber, fieldNumber: 1)
     }
     if self.timestampUnix != 0 {
-      try visitor.visitSingularUInt64Field(value: self.timestampUnix, fieldNumber: 3)
+      try visitor.visitSingularUInt64Field(value: self.timestampUnix, fieldNumber: 2)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: MarkState, rhs: MarkState) -> Bool {
-    if lhs.beepEnabled != rhs.beepEnabled {return false}
     if lhs.markNumber != rhs.markNumber {return false}
     if lhs.timestampUnix != rhs.timestampUnix {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
@@ -1383,6 +1380,7 @@ extension MarkPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
   public static let protoMessageName: String = "MarkPacket"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "annotation"),
+    2: .standard(proto: "beep_enabled"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1392,6 +1390,7 @@ extension MarkPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self._annotation) }()
+      case 2: try { try decoder.decodeSingularBoolField(value: &self.beepEnabled) }()
       default: break
       }
     }
@@ -1405,11 +1404,15 @@ extension MarkPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     try { if let v = self._annotation {
       try visitor.visitSingularStringField(value: v, fieldNumber: 1)
     } }()
+    if self.beepEnabled != false {
+      try visitor.visitSingularBoolField(value: self.beepEnabled, fieldNumber: 2)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: MarkPacket, rhs: MarkPacket) -> Bool {
     if lhs._annotation != rhs._annotation {return false}
+    if lhs.beepEnabled != rhs.beepEnabled {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

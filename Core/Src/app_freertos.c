@@ -45,6 +45,34 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
 
+const osThreadAttr_t markTask_attributes = {
+  .name = "markTask",
+  .priority = (osPriority_t) osPriorityBelowNormal,
+  .stack_size = 256 * 8
+};
+osThreadId_t markThreadId;
+
+const osThreadAttr_t configTask_attributes = {
+  .name = "configTask",
+  .priority = (osPriority_t) osPriorityBelowNormal,
+  .stack_size = 256 * 12
+};
+osThreadId_t configThreadId;
+
+const osThreadAttr_t mainSystemTask_attributes = {
+  .name = "mainSystemTask",
+  .priority = (osPriority_t) osPriorityBelowNormal,
+  .stack_size = 256 * 8
+};
+osThreadId_t mainSystemThreadId;
+
+const osThreadAttr_t sampleTask_attributes = {
+  .name = "sampleTask",
+  .priority = (osPriority_t) osPriorityBelowNormal,
+  .stack_size = 256 * 8
+};
+osThreadId_t sampleThreadId;
+
 /* USER CODE END Variables */
 
 /* Private function prototypes -----------------------------------------------*/

@@ -77,13 +77,15 @@ message SDCardState{
 }
 
 message MarkState{
-    bool beep_enabled = 1;
-    uint32 mark_number = 2;
-    uint64 timestamp_unix = 3;
+    //bool beep_enabled = 1;
+    uint32 mark_number = 1;
+    uint64 timestamp_unix = 2;
 }
 
 message MarkPacket{
-    optional string annotation = 1; // throttle max character count (e.g., 50)
+    //optional string annotation = 1 [(nanopb).max_length = 50];// throttle max character count (e.g., 50)
+    optional string annotation = 1;// throttle max character count (e.g., 50)
+    bool beep_enabled = 2;
 }
 
 message DiscoveredDevices{
@@ -92,6 +94,7 @@ message DiscoveredDevices{
         uint32 UID = 1;
         float range = 2;
     }
+    //repeated Device device = 2 [(nanopb).max_count = 20];
     repeated Device device = 2;
 }
 
@@ -169,6 +172,7 @@ message CameraControl{
 
 message NetworkState{
     uint32 number_of_discovered_devices = 1;
+    //repeated uint32 discovered_device_UID = 2 [(nanopb).max_count = 20];
     repeated uint32 discovered_device_UID = 2;
     bool force_rediscovery = 3;
 }
