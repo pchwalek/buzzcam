@@ -79,6 +79,8 @@ void sampleTask(void *argument);
 #define SD_CS_GPIO_Port GPIOC
 #define EN_3V3_ALT_Pin GPIO_PIN_7
 #define EN_3V3_ALT_GPIO_Port GPIOB
+#define EN_SD_REG_2_Pin GPIO_PIN_3
+#define EN_SD_REG_2_GPIO_Port GPIOB
 #define EN_UWB_REG_Pin GPIO_PIN_10
 #define EN_UWB_REG_GPIO_Port GPIOC
 #define EN_SD_REG_Pin GPIO_PIN_11
@@ -117,6 +119,16 @@ void sampleTask(void *argument);
 #define P0_13_GPIO_Port GPIOA
 #define PD14_Pin GPIO_PIN_14
 #define PD14_GPIO_Port GPIOD
+#define PD13_Pin GPIO_PIN_13
+#define PD13_GPIO_Port GPIOD
+#define PD12_Pin GPIO_PIN_12
+#define PD12_GPIO_Port GPIOD
+#define EN_SD_MUX_Pin GPIO_PIN_2
+#define EN_SD_MUX_GPIO_Port GPIOD
+#define SD_MUX_SEL_Pin GPIO_PIN_7
+#define SD_MUX_SEL_GPIO_Port GPIOC
+#define SD_DETECT_2_Pin GPIO_PIN_3
+#define SD_DETECT_2_GPIO_Port GPIOE
 
 /* USER CODE BEGIN Private defines */
 #define CONFIG_UPDATED_EVENT  0x00000001

@@ -66,9 +66,12 @@ SAI_HandleTypeDef hsai_BlockA1;
 DMA_HandleTypeDef hdma_sai1_a;
 
 SPI_HandleTypeDef hspi1;
+SPI_HandleTypeDef hspi2;
 
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim16;
+
+UART_HandleTypeDef huart1;
 
 PCD_HandleTypeDef hpcd_USB_FS;
 
@@ -100,6 +103,8 @@ static void MX_TIM16_Init(void);
 static void MX_USB_PCD_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_MEMORYMAP_Init(void);
+static void MX_SPI2_Init(void);
+static void MX_USART1_UART_Init(void);
 static void MX_RF_Init(void);
 void StartDefaultTask(void *argument);
 
@@ -290,6 +295,8 @@ int main(void)
   MX_USB_PCD_Init();
   MX_I2C1_Init();
   MX_MEMORYMAP_Init();
+  MX_SPI2_Init();
+  MX_USART1_UART_Init();
   MX_RF_Init();
   /* USER CODE BEGIN 2 */
 
@@ -319,7 +326,8 @@ int main(void)
 
   /* Create the thread(s) */
   /* creation of defaultTask */
-//  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
   mainSystemThreadId = osThreadNew(mainSystemTask, NULL, &mainSystemTask_attributes);
   /* USER CODE END RTOS_THREADS */
@@ -431,7 +439,7 @@ void PeriphCommonClock_Config(void)
   PeriphClkInitStruct.PLLSAI1.PLLSAI1ClockOut = RCC_PLLSAI1_SAI1CLK|RCC_PLLSAI1_USBCLK;
   PeriphClkInitStruct.Sai1ClockSelection = RCC_SAI1CLKSOURCE_PLLSAI1;
   PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_PLLSAI1;
-  PeriphClkInitStruct.RFWakeUpClockSelection = RCC_RFWKPCLKSOURCE_HSE_DIV1024;
+  PeriphClkInitStruct.RFWakeUpClockSelection = RCC_RFWKPCLKSOURCE_LSE;
   PeriphClkInitStruct.SmpsClockSelection = RCC_SMPSCLKSOURCE_HSE;
   PeriphClkInitStruct.SmpsDivSelection = RCC_SMPSCLKDIV_RANGE0;
 
@@ -750,6 +758,46 @@ static void MX_SPI1_Init(void)
 }
 
 /**
+  * @brief SPI2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_SPI2_Init(void)
+{
+
+  /* USER CODE BEGIN SPI2_Init 0 */
+
+  /* USER CODE END SPI2_Init 0 */
+
+  /* USER CODE BEGIN SPI2_Init 1 */
+
+  /* USER CODE END SPI2_Init 1 */
+  /* SPI2 parameter configuration*/
+  hspi2.Instance = SPI2;
+  hspi2.Init.Mode = SPI_MODE_MASTER;
+  hspi2.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi2.Init.DataSize = SPI_DATASIZE_4BIT;
+  hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi2.Init.NSS = SPI_NSS_SOFT;
+  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  hspi2.Init.CRCPolynomial = 7;
+  hspi2.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
+  hspi2.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
+  if (HAL_SPI_Init(&hspi2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN SPI2_Init 2 */
+
+  /* USER CODE END SPI2_Init 2 */
+
+}
+
+/**
   * @brief TIM2 Initialization Function
   * @param None
   * @retval None
@@ -870,6 +918,54 @@ static void MX_TIM16_Init(void)
 }
 
 /**
+  * @brief USART1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART1_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART1_Init 0 */
+
+  /* USER CODE END USART1_Init 0 */
+
+  /* USER CODE BEGIN USART1_Init 1 */
+
+  /* USER CODE END USART1_Init 1 */
+  huart1.Instance = USART1;
+  huart1.Init.BaudRate = 115200;
+  huart1.Init.WordLength = UART_WORDLENGTH_8B;
+  huart1.Init.StopBits = UART_STOPBITS_1;
+  huart1.Init.Parity = UART_PARITY_NONE;
+  huart1.Init.Mode = UART_MODE_TX_RX;
+  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart1.Init.ClockPrescaler = UART_PRESCALER_DIV1;
+  huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_SetTxFifoThreshold(&huart1, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_SetRxFifoThreshold(&huart1, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_DisableFifoMode(&huart1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART1_Init 2 */
+
+  /* USER CODE END USART1_Init 2 */
+
+}
+
+/**
   * @brief USB Initialization Function
   * @param None
   * @retval None
@@ -939,13 +1035,13 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, SD_CS_Pin|EN_UWB_REG_Pin|EN_SD_REG_Pin|EN_MIC_PWR_Pin
-                          |EN_BATT_MON_Pin, GPIO_PIN_RESET);
+                          |EN_BATT_MON_Pin|SD_MUX_SEL_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, EN_3V3_ALT_Pin|ADC_PD_RST_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, EN_3V3_ALT_Pin|EN_SD_REG_2_Pin|ADC_PD_RST_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(EN_BUZZER_PWR_GPIO_Port, EN_BUZZER_PWR_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOD, EN_BUZZER_PWR_Pin|PD13_Pin|PD12_Pin|EN_SD_MUX_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : P0_15_Pin DW_GP6_Pin P1_00_Pin */
   GPIO_InitStruct.Pin = P0_15_Pin|DW_GP6_Pin|P1_00_Pin;
@@ -954,16 +1050,16 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : SD_CS_Pin EN_UWB_REG_Pin EN_SD_REG_Pin EN_MIC_PWR_Pin
-                           EN_BATT_MON_Pin */
+                           EN_BATT_MON_Pin SD_MUX_SEL_Pin */
   GPIO_InitStruct.Pin = SD_CS_Pin|EN_UWB_REG_Pin|EN_SD_REG_Pin|EN_MIC_PWR_Pin
-                          |EN_BATT_MON_Pin;
+                          |EN_BATT_MON_Pin|SD_MUX_SEL_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : EN_3V3_ALT_Pin ADC_PD_RST_Pin */
-  GPIO_InitStruct.Pin = EN_3V3_ALT_Pin|ADC_PD_RST_Pin;
+  /*Configure GPIO pins : EN_3V3_ALT_Pin EN_SD_REG_2_Pin ADC_PD_RST_Pin */
+  GPIO_InitStruct.Pin = EN_3V3_ALT_Pin|EN_SD_REG_2_Pin|ADC_PD_RST_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -981,12 +1077,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : EN_BUZZER_PWR_Pin */
-  GPIO_InitStruct.Pin = EN_BUZZER_PWR_Pin;
+  /*Configure GPIO pins : EN_BUZZER_PWR_Pin PD13_Pin PD12_Pin EN_SD_MUX_Pin */
+  GPIO_InitStruct.Pin = EN_BUZZER_PWR_Pin|PD13_Pin|PD12_Pin|EN_SD_MUX_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(EN_BUZZER_PWR_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /*Configure GPIO pin : BATT_CHG_Pin */
   GPIO_InitStruct.Pin = BATT_CHG_Pin;
@@ -1011,6 +1107,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : SD_DETECT_2_Pin */
+  GPIO_InitStruct.Pin = SD_DETECT_2_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(SD_DETECT_2_GPIO_Port, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
@@ -1269,7 +1371,6 @@ void triggerMark(void *argument){
     vTaskDelete( NULL );
 }
 
-/* USER CODE END 4 */
 void setLED_Green(uint32_t intensity){
 	if(intensity > MAX_INTENSITY) intensity = MAX_INTENSITY;
 
@@ -1342,6 +1443,7 @@ void disableLEDs(){
 
 	HAL_TIM_Base_Stop(&htim2);
 }
+/* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
 /**

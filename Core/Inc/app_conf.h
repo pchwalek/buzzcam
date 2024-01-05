@@ -224,7 +224,7 @@
  *  The total amount of memory needed is the sum of the above quantities for each attribute.
  * This parameter is ignored by the CPU2 when CFG_BLE_OPTIONS has SHCI_C2_BLE_INIT_OPTIONS_LL_ONLY flag set
  */
-#define CFG_BLE_ATT_VALUE_ARRAY_SIZE    (1644 + 200)
+#define CFG_BLE_ATT_VALUE_ARRAY_SIZE    (1644)
 
 /**
  * Prepare Write List size in terms of number of packet
@@ -269,9 +269,9 @@
  * - bit 2:   1: HSE/1024 Clock config                               0: LSE Clock config
  */
 #if defined(STM32WB5Mxx)
-  #define CFG_BLE_LS_SOURCE  (SHCI_C2_BLE_INIT_CFG_BLE_LS_NOCALIB | SHCI_C2_BLE_INIT_CFG_BLE_LS_MOD5MM_DEV | SHCI_C2_BLE_INIT_CFG_BLE_LS_CLK_HSE_1024)
+  #define CFG_BLE_LS_SOURCE  (SHCI_C2_BLE_INIT_CFG_BLE_LS_NOCALIB | SHCI_C2_BLE_INIT_CFG_BLE_LS_MOD5MM_DEV | SHCI_C2_BLE_INIT_CFG_BLE_LS_CLK_LSE)
 #else
-  #define CFG_BLE_LS_SOURCE  (SHCI_C2_BLE_INIT_CFG_BLE_LS_NOCALIB | SHCI_C2_BLE_INIT_CFG_BLE_LS_OTHER_DEV | SHCI_C2_BLE_INIT_CFG_BLE_LS_CLK_HSE_1024)
+  #define CFG_BLE_LS_SOURCE  (SHCI_C2_BLE_INIT_CFG_BLE_LS_NOCALIB | SHCI_C2_BLE_INIT_CFG_BLE_LS_OTHER_DEV | SHCI_C2_BLE_INIT_CFG_BLE_LS_CLK_LSE)
 #endif
 
 /**
@@ -379,7 +379,7 @@
  * This parameter is considered by the CPU2 when CFG_BLE_OPTIONS has SHCI_C2_BLE_INIT_OPTIONS_EXT_ADV flag set
  */
 
-#define CFG_BLE_MAX_ADV_DATA_LEN    (1700)
+#define CFG_BLE_MAX_ADV_DATA_LEN    (1650)
 
  /* RF TX Path Compensation Value (16-bit signed integer). Units: 0.1 dB.
   * Range: -1280 .. 1280
