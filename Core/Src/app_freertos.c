@@ -73,6 +73,12 @@ const osThreadAttr_t sampleTask_attributes = {
 };
 osThreadId_t sampleThreadId;
 
+const osThreadAttr_t micTask_attributes = {
+  .name = "micTask",
+  .priority = (osPriority_t) osPriorityAboveNormal,
+  .stack_size = 256 * 16
+};
+osThreadId_t micThreadId;
 /* USER CODE END Variables */
 
 /* Private function prototypes -----------------------------------------------*/

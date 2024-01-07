@@ -62,8 +62,27 @@ void Error_Handler(void);
 /* USER CODE BEGIN EFP */
 void triggerMark(void *argument);
 void mainSystemTask(void *argument);
+void micTask(void *argument);
 void updateSystemConfig(void *argument);
 void sampleTask(void *argument);
+
+typedef struct {
+	uint32_t ChunkID;       /* 0 */
+	uint32_t FileSize;      /* 4 */
+	uint32_t FileFormat;    /* 8 */
+	uint32_t SubChunk1ID;   /* 12 */
+	uint32_t SubChunk1Size; /* 16*/
+	uint16_t AudioFormat;   /* 20 */
+	uint16_t NbrChannels;   /* 22 */
+	uint32_t SampleRate;    /* 24 */
+
+	uint32_t ByteRate;      /* 28 */
+	uint16_t BlockAlign;    /* 32 */
+	uint16_t BitPerSample;  /* 34 */
+	uint32_t SubChunk2ID;   /* 36 */
+	uint32_t SubChunk2Size; /* 40 */
+}WAVE_FormatTypeDef;
+
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
@@ -79,12 +98,12 @@ void sampleTask(void *argument);
 #define SD_CS_GPIO_Port GPIOC
 #define EN_3V3_ALT_Pin GPIO_PIN_7
 #define EN_3V3_ALT_GPIO_Port GPIOB
-#define EN_SD_REG_2_Pin GPIO_PIN_3
-#define EN_SD_REG_2_GPIO_Port GPIOB
+#define EN_SD_REG_Pin GPIO_PIN_3
+#define EN_SD_REG_GPIO_Port GPIOB
 #define EN_UWB_REG_Pin GPIO_PIN_10
 #define EN_UWB_REG_GPIO_Port GPIOC
-#define EN_SD_REG_Pin GPIO_PIN_11
-#define EN_SD_REG_GPIO_Port GPIOC
+#define EN_SD_REG_2_Pin GPIO_PIN_11
+#define EN_SD_REG_2_GPIO_Port GPIOC
 #define EN_MIC_PWR_Pin GPIO_PIN_12
 #define EN_MIC_PWR_GPIO_Port GPIOC
 #define INT1_IMU_XL_Pin GPIO_PIN_15
@@ -131,6 +150,8 @@ void sampleTask(void *argument);
 #define SD_DETECT_2_GPIO_Port GPIOE
 
 /* USER CODE BEGIN Private defines */
+#define SD_SPI_HANDLE hspi1
+
 #define CONFIG_UPDATED_EVENT  0x00000001
 #define TERMINATE_EVENT  	  0x00000002
 #define COMPLETE_EVENT  	  0x00000004
@@ -146,11 +167,13 @@ extern bool status;
 extern osThreadId_t markThreadId;
 extern osThreadId_t configThreadId;
 extern osThreadId_t mainSystemThreadId;
+extern osThreadId_t micThreadId;
 extern osThreadId_t sampleThreadId;
 
 extern const osThreadAttr_t markTask_attributes;
 extern const osThreadAttr_t configTask_attributes;
 extern const osThreadAttr_t mainSystemTask_attributes;
+extern const osThreadAttr_t micTask_attributes;
 extern const osThreadAttr_t sampleTask_attributes;
 
 void setLED_Blue(uint32_t intensity);
