@@ -540,6 +540,9 @@ int main(void)
 //  txData = 0x00; // continous mode, 2g mode, high-resolution mode
   status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG4_A, 1, &txData, 1, 100);
 
+  txData = 0x00; // no filtering
+  status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG2_A, 1, &txData, 1, 100);
+
   txData = 0x27; //enable all channels, no low power mode, HR / Normal / Low-power mode (10 Hz)
   status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG1_A, 1, &txData, 1, 100);
 
@@ -616,7 +619,7 @@ int main(void)
   // shut off accelerometer and magnetometer
   HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_RESET);
 
-  while(1){};
+//  while(1){};
 
 
   /* USER CODE END 2 */
@@ -1585,8 +1588,8 @@ void micTask(void *argument){
 	  osDelay(1000);
 //	  /* start mux */
 	  HAL_GPIO_WritePin(EN_SD_MUX_GPIO_Port, EN_SD_MUX_Pin, GPIO_PIN_RESET); // enable mux
-//	  HAL_GPIO_WritePin(SD_MUX_SEL_GPIO_Port, SD_MUX_SEL_Pin, GPIO_PIN_RESET);// sd card 1 selected
-	  HAL_GPIO_WritePin(SD_MUX_SEL_GPIO_Port, SD_MUX_SEL_Pin, GPIO_PIN_SET);// sd card 2 selected
+	  HAL_GPIO_WritePin(SD_MUX_SEL_GPIO_Port, SD_MUX_SEL_Pin, GPIO_PIN_RESET);// sd card 1 selected
+//	  HAL_GPIO_WritePin(SD_MUX_SEL_GPIO_Port, SD_MUX_SEL_Pin, GPIO_PIN_SET);// sd card 2 selected
 
 	  EnableExtADC(true);
 	  osDelay(200);
@@ -1993,10 +1996,10 @@ void RunADC(){
 	#define ADC_EN2						0x1 << 1
 	#define ADC_EN1						0x1 << 0
 
-		//  data = LDO_EN | VREF_EN | ADC_EN4 | ADC_EN3 | ADC_EN2 | ADC_EN1;
+		  data = LDO_EN | VREF_EN | ADC_EN4 | ADC_EN3 | ADC_EN2 | ADC_EN1;
 
 		// ADC 2 and 4 are disabled
-		data = LDO_EN | VREF_EN | ADC_EN3 | ADC_EN1;
+//		data = LDO_EN | VREF_EN | ADC_EN3 | ADC_EN1;
 		//    data = LDO_EN | VREF_EN | ADC_EN3 | ADC_EN1;
 
 		status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_BLOCK_POWER_SAI,
@@ -2064,6 +2067,7 @@ void RunADC(){
 	#define ADAU1979_SAI_CMAP12			0x07
 	#define TDM_CH2_SLOT_10				0x9 << 4
 	#define TDM_CH2_SLOT_3				0x3 << 4
+	#define TDM_CH2_SLOT_1				0x1 << 4
 	#define TDM_CH1_SLOT_15				0xE << 0
 	#define TDM_CH1_SLOT_9				0x8 << 0
 	#define TDM_CH1_SLOT_0				0x0 << 0
@@ -2079,7 +2083,7 @@ void RunADC(){
 	//			1, &data, 1, 100);
 
 		/* ONLY FOR WIND TUNNEL TESTING */
-		data = TDM_CH1_SLOT_0;
+		data = TDM_CH1_SLOT_0 | TDM_CH2_SLOT_1;
 		status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CMAP12,
 				1, &data, 1, 100);
 
@@ -2104,9 +2108,9 @@ void RunADC(){
 	//			1, &data, 1, 100);
 
 		/* ONLY FOR WIND TUNNEL TESTING */
-		data = TDM_CH3_SLOT_1;
-		status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CMAP34,
-				1, &data, 1, 100);
+//		data = TDM_CH3_SLOT_1;
+//		status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CMAP34,
+//				1, &data, 1, 100);
 
 	#define ADAU1979_SAI_OVERTEMP		0x09
 	#define CH4_EN_OUT					0x1 << 7
@@ -2176,7 +2180,9 @@ void RunADC(){
 	#define MODE_1_CHANNEL_SUM_MODE		0x2 << 6
 
 		/* 4-channel mode, normal operation, */
-		data = MODE_4_CHANNEL | (0x1 <<1); // the 2nd set bit is some reserved spot found on the datasheet
+//		data = MODE_4_CHANNEL;
+//		data = MODE_4_CHANNEL | (0x1 <<1); // the 2nd set bit is some reserved spot found on the datasheet
+		data = MODE_2_CHANNEL_SUM_MODE;
 		status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_MISC_CONTROL,
 				1, &data, 1, 100);
 
