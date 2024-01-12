@@ -621,7 +621,65 @@ int main(void)
 
 //  while(1){};
 
+  // FRAM is on I2C3
+  // FM24CL16B
+  // ADDR: 1010XXXb (7-bit)
+#define FRAM_START_ADDR	0x50
 
+//reserve first page for metadata
+
+#define FRAM_CONFIG_START_WORD			0x01
+#define FRAM_CONFIG_BYTE_ADDR			0
+#define FRAM_CONFIG_WORD_ADDR			( (FRAM_START_ADDR | FRAM_CONFIG_START_WORD) << 1)
+#define FRAM_CONFIG_SIZE				sizeof(packet_t)
+
+#define FRAM_INFO_BYTE_ADDR				(FRAM_CONFIG_SIZE & 0xFF)
+#define FRAM_INFO_WORD_ADDR 			( (FRAM_START_ADDR | (0x01 + (FRAM_CONFIG_SIZE >> 8))) << 1)
+#define FRAM_INFO_SIZE					sizeof(packet_t)
+
+//#define FRAM_BME_START_WORD				0x05
+//#define FRAM_BME_CONFIG_BYTE_ADDR		(0)
+//#define FRAM_BME_CONFIG_WORD_ADDR		( (FRAM_START_ADDR | FRAM_BME_START_WORD) << 1)
+//#define FRAM_BME_CONFIG_SIZE			BSEC_MAX_PROPERTY_BLOB_SIZE
+//#define FRAM_BME_STATE_BYTE_ADDR		(FRAM_BME_CONFIG_SIZE & 0xFF)
+//#define FRAM_BME_STATE_WORD_ADDR		( (FRAM_START_ADDR | (FRAM_BME_START_WORD + (FRAM_BME_CONFIG_SIZE >> 8))) << 1)
+//#define FRAM_BME_STATE_SIZE				BSEC_MAX_STATE_BLOB_SIZE
+//#define FRAM_BME_FIRST_RUN_BYTE_ADDR	((FRAM_BME_STATE_BYTE_ADDR + FRAM_BME_STATE_SIZE) & 0xFF)
+//#define FRAM_BME_FIRST_RUN_WORD_ADDR	( (FRAM_START_ADDR | (FRAM_BME_START_WORD + ((FRAM_BME_CONFIG_SIZE + FRAM_BME_STATE_SIZE) >> 8))) << 1)
+//#define FRAM_BME_FIRST_RUN_SIZE			sizeof(uint8_t)
+
+//#define FRAM_INFO_BYTE_ADDR_UN ((FRAM_CONFIG_BYTE_ADDR + ((uint32_t) sizeof(configPacket)) % 256) << 1)
+//#define FRAM_INFO_WORD_ADDR	(( FRAM_START_ADDR | (FRAM_CONFIG_WORD_ADDR + ((uint32_t) sizeof(configPacket)) / 256) + ((uint32_t) (FRAM_INFO_BYTE_ADDR_UN / 256))) << 1)
+//#define FRAM_INFO_BYTE_ADDR (FRAM_INFO_BYTE_ADDR_UN % 256)
+
+#define FRAM_SIZE		16000
+
+
+  HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET); // powers FRAM
+  HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_SET); // needed for I2C pins on FRAM
+
+  HAL_Delay(1); // 1ms startup delay before write/read
+
+  packet_t tempConfigPacket = PACKET_INIT_ZERO;
+  packet_t tempInfoPacket = PACKET_INIT_ZERO;
+
+  // (1) device address is ((FRAM_START_ADDR | (256-byte page address) << 1)
+  // (2) memory address is the byte within the page
+  uint32_t testVar = 0xDEADBEEF;
+  uint32_t testVar2 = 0;
+
+  status = HAL_I2C_Mem_Write(&hi2c3, FRAM_START_ADDR << 1, 0, 1, (uint8_t*) &testVar, sizeof(testVar), 1000);
+  status = HAL_I2C_Mem_Read(&hi2c3, FRAM_START_ADDR << 1, 0, 1, (uint8_t*) &testVar2, sizeof(testVar2), 1000);
+
+  status = HAL_I2C_Mem_Write(&hi2c3, FRAM_CONFIG_WORD_ADDR, FRAM_CONFIG_BYTE_ADDR, 1, (uint8_t*) &configPacket, sizeof(configPacket), 1000);
+
+//  uint8_t word_pos = sizeof(configPacket) / 256;
+//  uint8_t byte_pos = sizeof(configPacket) % 256;
+  status = HAL_I2C_Mem_Write(&hi2c3, FRAM_INFO_WORD_ADDR, FRAM_INFO_BYTE_ADDR, 1, (uint8_t*) &infoPacket, sizeof(infoPacket), 1000);
+
+
+  status = HAL_I2C_Mem_Read(&hi2c3, FRAM_CONFIG_WORD_ADDR, FRAM_CONFIG_BYTE_ADDR, 1, (uint8_t*) &tempConfigPacket, sizeof(tempConfigPacket), 1000);
+  status = HAL_I2C_Mem_Read(&hi2c3, FRAM_INFO_WORD_ADDR, FRAM_INFO_BYTE_ADDR, 1, (uint8_t*) &tempInfoPacket, sizeof(tempInfoPacket), 1000);
   /* USER CODE END 2 */
 
   /* Init scheduler */
