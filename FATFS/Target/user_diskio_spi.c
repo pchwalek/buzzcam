@@ -36,7 +36,7 @@ extern SPI_HandleTypeDef SD_SPI_HANDLE;
 
 //(Note that the _256 is used as a mask to clear the prescalar bits as it provides binary 111 in the correct position)
 #define FCLK_SLOW() { MODIFY_REG(SD_SPI_HANDLE.Instance->CR1, SPI_BAUDRATEPRESCALER_256, SPI_BAUDRATEPRESCALER_128); }	/* Set SCLK = slow, approx 280 KBits/s*/
-#define FCLK_FAST() { MODIFY_REG(SD_SPI_HANDLE.Instance->CR1, SPI_BAUDRATEPRESCALER_256, SPI_BAUDRATEPRESCALER_8); }	/* Set SCLK = fast, approx 4.5 MBits/s */
+#define FCLK_FAST() { MODIFY_REG(SD_SPI_HANDLE.Instance->CR1, SPI_BAUDRATEPRESCALER_256, SPI_BAUDRATEPRESCALER_16); }	/* Set SCLK = fast, approx 4.5 MBits/s */
 
 #define CS_HIGH()	{HAL_GPIO_WritePin(SD_CS_GPIO_Port, SD_CS_Pin, GPIO_PIN_SET);}
 #define CS_LOW()	{HAL_GPIO_WritePin(SD_CS_GPIO_Port, SD_CS_Pin, GPIO_PIN_RESET);}
@@ -106,7 +106,13 @@ BYTE xchg_spi (
 )
 {
 	BYTE rxDat;
+//	while(SD_SPI_HANDLE.State != HAL_SPI_STATE_READY){
+//		taskEXIT_CRITICAL();
+//		osDelay(1);
+//		taskENTER_CRITICAL();
+//	}
     HAL_SPI_TransmitReceive(&SD_SPI_HANDLE, &dat, &rxDat, 1, 50);
+//    HAL_SPI_TransmitReceive_IT(&SD_SPI_HANDLE, &dat, &rxDat, 1);
     return rxDat;
 }
 
@@ -132,7 +138,13 @@ void xmit_spi_multi (
 	UINT btx			/* Number of bytes to send (even number) */
 )
 {
+//	while(SD_SPI_HANDLE.State != HAL_SPI_STATE_READY){
+//		taskEXIT_CRITICAL();
+//		osDelay(1);
+//		taskENTER_CRITICAL();
+//	}
 	HAL_SPI_Transmit(&SD_SPI_HANDLE, buff, btx, HAL_MAX_DELAY);
+//	HAL_SPI_Transmit_IT(&SD_SPI_HANDLE, buff, btx);
 }
 #endif
 
