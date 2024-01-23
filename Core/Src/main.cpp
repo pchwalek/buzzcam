@@ -252,7 +252,7 @@ int main(void)
 	configPacket.payload.config_packet.audio_config.audio_compression.compression_type=COMPRESSION_TYPE_OPUS;
 	configPacket.payload.config_packet.audio_config.audio_compression.enabled=false;
 	configPacket.payload.config_packet.audio_config.estimated_record_time=12345678; //placeholder
-	configPacket.payload.config_packet.audio_config.sample_freq=MIC_SAMPLE_FREQ_SAMPLE_RATE_32000;
+	configPacket.payload.config_packet.audio_config.sample_freq=MIC_SAMPLE_FREQ_SAMPLE_RATE_48000;
 
 	configPacket.payload.config_packet.has_camera_control=true;
 	configPacket.payload.config_packet.camera_control.capture=false;
@@ -731,6 +731,10 @@ int main(void)
 	mux_Select_SD_Card(1);
 
 	HAL_Delay(200);
+
+	HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(EN_UWB_REG_GPIO_Port, EN_UWB_REG_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_SET);
 	/* USER CODE END 2 */
 
 	/* Init scheduler */
@@ -1970,49 +1974,49 @@ void MX_SAI1_Init_Custom(SAI_HandleTypeDef &hsai_handle, uint8_t bit_resolution)
 //		{
 //			Error_Handler();
 //		}
-//	if (HAL_SAI_InitProtocol(&hsai_handle, SAI_I2S_STANDARD, bit_resolution, 2) != HAL_OK)
-//	{
-//		Error_Handler();
-//	}
+	if (HAL_SAI_InitProtocol(&hsai_handle, SAI_I2S_STANDARD, bit_resolution, 2) != HAL_OK)
+	{
+		Error_Handler();
+	}
 //
 
 //	  status = SAI_InitI2S(hsai_handle, SAI_I2S_STANDARD, bit_resolution, 2);
 
-	  HAL_StatusTypeDef status = HAL_OK;
-
-	  hsai_handle.Init.Protocol            = SAI_FREE_PROTOCOL;
-	  hsai_handle.Init.FirstBit            = SAI_FIRSTBIT_MSB;
-	   /* Compute ClockStrobing according AudioMode */
-	   if ((hsai_handle.Init.AudioMode == SAI_MODEMASTER_TX) || (hsai_handle.Init.AudioMode == SAI_MODESLAVE_TX))
-	   {
-	     /* Transmit */
-		   hsai_handle.Init.ClockStrobing     = SAI_CLOCKSTROBING_FALLINGEDGE;
-	   }
-	   else
-	   {
-	     /* Receive */
-		   hsai_handle.Init.ClockStrobing     = SAI_CLOCKSTROBING_RISINGEDGE;
-	   }
-	   hsai_handle.FrameInit.FSDefinition   = SAI_FS_CHANNEL_IDENTIFICATION;
-	   hsai_handle.SlotInit.SlotActive      = SAI_SLOTACTIVE_ALL;
-	   hsai_handle.SlotInit.FirstBitOffset  = 0;
-	   hsai_handle.SlotInit.SlotNumber      = 2;
-
-	   hsai_handle.Init.DataSize = SAI_DATASIZE_16;
-		hsai_handle.FrameInit.FrameLength = 32U * (2 / 2U);
-		hsai_handle.FrameInit.ActiveFrameLength = 16U * (2 / 2U);
-		hsai_handle.SlotInit.SlotSize = SAI_SLOTSIZE_16B;
-
-		hsai_handle.FrameInit.FSOffset  = SAI_FS_BEFOREFIRSTBIT;
-//		hsai_handle.FrameInit.FSOffset  = SAI_FS_FIRSTBIT;
-	  hsai_handle.FrameInit.FSPolarity = SAI_FS_ACTIVE_LOW;
-	   hsai_handle.Init.ClockStrobing     = SAI_CLOCKSTROBING_RISINGEDGE;
-
-
-	  if (status == HAL_OK)
-	  {
-	    status = HAL_SAI_Init(&hsai_handle);
-	  }
+//	  HAL_StatusTypeDef status = HAL_OK;
+//
+//	  hsai_handle.Init.Protocol            = SAI_FREE_PROTOCOL;
+//	  hsai_handle.Init.FirstBit            = SAI_FIRSTBIT_MSB;
+//	   /* Compute ClockStrobing according AudioMode */
+//	   if ((hsai_handle.Init.AudioMode == SAI_MODEMASTER_TX) || (hsai_handle.Init.AudioMode == SAI_MODESLAVE_TX))
+//	   {
+//	     /* Transmit */
+//		   hsai_handle.Init.ClockStrobing     = SAI_CLOCKSTROBING_FALLINGEDGE;
+//	   }
+//	   else
+//	   {
+//	     /* Receive */
+//		   hsai_handle.Init.ClockStrobing     = SAI_CLOCKSTROBING_RISINGEDGE;
+//	   }
+//	   hsai_handle.FrameInit.FSDefinition   = SAI_FS_CHANNEL_IDENTIFICATION;
+//	   hsai_handle.SlotInit.SlotActive      = SAI_SLOTACTIVE_ALL;
+//	   hsai_handle.SlotInit.FirstBitOffset  = 0;
+//	   hsai_handle.SlotInit.SlotNumber      = 2;
+//
+//	   hsai_handle.Init.DataSize = SAI_DATASIZE_16;
+//		hsai_handle.FrameInit.FrameLength = 32U * (2 / 2U);
+//		hsai_handle.FrameInit.ActiveFrameLength = 16U * (2 / 2U);
+//		hsai_handle.SlotInit.SlotSize = SAI_SLOTSIZE_16B;
+//
+//		hsai_handle.FrameInit.FSOffset  = SAI_FS_BEFOREFIRSTBIT;
+////		hsai_handle.FrameInit.FSOffset  = SAI_FS_FIRSTBIT;
+//	  hsai_handle.FrameInit.FSPolarity = SAI_FS_ACTIVE_LOW;
+//	   hsai_handle.Init.ClockStrobing     = SAI_CLOCKSTROBING_RISINGEDGE;
+//
+//
+//	  if (status == HAL_OK)
+//	  {
+//	    status = HAL_SAI_Init(&hsai_handle);
+//	  }
 
 //	  return status;
 }
@@ -2634,8 +2638,8 @@ void runAnalogConverter(void){
 #define ADC_EN2						0x1 << 1
 #define ADC_EN1						0x1 << 0
 
-//	data = LDO_EN | VREF_EN | ADC_EN4 | ADC_EN3 | ADC_EN2 | ADC_EN1;
-	data = LDO_EN | VREF_EN | ADC_EN1;
+	data = LDO_EN | VREF_EN | ADC_EN4 | ADC_EN3 | ADC_EN2 | ADC_EN1;
+//	data = LDO_EN | VREF_EN | ADC_EN1;
 	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_BLOCK_POWER_SAI,
 			1, &data, 1, 100);
 
@@ -2654,40 +2658,47 @@ void runAnalogConverter(void){
 #define ADAU1979_SAI_CMAP12			0x07
 #define TDM_CH2_SLOT_10				0x9 << 4
 #define TDM_CH2_SLOT_3				0x3 << 4
+#define TDM_CH2_SLOT_2				0x2 << 4
 #define TDM_CH2_SLOT_1				0x1 << 4
 #define TDM_CH1_SLOT_15				0xE << 0
 #define TDM_CH1_SLOT_9				0x8 << 0
 #define TDM_CH1_SLOT_0				0x0 << 0
 #define TDM_CH1_SLOT_1				0x1
 
-	/* TDM Config Slots */
-//	data = TDM_CH1_SLOT_0 | TDM_CH2_SLOT_1;
-	data = TDM_CH1_SLOT_0 | TDM_CH2_SLOT_10;
-	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CMAP12,
-			1, &data, 1, 100);
-
 #define ADAU1979_SAI_CMAP34			0x08
 #define TDM_CH4_SLOT_12				0xB << 4
+#define TDM_CH4_SLOT_3				0x3 << 4
 #define TDM_CH4_SLOT_2				0x2 << 4
 #define TDM_CH4_SLOT_1				0x1 << 4
+#define TDM_CH4_SLOT_0				0x0 << 4
 #define TDM_CH3_SLOT_16				0xF << 0
 #define TDM_CH3_SLOT_11				0xA << 0
 #define TDM_CH3_SLOT_10				0x9 << 0
 #define TDM_CH3_SLOT_2				0x2 << 0
 #define TDM_CH3_SLOT_1				0x1 << 0
+#define TDM_CH3_SLOT_0				0x0 << 0
+
+	/* TDM Config Slots */
+//	data = TDM_CH1_SLOT_0 | TDM_CH2_SLOT_1;
+	data = TDM_CH1_SLOT_0 | TDM_CH2_SLOT_2;
+
+	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CMAP12,
+			1, &data, 1, 100);
+
+
 
 	/* TDM Config Slots */
 	//	//  data = TDM_CH4_SLOT_1 | TDM_CH3_SLOT_2;
 	//	//  data = 0x7 | TDM_CH4_SLOT_12;
 	//	data = TDM_CH3_SLOT_10;
-	//	//  data = TDM_CH3_SLOT_1;
+		//  data = TDM_CH3_SLOT_1;
 //		    data = TDM_CH3_SLOT_11 | TDM_CH4_SLOT_12;
 //	//
 //		status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CMAP34,
 //				1, &data, 1, 100);
 
 	/* ONLY FOR WIND TUNNEL TESTING */
-			data = TDM_CH3_SLOT_1 | TDM_CH4_SLOT_12;
+			data = TDM_CH3_SLOT_1 | TDM_CH4_SLOT_3;
 			status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CMAP34,
 					1, &data, 1, 100);
 
@@ -2699,8 +2710,8 @@ void runAnalogConverter(void){
 #define DRV_HIZ_EN					0x1 << 3
 
 	/* TDM Channel Configuration */
-//	data = CH4_EN_OUT | CH3_EN_OUT | CH2_EN_OUT | CH1_EN_OUT;
-	data = CH1_EN_OUT;
+	data = CH4_EN_OUT | CH3_EN_OUT | CH2_EN_OUT | CH1_EN_OUT;
+//	data = CH1_EN_OUT;
 //	data = DRV_HIZ_EN | CH4_EN_OUT | CH3_EN_OUT | CH2_EN_OUT | CH1_EN_OUT;
 	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_OVERTEMP,
 			1, &data, 1, 100);
@@ -2726,14 +2737,17 @@ void runAnalogConverter(void){
 			1, &data, 1, 100);
 
 	/* Channel 2 Gain */
+	data = (configPacket.payload.config_packet.audio_config.mic_gain * 8);
 	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_POSTADC_GAIN2,
 			1, &data, 1, 100);
 
 	/* Channel 3 Gain */
+	data = (configPacket.payload.config_packet.audio_config.mic_gain * 8);
 	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_POSTADC_GAIN3,
 			1, &data, 1, 100);
 
 	/* Channel 4 Gain */
+	data = (configPacket.payload.config_packet.audio_config.mic_gain * 8);
 	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_POSTADC_GAIN4,
 			1, &data, 1, 100);
 
