@@ -102,7 +102,23 @@ int32_t MX_FATFS_Process(void)
 DWORD get_fattime(void)
 {
   /* USER CODE BEGIN get_fattime */
-  return 0;
+	RTC_TimeTypeDef sTime;
+	RTC_DateTypeDef sDate;
+	DWORD fattime = 0;
+
+	// Get the current time from RTC
+	HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
+	HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN); // This must be called after HAL_RTC_GetTime() to unlock the shadow registers
+
+	// Pack date and time into a DWORD
+	fattime = ((DWORD)(sDate.Year + 20) << 25)
+			| ((DWORD)(sDate.Month) << 21)
+			| ((DWORD)(sDate.Date) << 16)
+			| ((DWORD)(sTime.Hours) << 11)
+			| ((DWORD)(sTime.Minutes) << 5)
+			| ((DWORD)(sTime.Seconds) >> 1);
+
+	return fattime;
   /* USER CODE END get_fattime */
 }
 

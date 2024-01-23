@@ -115,16 +115,50 @@ message SystemInfoPacket{
 }
 
 enum MicSampleFreq {
-    SAMPLE_RATE_16000 = 0;
-    SAMPLE_RATE_20500 = 1;
-    SAMPLE_RATE_44100 = 2;
-    SAMPLE_RATE_48000 = 3;
-    SAMPLE_RATE_96000 = 4;
+    SAMPLE_RATE_8000 = 0;
+    SAMPLE_RATE_11025 = 1;
+    SAMPLE_RATE_16000 = 2;
+    SAMPLE_RATE_22500 = 3;
+    SAMPLE_RATE_24000 = 4;
+    SAMPLE_RATE_32000 = 5;
+    SAMPLE_RATE_44100 = 6;
+    SAMPLE_RATE_48000 = 7;
+    SAMPLE_RATE_96000 = 8;
+}
+
+enum MicGain{
+    GAIN_60_DB = 0;
+    GAIN_57_DB = 1;
+    GAIN_54_DB = 2;
+    GAIN_51_DB = 3;
+    GAIN_48_DB = 4;
+    GAIN_45_DB = 5;
+    GAIN_42_DB = 6;
+    GAIN_39_DB = 7;
+    GAIN_36_DB = 8;
+    GAIN_33_DB = 9;
+    GAIN_30_DB = 10;
+    GAIN_27_DB = 11;
+    GAIN_24_DB = 12;
+    GAIN_21_DB = 13;
+    GAIN_18_DB = 14;
+    GAIN_15_DB = 15;
+    GAIN_12_DB = 16;
+    GAIN_9_DB = 17;
+    GAIN_6_DB = 18;
+    GAIN_3_DB = 19;
+    GAIN_0_DB = 20;
+    GAIN_NEG_3_DB = 21;
+    GAIN_NEG_6_DB = 22;
+    GAIN_NEG_9_DB = 23;
+    GAIN_NEG_12_DB = 24;
+    GAIN_NEG_15_DB = 25;
 }
 
 enum MicBitResolution{
     BIT_RES_8 = 0;
     BIT_RES_16 = 1;
+    BIT_RES_24 = 2;
 }
 
 enum CompressionType{
@@ -141,9 +175,10 @@ message AudioConfig{
     bool channel_1 = 1;
     bool channel_2 = 2;
     MicSampleFreq sample_freq = 3;
-    MicBitResolution bit_resolution = 4;
-    AudioCompression audio_compression = 5;
-    float estimated_record_time = 6;
+    MicGain mic_gain = 4;
+    MicBitResolution bit_resolution = 5;
+    AudioCompression audio_compression = 6;
+    float estimated_record_time = 7;
 }
 
 message ScheduleConfig{

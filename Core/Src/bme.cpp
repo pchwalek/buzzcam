@@ -30,6 +30,55 @@
 #define BME_WAIT_TOL			10
 #define BME_SAVE_STATE_PERIOD_MS	7200000 // every 2 hours
 
+
+
+typedef enum bme680_accuracy {
+    BME680_ACCURACY_UNRELIABLE = 0,
+    BME680_ACCURACY_LOW_ACCURACY = 1,
+    BME680_ACCURACY_MEDIUM_ACCURACY = 2,
+    BME680_ACCURACY_HIGH_ACCURACY = 3
+} bme680_accuracy_t;
+
+/* * defined by Bosch */
+typedef enum bme680_signal_id {
+    BME680_SIGNAL_ID_UNDEFINED = 0,
+    BME680_SIGNAL_ID_IAQ = 1,
+    BME680_SIGNAL_ID_STATIC_IAQ = 2,
+    BME680_SIGNAL_ID_CO2_EQ = 3,
+    BME680_SIGNAL_ID_BREATH_VOC_EQ = 4,
+    BME680_SIGNAL_ID_RAW_TEMPERATURE = 6,
+    BME680_SIGNAL_ID_RAW_PRESSURE = 7,
+    BME680_SIGNAL_ID_RAW_HUMIDITY = 8,
+    BME680_SIGNAL_ID_RAW_GAS = 9,
+    BME680_SIGNAL_ID_STABILIZATION_STATUS = 12,
+    BME680_SIGNAL_ID_RUN_IN_STATUS = 13,
+    BME680_SIGNAL_ID_SENSOR_HEAT_COMPEN_TEMP = 14,
+    BME680_SIGNAL_ID_HEAT_COMPEN_HUMID = 15,
+    BME680_SIGNAL_ID_GAS_PERCENTAGE = 21
+} bme680_signal_id_t;
+
+typedef struct bme_packet_payload {
+    uint64_t timestamp_sensor;
+    uint64_t timestamp_unix;
+    uint32_t timestamp_ms_from_start;
+    float signal;
+    uint32_t signal_dimensions;
+    bme680_signal_id_t sensor_id;
+    bme680_accuracy_t accuracy;
+} bme_packet_payload_t;
+
+typedef struct bme_packet {
+    uint32_t packet_index;
+    uint32_t sample_period;
+    uint32_t sensor_id;
+    pb_size_t payload_count;
+    bme_packet_payload_t payload[12];
+} bme_packet_t;
+
+typedef struct bme_sensor_config {
+    uint32_t sample_period_ms;
+} bme_sensor_config_t;
+
 static bme_packet_payload_t bmeData[12];
 
 osTimerId_t periodicBMETimer_id;
@@ -41,7 +90,7 @@ static uint8_t bmeState[BSEC_MAX_STATE_BLOB_SIZE];
 
 
 void BME_Task(void *argument) {
-	sensor_packet_t *packet = NULL;
+//	sensor_packet_t *packet = NULL;
 	volatile uint32_t flags = 0;
 
 	osThreadFlagsClear(TERMINATE_THREAD_BIT);
@@ -49,11 +98,14 @@ void BME_Task(void *argument) {
 
 	bme_sensor_config_t sensorSettings;
 
-	if(argument != NULL){
-		memcpy(&sensorSettings,argument,sizeof(bme_sensor_config_t));
-	}else{
-		sensorSettings.sample_period_ms = 0;
-	}
+//	if(argument != NULL){
+//		memcpy(&sensorSettings,argument,sizeof(bme_sensor_config_t));
+//	}else{
+//		sensorSettings.sample_period_ms = 0;
+//	}
+	//todo: remove the bottom and fix the top
+	sensorSettings.sample_period_ms = 5000;
+
 
 	uint32_t timeSinceLastStateSave = 0;
 
@@ -199,7 +251,7 @@ void recoverBME_StateConfig(){
 //
 //		bme.bsecSetConfig(bmeConfig);
 //		bme.bsecSetState(bmeState);
-	}
+//	}
 
 }
 

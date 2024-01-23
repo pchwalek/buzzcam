@@ -62,7 +62,8 @@ void Error_Handler(void);
 /* USER CODE BEGIN EFP */
 void triggerMark(void *argument);
 void mainSystemTask(void *argument);
-void micTask(void *argument);
+//void micTask(void *argument);
+void acousticSamplingTask(void *argument);
 void updateSystemConfig(void *argument);
 void sampleTask(void *argument);
 
@@ -83,6 +84,8 @@ typedef struct {
 	uint32_t SubChunk2Size; /* 40 */
 }WAVE_FormatTypeDef;
 
+extern I2C_HandleTypeDef hi2c1;
+extern RTC_HandleTypeDef hrtc;
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
@@ -150,11 +153,16 @@ typedef struct {
 #define SD_DETECT_2_GPIO_Port GPIOE
 
 /* USER CODE BEGIN Private defines */
+#define RTC_NO_REINIT	1
+
 #define SD_SPI_HANDLE hspi1
 
 #define CONFIG_UPDATED_EVENT  0x00000001
 #define TERMINATE_EVENT  	  0x00000002
 #define COMPLETE_EVENT  	  0x00000004
+
+#define GRAB_SAMPLE_BIT							0x0100
+#define TERMINATE_THREAD_BIT					0x0200
 
 #define MAX_INTENSITY 1000
 
@@ -164,22 +172,34 @@ extern uint8_t buffer[500];
 extern size_t message_length;
 extern bool status;
 
+extern osMutexId_t messageI2C1_LockHandle;
+
 extern osThreadId_t markThreadId;
 extern osThreadId_t configThreadId;
 extern osThreadId_t mainSystemThreadId;
 extern osThreadId_t micThreadId;
 extern osThreadId_t sampleThreadId;
+extern osThreadId_t bmeTaskHandle;
 
 extern const osThreadAttr_t markTask_attributes;
 extern const osThreadAttr_t configTask_attributes;
 extern const osThreadAttr_t mainSystemTask_attributes;
 extern const osThreadAttr_t micTask_attributes;
 extern const osThreadAttr_t sampleTask_attributes;
+extern const osThreadAttr_t micTask_attributes;
+extern const osMutexAttr_t messageI2C1_Lock_attributes;
+extern const osThreadAttr_t bmeTask_attributes;
 
 void setLED_Blue(uint32_t intensity);
 void setLED_Green(uint32_t intensity);
 void setLED_Red(uint32_t intensity);
 void disableLEDs();
+void i2c_error_check(I2C_HandleTypeDef *hi2c);
+
+void updateRTC(uint32_t receivedTime);
+void updateRTC_MS(uint64_t receivedTime);
+uint64_t getEpoch(void);
+
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

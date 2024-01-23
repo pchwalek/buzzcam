@@ -37,16 +37,50 @@ typedef enum sensor_accuracy {
 } sensor_accuracy_t;
 
 typedef enum mic_sample_freq {
-    MIC_SAMPLE_FREQ_SAMPLE_RATE_16000 = 0,
-    MIC_SAMPLE_FREQ_SAMPLE_RATE_20500 = 1,
-    MIC_SAMPLE_FREQ_SAMPLE_RATE_44100 = 2,
-    MIC_SAMPLE_FREQ_SAMPLE_RATE_48000 = 3,
-    MIC_SAMPLE_FREQ_SAMPLE_RATE_96000 = 4
+    MIC_SAMPLE_FREQ_SAMPLE_RATE_8000 = 0,
+    MIC_SAMPLE_FREQ_SAMPLE_RATE_11025 = 1,
+    MIC_SAMPLE_FREQ_SAMPLE_RATE_16000 = 2,
+    MIC_SAMPLE_FREQ_SAMPLE_RATE_22500 = 3,
+    MIC_SAMPLE_FREQ_SAMPLE_RATE_24000 = 4,
+    MIC_SAMPLE_FREQ_SAMPLE_RATE_32000 = 5,
+    MIC_SAMPLE_FREQ_SAMPLE_RATE_44100 = 6,
+    MIC_SAMPLE_FREQ_SAMPLE_RATE_48000 = 7,
+    MIC_SAMPLE_FREQ_SAMPLE_RATE_96000 = 8
 } mic_sample_freq_t;
+
+typedef enum mic_gain {
+    MIC_GAIN_GAIN_60_DB = 0,
+    MIC_GAIN_GAIN_57_DB = 1,
+    MIC_GAIN_GAIN_54_DB = 2,
+    MIC_GAIN_GAIN_51_DB = 3,
+    MIC_GAIN_GAIN_48_DB = 4,
+    MIC_GAIN_GAIN_45_DB = 5,
+    MIC_GAIN_GAIN_42_DB = 6,
+    MIC_GAIN_GAIN_39_DB = 7,
+    MIC_GAIN_GAIN_36_DB = 8,
+    MIC_GAIN_GAIN_33_DB = 9,
+    MIC_GAIN_GAIN_30_DB = 10,
+    MIC_GAIN_GAIN_27_DB = 11,
+    MIC_GAIN_GAIN_24_DB = 12,
+    MIC_GAIN_GAIN_21_DB = 13,
+    MIC_GAIN_GAIN_18_DB = 14,
+    MIC_GAIN_GAIN_15_DB = 15,
+    MIC_GAIN_GAIN_12_DB = 16,
+    MIC_GAIN_GAIN_9_DB = 17,
+    MIC_GAIN_GAIN_6_DB = 18,
+    MIC_GAIN_GAIN_3_DB = 19,
+    MIC_GAIN_GAIN_0_DB = 20,
+    MIC_GAIN_GAIN_NEG_3_DB = 21,
+    MIC_GAIN_GAIN_NEG_6_DB = 22,
+    MIC_GAIN_GAIN_NEG_9_DB = 23,
+    MIC_GAIN_GAIN_NEG_12_DB = 24,
+    MIC_GAIN_GAIN_NEG_15_DB = 25
+} mic_gain_t;
 
 typedef enum mic_bit_resolution {
     MIC_BIT_RESOLUTION_BIT_RES_8 = 0,
-    MIC_BIT_RESOLUTION_BIT_RES_16 = 1
+    MIC_BIT_RESOLUTION_BIT_RES_16 = 1,
+    MIC_BIT_RESOLUTION_BIT_RES_24 = 2
 } mic_bit_resolution_t;
 
 typedef enum compression_type {
@@ -155,6 +189,7 @@ typedef struct audio_config {
     bool channel_1;
     bool channel_2;
     mic_sample_freq_t sample_freq;
+    mic_gain_t mic_gain;
     mic_bit_resolution_t bit_resolution;
     bool has_audio_compression;
     audio_compression_t audio_compression;
@@ -247,13 +282,17 @@ extern "C" {
 #define _SENSOR_ACCURACY_MAX SENSOR_ACCURACY_HIGH_ACCURACY
 #define _SENSOR_ACCURACY_ARRAYSIZE ((sensor_accuracy_t)(SENSOR_ACCURACY_HIGH_ACCURACY+1))
 
-#define _MIC_SAMPLE_FREQ_MIN MIC_SAMPLE_FREQ_SAMPLE_RATE_16000
+#define _MIC_SAMPLE_FREQ_MIN MIC_SAMPLE_FREQ_SAMPLE_RATE_8000
 #define _MIC_SAMPLE_FREQ_MAX MIC_SAMPLE_FREQ_SAMPLE_RATE_96000
 #define _MIC_SAMPLE_FREQ_ARRAYSIZE ((mic_sample_freq_t)(MIC_SAMPLE_FREQ_SAMPLE_RATE_96000+1))
 
+#define _MIC_GAIN_MIN MIC_GAIN_GAIN_60_DB
+#define _MIC_GAIN_MAX MIC_GAIN_GAIN_NEG_15_DB
+#define _MIC_GAIN_ARRAYSIZE ((mic_gain_t)(MIC_GAIN_GAIN_NEG_15_DB+1))
+
 #define _MIC_BIT_RESOLUTION_MIN MIC_BIT_RESOLUTION_BIT_RES_8
-#define _MIC_BIT_RESOLUTION_MAX MIC_BIT_RESOLUTION_BIT_RES_16
-#define _MIC_BIT_RESOLUTION_ARRAYSIZE ((mic_bit_resolution_t)(MIC_BIT_RESOLUTION_BIT_RES_16+1))
+#define _MIC_BIT_RESOLUTION_MAX MIC_BIT_RESOLUTION_BIT_RES_24
+#define _MIC_BIT_RESOLUTION_ARRAYSIZE ((mic_bit_resolution_t)(MIC_BIT_RESOLUTION_BIT_RES_24+1))
 
 #define _COMPRESSION_TYPE_MIN COMPRESSION_TYPE_OPUS
 #define _COMPRESSION_TYPE_MAX COMPRESSION_TYPE_OPUS
@@ -276,6 +315,7 @@ extern "C" {
 #define audio_compression_t_compression_type_ENUMTYPE compression_type_t
 
 #define audio_config_t_sample_freq_ENUMTYPE mic_sample_freq_t
+#define audio_config_t_mic_gain_ENUMTYPE mic_gain_t
 #define audio_config_t_bit_resolution_ENUMTYPE mic_bit_resolution_t
 
 
@@ -300,7 +340,7 @@ extern "C" {
 #define BATTERY_STATE_INIT_DEFAULT               {0, 0, false, 0}
 #define SYSTEM_INFO_PACKET_INIT_DEFAULT          {0, false, SIMPLE_SENSOR_READING_INIT_DEFAULT, 0, false, SD_CARD_STATE_INIT_DEFAULT, false, MARK_STATE_INIT_DEFAULT, false, BATTERY_STATE_INIT_DEFAULT, false, DISCOVERED_DEVICES_INIT_DEFAULT}
 #define AUDIO_COMPRESSION_INIT_DEFAULT           {0, _COMPRESSION_TYPE_MIN, 0}
-#define AUDIO_CONFIG_INIT_DEFAULT                {0, 0, _MIC_SAMPLE_FREQ_MIN, _MIC_BIT_RESOLUTION_MIN, false, AUDIO_COMPRESSION_INIT_DEFAULT, 0}
+#define AUDIO_CONFIG_INIT_DEFAULT                {0, 0, _MIC_SAMPLE_FREQ_MIN, _MIC_GAIN_MIN, _MIC_BIT_RESOLUTION_MIN, false, AUDIO_COMPRESSION_INIT_DEFAULT, 0}
 #define SCHEDULE_CONFIG_INIT_DEFAULT             {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 #define LOW_POWER_CONFIG_INIT_DEFAULT            {0}
 #define CAMERA_CONTROL_INIT_DEFAULT              {0, 0, 0}
@@ -321,7 +361,7 @@ extern "C" {
 #define BATTERY_STATE_INIT_ZERO                  {0, 0, false, 0}
 #define SYSTEM_INFO_PACKET_INIT_ZERO             {0, false, SIMPLE_SENSOR_READING_INIT_ZERO, 0, false, SD_CARD_STATE_INIT_ZERO, false, MARK_STATE_INIT_ZERO, false, BATTERY_STATE_INIT_ZERO, false, DISCOVERED_DEVICES_INIT_ZERO}
 #define AUDIO_COMPRESSION_INIT_ZERO              {0, _COMPRESSION_TYPE_MIN, 0}
-#define AUDIO_CONFIG_INIT_ZERO                   {0, 0, _MIC_SAMPLE_FREQ_MIN, _MIC_BIT_RESOLUTION_MIN, false, AUDIO_COMPRESSION_INIT_ZERO, 0}
+#define AUDIO_CONFIG_INIT_ZERO                   {0, 0, _MIC_SAMPLE_FREQ_MIN, _MIC_GAIN_MIN, _MIC_BIT_RESOLUTION_MIN, false, AUDIO_COMPRESSION_INIT_ZERO, 0}
 #define SCHEDULE_CONFIG_INIT_ZERO                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 #define LOW_POWER_CONFIG_INIT_ZERO               {0}
 #define CAMERA_CONTROL_INIT_ZERO                 {0, 0, 0}
@@ -381,9 +421,10 @@ extern "C" {
 #define AUDIO_CONFIG_CHANNEL_1_TAG               1
 #define AUDIO_CONFIG_CHANNEL_2_TAG               2
 #define AUDIO_CONFIG_SAMPLE_FREQ_TAG             3
-#define AUDIO_CONFIG_BIT_RESOLUTION_TAG          4
-#define AUDIO_CONFIG_AUDIO_COMPRESSION_TAG       5
-#define AUDIO_CONFIG_ESTIMATED_RECORD_TIME_TAG   6
+#define AUDIO_CONFIG_MIC_GAIN_TAG                4
+#define AUDIO_CONFIG_BIT_RESOLUTION_TAG          5
+#define AUDIO_CONFIG_AUDIO_COMPRESSION_TAG       6
+#define AUDIO_CONFIG_ESTIMATED_RECORD_TIME_TAG   7
 #define SCHEDULE_CONFIG_SUNDAY_TAG               1
 #define SCHEDULE_CONFIG_MONDAY_TAG               2
 #define SCHEDULE_CONFIG_TUESDAY_TAG              3
@@ -532,9 +573,10 @@ X(a, STATIC,   SINGULAR, UINT32,   compression_factor,   3)
 X(a, STATIC,   SINGULAR, BOOL,     channel_1,         1) \
 X(a, STATIC,   SINGULAR, BOOL,     channel_2,         2) \
 X(a, STATIC,   SINGULAR, UENUM,    sample_freq,       3) \
-X(a, STATIC,   SINGULAR, UENUM,    bit_resolution,    4) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  audio_compression,   5) \
-X(a, STATIC,   SINGULAR, FLOAT,    estimated_record_time,   6)
+X(a, STATIC,   SINGULAR, UENUM,    mic_gain,          4) \
+X(a, STATIC,   SINGULAR, UENUM,    bit_resolution,    5) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  audio_compression,   6) \
+X(a, STATIC,   SINGULAR, FLOAT,    estimated_record_time,   7)
 #define AUDIO_CONFIG_CALLBACK NULL
 #define AUDIO_CONFIG_DEFAULT NULL
 #define audio_config_t_audio_compression_MSGTYPE audio_compression_t
@@ -662,10 +704,10 @@ extern const pb_msgdesc_t packet_t_msg;
 /* Maximum encoded size of messages (where known) */
 /* SensorReading_size depends on runtime parameters */
 #define AUDIO_COMPRESSION_SIZE                   10
-#define AUDIO_CONFIG_SIZE                        25
+#define AUDIO_CONFIG_SIZE                        27
 #define BATTERY_STATE_SIZE                       12
 #define CAMERA_CONTROL_SIZE                      6
-#define CONFIG_PACKET_SIZE                       586
+#define CONFIG_PACKET_SIZE                       588
 #define DISCOVERED_DEVICES_DEVICE_SIZE           11
 #define DISCOVERED_DEVICES_SIZE                  266
 #define LOW_POWER_CONFIG_SIZE                    2
@@ -673,7 +715,7 @@ extern const pb_msgdesc_t packet_t_msg;
 #define MARK_STATE_SIZE                          17
 #define NETWORK_STATE_SIZE                       128
 #define PACKET_HEADER_SIZE                       23
-#define PACKET_SIZE                              614
+#define PACKET_SIZE                              616
 #define SCHEDULE_CONFIG_SIZE                     38
 #define SD_CARD_STATE_SIZE                       24
 #define SENSOR_CONFIG_SIZE                       12

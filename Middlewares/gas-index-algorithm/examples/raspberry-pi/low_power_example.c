@@ -130,7 +130,7 @@ void read_compensation_values(uint16_t* compensation_rh,
         *compensation_rh = DEFAULT_COMPENSATION_RH;
         *compensation_t = DEFAULT_COMPENSATION_T;
     } else {
-        printf("T: %.2f\tRH: %.2f\n", s_temperature, s_rh);
+        //printf("T: %.2f\tRH: %.2f\n", s_temperature, s_rh);
 
         // convert temperature and humidity to ticks as defined by SGP40
         // interface 
