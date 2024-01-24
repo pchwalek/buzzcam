@@ -84,6 +84,11 @@ typedef struct {
 	uint32_t SubChunk2Size; /* 40 */
 }WAVE_FormatTypeDef;
 
+typedef struct {
+  uint32_t delimiter;
+  int16_t mag_cal_vals[3];
+} MagCal;
+
 extern I2C_HandleTypeDef hi2c1;
 extern RTC_HandleTypeDef hrtc;
 extern SPI_HandleTypeDef hspi1;

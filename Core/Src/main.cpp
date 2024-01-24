@@ -41,6 +41,9 @@
 #include "time.h"
 
 #include "bme.h"
+
+#include <math.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,11 +53,21 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define PI 3.14159265358979323846
+
 #define MAX_INTENSITY 1000
 
 #define AUDIO_BUFFER_LEN		(20000)
 //#define AUDIO_BUFFER_LEN		(1000)
 #define AUDIO_BUFFER_HALF_LEN	(AUDIO_BUFFER_LEN >> 1)
+
+#ifndef max
+#define max(a,b)            (((a) > (b)) ? (a) : (b))
+#endif
+
+#ifndef min
+#define min(a,b)            (((a) < (b)) ? (a) : (b))
+#endif
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -181,6 +194,16 @@ WORD getFatTime(const RTC_TimeTypeDef *time, const RTC_DateTypeDef *date);
 FRESULT updateFileTimestamp(char* path, RTC_HandleTypeDef *hrtc);
 
 void triggerSound(void);
+
+void grabInertialSample(float *pitch, float *roll, float *heading);
+void computePitchRoll(float x_acc, float y_acc, float z_acc, float* pitch, float* roll);
+void computeHeading(float x_mag, float y_mag, float z_mag, float pitch, float roll, float* heading);
+//float computeHeading(float mx, float my);
+
+void readFRAM(uint8_t word_addr, uint8_t byte_addr, uint8_t *data, uint32_t size);
+void writeFRAM(uint8_t word_addr, uint8_t byte_addr, uint8_t *data, uint32_t size);
+
+void performMagCalibration(uint32_t numOfSamples);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -417,250 +440,7 @@ int main(void)
 	//	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4 | GPIO_PIN_5 , GPIO_PIN_SET);
 	//}
 
-//	enum regAddr
-//	{
-//		TEMP_OUT_L        = 0x05, // D
-//		TEMP_OUT_H        = 0x06, // D
-//
-//		STATUS_M          = 0x07, // D
-//
-//		INT_CTRL_M        = 0x12, // D
-//		INT_SRC_M         = 0x13, // D
-//		INT_THS_L_M       = 0x14, // D
-//		INT_THS_H_M       = 0x15, // D
-//
-//		OFFSET_X_L_M      = 0x16, // D
-//		OFFSET_X_H_M      = 0x17, // D
-//		OFFSET_Y_L_M      = 0x18, // D
-//		OFFSET_Y_H_M      = 0x19, // D
-//		OFFSET_Z_L_M      = 0x1A, // D
-//		OFFSET_Z_H_M      = 0x1B, // D
-//		REFERENCE_X       = 0x1C, // D
-//		REFERENCE_Y       = 0x1D, // D
-//		REFERENCE_Z       = 0x1E, // D
-//
-//		CTRL0             = 0x1F, // D
-//		CTRL1             = 0x20, // D
-//		CTRL_REG1_A       = 0x20, // DLH, DLM, DLHC
-//		CTRL2             = 0x21, // D
-//		CTRL_REG2_A       = 0x21, // DLH, DLM, DLHC
-//		CTRL3             = 0x22, // D
-//		CTRL_REG3_A       = 0x22, // DLH, DLM, DLHC
-//		CTRL4             = 0x23, // D
-//		CTRL_REG4_A       = 0x23, // DLH, DLM, DLHC
-//		CTRL5             = 0x24, // D
-//		CTRL_REG5_A       = 0x24, // DLH, DLM, DLHC
-//		CTRL6             = 0x25, // D
-//		CTRL_REG6_A       = 0x25, // DLHC
-//		HP_FILTER_RESET_A = 0x25, // DLH, DLM
-//		CTRL7             = 0x26, // D
-//		REFERENCE_A       = 0x26, // DLH, DLM, DLHC
-//		STATUS_A          = 0x27, // D
-//		STATUS_REG_A      = 0x27, // DLH, DLM, DLHC
-//
-//		OUT_X_L_A         = 0x28,
-//		OUT_X_H_A         = 0x29,
-//		OUT_Y_L_A         = 0x2A,
-//		OUT_Y_H_A         = 0x2B,
-//		OUT_Z_L_A         = 0x2C,
-//		OUT_Z_H_A         = 0x2D,
-//
-//		FIFO_CTRL         = 0x2E, // D
-//		FIFO_CTRL_REG_A   = 0x2E, // DLHC
-//		FIFO_SRC          = 0x2F, // D
-//		FIFO_SRC_REG_A    = 0x2F, // DLHC
-//
-//		IG_CFG1           = 0x30, // D
-//		INT1_CFG_A        = 0x30, // DLH, DLM, DLHC
-//		IG_SRC1           = 0x31, // D
-//		INT1_SRC_A        = 0x31, // DLH, DLM, DLHC
-//		IG_THS1           = 0x32, // D
-//		INT1_THS_A        = 0x32, // DLH, DLM, DLHC
-//		IG_DUR1           = 0x33, // D
-//		INT1_DURATION_A   = 0x33, // DLH, DLM, DLHC
-//		IG_CFG2           = 0x34, // D
-//		INT2_CFG_A        = 0x34, // DLH, DLM, DLHC
-//		IG_SRC2           = 0x35, // D
-//		INT2_SRC_A        = 0x35, // DLH, DLM, DLHC
-//		IG_THS2           = 0x36, // D
-//		INT2_THS_A        = 0x36, // DLH, DLM, DLHC
-//		IG_DUR2           = 0x37, // D
-//		INT2_DURATION_A   = 0x37, // DLH, DLM, DLHC
-//
-//		CLICK_CFG         = 0x38, // D
-//		CLICK_CFG_A       = 0x38, // DLHC
-//		CLICK_SRC         = 0x39, // D
-//		CLICK_SRC_A       = 0x39, // DLHC
-//		CLICK_THS         = 0x3A, // D
-//		CLICK_THS_A       = 0x3A, // DLHC
-//		TIME_LIMIT        = 0x3B, // D
-//		TIME_LIMIT_A      = 0x3B, // DLHC
-//		TIME_LATENCY      = 0x3C, // D
-//		TIME_LATENCY_A    = 0x3C, // DLHC
-//		TIME_WINDOW       = 0x3D, // D
-//		TIME_WINDOW_A     = 0x3D, // DLHC
-//
-//		Act_THS           = 0x3E, // D
-//		Act_DUR           = 0x3F, // D
-//
-//		CRA_REG_M         = 0x00, // DLH, DLM, DLHC
-//		CRB_REG_M         = 0x01, // DLH, DLM, DLHC
-//		MR_REG_M          = 0x02, // DLH, DLM, DLHC
-//
-//		SR_REG_M          = 0x09, // DLH, DLM, DLHC
-//		IRA_REG_M         = 0x0A, // DLH, DLM, DLHC
-//		IRB_REG_M         = 0x0B, // DLH, DLM, DLHC
-//		IRC_REG_M         = 0x0C, // DLH, DLM, DLHC
-//
-//		WHO_AM_I          = 0x0F, // D
-//		WHO_AM_I_M        = 0x0F, // DLM
-//
-//		TEMP_OUT_H_M      = 0x31, // DLHC
-//		TEMP_OUT_L_M      = 0x32, // DLHC
-//
-//
-//		// dummy addresses for registers in different locations on different devices;
-//		// the library translates these based on device type
-//		// value with sign flipped is used as index into translated_regs array
-//
-//		OUT_X_H_M         = -1,
-//		OUT_X_L_M         = -2,
-//		OUT_Y_H_M         = -3,
-//		OUT_Y_L_M         = -4,
-//		OUT_Z_H_M         = -5,
-//		OUT_Z_L_M         = -6,
-//		// update dummy_reg_count if registers are added here!
-//
-//		// device-specific register addresses
-//
-//		DLH_OUT_X_H_M     = 0x03,
-//		DLH_OUT_X_L_M     = 0x04,
-//		DLH_OUT_Y_H_M     = 0x05,
-//		DLH_OUT_Y_L_M     = 0x06,
-//		DLH_OUT_Z_H_M     = 0x07,
-//		DLH_OUT_Z_L_M     = 0x08,
-//
-//		DLM_OUT_X_H_M     = 0x03,
-//		DLM_OUT_X_L_M     = 0x04,
-//		DLM_OUT_Z_H_M     = 0x05,
-//		DLM_OUT_Z_L_M     = 0x06,
-//		DLM_OUT_Y_H_M     = 0x07,
-//		DLM_OUT_Y_L_M     = 0x08,
-//
-//		DLHC_OUT_X_H_M    = 0x03,
-//		DLHC_OUT_X_L_M    = 0x04,
-//		DLHC_OUT_Z_H_M    = 0x05,
-//		DLHC_OUT_Z_L_M    = 0x06,
-//		DLHC_OUT_Y_H_M    = 0x07,
-//		DLHC_OUT_Y_L_M    = 0x08,
-//
-//		D_OUT_X_L_M       = 0x08,
-//		D_OUT_X_H_M       = 0x09,
-//		D_OUT_Y_L_M       = 0x0A,
-//		D_OUT_Y_H_M       = 0x0B,
-//		D_OUT_Z_L_M       = 0x0C,
-//		D_OUT_Z_H_M       = 0x0D
-//	};
-//
-//
-//
-//#define MAG_ADDR (0x1E << 1)
-//#define ACC_ADDR (0x19 << 1)
-//
-//	uint8_t data[10];
-//	uint8_t txData, rxData;
-//	HAL_StatusTypeDef status;
-//	uint8_t accData[6], magData[6];
-//	uint16_t x_acc, y_acc, z_acc;
-//	uint16_t x_mag, y_mag, z_mag;
-//
-//	HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET);
-//	HAL_Delay(100);
-//	//  status = HAL_I2C_Master_Receive(&hi2c1, ACC_ADDR, data, 1, 1000);
-//	status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR,  (enum regAddr) WHO_AM_I, 1,data, 1, 100);
-//
-//	txData = 0x08; // continous mode, 2g mode, high-resolution mode
-//	//  txData = 0x00; // continous mode, 2g mode, high-resolution mode
-//	status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG4_A, 1, &txData, 1, 100);
-//
-//	txData = 0x00; // no filtering
-//	status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG2_A, 1, &txData, 1, 100);
-//
-//	txData = 0x27; //enable all channels, no low power mode, HR / Normal / Low-power mode (10 Hz)
-//	status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG1_A, 1, &txData, 1, 100);
-//
-//	HAL_Delay(1000);
-//
-//	status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) STATUS_REG_A, 1,&rxData, 1, 100);
-//	if( (rxData & 0x08) == 0x08){
-//		// new data available
-//		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_X_L_A, 1,&accData[0], 1, 100);
-//		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_X_H_A, 1,&accData[1], 1, 100);
-//		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_Y_L_A, 1,&accData[2], 1, 100);
-//		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_Y_H_A, 1,&accData[3], 1, 100);
-//		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_Z_L_A, 1,&accData[4], 1, 100);
-//		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_Z_H_A, 1,&accData[5], 1, 100);
-//
-//		HAL_Delay(100);
-//		//	  status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_X_L_A, 1,accData, 6, 100);
-//
-//		if(status == HAL_OK){
-//			x_acc = (((uint16_t) accData[1]) << 8) | accData[0];
-//			y_acc = (((uint16_t) accData[3]) << 8) | accData[2];
-//			z_acc = (((uint16_t) accData[5]) << 8) | accData[4];
-//		}
-//	}
-//
-//	typedef enum {
-//		LIS2MDL_OFFSET_X_REG_L = 0x45,
-//		LIS2MDL_OFFSET_X_REG_H = 0x46,
-//		LIS2MDL_OFFSET_Y_REG_L = 0x47,
-//		LIS2MDL_OFFSET_Y_REG_H = 0x48,
-//		LIS2MDL_OFFSET_Z_REG_L = 0x49,
-//		LIS2MDL_OFFSET_Z_REG_H = 0x4A,
-//		LIS2MDL_WHO_AM_I = 0x4F,
-//		LIS2MDL_CFG_REG_A = 0x60,
-//		LIS2MDL_CFG_REG_B = 0x61,
-//		LIS2MDL_CFG_REG_C = 0x62,
-//		LIS2MDL_INT_CRTL_REG = 0x63,
-//		LIS2MDL_INT_SOURCE_REG = 0x64,
-//		LIS2MDL_INT_THS_L_REG = 0x65,
-//		LIS2MDL_STATUS_REG = 0x67,
-//		LIS2MDL_OUTX_L_REG = 0x68,
-//		LIS2MDL_OUTX_H_REG = 0x69,
-//		LIS2MDL_OUTY_L_REG = 0x6A,
-//		LIS2MDL_OUTY_H_REG = 0x6B,
-//		LIS2MDL_OUTZ_L_REG = 0x6C,
-//		LIS2MDL_OUTZ_H_REG = 0x6D,
-//	} lis2mdl_register_t;
-//
-//	txData = 0b10000000; // ODR 10Hz, temperature compensation,continous mode
-//	status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_CFG_REG_A, 1, &txData, 1, 100);
-//
-//	txData = 0b00000001; // digital filter enabled (ODR/4)
-//	status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_CFG_REG_B, 1, &txData, 1, 100);
-//
-//	txData = 0b00000000;
-//	status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_CFG_REG_C, 1, &txData, 1, 100);
-//
-//	HAL_Delay(500);
-//
-//	status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_STATUS_REG, 1,&rxData, 1, 100);
-//	if( (rxData & 0x08) == 0x08){
-//		// new data available
-//		status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_OUTX_L_REG, 1,magData, 6, 100);
-//		HAL_Delay(500);
-//		status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_OUTX_L_REG, 1,magData, 6, 100);
-//
-//		if(status == HAL_OK){
-//			x_mag = (((uint16_t) magData[1]) << 8) | magData[0];
-//			y_mag = (((uint16_t) magData[3]) << 8) | magData[2];
-//			z_mag = (((uint16_t) magData[5]) << 8) | magData[4];
-//		}
-//	}
 
-	// shut off accelerometer and magnetometer
-	HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_RESET);
 
 	//  while(1){};
 
@@ -671,14 +451,22 @@ int main(void)
 
 	//reserve first page for metadata
 
-#define FRAM_CONFIG_START_WORD			0x01
-#define FRAM_CONFIG_BYTE_ADDR			0
-#define FRAM_CONFIG_WORD_ADDR			( (FRAM_START_ADDR | FRAM_CONFIG_START_WORD) << 1)
+#define FRAM_CONFIG_START_ADDR			0x0100
+
+#define FRAM_CONFIG_ADDR				FRAM_CONFIG_START_ADDR
+#define FRAM_CONFIG_BYTE_ADDR			(FRAM_CONFIG_ADDR & 0xFF)
+#define FRAM_CONFIG_WORD_ADDR			((FRAM_START_ADDR | (FRAM_CONFIG_ADDR >> 8)) << 1)
 #define FRAM_CONFIG_SIZE				sizeof(packet_t)
 
-#define FRAM_INFO_BYTE_ADDR				(FRAM_CONFIG_SIZE & 0xFF)
-#define FRAM_INFO_WORD_ADDR 			( (FRAM_START_ADDR | (0x01 + (FRAM_CONFIG_SIZE >> 8))) << 1)
+#define FRAM_INFO_ADDR					(FRAM_CONFIG_START_ADDR + sizeof(packet_t))
+#define FRAM_INFO_BYTE_ADDR				(FRAM_INFO_ADDR & 0xFF)
+#define FRAM_INFO_WORD_ADDR 			((FRAM_START_ADDR | (FRAM_INFO_ADDR >> 8)) << 1)
 #define FRAM_INFO_SIZE					sizeof(packet_t)
+
+#define FRAM_MAG_ADDR					(FRAM_INFO_ADDR + sizeof(packet_t))
+#define FRAM_MAG_CAL_BYTE_ADDR			(FRAM_MAG_ADDR & 0xFF)
+#define FRAM_MAG_CAL_WORD_ADDR 			((FRAM_START_ADDR | (FRAM_MAG_ADDR >> 8)) << 1)
+#define FRAM_MAG_CAL_SIZE				sizeof(MagCal)
 
 	//#define FRAM_BME_START_WORD				0x05
 	//#define FRAM_BME_CONFIG_BYTE_ADDR		(0)
@@ -698,37 +486,40 @@ int main(void)
 #define FRAM_SIZE		16000
 
 
-//	HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET); // powers FRAM
-//	HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_SET); // needed for I2C pins on FRAM
-//
-//	HAL_Delay(1); // 1ms startup delay before write/read
-//
-//	packet_t tempConfigPacket = PACKET_INIT_ZERO;
-//	packet_t tempInfoPacket = PACKET_INIT_ZERO;
-//
-//	// (1) device address is ((FRAM_START_ADDR | (256-byte page address) << 1)
-//	// (2) memory address is the byte within the page
-//	uint32_t testVar = 0xDEADBEEF;
-//	uint32_t testVar2 = 0;
-//
-//	status = HAL_I2C_Mem_Write(&hi2c3, FRAM_START_ADDR << 1, 0, 1, (uint8_t*) &testVar, sizeof(testVar), 1000);
-//	status = HAL_I2C_Mem_Read(&hi2c3, FRAM_START_ADDR << 1, 0, 1, (uint8_t*) &testVar2, sizeof(testVar2), 1000);
-//
-//	status = HAL_I2C_Mem_Write(&hi2c3, FRAM_CONFIG_WORD_ADDR, FRAM_CONFIG_BYTE_ADDR, 1, (uint8_t*) &configPacket, sizeof(configPacket), 1000);
-//
-//	//  uint8_t word_pos = sizeof(configPacket) / 256;
-//	//  uint8_t byte_pos = sizeof(configPacket) % 256;
-//	status = HAL_I2C_Mem_Write(&hi2c3, FRAM_INFO_WORD_ADDR, FRAM_INFO_BYTE_ADDR, 1, (uint8_t*) &infoPacket, sizeof(infoPacket), 1000);
-//
-//
-//	status = HAL_I2C_Mem_Read(&hi2c3, FRAM_CONFIG_WORD_ADDR, FRAM_CONFIG_BYTE_ADDR, 1, (uint8_t*) &tempConfigPacket, sizeof(tempConfigPacket), 1000);
-//	status = HAL_I2C_Mem_Read(&hi2c3, FRAM_INFO_WORD_ADDR, FRAM_INFO_BYTE_ADDR, 1, (uint8_t*) &tempInfoPacket, sizeof(tempInfoPacket), 1000);
+		HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET); // powers FRAM
+		HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_SET); // needed for I2C pins on FRAM
+
+		HAL_Delay(1); // 1ms startup delay before write/read
+	//
+	//	packet_t tempConfigPacket = PACKET_INIT_ZERO;
+	//	packet_t tempInfoPacket = PACKET_INIT_ZERO;
+	//
+	//	// (1) device address is ((FRAM_START_ADDR | (256-byte page address) << 1)
+	//	// (2) memory address is the byte within the page
+	//	uint32_t testVar = 0xDEADBEEF;
+	//	uint32_t testVar2 = 0;
+	//
+	//	status = HAL_I2C_Mem_Write(&hi2c3, FRAM_START_ADDR << 1, 0, 1, (uint8_t*) &testVar, sizeof(testVar), 1000);
+	//	status = HAL_I2C_Mem_Read(&hi2c3, FRAM_START_ADDR << 1, 0, 1, (uint8_t*) &testVar2, sizeof(testVar2), 1000);
+	//
+//		status = HAL_I2C_Mem_Write(&hi2c3, FRAM_CONFIG_WORD_ADDR, FRAM_CONFIG_BYTE_ADDR, 1, (uint8_t*) &configPacket, sizeof(configPacket), 1000);
+	//
+	//	//  uint8_t word_pos = sizeof(configPacket) / 256;
+	//	//  uint8_t byte_pos = sizeof(configPacket) % 256;
+//		status = HAL_I2C_Mem_Write(&hi2c3, FRAM_INFO_WORD_ADDR, FRAM_INFO_BYTE_ADDR, 1, (uint8_t*) &infoPacket, sizeof(infoPacket), 1000);
+	//
+	//
+	//	status = HAL_I2C_Mem_Read(&hi2c3, FRAM_CONFIG_WORD_ADDR, FRAM_CONFIG_BYTE_ADDR, 1, (uint8_t*) &tempConfigPacket, sizeof(tempConfigPacket), 1000);
+	//	status = HAL_I2C_Mem_Read(&hi2c3, FRAM_INFO_WORD_ADDR, FRAM_INFO_BYTE_ADDR, 1, (uint8_t*) &tempInfoPacket, sizeof(tempInfoPacket), 1000);
 
 	// enable SD card 1
 	enable_SD_Card_1();
 	disable_SD_Card_2();
 	enable_SD_Mux();
 	mux_Select_SD_Card(1);
+
+//	float pitch, roll, heading;
+//	grabInertialSample(&pitch, &roll, &heading);
 
 	HAL_Delay(200);
 
@@ -762,9 +553,9 @@ int main(void)
 	defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
 	/* USER CODE BEGIN RTOS_THREADS */
-	//mainSystemThreadId = osThreadNew(mainSystemTask, NULL, &mainSystemTask_attributes);
+	mainSystemThreadId = osThreadNew(mainSystemTask, NULL, &mainSystemTask_attributes);
 
-	micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
+//	micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
 
 	//bmeTaskHandle = osThreadNew(BME_Task, NULL, &bmeTask_attributes);
 
@@ -1549,6 +1340,23 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
+void readFRAM(uint8_t word_addr, uint8_t byte_addr, uint8_t *data, uint32_t size){
+		HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET); // powers FRAM
+		HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_SET); // needed for I2C pins on FRAM
+
+		HAL_Delay(1); // 1ms startup delay before write/read
+
+		status = HAL_I2C_Mem_Read(&hi2c3, word_addr, byte_addr, 1, data, size, 1000);
+}
+
+void writeFRAM(uint8_t word_addr, uint8_t byte_addr, uint8_t *data, uint32_t size){
+		HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET); // powers FRAM
+		HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_SET); // needed for I2C pins on FRAM
+
+		HAL_Delay(1); // 1ms startup delay before write/read
+
+		status = HAL_I2C_Mem_Write(&hi2c3, word_addr, byte_addr, 1, data, size, 1000);
+}
 
 void enable_SD_Card_1(void){
 	HAL_GPIO_WritePin(EN_SD_REG_GPIO_Port, EN_SD_REG_Pin, GPIO_PIN_SET);
@@ -1584,7 +1392,7 @@ void acousticSamplingTask(void *argument){
 
 	/* Setup Audio Interface */
 	disableAudioPeripherals();
-//	unmount_sd_card();
+	//	unmount_sd_card();
 
 	if((!configPacket.payload.config_packet.audio_config.channel_1) &&
 			(!configPacket.payload.config_packet.audio_config.channel_2)){
@@ -1693,21 +1501,475 @@ void set_folder_from_time(void){
 		}
 
 		/* below structure can be used for metadata storage in directory */
-//		res = f_open(&file, "test.txt", FA_WRITE | FA_CREATE_ALWAYS);
-//		if(res == FR_OK){
-//			res = f_write(&file, "Hello, world!", 13, &bytes_written);
-//		}else Error_Handler();
-//		if (res == FR_OK)
-//		{
-//			// Close the file
-//			f_close(&file);
-//
-//			// Flush the cached data to the SD card
-//			f_sync(&file);
-//		}else Error_Handler();
+		//		res = f_open(&file, "test.txt", FA_WRITE | FA_CREATE_ALWAYS);
+		//		if(res == FR_OK){
+		//			res = f_write(&file, "Hello, world!", 13, &bytes_written);
+		//		}else Error_Handler();
+		//		if (res == FR_OK)
+		//		{
+		//			// Close the file
+		//			f_close(&file);
+		//
+		//			// Flush the cached data to the SD card
+		//			f_sync(&file);
+		//		}else Error_Handler();
 
 		return;
 	}
+}
+
+enum regAddr
+{
+	TEMP_OUT_L        = 0x05, // D
+	TEMP_OUT_H        = 0x06, // D
+
+	STATUS_M          = 0x07, // D
+
+	INT_CTRL_M        = 0x12, // D
+	INT_SRC_M         = 0x13, // D
+	INT_THS_L_M       = 0x14, // D
+	INT_THS_H_M       = 0x15, // D
+
+	OFFSET_X_L_M      = 0x16, // D
+	OFFSET_X_H_M      = 0x17, // D
+	OFFSET_Y_L_M      = 0x18, // D
+	OFFSET_Y_H_M      = 0x19, // D
+	OFFSET_Z_L_M      = 0x1A, // D
+	OFFSET_Z_H_M      = 0x1B, // D
+	REFERENCE_X       = 0x1C, // D
+	REFERENCE_Y       = 0x1D, // D
+	REFERENCE_Z       = 0x1E, // D
+
+	CTRL0             = 0x1F, // D
+	CTRL1             = 0x20, // D
+	CTRL_REG1_A       = 0x20, // DLH, DLM, DLHC
+	CTRL2             = 0x21, // D
+	CTRL_REG2_A       = 0x21, // DLH, DLM, DLHC
+	CTRL3             = 0x22, // D
+	CTRL_REG3_A       = 0x22, // DLH, DLM, DLHC
+	CTRL4             = 0x23, // D
+	CTRL_REG4_A       = 0x23, // DLH, DLM, DLHC
+	CTRL5             = 0x24, // D
+	CTRL_REG5_A       = 0x24, // DLH, DLM, DLHC
+	CTRL6             = 0x25, // D
+	CTRL_REG6_A       = 0x25, // DLHC
+	HP_FILTER_RESET_A = 0x25, // DLH, DLM
+	CTRL7             = 0x26, // D
+	REFERENCE_A       = 0x26, // DLH, DLM, DLHC
+	STATUS_A          = 0x27, // D
+	STATUS_REG_A      = 0x27, // DLH, DLM, DLHC
+
+	OUT_X_L_A         = 0x28,
+	OUT_X_H_A         = 0x29,
+	OUT_Y_L_A         = 0x2A,
+	OUT_Y_H_A         = 0x2B,
+	OUT_Z_L_A         = 0x2C,
+	OUT_Z_H_A         = 0x2D,
+
+	FIFO_CTRL         = 0x2E, // D
+	FIFO_CTRL_REG_A   = 0x2E, // DLHC
+	FIFO_SRC          = 0x2F, // D
+	FIFO_SRC_REG_A    = 0x2F, // DLHC
+
+	IG_CFG1           = 0x30, // D
+	INT1_CFG_A        = 0x30, // DLH, DLM, DLHC
+	IG_SRC1           = 0x31, // D
+	INT1_SRC_A        = 0x31, // DLH, DLM, DLHC
+	IG_THS1           = 0x32, // D
+	INT1_THS_A        = 0x32, // DLH, DLM, DLHC
+	IG_DUR1           = 0x33, // D
+	INT1_DURATION_A   = 0x33, // DLH, DLM, DLHC
+	IG_CFG2           = 0x34, // D
+	INT2_CFG_A        = 0x34, // DLH, DLM, DLHC
+	IG_SRC2           = 0x35, // D
+	INT2_SRC_A        = 0x35, // DLH, DLM, DLHC
+	IG_THS2           = 0x36, // D
+	INT2_THS_A        = 0x36, // DLH, DLM, DLHC
+	IG_DUR2           = 0x37, // D
+	INT2_DURATION_A   = 0x37, // DLH, DLM, DLHC
+
+	CLICK_CFG         = 0x38, // D
+	CLICK_CFG_A       = 0x38, // DLHC
+	CLICK_SRC         = 0x39, // D
+	CLICK_SRC_A       = 0x39, // DLHC
+	CLICK_THS         = 0x3A, // D
+	CLICK_THS_A       = 0x3A, // DLHC
+	TIME_LIMIT        = 0x3B, // D
+	TIME_LIMIT_A      = 0x3B, // DLHC
+	TIME_LATENCY      = 0x3C, // D
+	TIME_LATENCY_A    = 0x3C, // DLHC
+	TIME_WINDOW       = 0x3D, // D
+	TIME_WINDOW_A     = 0x3D, // DLHC
+
+	Act_THS           = 0x3E, // D
+	Act_DUR           = 0x3F, // D
+
+	CRA_REG_M         = 0x00, // DLH, DLM, DLHC
+	CRB_REG_M         = 0x01, // DLH, DLM, DLHC
+	MR_REG_M          = 0x02, // DLH, DLM, DLHC
+
+	SR_REG_M          = 0x09, // DLH, DLM, DLHC
+	IRA_REG_M         = 0x0A, // DLH, DLM, DLHC
+	IRB_REG_M         = 0x0B, // DLH, DLM, DLHC
+	IRC_REG_M         = 0x0C, // DLH, DLM, DLHC
+
+	WHO_AM_I          = 0x0F, // D
+	WHO_AM_I_M        = 0x0F, // DLM
+
+	TEMP_OUT_H_M      = 0x31, // DLHC
+	TEMP_OUT_L_M      = 0x32, // DLHC
+
+
+	// dummy addresses for registers in different locations on different devices;
+	// the library translates these based on device type
+	// value with sign flipped is used as index into translated_regs array
+
+	OUT_X_H_M         = -1,
+	OUT_X_L_M         = -2,
+	OUT_Y_H_M         = -3,
+	OUT_Y_L_M         = -4,
+	OUT_Z_H_M         = -5,
+	OUT_Z_L_M         = -6,
+	// update dummy_reg_count if registers are added here!
+
+	// device-specific register addresses
+
+	DLH_OUT_X_H_M     = 0x03,
+	DLH_OUT_X_L_M     = 0x04,
+	DLH_OUT_Y_H_M     = 0x05,
+	DLH_OUT_Y_L_M     = 0x06,
+	DLH_OUT_Z_H_M     = 0x07,
+	DLH_OUT_Z_L_M     = 0x08,
+
+	DLM_OUT_X_H_M     = 0x03,
+	DLM_OUT_X_L_M     = 0x04,
+	DLM_OUT_Z_H_M     = 0x05,
+	DLM_OUT_Z_L_M     = 0x06,
+	DLM_OUT_Y_H_M     = 0x07,
+	DLM_OUT_Y_L_M     = 0x08,
+
+	DLHC_OUT_X_H_M    = 0x03,
+	DLHC_OUT_X_L_M    = 0x04,
+	DLHC_OUT_Z_H_M    = 0x05,
+	DLHC_OUT_Z_L_M    = 0x06,
+	DLHC_OUT_Y_H_M    = 0x07,
+	DLHC_OUT_Y_L_M    = 0x08,
+
+	D_OUT_X_L_M       = 0x08,
+	D_OUT_X_H_M       = 0x09,
+	D_OUT_Y_L_M       = 0x0A,
+	D_OUT_Y_H_M       = 0x0B,
+	D_OUT_Z_L_M       = 0x0C,
+	D_OUT_Z_H_M       = 0x0D
+};
+
+typedef enum {
+	LIS2MDL_OFFSET_X_REG_L = 0x45,
+	LIS2MDL_OFFSET_X_REG_H = 0x46,
+	LIS2MDL_OFFSET_Y_REG_L = 0x47,
+	LIS2MDL_OFFSET_Y_REG_H = 0x48,
+	LIS2MDL_OFFSET_Z_REG_L = 0x49,
+	LIS2MDL_OFFSET_Z_REG_H = 0x4A,
+	LIS2MDL_WHO_AM_I = 0x4F,
+	LIS2MDL_CFG_REG_A = 0x60,
+	LIS2MDL_CFG_REG_B = 0x61,
+	LIS2MDL_CFG_REG_C = 0x62,
+	LIS2MDL_INT_CRTL_REG = 0x63,
+	LIS2MDL_INT_SOURCE_REG = 0x64,
+	LIS2MDL_INT_THS_L_REG = 0x65,
+	LIS2MDL_STATUS_REG = 0x67,
+	LIS2MDL_OUTX_L_REG = 0x68,
+	LIS2MDL_OUTX_H_REG = 0x69,
+	LIS2MDL_OUTY_L_REG = 0x6A,
+	LIS2MDL_OUTY_H_REG = 0x6B,
+	LIS2MDL_OUTZ_L_REG = 0x6C,
+	LIS2MDL_OUTZ_H_REG = 0x6D,
+} lis2mdl_register_t;
+
+void grabInertialSample(float *pitch, float *roll, float *heading){
+
+#define MAG_ADDR (0x1E << 1)
+#define ACC_ADDR (0x19 << 1)
+
+	uint8_t data[10];
+	uint8_t txData, rxData;
+	HAL_StatusTypeDef status;
+	uint8_t accData[6], magData[6];
+	int16_t x_acc, y_acc, z_acc;
+	int16_t x_mag, y_mag, z_mag;
+	int16_t x_mag_offset, y_mag_offset, z_mag_offset;
+
+
+	HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET);
+	osDelay(100);
+	//  status = HAL_I2C_Master_Receive(&hi2c1, ACC_ADDR, data, 1, 1000);
+	status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR,  (enum regAddr) WHO_AM_I, 1,data, 1, 100);
+
+	txData = 0x08; // continous mode, 2g mode, high-resolution mode
+	//  txData = 0x00; // continous mode, 2g mode, high-resolution mode
+	status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG4_A, 1, &txData, 1, 100);
+
+	txData = 0x00; // no filtering
+	status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG2_A, 1, &txData, 1, 100);
+
+	txData = 0x27; //enable all channels, no low power mode, HR / Normal / Low-power mode (10 Hz)
+	status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG1_A, 1, &txData, 1, 100);
+
+	osDelay(1000);
+
+	status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) STATUS_REG_A, 1,&rxData, 1, 100);
+	if( (rxData & 0x08) == 0x08){
+		// new data available
+		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_X_L_A, 1,&accData[0], 1, 100);
+		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_X_H_A, 1,&accData[1], 1, 100);
+		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_Y_L_A, 1,&accData[2], 1, 100);
+		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_Y_H_A, 1,&accData[3], 1, 100);
+		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_Z_L_A, 1,&accData[4], 1, 100);
+		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_Z_H_A, 1,&accData[5], 1, 100);
+
+		osDelay(100);
+		//	  status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_X_L_A, 1,accData, 6, 100);
+
+		if(status == HAL_OK){
+			x_acc = ((int16_t) (((uint16_t) accData[1]) << 8)) + accData[0];
+			y_acc = ((int16_t) (((uint16_t) accData[3]) << 8)) + accData[2];
+			z_acc = ((int16_t) (((uint16_t) accData[5]) << 8)) + accData[4];
+		}
+	}
+
+
+
+	txData = 0b10000000; // ODR 10Hz, temperature compensation,continous mode
+	status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_CFG_REG_A, 1, &txData, 1, 100);
+
+	txData = 0b00000001; // digital filter enabled (ODR/4)
+	status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_CFG_REG_B, 1, &txData, 1, 100);
+
+	txData = 0b00000000;
+	status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_CFG_REG_C, 1, &txData, 1, 100);
+
+	osDelay(500);
+
+
+	// new data available
+	status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_OFFSET_X_REG_L, 1,magData, 6, 100);
+
+//	/* START MAG CAL */
+//	if(status == HAL_OK){
+//		x_mag_offset = ((int16_t) (((uint16_t) magData[1]) << 8)) + magData[0];
+//		y_mag_offset = ((int16_t) (((uint16_t) magData[3]) << 8)) + magData[2];
+//		z_mag_offset = ((int16_t) (((uint16_t) magData[5]) << 8)) + magData[4];
+//	}
+//
+//	  int32_t min_x = 0;
+//	  int32_t min_y = 0;
+//	  int32_t min_z = 0;
+//
+//	  int32_t max_x = 0;
+//	  int32_t max_y = 0;
+//	  int32_t max_z = 0;
+//
+	  int16_t mag_cal_vals[3];
+//
+//#define CALIBRATION_SAMPLES		1000
+//	uint32_t sampleCnt = 0;
+//	while(sampleCnt < CALIBRATION_SAMPLES){
+//		status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_STATUS_REG, 1,&rxData, 1, 100);
+//		if( (rxData & 0x08) == 0x08){
+//			// new data available
+//			status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_OUTX_L_REG, 1,magData, 6, 100);
+//
+//			if(status == HAL_OK){
+//				x_mag = ((int16_t) (((uint16_t) magData[1]) << 8)) + magData[0];
+//				y_mag = ((int16_t) (((uint16_t) magData[3]) << 8)) + magData[2];
+//				z_mag = ((int16_t) (((uint16_t) magData[5]) << 8)) + magData[4];
+//			}
+//
+//			min_x = min(min_x, x_mag);
+//			min_y = min(min_y, y_mag);
+//			min_z = min(min_z, z_mag);
+//
+//			max_x = max(max_x, x_mag);
+//			max_y = max(max_y, y_mag);
+//			max_z = max(max_z, z_mag);
+//
+//			sampleCnt++;
+//			setLED_Blue(100);
+//			osDelay(40);
+//			setLED_Blue(0);
+//			osDelay(40);
+//		}else{
+//			osDelay(10);
+//		}
+//	}
+//
+//	mag_cal_vals[0] = (max_x + min_x) / 2; //-379
+//	mag_cal_vals[1] = (max_y + min_y) / 2; //218
+//	mag_cal_vals[2] = (max_z + min_z) / 2; //159
+//
+//	status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_OFFSET_X_REG_L, 1, (uint8_t*) mag_cal_vals, 6, 100);
+//
+//	if(status != HAL_OK){
+//		setLED_Red(1000);
+//		while(1);
+//	}
+//
+//	status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_OFFSET_X_REG_L, 1,magData, 6, 100);
+//
+//	if(status == HAL_OK){
+//		x_mag_offset = ((int16_t) (((uint16_t) magData[1]) << 8)) + magData[0];
+//		y_mag_offset = ((int16_t) (((uint16_t) magData[3]) << 8)) + magData[2];
+//		z_mag_offset = ((int16_t) (((uint16_t) magData[5]) << 8)) + magData[4];
+//	}
+//	/* END MAG CAL */
+
+
+
+	// calibration values
+	  //todo: grab mag cal vals from FRAM
+
+	  MagCal mag_calibration;
+	  readFRAM(FRAM_MAG_CAL_WORD_ADDR, FRAM_MAG_CAL_BYTE_ADDR, (uint8_t *) &mag_calibration, FRAM_MAG_CAL_SIZE);
+	  if(mag_calibration.delimiter != 0xDEADBEEF){
+		  performMagCalibration(2000);
+	  }
+	  performMagCalibration(2000);
+
+
+//	  readFRAM(FRAM_MAG_CAL_WORD_ADDR, FRAM_MAG_CAL_BYTE_ADDR, mag_cal_vals, FRAM_MAG_CAL_SIZE);
+//	  writeFRAM(FRAM_MAG_CAL_WORD_ADDR, FRAM_MAG_CAL_BYTE_ADDR, mag_cal_vals, FRAM_MAG_CAL_SIZE);
+//	mag_cal_vals[0] = -379;
+//	mag_cal_vals[1] = 218;
+//	mag_cal_vals[2] = 159;
+//	status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_OFFSET_X_REG_L, 1, (uint8_t*) mag_cal_vals, 6, 100);
+
+	status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_STATUS_REG, 1,&rxData, 1, 100);
+	if( (rxData & 0x08) == 0x08){
+		// new data available
+		status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_OUTX_L_REG, 1,magData, 6, 100);
+		HAL_Delay(500);
+		status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_OUTX_L_REG, 1,magData, 6, 100);
+
+		if(status == HAL_OK){
+			x_mag = ((int16_t) (((uint16_t) magData[1]) << 8)) + magData[0];
+			y_mag = ((int16_t) (((uint16_t) magData[3]) << 8)) + magData[2];
+			z_mag = ((int16_t) (((uint16_t) magData[5]) << 8)) + magData[4];
+		}
+	}
+
+	// shut off accelerometer and magnetometer
+	HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_RESET);
+
+	y_mag = -y_mag; //flip y axis to correct for flipped IC
+	y_acc = -y_acc; //flip y axis to correct for flipped IC
+
+	z_mag = -z_mag; //flip z axis to correct for flipped IC
+	z_acc = -z_acc; //flip z axis to correct for flipped IC
+
+//	x_mag = -x_mag; //flip x axis to correct for flipped IC
+//	x_acc = -x_acc; //flip x axis to correct for flipped IC
+
+	computePitchRoll((float) x_acc, (float) y_acc, (float) z_acc, pitch, roll);
+	computeHeading((float) x_mag, (float) y_mag, (float) z_mag,
+			*pitch, *roll, heading);
+
+//	*heading = computeHeading((float) x_mag, (float) y_mag);
+}
+
+void performMagCalibration(uint32_t numOfSamples){
+
+	// increase sample rate
+	uint8_t txData = 0b10001100; // ODR 100Hz, temperature compensation,continous mode
+	status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_CFG_REG_A, 1, &txData, 1, 100);
+
+		/* START MAG CAL */
+//		if(status == HAL_OK){
+//			x_mag_offset = ((int16_t) (((uint16_t) magData[1]) << 8)) + magData[0];
+//			y_mag_offset = ((int16_t) (((uint16_t) magData[3]) << 8)) + magData[2];
+//			z_mag_offset = ((int16_t) (((uint16_t) magData[5]) << 8)) + magData[4];
+//		}
+
+		  int32_t min_x = 0;
+		  int32_t min_y = 0;
+		  int32_t min_z = 0;
+
+		  int32_t max_x = 0;
+		  int32_t max_y = 0;
+		  int32_t max_z = 0;
+
+//		  int16_t mag_cal_vals[3];
+
+		  MagCal mag_calibration;
+
+		  uint8_t blue_led_state = 0;
+
+		  uint8_t rxData;
+		  uint8_t magData[6];
+		  int16_t x_mag = 0;
+		  int16_t y_mag = 0;
+		  int16_t z_mag = 0;
+
+		uint32_t sampleCnt = 0;
+		while(sampleCnt < numOfSamples){
+			status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_STATUS_REG, 1,&rxData, 1, 100);
+			if( (rxData & 0x08) == 0x08){
+				// new data available
+				status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_OUTX_L_REG, 1,magData, 6, 100);
+
+				if(status == HAL_OK){
+					x_mag = ((int16_t) (((uint16_t) magData[1]) << 8)) + magData[0];
+					y_mag = ((int16_t) (((uint16_t) magData[3]) << 8)) + magData[2];
+					z_mag = ((int16_t) (((uint16_t) magData[5]) << 8)) + magData[4];
+				}
+
+				min_x = min(min_x, x_mag);
+				min_y = min(min_y, y_mag);
+				min_z = min(min_z, z_mag);
+
+				max_x = max(max_x, x_mag);
+				max_y = max(max_y, y_mag);
+				max_z = max(max_z, z_mag);
+
+				sampleCnt++;
+				if(blue_led_state){
+					setLED_Blue(0);
+				}else{
+					setLED_Blue(1000);
+				}
+			}else{
+				osDelay(9);
+			}
+		}
+
+		setLED_Blue(0);
+
+		mag_calibration.delimiter = 0xDEADBEEF;
+		mag_calibration.mag_cal_vals[0] = (max_x + min_x) / 2; //-379
+		mag_calibration.mag_cal_vals[1] = (max_y + min_y) / 2; //218
+		mag_calibration.mag_cal_vals[2] = (max_z + min_z) / 2; //159
+
+		status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_OFFSET_X_REG_L, 1, (uint8_t*) mag_calibration.mag_cal_vals, 6, 100);
+
+		if(status != HAL_OK){
+			setLED_Red(1000);
+			while(1);
+		}
+
+//		status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_OFFSET_X_REG_L, 1,magData, 6, 100);
+//
+//		if(status == HAL_OK){
+//			x_mag_offset = ((int16_t) (((uint16_t) magData[1]) << 8)) + magData[0];
+//			y_mag_offset = ((int16_t) (((uint16_t) magData[3]) << 8)) + magData[2];
+//			z_mag_offset = ((int16_t) (((uint16_t) magData[5]) << 8)) + magData[4];
+//		}
+		/* END MAG CAL */
+
+		// put back sample rate
+		txData = 0b10000000; // ODR 10Hz, temperature compensation,continous mode
+		status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_CFG_REG_A, 1, &txData, 1, 100);
+
+		  //todo: save mag cal vals to FRAM
+		writeFRAM(FRAM_MAG_CAL_WORD_ADDR, FRAM_MAG_CAL_BYTE_ADDR, (uint8_t *) &mag_calibration, FRAM_MAG_CAL_SIZE);
 }
 
 #define MAX_BYTES_PER_WAV_FILE 2000000000
@@ -1749,7 +2011,7 @@ void startRecord(uint32_t recording_duration_s){
 	/* Create a new file */
 	if(f_open(&WavFile, file_name, FA_CREATE_ALWAYS | FA_WRITE) == FR_OK)
 	{
-//		FRESULT fr = updateFileTimestamp(file_name, &hrtc);
+		//		FRESULT fr = updateFileTimestamp(file_name, &hrtc);
 
 		f_lseek(&WavFile,0);
 
@@ -1803,7 +2065,7 @@ void startRecord(uint32_t recording_duration_s){
 
 					if(totalBuffersWritten > half_buffers_per_session) break;
 
-//					WavProcess_EncInit(hsai_BlockA1.Init.AudioFrequency, pHeaderBuff);
+					//					WavProcess_EncInit(hsai_BlockA1.Init.AudioFrequency, pHeaderBuff);
 					file_index++;
 					sprintf(file_name, "wav_%u.wav", file_index);
 					if(f_open(&WavFile, file_name, FA_CREATE_ALWAYS | FA_WRITE) != FR_OK){
@@ -1832,22 +2094,22 @@ void startRecord(uint32_t recording_duration_s){
 
 			vTaskDelete( NULL );
 
-//			if(f_lseek(&WavFile, 0) == FR_OK)
-//			{
-//				/* Update the wav file header save it into wav file */
-//				WavProcess_HeaderUpdate(pHeaderBuff, totalBytesWrittenToFile);
-//
-//				if(f_write(&WavFile, pHeaderBuff, 44, (UINT*) &byteswritten) == FR_OK)
-//				{
-//
-//				}
-//			}
-//
-//			// Close the file
-//			f_close(&WavFile);
-//
-//			// Flush the cached data to the SD card
-//			f_sync(&WavFile);
+			//			if(f_lseek(&WavFile, 0) == FR_OK)
+			//			{
+			//				/* Update the wav file header save it into wav file */
+			//				WavProcess_HeaderUpdate(pHeaderBuff, totalBytesWrittenToFile);
+			//
+			//				if(f_write(&WavFile, pHeaderBuff, 44, (UINT*) &byteswritten) == FR_OK)
+			//				{
+			//
+			//				}
+			//			}
+			//
+			//			// Close the file
+			//			f_close(&WavFile);
+			//
+			//			// Flush the cached data to the SD card
+			//			f_sync(&WavFile);
 
 			return;
 		}else Error_Handler();
@@ -1859,54 +2121,108 @@ void startRecord(uint32_t recording_duration_s){
 
 // Function to convert RTC time to FatFs time format
 WORD getFatTime(const RTC_TimeTypeDef *time, const RTC_DateTypeDef *date) {
-    return   ((WORD)(date->Year + 20) << 9)
-           | ((WORD)(date->Month) << 5)
-           | ((WORD)(date->Date))
-           | ((WORD)(time->Hours) << 11)
-           | ((WORD)(time->Minutes) << 5)
-           | ((WORD)(time->Seconds) >> 1);
+	return   ((WORD)(date->Year + 20) << 9)
+			| ((WORD)(date->Month) << 5)
+			| ((WORD)(date->Date))
+			| ((WORD)(time->Hours) << 11)
+			| ((WORD)(time->Minutes) << 5)
+			| ((WORD)(time->Seconds) >> 1);
 }
+
+
+// Function to compute the pitch and roll from accelerometer data
+void computePitchRoll(float x_acc, float y_acc, float z_acc, float* pitch, float* roll) {
+    float ax = x_acc / 16384.0f; // Assuming full-scale range is +/- 2g and 16-bit data
+    float ay = y_acc / 16384.0f;
+    float az = z_acc / 16384.0f;
+
+    *pitch = atan2(ax, sqrt(ay * ay + az * az)) * 180.0 / PI;
+    *roll = atan2(-ay, az) * 180.0 / PI;
+}
+
+// Function to compute the yaw (heading) from magnetometer data
+void computeHeading(float x_mag, float y_mag, float z_mag, float pitch, float roll, float* heading) {
+    float mx = x_mag * 1.5f; // 1.5 mgauss/LSB
+    float my = y_mag * 1.5f;
+    float mz = z_mag * 1.5f;
+
+    // Adjust for pitch and roll
+    float cosPitch = cos(pitch * PI / 180.0);
+    float sinPitch = sin(pitch * PI / 180.0);
+    float cosRoll = cos(roll * PI / 180.0);
+    float sinRoll = sin(roll * PI / 180.0);
+
+    float Xh = mx * cosPitch + mz * sinPitch;
+    float Yh = mx * sinRoll * sinPitch + my * cosRoll - mz * sinRoll * cosPitch;
+
+    *heading = atan2(Yh, Xh) * 180.0 / PI;
+    if (*heading < 0) *heading += 360.0;
+}
+
+
+//// Function to compute heading from magnetometer data
+//float computeHeading(float mx, float my) {
+//    float heading;
+//
+//    // Check for atan2 domain error
+//    if (mx == 0.0f && my == 0.0f) {
+//        return -1; // Invalid data, can't compute heading
+//    }
+//
+//    // Compute the heading
+//    heading = atan2(my, mx);
+//
+//    // Convert from radians to degrees
+//    heading = heading * (180.0 / M_PI);
+//
+//    // Normalize to 0-360 degree range
+//    if (heading < 0) {
+//        heading += 360.0;
+//    }
+//
+//    return heading;
+//}
 
 // Function to update the file's timestamp
 FRESULT updateFileTimestamp(char* path, RTC_HandleTypeDef *hrtc) {
-    FILINFO fno;
-    RTC_TimeTypeDef sTime;
-    RTC_DateTypeDef sDate;
+	FILINFO fno;
+	RTC_TimeTypeDef sTime;
+	RTC_DateTypeDef sDate;
 
-    // Get the current time from RTC
-    HAL_RTC_GetTime(hrtc, &sTime, RTC_FORMAT_BIN);
-    HAL_RTC_GetDate(hrtc, &sDate, RTC_FORMAT_BIN); // This line must be called after HAL_RTC_GetTime()!
+	// Get the current time from RTC
+	HAL_RTC_GetTime(hrtc, &sTime, RTC_FORMAT_BIN);
+	HAL_RTC_GetDate(hrtc, &sDate, RTC_FORMAT_BIN); // This line must be called after HAL_RTC_GetTime()!
 
-    fno.fdate = getFatTime(&sTime, &sDate);
+	fno.fdate = getFatTime(&sTime, &sDate);
 
-    // Update the timestamp of the file
-    FRESULT fr = f_utime(path, &fno);
-    return fr;
+	// Update the timestamp of the file
+	FRESULT fr = f_utime(path, &fno);
+	return fr;
 }
 
 // Function to find the greatest divisor
 uint32_t greatest_divisor(int audioFrequency, int half_buffer_size) {
-    for (uint32_t i = half_buffer_size; i > 0; i--) {
-        if (audioFrequency % i == 0) {
-            return i; // Return the divisor if it evenly divides the audio frequency
-        }
-    }
-    return 0;
+	for (uint32_t i = half_buffer_size; i > 0; i--) {
+		if (audioFrequency % i == 0) {
+			return i; // Return the divisor if it evenly divides the audio frequency
+		}
+	}
+	return 0;
 }
 
 
 void getFormattedTime(RTC_HandleTypeDef *hrtc, char *formattedTime) {
-    RTC_TimeTypeDef sTime;
-    RTC_DateTypeDef sDate;
+	RTC_TimeTypeDef sTime;
+	RTC_DateTypeDef sDate;
 
-    // Get the RTC current Time and Date
-    HAL_RTC_GetTime(hrtc, &sTime, RTC_FORMAT_BIN);
-    HAL_RTC_GetDate(hrtc, &sDate, RTC_FORMAT_BIN); // This line must be called after HAL_RTC_GetTime()!
+	// Get the RTC current Time and Date
+	HAL_RTC_GetTime(hrtc, &sTime, RTC_FORMAT_BIN);
+	HAL_RTC_GetDate(hrtc, &sDate, RTC_FORMAT_BIN); // This line must be called after HAL_RTC_GetTime()!
 
-    // Format the time into the provided character array
-    snprintf(formattedTime, 17, "%02d_%02d_%02d_%02d_%02d",
-             sDate.Year, sDate.Month, sDate.Date,
-             sTime.Hours, sTime.Minutes);
+	// Format the time into the provided character array
+	snprintf(formattedTime, 17, "%02d_%02d_%02d_%02d_%02d",
+			sDate.Year, sDate.Month, sDate.Date,
+			sTime.Hours, sTime.Minutes);
 }
 
 void disableAudioPeripherals(void){
@@ -1970,55 +2286,55 @@ void MX_SAI1_Init_Custom(SAI_HandleTypeDef &hsai_handle, uint8_t bit_resolution)
 	hsai_handle.Init.CompandingMode = SAI_NOCOMPANDING;
 	hsai_handle.Init.MonoStereoMode = SAI_STEREOMODE;
 
-//	if (HAL_SAI_InitProtocol(&hsai_handle, SAI_I2S_MSBJUSTIFIED, bit_resolution, 2) != HAL_OK)
-//		{
-//			Error_Handler();
-//		}
+	//	if (HAL_SAI_InitProtocol(&hsai_handle, SAI_I2S_MSBJUSTIFIED, bit_resolution, 2) != HAL_OK)
+	//		{
+	//			Error_Handler();
+	//		}
 	if (HAL_SAI_InitProtocol(&hsai_handle, SAI_I2S_STANDARD, bit_resolution, 2) != HAL_OK)
 	{
 		Error_Handler();
 	}
-//
+	//
 
-//	  status = SAI_InitI2S(hsai_handle, SAI_I2S_STANDARD, bit_resolution, 2);
+	//	  status = SAI_InitI2S(hsai_handle, SAI_I2S_STANDARD, bit_resolution, 2);
 
-//	  HAL_StatusTypeDef status = HAL_OK;
-//
-//	  hsai_handle.Init.Protocol            = SAI_FREE_PROTOCOL;
-//	  hsai_handle.Init.FirstBit            = SAI_FIRSTBIT_MSB;
-//	   /* Compute ClockStrobing according AudioMode */
-//	   if ((hsai_handle.Init.AudioMode == SAI_MODEMASTER_TX) || (hsai_handle.Init.AudioMode == SAI_MODESLAVE_TX))
-//	   {
-//	     /* Transmit */
-//		   hsai_handle.Init.ClockStrobing     = SAI_CLOCKSTROBING_FALLINGEDGE;
-//	   }
-//	   else
-//	   {
-//	     /* Receive */
-//		   hsai_handle.Init.ClockStrobing     = SAI_CLOCKSTROBING_RISINGEDGE;
-//	   }
-//	   hsai_handle.FrameInit.FSDefinition   = SAI_FS_CHANNEL_IDENTIFICATION;
-//	   hsai_handle.SlotInit.SlotActive      = SAI_SLOTACTIVE_ALL;
-//	   hsai_handle.SlotInit.FirstBitOffset  = 0;
-//	   hsai_handle.SlotInit.SlotNumber      = 2;
-//
-//	   hsai_handle.Init.DataSize = SAI_DATASIZE_16;
-//		hsai_handle.FrameInit.FrameLength = 32U * (2 / 2U);
-//		hsai_handle.FrameInit.ActiveFrameLength = 16U * (2 / 2U);
-//		hsai_handle.SlotInit.SlotSize = SAI_SLOTSIZE_16B;
-//
-//		hsai_handle.FrameInit.FSOffset  = SAI_FS_BEFOREFIRSTBIT;
-////		hsai_handle.FrameInit.FSOffset  = SAI_FS_FIRSTBIT;
-//	  hsai_handle.FrameInit.FSPolarity = SAI_FS_ACTIVE_LOW;
-//	   hsai_handle.Init.ClockStrobing     = SAI_CLOCKSTROBING_RISINGEDGE;
-//
-//
-//	  if (status == HAL_OK)
-//	  {
-//	    status = HAL_SAI_Init(&hsai_handle);
-//	  }
+	//	  HAL_StatusTypeDef status = HAL_OK;
+	//
+	//	  hsai_handle.Init.Protocol            = SAI_FREE_PROTOCOL;
+	//	  hsai_handle.Init.FirstBit            = SAI_FIRSTBIT_MSB;
+	//	   /* Compute ClockStrobing according AudioMode */
+	//	   if ((hsai_handle.Init.AudioMode == SAI_MODEMASTER_TX) || (hsai_handle.Init.AudioMode == SAI_MODESLAVE_TX))
+	//	   {
+	//	     /* Transmit */
+	//		   hsai_handle.Init.ClockStrobing     = SAI_CLOCKSTROBING_FALLINGEDGE;
+	//	   }
+	//	   else
+	//	   {
+	//	     /* Receive */
+	//		   hsai_handle.Init.ClockStrobing     = SAI_CLOCKSTROBING_RISINGEDGE;
+	//	   }
+	//	   hsai_handle.FrameInit.FSDefinition   = SAI_FS_CHANNEL_IDENTIFICATION;
+	//	   hsai_handle.SlotInit.SlotActive      = SAI_SLOTACTIVE_ALL;
+	//	   hsai_handle.SlotInit.FirstBitOffset  = 0;
+	//	   hsai_handle.SlotInit.SlotNumber      = 2;
+	//
+	//	   hsai_handle.Init.DataSize = SAI_DATASIZE_16;
+	//		hsai_handle.FrameInit.FrameLength = 32U * (2 / 2U);
+	//		hsai_handle.FrameInit.ActiveFrameLength = 16U * (2 / 2U);
+	//		hsai_handle.SlotInit.SlotSize = SAI_SLOTSIZE_16B;
+	//
+	//		hsai_handle.FrameInit.FSOffset  = SAI_FS_BEFOREFIRSTBIT;
+	////		hsai_handle.FrameInit.FSOffset  = SAI_FS_FIRSTBIT;
+	//	  hsai_handle.FrameInit.FSPolarity = SAI_FS_ACTIVE_LOW;
+	//	   hsai_handle.Init.ClockStrobing     = SAI_CLOCKSTROBING_RISINGEDGE;
+	//
+	//
+	//	  if (status == HAL_OK)
+	//	  {
+	//	    status = HAL_SAI_Init(&hsai_handle);
+	//	  }
 
-//	  return status;
+	//	  return status;
 }
 
 void mainSystemTask(void *argument){
@@ -2036,6 +2352,10 @@ void mainSystemTask(void *argument){
 
 	while(1){
 		tBleStatus ret = BLE_STATUS_INVALID_PARAMS;
+
+		float pitch, roll, heading;
+		grabInertialSample(&pitch, &roll, &heading);
+
 		while(1){
 			for(int i = 0; i<400;i+=5){
 				setLED_Red(i);
@@ -2519,16 +2839,16 @@ void runAnalogConverter(void){
 	HAL_StatusTypeDef status;
 
 
-//	configPacket.payload.config_packet.has_audio_config=true;
-//	configPacket.payload.config_packet.audio_config.bit_resolution=MIC_BIT_RESOLUTION_BIT_RES_16;
-//	configPacket.payload.config_packet.audio_config.channel_1=true;
-//	configPacket.payload.config_packet.audio_config.channel_2=true;
-//	configPacket.payload.config_packet.audio_config.has_audio_compression=true;
-//	configPacket.payload.config_packet.audio_config.audio_compression.compression_factor=0;
-//	configPacket.payload.config_packet.audio_config.audio_compression.compression_type=COMPRESSION_TYPE_OPUS;
-//	configPacket.payload.config_packet.audio_config.audio_compression.enabled=false;
-//	configPacket.payload.config_packet.audio_config.estimated_record_time=12345678; //placeholder
-//	configPacket.payload.config_packet.audio_config.sample_freq=MIC_SAMPLE_FREQ_SAMPLE_RATE_48000;
+	//	configPacket.payload.config_packet.has_audio_config=true;
+	//	configPacket.payload.config_packet.audio_config.bit_resolution=MIC_BIT_RESOLUTION_BIT_RES_16;
+	//	configPacket.payload.config_packet.audio_config.channel_1=true;
+	//	configPacket.payload.config_packet.audio_config.channel_2=true;
+	//	configPacket.payload.config_packet.audio_config.has_audio_compression=true;
+	//	configPacket.payload.config_packet.audio_config.audio_compression.compression_factor=0;
+	//	configPacket.payload.config_packet.audio_config.audio_compression.compression_type=COMPRESSION_TYPE_OPUS;
+	//	configPacket.payload.config_packet.audio_config.audio_compression.enabled=false;
+	//	configPacket.payload.config_packet.audio_config.estimated_record_time=12345678; //placeholder
+	//	configPacket.payload.config_packet.audio_config.sample_freq=MIC_SAMPLE_FREQ_SAMPLE_RATE_48000;
 
 #define ADAU1979_SAI_CTRL0			0x05
 #define I2S_FORMAT					0x0 << 6
@@ -2564,46 +2884,46 @@ void runAnalogConverter(void){
 
 
 	switch(configPacket.payload.config_packet.audio_config.bit_resolution){
-		case MIC_BIT_RESOLUTION_BIT_RES_8:
-			ctrl1_settings |= BCLKRATE_16_PER_CHANNEL | DATA_WIDTH_16 | SLOT_WIDTH_16;
-			break;
-		case MIC_BIT_RESOLUTION_BIT_RES_16:
-			ctrl1_settings |= BCLKRATE_16_PER_CHANNEL | DATA_WIDTH_16 | SLOT_WIDTH_16;
-			break;
-		case MIC_BIT_RESOLUTION_BIT_RES_24:
-			ctrl1_settings |= BCLKRATE_32_PER_CHANNEL | DATA_WIDTH_24 | SLOT_WIDTH_24;
-			break;
-		}
+	case MIC_BIT_RESOLUTION_BIT_RES_8:
+		ctrl1_settings |= BCLKRATE_16_PER_CHANNEL | DATA_WIDTH_16 | SLOT_WIDTH_16;
+		break;
+	case MIC_BIT_RESOLUTION_BIT_RES_16:
+		ctrl1_settings |= BCLKRATE_16_PER_CHANNEL | DATA_WIDTH_16 | SLOT_WIDTH_16;
+		break;
+	case MIC_BIT_RESOLUTION_BIT_RES_24:
+		ctrl1_settings |= BCLKRATE_32_PER_CHANNEL | DATA_WIDTH_24 | SLOT_WIDTH_24;
+		break;
+	}
 
 	switch(configPacket.payload.config_packet.audio_config.sample_freq){
-		case MIC_SAMPLE_FREQ_SAMPLE_RATE_8000:
-			ctrl0_settings |= SAMPLING_RATE_8_12_KHZ;
-			break;
-		case MIC_SAMPLE_FREQ_SAMPLE_RATE_11025:
-			ctrl0_settings |= SAMPLING_RATE_8_12_KHZ;
-			break;
-		case MIC_SAMPLE_FREQ_SAMPLE_RATE_16000:
-			ctrl0_settings |= SAMPLING_RATE_16_24_KHZ;
-			break;
-		case MIC_SAMPLE_FREQ_SAMPLE_RATE_22500:
-			ctrl0_settings |= SAMPLING_RATE_16_24_KHZ;
-			break;
-		case MIC_SAMPLE_FREQ_SAMPLE_RATE_24000:
-			ctrl0_settings |= SAMPLING_RATE_16_24_KHZ;
-			break;
-		case MIC_SAMPLE_FREQ_SAMPLE_RATE_32000:
-			ctrl0_settings |= SAMPLING_RATE_32_48_KHZ;
-			break;
-		case MIC_SAMPLE_FREQ_SAMPLE_RATE_44100:
-			ctrl0_settings |= SAMPLING_RATE_32_48_KHZ;
-			break;
-		case MIC_SAMPLE_FREQ_SAMPLE_RATE_48000:
-			ctrl0_settings |= SAMPLING_RATE_32_48_KHZ;
-			break;
-		case MIC_SAMPLE_FREQ_SAMPLE_RATE_96000:
-			ctrl0_settings |= SAMPLING_RATE_64_96_KHZ;
-			break;
-		}
+	case MIC_SAMPLE_FREQ_SAMPLE_RATE_8000:
+		ctrl0_settings |= SAMPLING_RATE_8_12_KHZ;
+		break;
+	case MIC_SAMPLE_FREQ_SAMPLE_RATE_11025:
+		ctrl0_settings |= SAMPLING_RATE_8_12_KHZ;
+		break;
+	case MIC_SAMPLE_FREQ_SAMPLE_RATE_16000:
+		ctrl0_settings |= SAMPLING_RATE_16_24_KHZ;
+		break;
+	case MIC_SAMPLE_FREQ_SAMPLE_RATE_22500:
+		ctrl0_settings |= SAMPLING_RATE_16_24_KHZ;
+		break;
+	case MIC_SAMPLE_FREQ_SAMPLE_RATE_24000:
+		ctrl0_settings |= SAMPLING_RATE_16_24_KHZ;
+		break;
+	case MIC_SAMPLE_FREQ_SAMPLE_RATE_32000:
+		ctrl0_settings |= SAMPLING_RATE_32_48_KHZ;
+		break;
+	case MIC_SAMPLE_FREQ_SAMPLE_RATE_44100:
+		ctrl0_settings |= SAMPLING_RATE_32_48_KHZ;
+		break;
+	case MIC_SAMPLE_FREQ_SAMPLE_RATE_48000:
+		ctrl0_settings |= SAMPLING_RATE_32_48_KHZ;
+		break;
+	case MIC_SAMPLE_FREQ_SAMPLE_RATE_96000:
+		ctrl0_settings |= SAMPLING_RATE_64_96_KHZ;
+		break;
+	}
 
 #define ADAU1979_ADDR				0x11 << 1
 
@@ -2639,19 +2959,19 @@ void runAnalogConverter(void){
 #define ADC_EN1						0x1 << 0
 
 	data = LDO_EN | VREF_EN | ADC_EN4 | ADC_EN3 | ADC_EN2 | ADC_EN1;
-//	data = LDO_EN | VREF_EN | ADC_EN1;
+	//	data = LDO_EN | VREF_EN | ADC_EN1;
 	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_BLOCK_POWER_SAI,
 			1, &data, 1, 100);
 
 	/* activate ADC */
 	ctrl0_settings |= I2S_FORMAT | STEREO;
-//	ctrl0_settings |= LEFT_JUSTIFIED | STEREO;
+	//	ctrl0_settings |= LEFT_JUSTIFIED | STEREO;
 	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CTRL0,
 			1, &ctrl0_settings, 1, 100);
 
 	/* TDM Configuration */
 	ctrl1_settings |= SDATAOUT1_OUTPUT | LRCLK_50_DUTY_CYCLE | MSB_FIRST | BCLKRATE_16_PER_CHANNEL | SAI_SLAVE;
-//	ctrl1_settings |= SDATAOUT1_OUTPUT | LRCLK_PULSE | MSB_FIRST | SAI_SLAVE;
+	//	ctrl1_settings |= SDATAOUT1_OUTPUT | LRCLK_PULSE | MSB_FIRST | SAI_SLAVE;
 	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CTRL1,
 			1, &ctrl1_settings, 1, 100);
 
@@ -2679,7 +2999,7 @@ void runAnalogConverter(void){
 #define TDM_CH3_SLOT_0				0x0 << 0
 
 	/* TDM Config Slots */
-//	data = TDM_CH1_SLOT_0 | TDM_CH2_SLOT_1;
+	//	data = TDM_CH1_SLOT_0 | TDM_CH2_SLOT_1;
 	data = TDM_CH1_SLOT_0 | TDM_CH2_SLOT_2;
 
 	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CMAP12,
@@ -2691,16 +3011,16 @@ void runAnalogConverter(void){
 	//	//  data = TDM_CH4_SLOT_1 | TDM_CH3_SLOT_2;
 	//	//  data = 0x7 | TDM_CH4_SLOT_12;
 	//	data = TDM_CH3_SLOT_10;
-		//  data = TDM_CH3_SLOT_1;
-//		    data = TDM_CH3_SLOT_11 | TDM_CH4_SLOT_12;
-//	//
-//		status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CMAP34,
-//				1, &data, 1, 100);
+	//  data = TDM_CH3_SLOT_1;
+	//		    data = TDM_CH3_SLOT_11 | TDM_CH4_SLOT_12;
+	//	//
+	//		status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CMAP34,
+	//				1, &data, 1, 100);
 
 	/* ONLY FOR WIND TUNNEL TESTING */
-			data = TDM_CH3_SLOT_1 | TDM_CH4_SLOT_3;
-			status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CMAP34,
-					1, &data, 1, 100);
+	data = TDM_CH3_SLOT_1 | TDM_CH4_SLOT_3;
+	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CMAP34,
+			1, &data, 1, 100);
 
 #define ADAU1979_SAI_OVERTEMP		0x09
 #define CH4_EN_OUT					0x1 << 7
@@ -2711,8 +3031,8 @@ void runAnalogConverter(void){
 
 	/* TDM Channel Configuration */
 	data = CH4_EN_OUT | CH3_EN_OUT | CH2_EN_OUT | CH1_EN_OUT;
-//	data = CH1_EN_OUT;
-//	data = DRV_HIZ_EN | CH4_EN_OUT | CH3_EN_OUT | CH2_EN_OUT | CH1_EN_OUT;
+	//	data = CH1_EN_OUT;
+	//	data = DRV_HIZ_EN | CH4_EN_OUT | CH3_EN_OUT | CH2_EN_OUT | CH1_EN_OUT;
 	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_OVERTEMP,
 			1, &data, 1, 100);
 
@@ -2758,7 +3078,7 @@ void runAnalogConverter(void){
 
 	/* 4-channel mode, normal operation, */
 	data = MODE_4_CHANNEL;
-//	data = MODE_2_CHANNEL_SUM_MODE;
+	//	data = MODE_2_CHANNEL_SUM_MODE;
 	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_MISC_CONTROL,
 			1, &data, 1, 100);
 
@@ -2770,9 +3090,9 @@ void runAnalogConverter(void){
 #define DC_HPF_C1_ON				0x1 << 0
 
 	//	/* HPF on for all channels */
-//	data = DC_HPF_C4_ON | DC_HPF_C3_ON | DC_HPF_C2_ON | DC_HPF_C1_ON;
-//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_DC_HPF_CAL,
-//									 1, &data, 1, 100);
+	//	data = DC_HPF_C4_ON | DC_HPF_C3_ON | DC_HPF_C2_ON | DC_HPF_C1_ON;
+	//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_DC_HPF_CAL,
+	//									 1, &data, 1, 100);
 
 #define ADAU1979_PLL_CONTROL		0x01
 #define PLL_LOCK_REG				0x1 << 7
@@ -3348,7 +3668,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void Error_Handler(void)
 {
 	/* USER CODE BEGIN Error_Handler_Debug */
-//	portENTER_CRITICAL();
+	//	portENTER_CRITICAL();
 	setLED_Green(0);
 	setLED_Blue(0);
 
@@ -3361,10 +3681,10 @@ void Error_Handler(void)
 	}
 
 
-//	portEXIT_CRITICAL();
+	//	portEXIT_CRITICAL();
 
-//	/* User can add his own implementation to report the HAL error return state */
-//	__disable_irq();
+	//	/* User can add his own implementation to report the HAL error return state */
+	//	__disable_irq();
 
 	/* USER CODE END Error_Handler_Debug */
 }
