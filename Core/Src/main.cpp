@@ -140,6 +140,8 @@ uint16_t audioSample[AUDIO_BUFFER_LEN] = {0};
 
 volatile uint8_t SAI_HALF_CALLBACK = 0;
 volatile uint8_t SAI_FULL_CALLBACK = 0;
+
+RTC_AlarmTypeDef sAlarm;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -553,9 +555,9 @@ int main(void)
 	defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
 	/* USER CODE BEGIN RTOS_THREADS */
-	mainSystemThreadId = osThreadNew(mainSystemTask, NULL, &mainSystemTask_attributes);
+//	mainSystemThreadId = osThreadNew(mainSystemTask, NULL, &mainSystemTask_attributes);
 
-//	micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
+	micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
 
 	//bmeTaskHandle = osThreadNew(BME_Task, NULL, &bmeTask_attributes);
 
@@ -896,6 +898,8 @@ static void MX_RTC_Init(void)
 	}
 	/* USER CODE BEGIN RTC_Init 2 */
 #endif
+    HAL_NVIC_SetPriority(RTC_Alarm_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(RTC_Alarm_IRQn);
 	/* USER CODE END RTC_Init 2 */
 
 }
@@ -1459,6 +1463,24 @@ void acousticSamplingTask(void *argument){
 
 	/* Start timer based on schedule */
 	//todo: audio capture based on calendar
+//	sAlarm
+//	HAL_RTC_DeactivateAlarm(RTC_HandleTypeDef *hrtc, uint32_t Alarm);
+//	HAL_RTC_SetAlarm_IT(hrtc, RTC_AlarmTypeDef *sAlarm, uint32_t Format)
+    // Configure the RTC Alarm A
+//    sAlarm.AlarmTime.Hours = 0x12;   // Set this to desired hours
+//    sAlarm.AlarmTime.Minutes = 0x30; // Set this to desired minutes
+//    sAlarm.AlarmTime.Seconds = 0x00; // Set this to desired seconds
+//    sAlarm.AlarmTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+//    sAlarm.AlarmTime.StoreOperation = RTC_STOREOPERATION_RESET;
+//    sAlarm.AlarmDateWeekDay = RTC_WEEKDAY_MONDAY; // Set the day of the week
+//    sAlarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_WEEKDAY; // Select the day of the week match
+//    sAlarm.AlarmMask = RTC_ALARMMASK_NONE; // Specify which fields are used for the alarm
+//
+//    sAlarm.Alarm = RTC_ALARM_A;      // Specify the alarm to use
+//
+//    if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BCD) != HAL_OK) {
+//        // Setting the Alarm Error
+//    }
 	/*** END Start timer based on schedule */
 
 	/* Audio capture start */
@@ -1833,8 +1855,6 @@ void grabInertialSample(float *pitch, float *roll, float *heading){
 	  if(mag_calibration.delimiter != 0xDEADBEEF){
 		  performMagCalibration(2000);
 	  }
-	  performMagCalibration(2000);
-
 
 //	  readFRAM(FRAM_MAG_CAL_WORD_ADDR, FRAM_MAG_CAL_BYTE_ADDR, mag_cal_vals, FRAM_MAG_CAL_SIZE);
 //	  writeFRAM(FRAM_MAG_CAL_WORD_ADDR, FRAM_MAG_CAL_BYTE_ADDR, mag_cal_vals, FRAM_MAG_CAL_SIZE);
@@ -1968,7 +1988,6 @@ void performMagCalibration(uint32_t numOfSamples){
 		txData = 0b10000000; // ODR 10Hz, temperature compensation,continous mode
 		status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_CFG_REG_A, 1, &txData, 1, 100);
 
-		  //todo: save mag cal vals to FRAM
 		writeFRAM(FRAM_MAG_CAL_WORD_ADDR, FRAM_MAG_CAL_BYTE_ADDR, (uint8_t *) &mag_calibration, FRAM_MAG_CAL_SIZE);
 }
 
@@ -2335,6 +2354,10 @@ void MX_SAI1_Init_Custom(SAI_HandleTypeDef &hsai_handle, uint8_t bit_resolution)
 	//	  }
 
 	//	  return status;
+}
+
+void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc){
+	osThreadFlagsSet(micThreadId, RTC_EVENT);
 }
 
 void mainSystemTask(void *argument){
