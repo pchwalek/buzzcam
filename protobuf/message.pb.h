@@ -194,6 +194,8 @@ typedef struct audio_config {
     bool has_audio_compression;
     audio_compression_t audio_compression;
     float estimated_record_time;
+    bool free_run_mode;
+    bool chirp_enable;
 } audio_config_t;
 
 typedef struct schedule_config {
@@ -340,7 +342,7 @@ extern "C" {
 #define BATTERY_STATE_INIT_DEFAULT               {0, 0, false, 0}
 #define SYSTEM_INFO_PACKET_INIT_DEFAULT          {0, false, SIMPLE_SENSOR_READING_INIT_DEFAULT, 0, false, SD_CARD_STATE_INIT_DEFAULT, false, MARK_STATE_INIT_DEFAULT, false, BATTERY_STATE_INIT_DEFAULT, false, DISCOVERED_DEVICES_INIT_DEFAULT}
 #define AUDIO_COMPRESSION_INIT_DEFAULT           {0, _COMPRESSION_TYPE_MIN, 0}
-#define AUDIO_CONFIG_INIT_DEFAULT                {0, 0, _MIC_SAMPLE_FREQ_MIN, _MIC_GAIN_MIN, _MIC_BIT_RESOLUTION_MIN, false, AUDIO_COMPRESSION_INIT_DEFAULT, 0}
+#define AUDIO_CONFIG_INIT_DEFAULT                {0, 0, _MIC_SAMPLE_FREQ_MIN, _MIC_GAIN_MIN, _MIC_BIT_RESOLUTION_MIN, false, AUDIO_COMPRESSION_INIT_DEFAULT, 0, 0, 0}
 #define SCHEDULE_CONFIG_INIT_DEFAULT             {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 #define LOW_POWER_CONFIG_INIT_DEFAULT            {0}
 #define CAMERA_CONTROL_INIT_DEFAULT              {0, 0, 0}
@@ -361,7 +363,7 @@ extern "C" {
 #define BATTERY_STATE_INIT_ZERO                  {0, 0, false, 0}
 #define SYSTEM_INFO_PACKET_INIT_ZERO             {0, false, SIMPLE_SENSOR_READING_INIT_ZERO, 0, false, SD_CARD_STATE_INIT_ZERO, false, MARK_STATE_INIT_ZERO, false, BATTERY_STATE_INIT_ZERO, false, DISCOVERED_DEVICES_INIT_ZERO}
 #define AUDIO_COMPRESSION_INIT_ZERO              {0, _COMPRESSION_TYPE_MIN, 0}
-#define AUDIO_CONFIG_INIT_ZERO                   {0, 0, _MIC_SAMPLE_FREQ_MIN, _MIC_GAIN_MIN, _MIC_BIT_RESOLUTION_MIN, false, AUDIO_COMPRESSION_INIT_ZERO, 0}
+#define AUDIO_CONFIG_INIT_ZERO                   {0, 0, _MIC_SAMPLE_FREQ_MIN, _MIC_GAIN_MIN, _MIC_BIT_RESOLUTION_MIN, false, AUDIO_COMPRESSION_INIT_ZERO, 0, 0, 0}
 #define SCHEDULE_CONFIG_INIT_ZERO                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 #define LOW_POWER_CONFIG_INIT_ZERO               {0}
 #define CAMERA_CONTROL_INIT_ZERO                 {0, 0, 0}
@@ -425,6 +427,8 @@ extern "C" {
 #define AUDIO_CONFIG_BIT_RESOLUTION_TAG          5
 #define AUDIO_CONFIG_AUDIO_COMPRESSION_TAG       6
 #define AUDIO_CONFIG_ESTIMATED_RECORD_TIME_TAG   7
+#define AUDIO_CONFIG_FREE_RUN_MODE_TAG           8
+#define AUDIO_CONFIG_CHIRP_ENABLE_TAG            9
 #define SCHEDULE_CONFIG_SUNDAY_TAG               1
 #define SCHEDULE_CONFIG_MONDAY_TAG               2
 #define SCHEDULE_CONFIG_TUESDAY_TAG              3
@@ -576,7 +580,9 @@ X(a, STATIC,   SINGULAR, UENUM,    sample_freq,       3) \
 X(a, STATIC,   SINGULAR, UENUM,    mic_gain,          4) \
 X(a, STATIC,   SINGULAR, UENUM,    bit_resolution,    5) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  audio_compression,   6) \
-X(a, STATIC,   SINGULAR, FLOAT,    estimated_record_time,   7)
+X(a, STATIC,   SINGULAR, FLOAT,    estimated_record_time,   7) \
+X(a, STATIC,   SINGULAR, BOOL,     free_run_mode,     8) \
+X(a, STATIC,   SINGULAR, BOOL,     chirp_enable,      9)
 #define AUDIO_CONFIG_CALLBACK NULL
 #define AUDIO_CONFIG_DEFAULT NULL
 #define audio_config_t_audio_compression_MSGTYPE audio_compression_t
@@ -704,10 +710,10 @@ extern const pb_msgdesc_t packet_t_msg;
 /* Maximum encoded size of messages (where known) */
 /* SensorReading_size depends on runtime parameters */
 #define AUDIO_COMPRESSION_SIZE                   10
-#define AUDIO_CONFIG_SIZE                        27
+#define AUDIO_CONFIG_SIZE                        31
 #define BATTERY_STATE_SIZE                       12
 #define CAMERA_CONTROL_SIZE                      6
-#define CONFIG_PACKET_SIZE                       588
+#define CONFIG_PACKET_SIZE                       592
 #define DISCOVERED_DEVICES_DEVICE_SIZE           11
 #define DISCOVERED_DEVICES_SIZE                  266
 #define LOW_POWER_CONFIG_SIZE                    2
@@ -715,7 +721,7 @@ extern const pb_msgdesc_t packet_t_msg;
 #define MARK_STATE_SIZE                          17
 #define NETWORK_STATE_SIZE                       128
 #define PACKET_HEADER_SIZE                       23
-#define PACKET_SIZE                              616
+#define PACKET_SIZE                              620
 #define SCHEDULE_CONFIG_SIZE                     38
 #define SD_CARD_STATE_SIZE                       24
 #define SENSOR_CONFIG_SIZE                       12

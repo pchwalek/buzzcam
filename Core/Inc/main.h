@@ -37,6 +37,8 @@ extern "C" {
 /* USER CODE BEGIN Includes */
 #include "message.pb.h"
 #include "cmsis_os2.h"
+
+#include "projdefs.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -60,6 +62,8 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
+void SystemClock_Config(void);
+
 void triggerMark(void *argument);
 void mainSystemTask(void *argument);
 //void micTask(void *argument);
@@ -166,6 +170,8 @@ extern SPI_HandleTypeDef hspi1;
 #define CONFIG_UPDATED_EVENT  0x00000001
 #define TERMINATE_EVENT  	  0x00000002
 #define COMPLETE_EVENT  	  0x00000004
+#define RTC_EVENT		  	  0x00000008
+#define CHIRP_EVENT		  	  0x00000010
 
 #define GRAB_SAMPLE_BIT							0x0100
 #define TERMINATE_THREAD_BIT					0x0200

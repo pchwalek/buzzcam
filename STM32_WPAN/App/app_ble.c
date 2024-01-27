@@ -210,14 +210,14 @@ static const uint8_t a_MBdAddr[BD_ADDR_SIZE_LOCAL] =
 static uint8_t a_BdAddrUdn[BD_ADDR_SIZE_LOCAL];
 
 /**
- *   Identity root key used to derive LTK and CSRK
+ *   Identity root key used to derive IRK and DHK(Legacy)
  */
-static const uint8_t a_BLE_CfgIrValue[16] = CFG_BLE_IRK;
+static const uint8_t a_BLE_CfgIrValue[16] = CFG_BLE_IR;
 
 /**
- * Encryption root key used to derive LTK and CSRK
+ * Encryption root key used to derive LTK(Legacy) and CSRK
  */
-static const uint8_t a_BLE_CfgErValue[16] = CFG_BLE_ERK;
+static const uint8_t a_BLE_CfgErValue[16] = CFG_BLE_ER;
 
 /**
  * These are the two tags used to manage a power failure during OTA
@@ -337,7 +337,6 @@ static void BLE_StatusNot(HCI_TL_CmdStatus_t Status);
 static void Ble_Tl_Init(void);
 static void Ble_Hci_Gap_Gatt_Init(void);
 static const uint8_t* BleGetBdAddress(void);
-//static void Adv_Request(APP_BLE_ConnStatus_t NewStatus);
 static void Add_Advertisment_Service_UUID(uint16_t servUUID);
 static void Adv_Mgr(void);
 static void AdvUpdateProcess(void *argument);
@@ -375,8 +374,8 @@ void APP_BLE_Init(void)
      CFG_BLE_PREPARE_WRITE_LIST_SIZE,
      CFG_BLE_MBLOCK_COUNT,
      CFG_BLE_MAX_ATT_MTU,
-     CFG_BLE_SLAVE_SCA,
-     CFG_BLE_MASTER_SCA,
+     CFG_BLE_PERIPHERAL_SCA,
+     CFG_BLE_CENTRAL_SCA,
      CFG_BLE_LS_SOURCE,
      CFG_BLE_MAX_CONN_EVENT_LENGTH,
      CFG_BLE_HSE_STARTUP_TIME,
@@ -1038,7 +1037,7 @@ static void Ble_Hci_Gap_Gatt_Init(void)
 #endif /* CFG_BLE_ADDRESS_TYPE != GAP_PUBLIC_ADDR */
 
   /**
-   * Write Identity root key used to derive LTK and CSRK
+   * Write Identity root key used to derive IRK and DHK(Legacy)
    */
   ret = aci_hal_write_config_data(CONFIG_DATA_IR_OFFSET, CONFIG_DATA_IR_LEN, (uint8_t*)a_BLE_CfgIrValue);
   if (ret != BLE_STATUS_SUCCESS)
@@ -1135,7 +1134,7 @@ static void Ble_Hci_Gap_Gatt_Init(void)
 
   if (role > 0)
   {
-//    const char *name = "Buzz";
+    const char *name = "BUZZC";
     ret = aci_gap_init(role,
                        CFG_PRIVACY,
                        APPBLE_GAP_DEVICE_NAME_LENGTH,
@@ -1152,7 +1151,7 @@ static void Ble_Hci_Gap_Gatt_Init(void)
       APP_DBG_MSG("  Success: aci_gap_init command\n");
     }
 
-    ret = aci_gatt_update_char_value(gap_service_handle, gap_dev_name_char_handle, 0, strlen(a_LocalName), (uint8_t *) a_LocalName);
+    ret = aci_gatt_update_char_value(gap_service_handle, gap_dev_name_char_handle, 0, strlen(name), (uint8_t *) name);
     if (ret != BLE_STATUS_SUCCESS)
     {
       BLE_DBG_SVCCTL_MSG("  Fail   : aci_gatt_update_char_value - Device Name\n");
@@ -1275,7 +1274,7 @@ void Adv_Request(APP_BLE_ConnStatus_t NewStatus)
    */
   HW_TS_Stop(BleApplicationContext.Advertising_mgr_timer_Id);
 
-  if (( (NewStatus == APP_BLE_LP_ADV || NewStatus == APP_BLE_CAM_LP_ADV))
+  if ((NewStatus == APP_BLE_LP_ADV)
       && ((BleApplicationContext.Device_Connection_Status == APP_BLE_FAST_ADV)
           || (BleApplicationContext.Device_Connection_Status == APP_BLE_LP_ADV)))
   {
@@ -1291,18 +1290,7 @@ void Adv_Request(APP_BLE_ConnStatus_t NewStatus)
     }
   }
 
-  if(NewStatus == APP_BLE_LP_ADV){
-	ret = aci_gap_update_adv_data(sizeof(a_ManufData), (uint8_t*) a_ManufData);
-  }
-
-  if(NewStatus != APP_BLE_CAM_LP_ADV){
-	  BleApplicationContext.Device_Connection_Status = NewStatus;
-  }else if(NewStatus == APP_BLE_LP_ADV){
-	  BleApplicationContext.Device_Connection_Status = APP_BLE_LP_ADV;
-  }
-
-
-
+  BleApplicationContext.Device_Connection_Status = NewStatus;
   /* Start Fast or Low Power Advertising */
   ret = aci_gap_set_discoverable(ADV_IND,
                                  Min_Inter,
@@ -1324,41 +1312,8 @@ void Adv_Request(APP_BLE_ConnStatus_t NewStatus)
     APP_DBG_MSG("==>> aci_gap_set_discoverable - Success\n");
   }
 
-
-
   /* Update Advertising data */
-
-  if(NewStatus == APP_BLE_CAM_LP_ADV){
-	  aci_gap_delete_ad_type(AD_TYPE_16_BIT_SERV_UUID);
-		aci_gap_delete_ad_type(AD_TYPE_16_BIT_SERV_UUID_CMPLT_LIST);
-		aci_gap_delete_ad_type(AD_TYPE_32_BIT_SERV_UUID);
-		aci_gap_delete_ad_type(AD_TYPE_32_BIT_SERV_UUID_CMPLT_LIST);
-		aci_gap_delete_ad_type(AD_TYPE_128_BIT_SERV_UUID);
-		aci_gap_delete_ad_type(AD_TYPE_128_BIT_SERV_UUID_CMPLT_LIST);
-		aci_gap_delete_ad_type(AD_TYPE_SHORTENED_LOCAL_NAME);
-		aci_gap_delete_ad_type(AD_TYPE_COMPLETE_LOCAL_NAME);
-		aci_gap_delete_ad_type(AD_TYPE_TX_POWER_LEVEL);
-		aci_gap_delete_ad_type(AD_TYPE_CLASS_OF_DEVICE);
-		aci_gap_delete_ad_type(AD_TYPE_SEC_MGR_TK_VALUE);
-		aci_gap_delete_ad_type(AD_TYPE_SEC_MGR_OOB_FLAGS);
-		aci_gap_delete_ad_type(AD_TYPE_PERIPHERAL_CONN_INTERVAL);
-		aci_gap_delete_ad_type(AD_TYPE_SERV_SOLICIT_16_BIT_UUID_LIST);
-		aci_gap_delete_ad_type(AD_TYPE_SERV_SOLICIT_128_BIT_UUID_LIST);
-		aci_gap_delete_ad_type(AD_TYPE_SERVICE_DATA);
-		aci_gap_delete_ad_type(AD_TYPE_APPEARANCE);
-		aci_gap_delete_ad_type(AD_TYPE_ADVERTISING_INTERVAL);
-		aci_gap_delete_ad_type(AD_TYPE_LE_ROLE);
-		aci_gap_delete_ad_type(AD_TYPE_SERV_SOLICIT_32_BIT_UUID_LIST);
-	  aci_gap_delete_ad_type(AD_TYPE_URI);
-
-		ret = aci_gap_update_adv_data(sizeof(a_ManufDataCameraWakeup), (uint8_t*) a_ManufDataCameraWakeup);
-
-  }else{
-	  ret = aci_gap_update_adv_data(sizeof(a_ManufData), (uint8_t*) a_ManufData);
-
-  }
-
-
+  ret = aci_gap_update_adv_data(sizeof(a_ManufData), (uint8_t*) a_ManufData);
   if (ret != BLE_STATUS_SUCCESS)
   {
     if (NewStatus == APP_BLE_FAST_ADV)

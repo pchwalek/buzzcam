@@ -15,11 +15,13 @@
   *
   ******************************************************************************
   */
+
 /* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __APP_FATFS_H
 #define __APP_FATFS_H
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -68,7 +70,9 @@ extern FATFS USERFatFs;    /* File system object for USER logical drive */
 extern FIL USERFile;       /* File  object for USER */
 extern char USERPath[4];   /* USER logical drive path */
 
+#endif /*__APP_FATFS_H */
+
+
 #ifdef __cplusplus
 }
 #endif
-#endif /*__APP_FATFS_H */

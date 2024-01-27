@@ -179,6 +179,8 @@ message AudioConfig{
     MicBitResolution bit_resolution = 5;
     AudioCompression audio_compression = 6;
     float estimated_record_time = 7;
+    bool free_run_mode = 8;
+    bool chirp_enable = 9;
 }
 
 message ScheduleConfig{
