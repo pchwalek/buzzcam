@@ -1867,7 +1867,7 @@ void toneSweep(uint8_t reverse){
 
 	uint16_t index;
 	if(reverse){
-		index = 1;
+		index = 0;
 	}else{
 		index = 500;
 	}
