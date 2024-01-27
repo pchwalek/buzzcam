@@ -231,6 +231,7 @@ void grabOrientation(char *folder_name);
 
 void chirpTask(void *argument);
 void chirp_timer_callback(void *argument);
+void toneSweep(uint8_t reverse);
 /* USER CODE END 0 */
 
 /**
@@ -541,6 +542,18 @@ int main(void)
   /* USER CODE BEGIN RTOS_MUTEX */
 	/* add mutexes, ... */
 	messageI2C1_LockHandle = osMutexNew(&messageI2C1_Lock_attributes);
+
+
+	osSemaphoreDef(myBinarySem);
+
+	messageSPI1_LockBinarySemId = osSemaphoreNew(1, 0, &messageSPI1_Lock_attributes);
+
+//	messageSPI1_LockBinarySemId = osSemaphoreCreate(osSemaphore(myBinarySem), 1);
+//	messageSPI1_LockHandle = osMutexNew(&messageSPI1_Lock_attributes);
+//	osMutexAcquire(messageSPI1_LockHandle, osWaitForever);
+
+//	osSemaphoreWait(messageSPI1_LockBinarySemId, osWaitForever);
+
   /* USER CODE END RTOS_MUTEX */
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
@@ -1341,6 +1354,36 @@ void writeFRAM(uint8_t word_addr, uint8_t byte_addr, uint8_t *data, uint32_t siz
 		status = HAL_I2C_Mem_Write(&hi2c3, word_addr, byte_addr, 1, data, size, 1000);
 }
 
+// Callback function for SPI transmit complete
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+    if (hspi->Instance == SPI1)
+    {
+        // Code to execute after transmit is complete
+    	osSemaphoreRelease(messageSPI1_LockBinarySemId);
+
+    }
+}
+
+// Callback function for SPI receive complete
+void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+    if (hspi->Instance == SPI1)
+    {
+        // Code to execute after receive is complete
+    	osSemaphoreRelease(messageSPI1_LockBinarySemId);
+    }
+}
+
+void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+    if (hspi->Instance == SPI1)
+    {
+        // Code to execute after receive is complete
+    	osSemaphoreRelease(messageSPI1_LockBinarySemId);
+    }
+}
+
 void enable_SD_Card_1(void){
 	HAL_GPIO_WritePin(EN_SD_REG_GPIO_Port, EN_SD_REG_Pin, GPIO_PIN_SET);
 }
@@ -1776,7 +1819,7 @@ void chirpTask(void *argument){
 
 	osDelay(5000); // initial delay
 
-	uint32_t counter;
+	uint32_t counter = 0;
 
 	osTimerId_t periodicTimerHandle = osTimerNew(chirp_timer_callback, osTimerPeriodic, NULL, NULL);
 
@@ -1784,7 +1827,8 @@ void chirpTask(void *argument){
 		Error_Handler();
 	}
 
-	osTimerStart(periodicTimerHandle,300000);
+//	osTimerStart(periodicTimerHandle,300000);
+	osTimerStart(periodicTimerHandle,60000); // 1hz
 	osThreadFlagsSet(chirpTaskHandle, CHIRP_EVENT);
 
 	uint32_t flags;
@@ -1793,20 +1837,59 @@ void chirpTask(void *argument){
 		flags = osThreadFlagsWait(TERMINATE_EVENT | CHIRP_EVENT, osFlagsWaitAny, osWaitForever);
 
 		if((flags | CHIRP_EVENT) == CHIRP_EVENT){
-			if((counter % 3) == 0){
-				tone(7000,600);
-				osDelay(300);
-				tone(7000,300);
-				osDelay(300);
-				tone(7000,600);
-			}else{
+			if((counter % 15) == 0){
+//				tone(7000,600);
+//				osDelay(300);
+//				tone(7000,300);
+//				osDelay(300);
+//				tone(7000,600);
+				toneSweep(1);
+				toneSweep(0);
+				toneSweep(1);
+				toneSweep(0);
+				toneSweep(1);
+				toneSweep(0);
+			}else if((counter % 5) == 0){
 				tone(7000,1000);
 			}
+			counter++;
+		}
+
+		if((flags | TERMINATE_EVENT) == TERMINATE_EVENT){
+			vTaskDelete( NULL );
 		}
 	}
+}
 
-	if((flags | TERMINATE_EVENT) == TERMINATE_EVENT){
-		vTaskDelete( NULL );
+void toneSweep(uint8_t reverse){
+	HAL_TIM_Base_Start(&htim16);
+	HAL_TIM_PWM_Start(&htim16, TIM_CHANNEL_1);
+
+	uint16_t index;
+	if(reverse){
+		index = 1;
+	}else{
+		index = 500;
+	}
+	while(1){
+
+		htim16.Instance->ARR = index;
+		htim16.Instance->CCR1 = index >> 1;
+
+		osDelay(5);
+
+		if(reverse){
+			index+=5;
+		}else{
+			index-=5;
+		}
+
+		if((index == 500) || (index==0)) {
+			/* stop buzzer pwm */
+			HAL_TIM_PWM_Stop(&htim16, TIM_CHANNEL_1);
+			osDelay(10);
+			break;
+		}
 	}
 }
 

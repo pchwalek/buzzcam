@@ -83,6 +83,13 @@ const osThreadAttr_t bmeTask_attributes = { .name = "bmeTask", .attr_bits =
 
 osMutexId_t messageI2C1_LockHandle;
 const osMutexAttr_t messageI2C1_Lock_attributes = { .name = "messageI2C1_Lock" };
+
+//osMutexId_t messageSPI1_LockHandle;
+//const osMutexAttr_t messageSPI1_Lock_attributes = { .name = "messageSPI1_Lock" };
+
+const osSemaphoreAttr_t messageSPI1_Lock_attributes = { .name = "messageSPI1_Lock" };
+
+osSemaphoreId_t messageSPI1_LockBinarySemId;
 /* USER CODE END Variables */
 
 /* Private function prototypes -----------------------------------------------*/

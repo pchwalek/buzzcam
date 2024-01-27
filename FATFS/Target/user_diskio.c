@@ -83,9 +83,10 @@ DSTATUS USER_initialize (
 {
   /* USER CODE BEGIN INIT */
 	DRESULT rslt = 0;
-	taskENTER_CRITICAL();
+//	taskENTER_CRITICAL();
 	rslt = USER_SPI_initialize(pdrv); //ADD THIS LINE
-    taskEXIT_CRITICAL();
+//    taskEXIT_CRITICAL();
+
     return rslt;
   /* USER CODE END INIT */
 }
@@ -101,9 +102,9 @@ DSTATUS USER_status (
 {
   /* USER CODE BEGIN STATUS */
 	DRESULT rslt = 0;
-	taskENTER_CRITICAL();
+//	taskENTER_CRITICAL();
 	rslt = USER_SPI_status(pdrv); //ADD THIS LINE
-    taskEXIT_CRITICAL();
+//    taskEXIT_CRITICAL();
     return rslt;
   /* USER CODE END STATUS */
 }
@@ -125,9 +126,9 @@ DRESULT USER_read (
 {
   /* USER CODE BEGIN READ */
 	DRESULT rslt = 0;
-	taskENTER_CRITICAL();
+//	taskENTER_CRITICAL();
 	rslt = USER_SPI_read(pdrv, buff, sector, count); //ADD THIS LINE
-    taskEXIT_CRITICAL();
+//    taskEXIT_CRITICAL();
     return rslt;
   /* USER CODE END READ */
 }
@@ -151,9 +152,9 @@ DRESULT USER_write (
   /* USER CODE BEGIN WRITE */
   /* USER CODE HERE */
 	DRESULT rslt = 0;
-	taskENTER_CRITICAL();
+//	taskENTER_CRITICAL();
 	rslt = USER_SPI_write(pdrv, buff, sector, count); //ADD THIS LINE
-    taskEXIT_CRITICAL();
+//    taskEXIT_CRITICAL();
     return rslt;
   /* USER CODE END WRITE */
 }
@@ -175,9 +176,9 @@ DRESULT USER_ioctl (
 {
   /* USER CODE BEGIN IOCTL */
 	DRESULT rslt = 0;
-	taskENTER_CRITICAL();
+//	taskENTER_CRITICAL();
 	rslt = USER_SPI_ioctl(pdrv, cmd, buff); //ADD THIS LINE
-    taskEXIT_CRITICAL();
+//    taskEXIT_CRITICAL();
     return rslt;
   /* USER CODE END IOCTL */
 }

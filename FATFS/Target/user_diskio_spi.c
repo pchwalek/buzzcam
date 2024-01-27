@@ -111,7 +111,14 @@ BYTE xchg_spi (
 //		osDelay(1);
 //		taskENTER_CRITICAL();
 //	}
-    HAL_SPI_TransmitReceive(&SD_SPI_HANDLE, &dat, &rxDat, 1, 50);
+
+	HAL_StatusTypeDef ret;
+    ret = HAL_SPI_TransmitReceive_DMA(&SD_SPI_HANDLE, &dat, &rxDat, 1);
+    if(osSemaphoreAcquire(messageSPI1_LockBinarySemId, 500) != osOK){
+    	Error_Handler();
+    }
+
+//    HAL_SPI_TransmitReceive(&SD_SPI_HANDLE, &dat, &rxDat, 1, 50);
 //    HAL_SPI_TransmitReceive_IT(&SD_SPI_HANDLE, &dat, &rxDat, 1);
     return rxDat;
 }
@@ -143,7 +150,11 @@ void xmit_spi_multi (
 //		osDelay(1);
 //		taskENTER_CRITICAL();
 //	}
-	HAL_SPI_Transmit(&SD_SPI_HANDLE, buff, btx, HAL_MAX_DELAY);
+    HAL_SPI_Transmit_DMA(&SD_SPI_HANDLE, buff, btx);
+    if(osSemaphoreAcquire(messageSPI1_LockBinarySemId, 500) != osOK){
+    	Error_Handler();
+    }
+//	HAL_SPI_Transmit(&SD_SPI_HANDLE, buff, btx, HAL_MAX_DELAY);
 //	HAL_SPI_Transmit_IT(&SD_SPI_HANDLE, buff, btx);
 }
 #endif

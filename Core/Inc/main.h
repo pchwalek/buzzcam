@@ -185,6 +185,8 @@ extern size_t message_length;
 extern bool status;
 
 extern osMutexId_t messageI2C1_LockHandle;
+//extern osMutexId_t messageSPI1_LockHandle;
+extern osSemaphoreId_t messageSPI1_LockBinarySemId;
 
 extern osThreadId_t markThreadId;
 extern osThreadId_t configThreadId;
@@ -200,6 +202,7 @@ extern const osThreadAttr_t micTask_attributes;
 extern const osThreadAttr_t sampleTask_attributes;
 extern const osThreadAttr_t micTask_attributes;
 extern const osMutexAttr_t messageI2C1_Lock_attributes;
+extern const osSemaphoreAttr_t messageSPI1_Lock_attributes;
 extern const osThreadAttr_t bmeTask_attributes;
 
 void setLED_Blue(uint32_t intensity);
