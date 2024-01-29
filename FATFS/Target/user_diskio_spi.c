@@ -113,6 +113,9 @@ BYTE xchg_spi (
 //	}
 
 	HAL_StatusTypeDef ret;
+	while(osSemaphoreGetCount(messageSPI1_LockBinarySemId) != 0){
+		osDelay(1);
+	}
     ret = HAL_SPI_TransmitReceive_DMA(&SD_SPI_HANDLE, &dat, &rxDat, 1);
     if(osSemaphoreAcquire(messageSPI1_LockBinarySemId, 500) != osOK){
     	Error_Handler();
@@ -150,6 +153,9 @@ void xmit_spi_multi (
 //		osDelay(1);
 //		taskENTER_CRITICAL();
 //	}
+	while(osSemaphoreGetCount(messageSPI1_LockBinarySemId) != 0){
+		osDelay(1);
+	}
     HAL_SPI_Transmit_DMA(&SD_SPI_HANDLE, buff, btx);
     if(osSemaphoreAcquire(messageSPI1_LockBinarySemId, 500) != osOK){
     	Error_Handler();

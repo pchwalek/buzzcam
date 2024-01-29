@@ -284,7 +284,7 @@ int main(void)
 	configPacket.payload.config_packet.audio_config.estimated_record_time=12345678; //placeholder
 	configPacket.payload.config_packet.audio_config.sample_freq=MIC_SAMPLE_FREQ_SAMPLE_RATE_48000;
 	configPacket.payload.config_packet.audio_config.free_run_mode=true;
-	configPacket.payload.config_packet.audio_config.chirp_enable=true;
+//	configPacket.payload.config_packet.audio_config.chirp_enable=true;
 
 	configPacket.payload.config_packet.has_camera_control=true;
 	configPacket.payload.config_packet.camera_control.capture=false;
@@ -544,7 +544,7 @@ int main(void)
 	messageI2C1_LockHandle = osMutexNew(&messageI2C1_Lock_attributes);
 
 
-	osSemaphoreDef(myBinarySem);
+//	osSemaphoreDef(myBinarySem);
 
 	messageSPI1_LockBinarySemId = osSemaphoreNew(1, 0, &messageSPI1_Lock_attributes);
 
@@ -575,9 +575,9 @@ int main(void)
   /* USER CODE BEGIN RTOS_THREADS */
 //	mainSystemThreadId = osThreadNew(mainSystemTask, NULL, &mainSystemTask_attributes);
 
-	micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
+//	micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
 
-	//bmeTaskHandle = osThreadNew(BME_Task, NULL, &bmeTask_attributes);
+//	bmeTaskHandle = osThreadNew(BME_Task, NULL, &bmeTask_attributes);
 
   /* USER CODE END RTOS_THREADS */
 
@@ -843,7 +843,7 @@ static void MX_RTC_Init(void)
 {
 
   /* USER CODE BEGIN RTC_Init 0 */
-
+#ifndef RTC_NO_REINIT
   /* USER CODE END RTC_Init 0 */
 
   RTC_TimeTypeDef sTime = {0};
@@ -851,7 +851,7 @@ static void MX_RTC_Init(void)
   RTC_AlarmTypeDef sAlarm = {0};
 
   /* USER CODE BEGIN RTC_Init 1 */
-
+#endif
   /* USER CODE END RTC_Init 1 */
 
   /** Initialize RTC Only
@@ -1507,14 +1507,14 @@ void acousticSamplingTask(void *argument){
 
 	/* Audio capture start */
 
-	char folder_name[20];
+	char folder_name[20] = {0};
 
 	// create folder on mounted SD card
 	set_folder_from_time(folder_name);
 
+//	osDelay(1000);
 
 	grabOrientation(folder_name);
-
 
 	if(configPacket.payload.config_packet.audio_config.chirp_enable){
 		chirpTaskHandle = osThreadNew(chirpTask, NULL, &defaultTask_attributes);
@@ -1545,10 +1545,9 @@ void set_folder_from_time(char* folder_name){
 	FILINFO fno;
 	FRESULT res;
 
-	res = f_mount(&SDFatFs, "", 1);
-	if(res != FR_OK){
-		Error_Handler();
-	}else{
+//	if(res != FR_OK){
+//		Error_Handler();
+//	}else{
 		res = f_mkdir(folder_name);
 //		if(FR_OK == f_opendir(&dir, folder_name)){
 //			f_chdir(folder_name);
@@ -1572,7 +1571,7 @@ void set_folder_from_time(char* folder_name){
 		//		}else Error_Handler();
 
 		return;
-	}
+//	}
 }
 
 enum regAddr
@@ -1743,7 +1742,7 @@ typedef enum {
 	LIS2MDL_OUTZ_H_REG = 0x6D,
 } lis2mdl_register_t;
 
-FRESULT check_file_exists(const char* path) {
+uint8_t check_file_exists(const char* path) {
     FILINFO fno;
 
     // Check for the existence of a file
@@ -1876,12 +1875,12 @@ void toneSweep(uint8_t reverse){
 		htim16.Instance->ARR = index;
 		htim16.Instance->CCR1 = index >> 1;
 
-		osDelay(5);
+		osDelay(10);
 
 		if(reverse){
-			index+=5;
+			index+=10;
 		}else{
-			index-=5;
+			index-=10;
 		}
 
 		if((index == 500) || (index==0)) {
@@ -1929,7 +1928,7 @@ void grabInertialSample(float *pitch, float *roll, float *heading){
 	int16_t x_mag_offset, y_mag_offset, z_mag_offset;
 
 
-	HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET);
+//	HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET);
 	osDelay(100);
 	//  status = HAL_I2C_Master_Receive(&hi2c1, ACC_ADDR, data, 1, 1000);
 	status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR,  (enum regAddr) WHO_AM_I, 1,data, 1, 100);
@@ -2085,7 +2084,7 @@ void grabInertialSample(float *pitch, float *roll, float *heading){
 	}
 
 	// shut off accelerometer and magnetometer
-	HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_RESET);
+//	HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_RESET);
 
 	y_mag = -y_mag; //flip y axis to correct for flipped IC
 	y_acc = -y_acc; //flip y axis to correct for flipped IC
@@ -2587,125 +2586,136 @@ void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc){
 void mainSystemTask(void *argument){
 	uint32_t flags = 0;
 
+	FRESULT res;
+
+	res = f_mount(&SDFatFs, "", 1);
+
 	/* read current config from SD card */
 
 	/* initiate system */
-	if(configPacket.payload.config_packet.has_audio_config & configPacket.payload.config_packet.enable_recording){
-		osThreadState_t state = osThreadGetState(sampleThreadId);
-		if( (state != osThreadReady) || (state != osThreadRunning) || (state != osThreadInactive) || (state != osThreadBlocked) ){
-			sampleThreadId = osThreadNew(sampleTask, &configPacket.payload.config_packet.audio_config, &sampleTask_attributes);
-		}
-	}
+//	if(configPacket.payload.config_packet.has_audio_config & configPacket.payload.config_packet.enable_recording){
+//		osThreadState_t state = osThreadGetState(sampleThreadId);
+//		if( (state != osThreadReady) || (state != osThreadRunning) || (state != osThreadInactive) || (state != osThreadBlocked) ){
+//			sampleThreadId = osThreadNew(sampleTask, &configPacket.payload.config_packet.audio_config, &sampleTask_attributes);
+//		}
+//	}
 
-	while(1){
-		tBleStatus ret = BLE_STATUS_INVALID_PARAMS;
+	//	mainSystemThreadId = osThreadNew(mainSystemTask, NULL, &mainSystemTask_attributes);
 
-		float pitch, roll, heading;
-		grabInertialSample(&pitch, &roll, &heading);
+		micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
 
-		while(1){
-			for(int i = 0; i<400;i+=5){
-				setLED_Red(i);
-				osDelay(25);
-			}
-			for(int i = 400; i>=0;i-=5){
-				setLED_Red(i);
-				osDelay(25);
-			}
+		bmeTaskHandle = osThreadNew(BME_Task, NULL, &bmeTask_attributes);
 
-			for(int i = 0; i<400;i+=5){
-				setLED_Green(i);
-				osDelay(25);
-			}
-			for(int i = 400; i>=0;i-=5){
-				setLED_Green(i);
-				osDelay(25);
-			}
-
-			for(int i = 0; i<400;i+=5){
-				setLED_Blue(i);
-				osDelay(25);
-			}
-			for(int i = 400; i>=0;i-=5){
-				setLED_Blue(i);
-				osDelay(25);
-			}
-
-			//			setLED_Green(200);
-			//			osDelay(500);
-			//			setLED_Green(0);
-			//			osDelay(500);
-			//
-			//			setLED_Blue(200);
-			//			osDelay(500);
-			//			setLED_Blue(0);
-			//			osDelay(500);
-
-			//			 uint16_t index = 10;
-			//			  HAL_TIM_Base_Start(&htim16);
-			//			  HAL_TIM_PWM_Start(&htim16, TIM_CHANNEL_1);
-			//
-			//			  while(1){
-			//
-			//			  htim16.Instance->ARR = index;
-			//			  htim16.Instance->CCR1 = index >> 1;
-			//
-			//			  osDelay(5);
-			//
-			//				index+=2;
-			//				if(index == 500) {
-			//					/* stop buzzer pwm */
-			//					HAL_TIM_PWM_Stop(&htim16, TIM_CHANNEL_1);
-			//					osDelay(10);
-			//					break;
-			//				}
-			//			  }
-
-
-			//				osDelay(5000);
-
-
-			//			deactivateCameraMode();
-			////			activateCameraMode();
-			//			osDelay(30000);
-			//			DTS_CamCtrl(POWER_LONG_PRESS);
-			//			osDelay(30000);
-			//			DTS_CamCtrl(WAKEUP_CAMERAS);
-			//			osDelay(60000);
-			//			Adv_Request(APP_BLE_LP_ADV);
-			//			osDelay(10000);
-			//			DTS_CamCtrl(SCREEN_TOGGLE);
-			//			osDelay(30000);
-			//			DTS_CamCtrl(SHUTTER);
-			//			osDelay(10000);
-			//			DTS_CamCtrl(SCREEN_TOGGLE);
-			//			osDelay(60000);
-			//			DTS_CamCtrl(SHUTTER);
-			//			osDelay(30000);
-			//			deactivateCameraMode();
-			//			osDelay(30000);
-			//
-			////			Adv_Request(APP_BLE_LP_ADV);
-			////			ret = aci_gap_update_adv_data(sizeof(a_ManufData), (uint8_t*) a_ManufData);
-		}
-
-		/* wait for an event to occur */
-		flags = osThreadFlagsWait(CONFIG_UPDATED_EVENT, osFlagsWaitAny, osWaitForever);
-		if(flags & CONFIG_UPDATED_EVENT){
-			/* system config has been updated. Restart system with new config */
-
-			/* turn off active threads and wait until finished */
-			// alert threads via flags
-			osThreadFlagsSet(sampleThreadId, TERMINATE_EVENT);
-
-			// wait for threads to call osThreadExit()
-			while(osThreadTerminated != osThreadGetState(sampleThreadId)){
-				osDelay(100);
-			}
-			/* reinitiate system */
-
-		}
-	}
+//	while(1){
+//		osDelay(10);
+////		tBleStatus ret = BLE_STATUS_INVALID_PARAMS;
+////
+////		float pitch, roll, heading;
+////		grabInertialSample(&pitch, &roll, &heading);
+////
+////		while(1){
+////			for(int i = 0; i<400;i+=5){
+////				setLED_Red(i);
+////				osDelay(25);
+////			}
+////			for(int i = 400; i>=0;i-=5){
+////				setLED_Red(i);
+////				osDelay(25);
+////			}
+////
+////			for(int i = 0; i<400;i+=5){
+////				setLED_Green(i);
+////				osDelay(25);
+////			}
+////			for(int i = 400; i>=0;i-=5){
+////				setLED_Green(i);
+////				osDelay(25);
+////			}
+////
+////			for(int i = 0; i<400;i+=5){
+////				setLED_Blue(i);
+////				osDelay(25);
+////			}
+////			for(int i = 400; i>=0;i-=5){
+////				setLED_Blue(i);
+////				osDelay(25);
+////			}
+//
+//			//			setLED_Green(200);
+//			//			osDelay(500);
+//			//			setLED_Green(0);
+//			//			osDelay(500);
+//			//
+//			//			setLED_Blue(200);
+//			//			osDelay(500);
+//			//			setLED_Blue(0);
+//			//			osDelay(500);
+//
+//			//			 uint16_t index = 10;
+//			//			  HAL_TIM_Base_Start(&htim16);
+//			//			  HAL_TIM_PWM_Start(&htim16, TIM_CHANNEL_1);
+//			//
+//			//			  while(1){
+//			//
+//			//			  htim16.Instance->ARR = index;
+//			//			  htim16.Instance->CCR1 = index >> 1;
+//			//
+//			//			  osDelay(5);
+//			//
+//			//				index+=2;
+//			//				if(index == 500) {
+//			//					/* stop buzzer pwm */
+//			//					HAL_TIM_PWM_Stop(&htim16, TIM_CHANNEL_1);
+//			//					osDelay(10);
+//			//					break;
+//			//				}
+//			//			  }
+//
+//
+//			//				osDelay(5000);
+//
+//
+//			//			deactivateCameraMode();
+//			////			activateCameraMode();
+//			//			osDelay(30000);
+//			//			DTS_CamCtrl(POWER_LONG_PRESS);
+//			//			osDelay(30000);
+//			//			DTS_CamCtrl(WAKEUP_CAMERAS);
+//			//			osDelay(60000);
+//			//			Adv_Request(APP_BLE_LP_ADV);
+//			//			osDelay(10000);
+//			//			DTS_CamCtrl(SCREEN_TOGGLE);
+//			//			osDelay(30000);
+//			//			DTS_CamCtrl(SHUTTER);
+//			//			osDelay(10000);
+//			//			DTS_CamCtrl(SCREEN_TOGGLE);
+//			//			osDelay(60000);
+//			//			DTS_CamCtrl(SHUTTER);
+//			//			osDelay(30000);
+//			//			deactivateCameraMode();
+//			//			osDelay(30000);
+//			//
+//			////			Adv_Request(APP_BLE_LP_ADV);
+//			////			ret = aci_gap_update_adv_data(sizeof(a_ManufData), (uint8_t*) a_ManufData);
+//		}
+//
+//		/* wait for an event to occur */
+//		flags = osThreadFlagsWait(CONFIG_UPDATED_EVENT, osFlagsWaitAny, osWaitForever);
+//		if(flags & CONFIG_UPDATED_EVENT){
+//			/* system config has been updated. Restart system with new config */
+//
+//			/* turn off active threads and wait until finished */
+//			// alert threads via flags
+//			osThreadFlagsSet(sampleThreadId, TERMINATE_EVENT);
+//
+//			// wait for threads to call osThreadExit()
+//			while(osThreadTerminated != osThreadGetState(sampleThreadId)){
+//				osDelay(100);
+//			}
+//			/* reinitiate system */
+//
+//		}
+//	}
 
 	while(1){
 		osDelay(10);

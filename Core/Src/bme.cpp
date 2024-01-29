@@ -17,6 +17,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "math.h"
+#include "app_fatfs.h"
 //#include "fram.h"
 
 //#include "config/FieldAir_HandSanitizer/FieldAir_HandSanitizer.h"
@@ -29,6 +30,7 @@
 #define MAX_BME_SAMPLES_PACKET		5
 #define BME_WAIT_TOL			10
 #define BME_SAVE_STATE_PERIOD_MS	7200000 // every 2 hours
+
 
 
 
@@ -79,6 +81,18 @@ typedef struct bme_sensor_config {
     uint32_t sample_period_ms;
 } bme_sensor_config_t;
 
+// Function to format one bme_packet_payload_t element
+void formatBmePayload(char *buffer, size_t bufSize, const bme_packet_payload_t *payload) {
+    snprintf(buffer, bufSize, "%.0f,%.0f,%u,%.2f,%u,%d,%d\n",
+    		 (double) payload->timestamp_unix,
+             (double) payload->timestamp_sensor,
+             payload->timestamp_ms_from_start,
+             payload->signal,
+             payload->signal_dimensions,
+             payload->sensor_id,
+             payload->accuracy);
+}
+
 static bme_packet_payload_t bmeData[12];
 
 osTimerId_t periodicBMETimer_id;
@@ -88,8 +102,10 @@ Adafruit_BME680 bme;
 static uint8_t bmeConfig[BSEC_MAX_PROPERTY_BLOB_SIZE];
 static uint8_t bmeState[BSEC_MAX_STATE_BLOB_SIZE];
 
+static char outputString[120] = {0};
 
 void BME_Task(void *argument) {
+//	osDelay(2000);
 //	sensor_packet_t *packet = NULL;
 	volatile uint32_t flags = 0;
 
@@ -107,9 +123,10 @@ void BME_Task(void *argument) {
 	sensorSettings.sample_period_ms = 5000;
 
 
+
 	uint32_t timeSinceLastStateSave = 0;
 
-	osDelay(500);
+//	osDelay(500);
 
 	osSemaphoreAcquire(messageI2C1_LockHandle, osWaitForever);
 	while (!bme.begin(BME68X_DEFAULT_ADDRESS, &hi2c1, false)) {
@@ -119,7 +136,7 @@ void BME_Task(void *argument) {
 		flags = osThreadFlagsGet();
 		if ((flags & TERMINATE_THREAD_BIT) == TERMINATE_THREAD_BIT) {
 			osTimerDelete (periodicBMETimer_id);
-			saveBME_StateConfig();
+//			saveBME_StateConfig();
 			osSemaphoreAcquire(messageI2C1_LockHandle, osWaitForever);
 			bme.soft_reset();
 			osSemaphoreRelease(messageI2C1_LockHandle);
@@ -131,8 +148,8 @@ void BME_Task(void *argument) {
 
 	}
 
-
-	recoverBME_StateConfig();
+	bme.bsecSetConfig(bsec_config_selectivity);
+//	recoverBME_StateConfig();
 
 	i2c_error_check(&hi2c1);
 	osSemaphoreRelease(messageI2C1_LockHandle);
@@ -143,6 +160,25 @@ void BME_Task(void *argument) {
 	uint32_t bmeID = 0;
 
 	int64_t timeRemaining;
+
+
+
+	FIL sensorFile;
+	char file_name[20] = "sensor.csv";
+
+	// add header
+	if(check_file_exists(file_name) == FR_NO_FILE){
+    	if(f_open(&sensorFile, file_name, FA_CREATE_ALWAYS | FA_WRITE | FA_OPEN_APPEND) == FR_OK){
+			strcpy(outputString, "timestamp, time_sensor, time_ms_start, signal, signal_dim, sensor_id, accuracy\n");
+			f_write(&sensorFile, outputString, strlen(outputString), NULL);
+	    	// Flush the cached data to the SD card
+	    	f_sync(&sensorFile);
+	    	// Close the file
+	    	f_close(&sensorFile);
+
+	        memset(outputString, '\0', sizeof(outputString));
+    	}
+	}
 
 	while (1) {
 
@@ -166,8 +202,8 @@ void BME_Task(void *argument) {
 
 			for(int i = 0; i<bme.outputs.nOutputs; i++){
 //				memcpy(&bmeData[bmeIdx++], &bme.outputs.output[i], sizeof(bsecData));
-				bmeData[bmeIdx].timestamp_sensor = bme.outputs.output[i].time_stamp;
 				bmeData[bmeIdx].timestamp_unix = getEpoch();
+				bmeData[bmeIdx].timestamp_sensor = bme.outputs.output[i].time_stamp;
 				bmeData[bmeIdx].timestamp_ms_from_start = HAL_GetTick();
 				bmeData[bmeIdx].signal = bme.outputs.output[i].signal;
 				bmeData[bmeIdx].signal_dimensions = bme.outputs.output[i].signal_dimensions;
@@ -175,35 +211,36 @@ void BME_Task(void *argument) {
 				bmeData[bmeIdx++].accuracy = static_cast<bme680_accuracy_t>(bme.outputs.output[i].accuracy);
 			}
 
-			if (bmeIdx > MAX_BME_SAMPLES_PACKET) {
 
-//				packet = grabPacket();
-//				if (packet != NULL) {
-//
-//					setPacketType(packet, SENSOR_PACKET_TYPES_BME);
-//
-//					packet->payload.bme_packet.packet_index = bmeID;
-//
-//					packet->payload.bme_packet.sample_period = BME_SAMPLE_PERIOD_MS;
-//					packet->payload.bme_packet.sensor_id = 0;
-//
-//					// write data   //sensorPacket.header.payload_length
-//					memcpy(packet->payload.bme_packet.payload, bmeData, bmeIdx * sizeof(bme_packet_payload_t));
-//					packet->payload.bme_packet.payload_count = bmeIdx;
-//
-//					// send to BT packetizer
-//					queueUpPacket(packet, 2000);
-//
-//				}
+			if(bme.outputs.nOutputs != 0){
+				if(f_open(&sensorFile, file_name, FA_CREATE_ALWAYS | FA_WRITE | FA_OPEN_APPEND) != FR_OK){
+					Error_Handler();
+				}
+
+			    for (uint8_t i = 0; i < bmeIdx; i++) {
+			        formatBmePayload(outputString, sizeof(outputString), &bmeData[i]);
+					f_write(&sensorFile, outputString, strlen(outputString), NULL);
+
+
+			        memset(outputString, '\0', sizeof(outputString));
+			    }
+
+		    	// Flush the cached data to the SD card
+				f_sync(&sensorFile);
+				// Close the file
+				f_close(&sensorFile);
+
+
 				bmeID++;
 				bmeIdx = 0;
 
 			}
+//			}
 
-			if( (HAL_GetTick() - timeSinceLastStateSave) >= BME_SAVE_STATE_PERIOD_MS){
-				saveBME_StateConfig();
-				timeSinceLastStateSave = HAL_GetTick();
-			}
+//			if( (HAL_GetTick() - timeSinceLastStateSave) >= BME_SAVE_STATE_PERIOD_MS){
+//				saveBME_StateConfig();
+//				timeSinceLastStateSave = HAL_GetTick();
+//			}
 
 		}
 		flags = osThreadFlagsGet();

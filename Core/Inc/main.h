@@ -215,6 +215,8 @@ void updateRTC(uint32_t receivedTime);
 void updateRTC_MS(uint64_t receivedTime);
 uint64_t getEpoch(void);
 
+uint8_t check_file_exists(const char* path);
+
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

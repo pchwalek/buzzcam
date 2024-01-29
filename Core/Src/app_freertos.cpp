@@ -71,14 +71,14 @@ osThreadId_t sampleThreadId;
 
 const osThreadAttr_t micTask_attributes = { .name = "micTask", .attr_bits =
 		osThreadDetached, .cb_mem = NULL, .cb_size = 0, .stack_mem = NULL,
-		.stack_size = 256*16, .priority = (osPriority_t) osPriorityAboveNormal,
+		.stack_size = 256*24, .priority = (osPriority_t) osPriorityNormal,
 		.tz_module = 0, .reserved = 0 };
 osThreadId_t micThreadId;
 
 osThreadId_t bmeTaskHandle;
 const osThreadAttr_t bmeTask_attributes = { .name = "bmeTask", .attr_bits =
 		osThreadDetached, .cb_mem = NULL, .cb_size = 0, .stack_mem = NULL,
-		.stack_size = 512 * 5, .priority = (osPriority_t) osPriorityNormal,
+		.stack_size = 512 * 10, .priority = (osPriority_t) osPriorityNormal,
 		.tz_module = 0, .reserved = 0 };
 
 osMutexId_t messageI2C1_LockHandle;
