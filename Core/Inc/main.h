@@ -165,6 +165,10 @@ extern SPI_HandleTypeDef hspi1;
 #define SD_DETECT_2_GPIO_Port GPIOE
 
 /* USER CODE BEGIN Private defines */
+//#define FLAC__HAS_OGG 0
+//#define PACKAGE_VERSION 2.61
+#define TFLAC_32BIT_ONLY 1
+
 #define RTC_NO_REINIT	1
 
 #define SD_SPI_HANDLE hspi1
@@ -212,6 +216,7 @@ extern const osMutexAttr_t messageI2C1_Lock_attributes;
 extern const osSemaphoreAttr_t messageSPI1_Lock_attributes;
 extern const osThreadAttr_t bmeTask_attributes;
 extern const osThreadAttr_t batteryMonitorTask_attributes;
+extern const osThreadAttr_t chirpTask_attributes;
 
 void setLED_Blue(uint32_t intensity);
 void setLED_Green(uint32_t intensity);
@@ -219,9 +224,13 @@ void setLED_Red(uint32_t intensity);
 void disableLEDs();
 void i2c_error_check(I2C_HandleTypeDef *hi2c);
 
+void uint64ToString(uint64_t num, char* str);
+
 void updateRTC(uint32_t receivedTime);
 void updateRTC_MS(uint64_t receivedTime);
 uint64_t getEpoch(void);
+
+char * ftoa(double f, char * buf, int precision);
 
 uint8_t check_file_exists(const char* path);
 

@@ -64,10 +64,9 @@ message SensorReading{
 }
 
 message SensorConfig{
-    uint32 sample_period_ms = 1;
-    bool enable_temperature = 2;
-    bool enable_humidity = 3;
-    bool enable_gas = 4;
+    bool enable_temperature = 1;
+    bool enable_humidity = 2;
+    bool enable_gas = 3;
 }
 
 message SDCardState{
@@ -163,6 +162,7 @@ enum MicBitResolution{
 
 enum CompressionType{
     OPUS = 0;
+    FLAC = 1;
 }
 
 message AudioCompression{

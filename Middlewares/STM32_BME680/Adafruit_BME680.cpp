@@ -264,7 +264,7 @@ bool Adafruit_BME680::bsecSubscribe(void) {
     {
         virtualSensors[i].sensor_id = sensorList[i];
 //        virtualSensors[i].sample_rate = BSEC_SAMPLE_RATE_CONT;
-		virtualSensors[i].sample_rate = BSEC_SAMPLE_RATE_LP;
+		virtualSensors[i].sample_rate = BSEC_SAMPLE_RATE_ULP;
 //		virtualSensors[i].sample_rate = BSEC_SAMPLE_RATE_SCAN;
     }
 

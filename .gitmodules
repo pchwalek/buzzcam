@@ -1,0 +1,6 @@
+[submodule "flac/tflac"]
+	path = flac/tflac
+	url = git@github.com:jprjr/tflac.git
+[submodule "tflac"]
+	path = tflac
+	url = git@github.com:jprjr/tflac.git

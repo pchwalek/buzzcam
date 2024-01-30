@@ -22,7 +22,7 @@
 
 //#include "config/FieldAir_HandSanitizer/FieldAir_HandSanitizer.h"
 //#include "config/Default_H2S_NonH2S/Default_H2S_NonH2S.h"
-#include "config/bsec_sel_iaq_33v_3s_28d/bsec_serialized_configurations_selectivity.h"
+#include "config/bsec_sel_iaq_33v_300s_28d/bsec_serialized_configurations_selectivity.h"
 
 
 #define BME_SAMPLE_PERIOD_MS		3000
@@ -83,14 +83,46 @@ typedef struct bme_sensor_config {
 
 // Function to format one bme_packet_payload_t element
 void formatBmePayload(char *buffer, size_t bufSize, const bme_packet_payload_t *payload) {
-    snprintf(buffer, bufSize, "%.0f,%.0f,%u,%.2f,%u,%d,%d\n",
-    		 (double) payload->timestamp_unix,
-             (double) payload->timestamp_sensor,
-             payload->timestamp_ms_from_start,
-             payload->signal,
-             payload->signal_dimensions,
-             payload->sensor_id,
-             payload->accuracy);
+//    snprintf(buffer, bufSize, "%.0f,%.0f,%u,%.2f,%u,%d,%d\n",
+//    		 (double) payload->timestamp_unix,
+//             (double) payload->timestamp_sensor,
+//             payload->timestamp_ms_from_start,
+//             payload->signal,
+//             payload->signal_dimensions,
+//             payload->sensor_id,
+//             payload->accuracy);
+
+    char temp[20];
+
+    uint64ToString(payload->timestamp_unix, temp);
+    strcpy(buffer, temp);
+    strcat(buffer, ",");
+
+    // Convert float to string and concatenate
+    uint64ToString(payload->timestamp_sensor, temp);
+    strcat(buffer, temp);
+    strcat(buffer, ",");
+
+    // Convert float to string and concatenate
+    utoa(payload->timestamp_ms_from_start, temp, 10);
+    strcat(buffer, temp);
+    strcat(buffer, ",");
+
+    utoa(payload->signal, temp, 10);
+    strcat(buffer, temp);
+    strcat(buffer, ",");
+
+    utoa(payload->signal_dimensions, temp, 10);
+    strcat(buffer, temp);
+    strcat(buffer, ",");
+
+    utoa(payload->sensor_id, temp, 10);
+    strcat(buffer, temp);
+    strcat(buffer, ",");
+
+    utoa(payload->accuracy, temp, 10);
+    strcat(buffer, temp);
+    strcat(buffer, "\n");
 }
 
 static bme_packet_payload_t bmeData[12];
@@ -102,7 +134,7 @@ Adafruit_BME680 bme;
 static uint8_t bmeConfig[BSEC_MAX_PROPERTY_BLOB_SIZE];
 static uint8_t bmeState[BSEC_MAX_STATE_BLOB_SIZE];
 
-static char outputString[120] = {0};
+static char outputString[500] = {0};
 
 static FIL sensorFile;
 
@@ -181,6 +213,16 @@ void BME_Task(void *argument) {
     	}
 	}
 
+	FRESULT res;
+
+	do{
+		res = f_open(&sensorFile, file_name, FA_OPEN_APPEND | FA_WRITE | FA_READ);
+		if((res != FR_TIMEOUT) && (res != FR_OK)){
+			Error_Handler();
+		}
+	}while( ((res == FR_TIMEOUT) || (osDelay(10) == osOK)) &&
+			(res != FR_OK));
+
 	while (1) {
 
 //		if ((flags & GRAB_SAMPLE_BIT) == GRAB_SAMPLE_BIT) {
@@ -212,30 +254,26 @@ void BME_Task(void *argument) {
 				bmeData[bmeIdx++].accuracy = static_cast<bme680_accuracy_t>(bme.outputs.output[i].accuracy);
 			}
 
-			volatile FRESULT res;
 			if(bme.outputs.nOutputs != 0){
 //				res = f_open(&sensorFile, file_name, FA_OPEN_APPEND | FA_WRITE | FA_READ);
-				do{
-					res = f_open(&sensorFile, file_name, FA_OPEN_APPEND | FA_WRITE | FA_READ);
-					if((res != FR_TIMEOUT) && (res != FR_OK)){
-						Error_Handler();
-					}
-				}while( ((res == FR_TIMEOUT) || (osDelay(10) == osOK)) &&
-						(res != FR_OK));
+
 
 				if(res != FR_OK){
 					Error_Handler();
 				}
 
 			    for (uint8_t i = 0; i < bmeIdx; i++) {
-			        formatBmePayload(outputString, sizeof(outputString), &bmeData[i]);
-					if(f_write(&sensorFile, outputString, strlen(outputString), NULL) != FR_OK){
-						Error_Handler();
-					}
-
-
-			        memset(outputString, '\0', sizeof(outputString));
+			    	if(i == 0) formatBmePayload(outputString, sizeof(outputString), &bmeData[i]);
+			    	else formatBmePayload(outputString+strlen(outputString), sizeof(outputString)-strlen(outputString), &bmeData[i]);
 			    }
+
+			    //todo: FR_INVALID_OBJECT after 30+ minutes... why
+			    res = f_write(&sensorFile, outputString, strlen(outputString), NULL);
+				if(f_write(&sensorFile, outputString, strlen(outputString), NULL) != FR_OK){
+					Error_Handler();
+				}
+				memset(outputString, '\0', sizeof(outputString));
+
 
 		    	// Flush the cached data to the SD card
 //			    res = f_sync(&sensorFile);
@@ -244,7 +282,7 @@ void BME_Task(void *argument) {
 //				}
 
 				// Close the file
-			    res = f_close(&sensorFile);
+			    res = f_sync(&sensorFile);
 				if(res != FR_OK){
 					Error_Handler();
 				}
@@ -265,8 +303,11 @@ void BME_Task(void *argument) {
 		flags = osThreadFlagsGet();
 
 		if ((flags & TERMINATE_THREAD_BIT) == TERMINATE_THREAD_BIT) {
-			osTimerDelete (periodicBMETimer_id);
-			saveBME_StateConfig();
+			// Close the file
+		    res = f_close(&sensorFile);
+
+//			osTimerDelete (periodicBMETimer_id);
+//			saveBME_StateConfig();
 			osSemaphoreAcquire(messageI2C1_LockHandle, osWaitForever);
 			bme.soft_reset();
 			osSemaphoreRelease(messageI2C1_LockHandle);

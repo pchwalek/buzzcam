@@ -84,7 +84,8 @@ typedef enum mic_bit_resolution {
 } mic_bit_resolution_t;
 
 typedef enum compression_type {
-    COMPRESSION_TYPE_OPUS = 0
+    COMPRESSION_TYPE_OPUS = 0,
+    COMPRESSION_TYPE_FLAC = 1
 } compression_type_t;
 
 /* Struct definitions */
@@ -120,7 +121,6 @@ typedef struct sensor_reading_payload {
 } sensor_reading_payload_t;
 
 typedef struct sensor_config {
-    uint32_t sample_period_ms;
     bool enable_temperature;
     bool enable_humidity;
     bool enable_gas;
@@ -297,8 +297,8 @@ extern "C" {
 #define _MIC_BIT_RESOLUTION_ARRAYSIZE ((mic_bit_resolution_t)(MIC_BIT_RESOLUTION_BIT_RES_24+1))
 
 #define _COMPRESSION_TYPE_MIN COMPRESSION_TYPE_OPUS
-#define _COMPRESSION_TYPE_MAX COMPRESSION_TYPE_OPUS
-#define _COMPRESSION_TYPE_ARRAYSIZE ((compression_type_t)(COMPRESSION_TYPE_OPUS+1))
+#define _COMPRESSION_TYPE_MAX COMPRESSION_TYPE_FLAC
+#define _COMPRESSION_TYPE_ARRAYSIZE ((compression_type_t)(COMPRESSION_TYPE_FLAC+1))
 
 
 
@@ -333,7 +333,7 @@ extern "C" {
 #define SIMPLE_SENSOR_READING_INIT_DEFAULT       {0, 0, 0, 0, 0, 0}
 #define SENSOR_READING_INIT_DEFAULT              {0, 0, {{NULL}, NULL}}
 #define SENSOR_READING_PAYLOAD_INIT_DEFAULT      {0, 0, 0, 0, 0, _SIGNAL_IDENTIFIER_MIN, _SENSOR_ACCURACY_MIN}
-#define SENSOR_CONFIG_INIT_DEFAULT               {0, 0, 0, 0}
+#define SENSOR_CONFIG_INIT_DEFAULT               {0, 0, 0}
 #define SD_CARD_STATE_INIT_DEFAULT               {0, 0, 0}
 #define MARK_STATE_INIT_DEFAULT                  {0, 0}
 #define MARK_PACKET_INIT_DEFAULT                 {false, "", 0}
@@ -354,7 +354,7 @@ extern "C" {
 #define SIMPLE_SENSOR_READING_INIT_ZERO          {0, 0, 0, 0, 0, 0}
 #define SENSOR_READING_INIT_ZERO                 {0, 0, {{NULL}, NULL}}
 #define SENSOR_READING_PAYLOAD_INIT_ZERO         {0, 0, 0, 0, 0, _SIGNAL_IDENTIFIER_MIN, _SENSOR_ACCURACY_MIN}
-#define SENSOR_CONFIG_INIT_ZERO                  {0, 0, 0, 0}
+#define SENSOR_CONFIG_INIT_ZERO                  {0, 0, 0}
 #define SD_CARD_STATE_INIT_ZERO                  {0, 0, 0}
 #define MARK_STATE_INIT_ZERO                     {0, 0}
 #define MARK_PACKET_INIT_ZERO                    {false, "", 0}
@@ -392,10 +392,9 @@ extern "C" {
 #define SENSOR_READING_PAYLOAD_SIGNAL_DIMENSIONS_TAG 5
 #define SENSOR_READING_PAYLOAD_SENSOR_ID_TAG     6
 #define SENSOR_READING_PAYLOAD_ACCURACY_TAG      7
-#define SENSOR_CONFIG_SAMPLE_PERIOD_MS_TAG       1
-#define SENSOR_CONFIG_ENABLE_TEMPERATURE_TAG     2
-#define SENSOR_CONFIG_ENABLE_HUMIDITY_TAG        3
-#define SENSOR_CONFIG_ENABLE_GAS_TAG             4
+#define SENSOR_CONFIG_ENABLE_TEMPERATURE_TAG     1
+#define SENSOR_CONFIG_ENABLE_HUMIDITY_TAG        2
+#define SENSOR_CONFIG_ENABLE_GAS_TAG             3
 #define SD_CARD_STATE_DETECTED_TAG               1
 #define SD_CARD_STATE_SPACE_REMAINING_TAG        2
 #define SD_CARD_STATE_ESTIMATED_REMAINING_RECORDING_TIME_TAG 3
@@ -504,10 +503,9 @@ X(a, STATIC,   SINGULAR, UENUM,    accuracy,          7)
 #define SENSOR_READING_PAYLOAD_DEFAULT NULL
 
 #define SENSOR_CONFIG_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, UINT32,   sample_period_ms,   1) \
-X(a, STATIC,   SINGULAR, BOOL,     enable_temperature,   2) \
-X(a, STATIC,   SINGULAR, BOOL,     enable_humidity,   3) \
-X(a, STATIC,   SINGULAR, BOOL,     enable_gas,        4)
+X(a, STATIC,   SINGULAR, BOOL,     enable_temperature,   1) \
+X(a, STATIC,   SINGULAR, BOOL,     enable_humidity,   2) \
+X(a, STATIC,   SINGULAR, BOOL,     enable_gas,        3)
 #define SENSOR_CONFIG_CALLBACK NULL
 #define SENSOR_CONFIG_DEFAULT NULL
 
@@ -713,7 +711,7 @@ extern const pb_msgdesc_t packet_t_msg;
 #define AUDIO_CONFIG_SIZE                        31
 #define BATTERY_STATE_SIZE                       12
 #define CAMERA_CONTROL_SIZE                      6
-#define CONFIG_PACKET_SIZE                       592
+#define CONFIG_PACKET_SIZE                       586
 #define DISCOVERED_DEVICES_DEVICE_SIZE           11
 #define DISCOVERED_DEVICES_SIZE                  266
 #define LOW_POWER_CONFIG_SIZE                    2
@@ -721,10 +719,10 @@ extern const pb_msgdesc_t packet_t_msg;
 #define MARK_STATE_SIZE                          17
 #define NETWORK_STATE_SIZE                       128
 #define PACKET_HEADER_SIZE                       23
-#define PACKET_SIZE                              620
+#define PACKET_SIZE                              614
 #define SCHEDULE_CONFIG_SIZE                     38
 #define SD_CARD_STATE_SIZE                       24
-#define SENSOR_CONFIG_SIZE                       12
+#define SENSOR_CONFIG_SIZE                       6
 #define SENSOR_READING_PAYLOAD_SIZE              41
 #define SIMPLE_SENSOR_READING_SIZE               32
 #define SPECIAL_FUNCTION_SIZE                    2

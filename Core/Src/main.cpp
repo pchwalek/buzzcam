@@ -44,6 +44,9 @@
 #include "bme.h"
 
 #include <math.h>
+
+#define TFLAC_IMPLEMENTATION
+#include "tflac.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -57,7 +60,7 @@
 
 #define MAX_INTENSITY 1000
 
-#define AUDIO_BUFFER_LEN		(20000)
+#define AUDIO_BUFFER_LEN		(40000)
 //#define AUDIO_BUFFER_LEN		(1000)
 #define AUDIO_BUFFER_HALF_LEN	(AUDIO_BUFFER_LEN >> 1)
 
@@ -100,11 +103,7 @@ UART_HandleTypeDef huart1;
 
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
-//const osThreadAttr_t defaultTask_attributes = {
-//  .name = "defaultTask",
-//  .priority = (osPriority_t) osPriorityNormal,
-//  .stack_size = 256 * 4
-//};
+
 /* USER CODE BEGIN PV */
 osThreadId_t batteryMonitorTaskId;
 osThreadId_t chirpTaskHandle;
@@ -214,6 +213,14 @@ void writeFRAM(uint8_t word_addr, uint8_t byte_addr, uint8_t *data, uint32_t siz
 void performMagCalibration(uint32_t numOfSamples);
 
 void tone(uint32_t freq, uint32_t duration_ms);
+
+const char* getMicGainName(mic_gain_t gain);
+const char* getBoolName(uint8_t val);
+
+const char* getSampleFreqName(mic_sample_freq sample_freq);
+const char* getBitResName(mic_bit_resolution bit_res);
+const char* getCompressionName(compression_type comp_type);
+const uint32_t getSampleFreq(mic_sample_freq sample_freq);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -240,7 +247,7 @@ void grabOrientation(char *folder_name);
 void chirpTask(void *argument);
 void chirp_timer_callback(void *argument);
 void toneSweep(uint8_t reverse);
-void save_config(char* folder_name);
+static void save_config(char* folder_name);
 
 void batteryMonitorTask(void *argument);
 
@@ -276,7 +283,7 @@ int main(void)
   MX_IPCC_Init();
 
   /* USER CODE BEGIN SysInit */
-
+  tflac_detect_cpu();
 
 	configPacket.has_header = true;
 	configPacket.header.epoch = 1111;
@@ -292,7 +299,7 @@ int main(void)
 	configPacket.payload.config_packet.audio_config.mic_gain = MIC_GAIN_GAIN_9_DB;
 	configPacket.payload.config_packet.audio_config.has_audio_compression=true;
 	configPacket.payload.config_packet.audio_config.audio_compression.compression_factor=0;
-	configPacket.payload.config_packet.audio_config.audio_compression.compression_type=COMPRESSION_TYPE_OPUS;
+	configPacket.payload.config_packet.audio_config.audio_compression.compression_type=COMPRESSION_TYPE_FLAC;
 	configPacket.payload.config_packet.audio_config.audio_compression.enabled=false;
 	configPacket.payload.config_packet.audio_config.estimated_record_time=12345678; //placeholder
 	configPacket.payload.config_packet.audio_config.sample_freq=MIC_SAMPLE_FREQ_SAMPLE_RATE_48000;
@@ -329,7 +336,7 @@ int main(void)
 	configPacket.payload.config_packet.sensor_config.enable_gas=true;
 	configPacket.payload.config_packet.sensor_config.enable_humidity=true;
 	configPacket.payload.config_packet.sensor_config.enable_temperature=true;
-	configPacket.payload.config_packet.sensor_config.sample_period_ms=1000;
+//	configPacket.payload.config_packet.sensor_config.sample_period_ms=1000;
 
 	configPacket.payload.config_packet.schedule_config_count = 2;
 	configPacket.payload.config_packet.schedule_config[0].monday = true;
@@ -584,7 +591,7 @@ int main(void)
 
   /* Create the thread(s) */
   /* creation of defaultTask */
-  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+//  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
 	mainSystemThreadId = osThreadNew(mainSystemTask, NULL, &mainSystemTask_attributes);
@@ -734,7 +741,7 @@ static void MX_ADC1_Init(void)
   /** Common config
   */
   hadc1.Instance = ADC1;
-  hadc1.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV32;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV16;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
@@ -747,7 +754,11 @@ static void MX_ADC1_Init(void)
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc1.Init.DMAContinuousRequests = DISABLE;
   hadc1.Init.Overrun = ADC_OVR_DATA_PRESERVED;
-  hadc1.Init.OversamplingMode = DISABLE;
+  hadc1.Init.OversamplingMode = ENABLE;
+  hadc1.Init.Oversampling.Ratio = ADC_OVERSAMPLING_RATIO_256;
+  hadc1.Init.Oversampling.RightBitShift = ADC_RIGHTBITSHIFT_8;
+  hadc1.Init.Oversampling.TriggeredMode = ADC_TRIGGEREDMODE_SINGLE_TRIGGER;
+  hadc1.Init.Oversampling.OversamplingStopReset = ADC_REGOVERSAMPLING_CONTINUED_MODE;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
   {
     Error_Handler();
@@ -1025,7 +1036,7 @@ static void MX_SAI1_Init(void)
   hsai_BlockA1.Init.NoDivider = SAI_MASTERDIVIDER_ENABLE;
   hsai_BlockA1.Init.MckOverSampling = SAI_MCK_OVERSAMPLING_DISABLE;
   hsai_BlockA1.Init.FIFOThreshold = SAI_FIFOTHRESHOLD_EMPTY;
-  hsai_BlockA1.Init.AudioFrequency = SAI_AUDIO_FREQUENCY_48K;
+  hsai_BlockA1.Init.AudioFrequency = getSampleFreq(configPacket.payload.config_packet.audio_config.sample_freq);
   hsai_BlockA1.Init.SynchroExt = SAI_SYNCEXT_DISABLE;
   hsai_BlockA1.Init.MonoStereoMode = SAI_STEREOMODE;
   hsai_BlockA1.Init.CompandingMode = SAI_NOCOMPANDING;
@@ -1598,7 +1609,7 @@ void acousticSamplingTask(void *argument){
 	save_config(folder_name);
 
 	if(configPacket.payload.config_packet.audio_config.chirp_enable){
-		chirpTaskHandle = osThreadNew(chirpTask, NULL, &defaultTask_attributes);
+		chirpTaskHandle = osThreadNew(chirpTask, NULL, &chirpTask_attributes);
 	}
 
 	if(configPacket.payload.config_packet.audio_config.free_run_mode){
@@ -1612,12 +1623,14 @@ void acousticSamplingTask(void *argument){
 
 
 void batteryMonitorTask(void *argument){
-	char file_name[20] = "battery.csv";
+	const char file_name[20] = "battery.csv";
 	uint32_t flag = 0;
 	uint8_t battChgFlag = 0;
 	float battVltg;
-	char str[32];
+	static char str[32];
 	FRESULT res;
+
+	double timestamp = 0;
 
 	// add header
 	if(check_file_exists(file_name) == FR_NO_FILE){
@@ -1656,18 +1669,19 @@ void batteryMonitorTask(void *argument){
 			battChgFlag = HAL_GPIO_ReadPin(BATT_CHG_GPIO_Port, BATT_CHG_Pin);
 
 			HAL_GPIO_WritePin(EN_BATT_MON_GPIO_Port, EN_BATT_MON_Pin, GPIO_PIN_SET);
-			osDelay(1);
+			osDelay(100); // give time for voltage to settle
 
+			timestamp = getEpoch();
 			HAL_ADC_Start_IT(&hadc1);
 
 		    flag = osThreadFlagsWait(COMPLETE_EVENT, osFlagsWaitAny, osWaitForever);
 
-			battVltg = (((float) HAL_ADC_GetValue(&hadc1)) / 4096.0) * 3.3 * 2;
+			battVltg = ((((float) HAL_ADC_GetValue(&hadc1))) * 3.3 * 2) / 4096.0;
 			HAL_ADC_Stop(&hadc1);
 
 			HAL_GPIO_WritePin(EN_BATT_MON_GPIO_Port, EN_BATT_MON_Pin, GPIO_PIN_RESET);
 
-	        snprintf(str, sizeof(str), "%.3f,%u\n", battVltg, battChgFlag);
+	        snprintf(str, sizeof(str), "%.0f,%.3f,%u\n", timestamp, battVltg, battChgFlag);
 			f_write(&batteryFile, str, strlen(str), NULL);
 			memset(str, '\0', sizeof(str));
 
@@ -1686,6 +1700,8 @@ void batteryMonitorTask(void *argument){
 	}
 
 }
+
+
 
 void triggerBatteryMonitorSample(void *argument){
 	osThreadFlagsSet (batteryMonitorTaskId, UPDATE_EVENT);
@@ -1707,7 +1723,7 @@ void unmount_sd_card(void){
 }
 
 static FIL configFile;
-void save_config(char* folder_name){
+static void save_config(char* folder_name){
 	char file_name[30] = {0};
 
 
@@ -1716,7 +1732,6 @@ void save_config(char* folder_name){
 
 	FIL configFile;
 
-
 	char str[50];
 	if(f_open(&configFile, file_name, FA_CREATE_NEW | FA_WRITE) == FR_OK){
 
@@ -1724,19 +1739,27 @@ void save_config(char* folder_name){
 		f_write(&configFile, str, strlen(str), NULL);
         memset(str, '\0', sizeof(str));
 
-        snprintf(str, sizeof(str), "bit res,%u\n", configPacket.payload.config_packet.audio_config.bit_resolution);
+		snprintf(str, sizeof(str), "bit res,");
+		strcat(str,getBitResName(configPacket.payload.config_packet.audio_config.bit_resolution));
+		strcat(str,"\n");
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
-        snprintf(str, sizeof(str), "ch1,%u\n", configPacket.payload.config_packet.audio_config.channel_1);
+		snprintf(str, sizeof(str), "ch1,");
+		strcat(str,getBoolName(configPacket.payload.config_packet.audio_config.channel_1));
+		strcat(str,"\n");
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
-        snprintf(str, sizeof(str), "ch2,%u\n", configPacket.payload.config_packet.audio_config.channel_2);
+		snprintf(str, sizeof(str), "ch2,");
+		strcat(str,getBoolName(configPacket.payload.config_packet.audio_config.channel_2));
+		strcat(str,"\n");
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
-        snprintf(str, sizeof(str), "mic gain,%u\n", configPacket.payload.config_packet.audio_config.mic_gain);
+		snprintf(str, sizeof(str), "mic gain,");
+		strcat(str,getMicGainName(configPacket.payload.config_packet.audio_config.mic_gain));
+		strcat(str,"\n");
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
@@ -1744,103 +1767,210 @@ void save_config(char* folder_name){
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
-        snprintf(str, sizeof(str), "compression type,%u\n", configPacket.payload.config_packet.audio_config.audio_compression.compression_type);
+		snprintf(str, sizeof(str), "compression type,");
+		strcat(str,getCompressionName(configPacket.payload.config_packet.audio_config.audio_compression.compression_type));
+		strcat(str,"\n");
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
-        snprintf(str, sizeof(str), "en_compression,%u\n", configPacket.payload.config_packet.audio_config.audio_compression.enabled);
+		snprintf(str, sizeof(str), "en_compression,");
+		strcat(str,getBoolName(configPacket.payload.config_packet.audio_config.audio_compression.enabled));
+		strcat(str,"\n");
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
-        snprintf(str, sizeof(str), "sample freq,%u\n", configPacket.payload.config_packet.audio_config.sample_freq);
+		snprintf(str, sizeof(str), "sample freq,");
+		strcat(str,getSampleFreqName(configPacket.payload.config_packet.audio_config.sample_freq));
+		strcat(str,"\n");
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
-        snprintf(str, sizeof(str), "free run mode,%u\n", configPacket.payload.config_packet.audio_config.free_run_mode);
+		snprintf(str, sizeof(str), "free run mode,");
+		strcat(str,getBoolName(configPacket.payload.config_packet.audio_config.free_run_mode));
+		strcat(str,"\n");
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
-        snprintf(str, sizeof(str), "en_chirp,%u\n", configPacket.payload.config_packet.audio_config.chirp_enable);
+		snprintf(str, sizeof(str), "en_chirp,");
+		strcat(str,getBoolName(configPacket.payload.config_packet.audio_config.chirp_enable));
+		strcat(str,"\n");
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
-        snprintf(str, sizeof(str), "low power mode,%u\n", configPacket.payload.config_packet.low_power_config.low_power_mode);
+		snprintf(str, sizeof(str), "low power mode,");
+		strcat(str,getBoolName(configPacket.payload.config_packet.low_power_config.low_power_mode));
+		strcat(str,"\n");
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
-        snprintf(str, sizeof(str), "en_gas,%u\n", configPacket.payload.config_packet.sensor_config.enable_gas);
+		snprintf(str, sizeof(str), "en_gas,");
+		strcat(str,getBoolName(configPacket.payload.config_packet.sensor_config.enable_gas));
+		strcat(str,"\n");
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
-        snprintf(str, sizeof(str), "en_humidity,%u\n", configPacket.payload.config_packet.sensor_config.enable_humidity);
+		snprintf(str, sizeof(str), "en_humidity,");
+		strcat(str,getBoolName(configPacket.payload.config_packet.sensor_config.enable_humidity));
+		strcat(str,"\n");
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
-        snprintf(str, sizeof(str), "en_temp,%u\n", configPacket.payload.config_packet.sensor_config.enable_temperature);
+		snprintf(str, sizeof(str), "en_temp,");
+		strcat(str,getBoolName(configPacket.payload.config_packet.sensor_config.enable_temperature));
+		strcat(str,"\n");
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
-        snprintf(str, sizeof(str), "sample period (ms),%u\n", configPacket.payload.config_packet.sensor_config.sample_period_ms);
+//        snprintf(str, sizeof(str), "sensor period (ms),%u\n", configPacket.payload.config_packet.sensor_config.sample_period_ms);
+//		f_write(&configFile, str, strlen(str), NULL);
+//		memset(str, '\0', sizeof(str));
+
+        snprintf(str, sizeof(str), "\n");
+		f_write(&configFile, str, strlen(str), NULL);
+		memset(str, '\0', sizeof(str));
+
+        snprintf(str, sizeof(str), "schedule number, start hour, start min,");
+		f_write(&configFile, str, strlen(str), NULL);
+		memset(str, '\0', sizeof(str));
+        snprintf(str, sizeof(str), "stop hour, stop min, Sun, M, T, W, Th, F, Sat\n");
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
 		for(int i = 0; i < configPacket.payload.config_packet.schedule_config_count; i++){
-			snprintf(str, sizeof(str), "schedule number,%u\n", i);
+			snprintf(str, sizeof(str), "%u,%u,%u,%u,%u,", i,
+					configPacket.payload.config_packet.schedule_config[i].start_hour,
+					configPacket.payload.config_packet.schedule_config[i].start_minute,
+					configPacket.payload.config_packet.schedule_config[i].stop_hour,
+					configPacket.payload.config_packet.schedule_config[i].stop_minute);
 			f_write(&configFile, str, strlen(str), NULL);
 			memset(str, '\0', sizeof(str));
 
-			snprintf(str, sizeof(str), "sunday,%u\n", configPacket.payload.config_packet.schedule_config[i].sunday);
-			f_write(&configFile, str, strlen(str), NULL);
-			memset(str, '\0', sizeof(str));
-
-			snprintf(str, sizeof(str), "monday,%u\n", configPacket.payload.config_packet.schedule_config[i].monday);
-			f_write(&configFile, str, strlen(str), NULL);
-			memset(str, '\0', sizeof(str));
-
-			snprintf(str, sizeof(str), "tuesday,%u\n", configPacket.payload.config_packet.schedule_config[i].tuesday);
-			f_write(&configFile, str, strlen(str), NULL);
-			memset(str, '\0', sizeof(str));
-
-			snprintf(str, sizeof(str), "wednesday,%u\n", configPacket.payload.config_packet.schedule_config[i].wednesday);
-			f_write(&configFile, str, strlen(str), NULL);
-			memset(str, '\0', sizeof(str));
-
-			snprintf(str, sizeof(str), "thursday,%u\n", configPacket.payload.config_packet.schedule_config[i].thursday);
-			f_write(&configFile, str, strlen(str), NULL);
-			memset(str, '\0', sizeof(str));
-
-			snprintf(str, sizeof(str), "friday,%u\n", configPacket.payload.config_packet.schedule_config[i].friday);
-			f_write(&configFile, str, strlen(str), NULL);
-			memset(str, '\0', sizeof(str));
-
-			snprintf(str, sizeof(str), "saturday,%u\n", configPacket.payload.config_packet.schedule_config[i].saturday);
-			f_write(&configFile, str, strlen(str), NULL);
-			memset(str, '\0', sizeof(str));
-
-			snprintf(str, sizeof(str), "start hour,%u\n", configPacket.payload.config_packet.schedule_config[i].start_hour);
-			f_write(&configFile, str, strlen(str), NULL);
-			memset(str, '\0', sizeof(str));
-
-			snprintf(str, sizeof(str), "start minute,%u\n", configPacket.payload.config_packet.schedule_config[i].start_minute);
-			f_write(&configFile, str, strlen(str), NULL);
-			memset(str, '\0', sizeof(str));
-
-			snprintf(str, sizeof(str), "stop hour,%u\n", configPacket.payload.config_packet.schedule_config[i].stop_hour);
-			f_write(&configFile, str, strlen(str), NULL);
-			memset(str, '\0', sizeof(str));
-
-			snprintf(str, sizeof(str), "stop minute,%u\n", configPacket.payload.config_packet.schedule_config[i].stop_minute);
+			snprintf(str, sizeof(str), "%s,%s,%s,%s,%s,%s,%s\n",
+			getBoolName(configPacket.payload.config_packet.schedule_config[i].sunday),
+			getBoolName(configPacket.payload.config_packet.schedule_config[i].monday),
+			getBoolName(configPacket.payload.config_packet.schedule_config[i].tuesday),
+			getBoolName(configPacket.payload.config_packet.schedule_config[i].wednesday),
+			getBoolName(configPacket.payload.config_packet.schedule_config[i].thursday),
+			getBoolName(configPacket.payload.config_packet.schedule_config[i].friday),
+			getBoolName(configPacket.payload.config_packet.schedule_config[i].saturday));
 			f_write(&configFile, str, strlen(str), NULL);
 			memset(str, '\0', sizeof(str));
 		}
+
+		// Close the file
+		f_close(&configFile);
 
 	}else{
 		Error_Handler();
 	}
 
-	// Close the file
-	f_close(&configFile);
+}
 
+void uint64ToString(uint64_t num, char* str) {
+    char* p = str;
+    uint64_t shifter = num;
+
+    // Move to where representation ends
+    do {
+        ++p;
+        shifter = shifter / 10;
+    } while(shifter);
+
+    // Null terminate string
+    *p = '\0';
+
+    // Move back, inserting digits as you go
+    do {
+        *--p = '0' + (num % 10);
+        num = num / 10;
+    } while(num);
+}
+
+const char* getMicGainName(mic_gain_t gain) {
+    switch (gain) {
+        case MIC_GAIN_GAIN_60_DB: return "60dB";
+        case MIC_GAIN_GAIN_57_DB: return "57dB";
+        case MIC_GAIN_GAIN_54_DB: return "54dB";
+        case MIC_GAIN_GAIN_51_DB: return "51dB";
+        case MIC_GAIN_GAIN_48_DB: return "48dB";
+        case MIC_GAIN_GAIN_45_DB: return "45dB";
+        case MIC_GAIN_GAIN_42_DB: return "42dB";
+        case MIC_GAIN_GAIN_39_DB: return "39dB";
+        case MIC_GAIN_GAIN_36_DB: return "36dB";
+        case MIC_GAIN_GAIN_33_DB: return "33dB";
+        case MIC_GAIN_GAIN_30_DB: return "30dB";
+        case MIC_GAIN_GAIN_27_DB: return "27dB";
+        case MIC_GAIN_GAIN_24_DB: return "24dB";
+        case MIC_GAIN_GAIN_21_DB: return "21dB";
+        case MIC_GAIN_GAIN_18_DB: return "18dB";
+        case MIC_GAIN_GAIN_15_DB: return "15dB";
+        case MIC_GAIN_GAIN_12_DB: return "12dB";
+        case MIC_GAIN_GAIN_9_DB: return "9dB";
+        case MIC_GAIN_GAIN_6_DB: return "6dB";
+        case MIC_GAIN_GAIN_3_DB: return "3dB";
+        case MIC_GAIN_GAIN_0_DB: return "0dB";
+        case MIC_GAIN_GAIN_NEG_3_DB: return "-3dB";
+        case MIC_GAIN_GAIN_NEG_6_DB: return "-6dB";
+        case MIC_GAIN_GAIN_NEG_9_DB: return "-9dB";
+        case MIC_GAIN_GAIN_NEG_12_DB: return "-12dB";
+        case MIC_GAIN_GAIN_NEG_15_DB: return "-15dB";
+        default: return "Unknown Gain";
+    }
+}
+
+const char* getSampleFreqName(mic_sample_freq sample_freq) {
+    switch (sample_freq) {
+        case MIC_SAMPLE_FREQ_SAMPLE_RATE_8000: return "8000";
+        case MIC_SAMPLE_FREQ_SAMPLE_RATE_11025: return "11025";
+        case MIC_SAMPLE_FREQ_SAMPLE_RATE_16000: return "16000";
+        case MIC_SAMPLE_FREQ_SAMPLE_RATE_22500: return "22500";
+        case MIC_SAMPLE_FREQ_SAMPLE_RATE_24000: return "24000";
+        case MIC_SAMPLE_FREQ_SAMPLE_RATE_32000: return "32000";
+        case MIC_SAMPLE_FREQ_SAMPLE_RATE_44100: return "44100";
+        case MIC_SAMPLE_FREQ_SAMPLE_RATE_48000: return "48000";
+        case MIC_SAMPLE_FREQ_SAMPLE_RATE_96000: return "96000";
+        default: return "Unknown";
+    }
+}
+
+const uint32_t getSampleFreq(mic_sample_freq sample_freq) {
+    switch (sample_freq) {
+        case MIC_SAMPLE_FREQ_SAMPLE_RATE_8000: return 8000;
+        case MIC_SAMPLE_FREQ_SAMPLE_RATE_11025: return 11025;
+        case MIC_SAMPLE_FREQ_SAMPLE_RATE_16000: return 16000;
+        case MIC_SAMPLE_FREQ_SAMPLE_RATE_22500: return 22500;
+        case MIC_SAMPLE_FREQ_SAMPLE_RATE_24000: return 24000;
+        case MIC_SAMPLE_FREQ_SAMPLE_RATE_32000: return 32000;
+        case MIC_SAMPLE_FREQ_SAMPLE_RATE_44100: return 44100;
+        case MIC_SAMPLE_FREQ_SAMPLE_RATE_48000: return 48000;
+        case MIC_SAMPLE_FREQ_SAMPLE_RATE_96000: return 96000;
+        default: return 48000;
+    }
+}
+
+const char* getBitResName(mic_bit_resolution bit_res) {
+    switch (bit_res) {
+        case MIC_BIT_RESOLUTION_BIT_RES_8: return "8-bit";
+        case MIC_BIT_RESOLUTION_BIT_RES_16: return "16-bit";
+        case MIC_BIT_RESOLUTION_BIT_RES_24: return "24-bit";
+        default: return "Unknown";
+    }
+}
+
+const char* getCompressionName(compression_type comp_type) {
+    switch (comp_type) {
+        case COMPRESSION_TYPE_OPUS: return "OPUS";
+        case 1: return "True";
+        default: return "Unknown";
+    }
+}
+
+const char* getBoolName(uint8_t val) {
+    switch (val) {
+        case 0: return "False";
+        case 1: return "True";
+        default: return "Unknown";
+    }
 }
 
 void set_folder_from_time(char* folder_name){
@@ -2048,10 +2178,8 @@ typedef enum {
 } lis2mdl_register_t;
 
 uint8_t check_file_exists(const char* path) {
-    FILINFO fno;
-
     // Check for the existence of a file
-    FRESULT fr = f_stat(path, &fno);
+    FRESULT fr = f_stat(path, NULL);
 
     if (fr == FR_OK) {
         // The file exists
@@ -2503,6 +2631,18 @@ void performMagCalibration(uint32_t numOfSamples){
 }
 
 #define MAX_BYTES_PER_WAV_FILE 2000000000
+
+uint32_t bufferlen = 0;
+tflac_u32 bufferused = 0;
+FILE *input = NULL;
+FILE *output = NULL;
+tflac_u32 frames = 0;
+tflac_s16 *samples = NULL;
+void *tflac_mem = NULL;
+tflac_u32 frame_size = 1152;
+//wav_decoder w = WAV_DECODER_ZERO;
+tflac t;
+
 void startRecord(uint32_t recording_duration_s, char *folder_name){
 	uint64_t totalBytesWrittenToFile = 0;
 	uint64_t totalBuffersWritten = 0;
@@ -2511,6 +2651,8 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 
 	uint32_t buffer_size;
 	uint32_t buffer_half_size;
+
+	uint8_t *buffer = NULL;
 
 	/* all the possible frequencies below */
 
@@ -2536,7 +2678,7 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 	uint32_t half_buffers_per_session;
 	if(recording_duration_s != 0){
 		half_buffers_per_session = recording_duration_s *
-			(hsai_BlockA1.Init.AudioFrequency/buffer_half_size) * 2;
+				(hsai_BlockA1.Init.AudioFrequency/buffer_half_size) * 2;
 	}else{
 		half_buffers_per_session = 0;
 	}
@@ -2549,10 +2691,19 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 
 	uint32_t flag = 0;
 
-//	triggerSound();
-
-	sprintf(file_name, "/wav_%u.wav", file_index);
-	strcat(file_path, file_name);
+	//	triggerSound();
+	if(!configPacket.payload.config_packet.audio_config.audio_compression.enabled){
+		sprintf(file_name, "/audio_%u.wav", file_index);
+		strcat(file_path, file_name);
+	}else{
+		if(COMPRESSION_TYPE_FLAC == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+			sprintf(file_name, "/audio_%u.flac", file_index);
+			strcat(file_path, file_name);
+		}else if(COMPRESSION_TYPE_OPUS == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+			sprintf(file_name, "/audio_%u.opus", file_index);
+			strcat(file_path, file_name);
+		}
+	}
 
 	setLED_Green(1000);
 	osDelay(1000);
@@ -2566,120 +2717,312 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 		f_lseek(&WavFile,0);
 
 		/* Initialize header file */
-		WavProcess_EncInit(hsai_BlockA1.Init.AudioFrequency, pHeaderBuff);
+		if(!configPacket.payload.config_packet.audio_config.audio_compression.enabled){
+			WavProcess_EncInit(hsai_BlockA1.Init.AudioFrequency, pHeaderBuff);
+		}else{
+			if(COMPRESSION_TYPE_FLAC == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+				tflac_init(&t);
+			    t.samplerate = 48000;
+			    t.channels   = 2;
+			    t.bitdepth   = 16;
+			    t.blocksize  = AUDIO_BUFFER_HALF_LEN;
+			    t.max_partition_order = 3;
+
+			    tflac_mem = malloc(tflac_size_memory(t.blocksize));
+			    if(tflac_mem == NULL) Error_Handler();
+
+			    tflac_set_constant_subframe(&t, 1);
+			    tflac_set_fixed_subframe(&t, 1);
+
+			    if(tflac_validate(&t, tflac_mem, tflac_size_memory(t.blocksize)) != 0) Error_Handler();
+
+			    bufferlen = tflac_size_frame(t.blocksize,t.channels,t.bitdepth);
+			    buffer = (uint8_t*) malloc(bufferlen);
+			    if(buffer == NULL) Error_Handler();
+
+			}else if(COMPRESSION_TYPE_OPUS == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+				//todo: OPUS compression init
+			}
+		}
 
 		/* Write header file */
-		if(f_write(&WavFile, pHeaderBuff, 44, (UINT*)&byteswritten) == FR_OK)
-		{
+		if(!configPacket.payload.config_packet.audio_config.audio_compression.enabled){
+			if(f_write(&WavFile, pHeaderBuff, 44, (UINT*)&byteswritten) != FR_OK) Error_Handler();
 			totalBytesWrittenToFile += 44;
+		}else{
+			if(COMPRESSION_TYPE_FLAC == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+				//todo: FLAC compression
+			}else if(COMPRESSION_TYPE_OPUS == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+				//todo: OPUS compression
+			}
+		}
 
-			HAL_SAI_Receive(&hsai_BlockA1, (uint8_t*) audioSample, buffer_size, 2000);
+//		HAL_SAI_Receive(&hsai_BlockA1, (uint8_t*) audioSample, buffer_size, 2000); //prime SAI channels
+		hal_status = HAL_SAI_Receive_DMA(&hsai_BlockA1, (uint8_t*) audioSample, buffer_size);
 
-			hal_status = HAL_SAI_Receive_DMA(&hsai_BlockA1, (uint8_t*) audioSample, buffer_size);
+		/* continue recording until max bytes written */
+		while((totalBuffersWritten <= half_buffers_per_session) || (half_buffers_per_session == 0)){
+			while( (sampleCntr <= half_buffers_per_period) && ((totalBuffersWritten <= half_buffers_per_session) || (half_buffers_per_session == 0))){
+				// Wait for a notification
+				flag = osThreadFlagsWait(0x0001U | TERMINATE_EVENT, osFlagsWaitAny, osWaitForever);
 
-			/* continue recording until max bytes written */
-			while((totalBuffersWritten <= half_buffers_per_session) || (half_buffers_per_session == 0)){
-				while( (sampleCntr <= half_buffers_per_period) && ((totalBuffersWritten <= half_buffers_per_session) || (half_buffers_per_session == 0))){
-					// Wait for a notification
-					flag = osThreadFlagsWait(0x0001U | TERMINATE_EVENT, osFlagsWaitAny, osWaitForever);
+				if(SAI_HALF_CALLBACK){
+					SAI_HALF_CALLBACK = 0;
 
-					if(SAI_HALF_CALLBACK){
-						SAI_HALF_CALLBACK = 0;
-
-						f_write(&WavFile, audioSample, buffer_half_size * 2, (UINT*)&byteswritten);
-						totalBuffersWritten += 1;
-						totalBytesWrittenToFile += buffer_half_size * 2;
+					if(!configPacket.payload.config_packet.audio_config.audio_compression.enabled){
+						if(f_write(&WavFile, audioSample, buffer_half_size * 2, (UINT*)&byteswritten) != FR_OK) Error_Handler();
+					}else{
+						if(COMPRESSION_TYPE_FLAC == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+							//todo: FLAC compression
+					        if(tflac_encode_s16i(&t, frames, samples, audioSample, bufferlen, &bufferused) != 0) Error_Handler();
+					        if(f_write(&WavFile, buffer, bufferused, (UINT*)&byteswritten) != FR_OK) Error_Handler();
+						}else if(COMPRESSION_TYPE_OPUS == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+							//todo: OPUS compression
+						}
 					}
 
-					if(SAI_FULL_CALLBACK){
-						SAI_FULL_CALLBACK = 0;
+					totalBuffersWritten += 1;
+					totalBytesWrittenToFile += buffer_half_size * 2;
+				}
 
-						f_write(&WavFile, &audioSample[buffer_half_size], buffer_half_size * 2, (UINT*)&byteswritten);
-						totalBuffersWritten += 1;
-						totalBytesWrittenToFile += buffer_half_size * 2;
+				if(SAI_FULL_CALLBACK){
+					SAI_FULL_CALLBACK = 0;
+
+					if(!configPacket.payload.config_packet.audio_config.audio_compression.enabled){
+						if(f_write(&WavFile, &audioSample[buffer_half_size], buffer_half_size * 2, (UINT*)&byteswritten) != FR_OK) Error_Handler();
+					}else{
+						if(COMPRESSION_TYPE_FLAC == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+							//todo: FLAC compression
+					        if(tflac_encode_s16i(&t, frames, samples, audioSample, bufferlen, &bufferused) != 0) Error_Handler();
+					        if(f_write(&WavFile, buffer, bufferused, (UINT*)&byteswritten) != FR_OK) Error_Handler();
+						}else if(COMPRESSION_TYPE_OPUS == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+							//todo: OPUS compression
+						}
 					}
 
-					if((flag & TERMINATE_EVENT) == TERMINATE_EVENT){
-						f_close(&WavFile);
-						HAL_SAI_DMAStop(&hsai_BlockA1);
-						vTaskDelete( NULL );
+					totalBuffersWritten += 1;
+					totalBytesWrittenToFile += buffer_half_size * 2;
+				}
+
+				if((flag & TERMINATE_EVENT) == TERMINATE_EVENT){
+					f_close(&WavFile);
+					HAL_SAI_DMAStop(&hsai_BlockA1);
+					vTaskDelete( NULL );
+				}
+			}
+
+			sampleCntr = 0;
+
+			if(!configPacket.payload.config_packet.audio_config.audio_compression.enabled){
+				WavUpdateHeaderSize(totalBytesWrittenToFile);
+			}else{
+				if(COMPRESSION_TYPE_FLAC == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+					//todo: FLAC compression
+//				    /* this will calculate the final MD5 */
+//				    tflac_finalize(&t);
+//
+//				    /* now we overwrite our original STREAMINFO with an updated one */
+//				    fseek(output,4,SEEK_SET);
+//				    tflac_encode_streaminfo(&t, 1, buffer, bufferlen, &bufferused);
+//				    fwrite(buffer,1,bufferused,output);
+				}else if(COMPRESSION_TYPE_OPUS == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+					//todo: OPUS compression
+				}
+			}
+
+			if((totalBytesWrittenToFile > max_bytes_per_file) || ( (totalBuffersWritten > half_buffers_per_session) && (half_buffers_per_session != 0))){
+
+				// Close the file
+				f_close(&WavFile);
+
+				// Flush the cached data to the SD card
+				f_sync(&WavFile);
+
+				totalBytesWrittenToFile = 0;
+
+				if((totalBuffersWritten > half_buffers_per_session) && (half_buffers_per_session != 0)) break;
+
+				//					WavProcess_EncInit(hsai_BlockA1.Init.AudioFrequency, pHeaderBuff);
+				file_index++;
+
+				memset(file_path, '\0', sizeof(file_path));
+				strcpy(file_path, folder_name);
+
+				if(!configPacket.payload.config_packet.audio_config.audio_compression.enabled){
+					sprintf(file_name, "/audio_%u.wav", file_index);
+					strcat(file_path, file_name);
+				}else{
+					if(COMPRESSION_TYPE_FLAC == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+						sprintf(file_name, "/audio_%u.flac", file_index);
+						strcat(file_path, file_name);
+					}else if(COMPRESSION_TYPE_OPUS == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+						sprintf(file_name, "/audio_%u.opus", file_index);
+						strcat(file_path, file_name);
 					}
 				}
 
-				sampleCntr = 0;
-				WavUpdateHeaderSize(totalBytesWrittenToFile);
+				if(f_open(&WavFile, file_path, FA_CREATE_ALWAYS | FA_WRITE) != FR_OK){
+					Error_Handler();
+				}
 
-				if((totalBytesWrittenToFile > max_bytes_per_file) || ( (totalBuffersWritten > half_buffers_per_session) && (half_buffers_per_session != 0))){
+				f_lseek(&WavFile,0);
 
-					// Close the file
-					f_close(&WavFile);
-
-					// Flush the cached data to the SD card
-					f_sync(&WavFile);
-
-					totalBytesWrittenToFile = 0;
-
-					if((totalBuffersWritten > half_buffers_per_session) && (half_buffers_per_session != 0)) break;
-
-					//					WavProcess_EncInit(hsai_BlockA1.Init.AudioFrequency, pHeaderBuff);
-					file_index++;
-
-					memset(file_path, '\0', sizeof(file_path));
-					strcpy(file_path, folder_name);
-
-					sprintf(file_name, "/wav_%u.wav", file_index);
-					strcat(file_path, file_name);
-
-					if(f_open(&WavFile, file_path, FA_CREATE_ALWAYS | FA_WRITE) != FR_OK){
-						Error_Handler();
-					}
-
-					f_lseek(&WavFile,0);
-
+				if(!configPacket.payload.config_packet.audio_config.audio_compression.enabled){
 					if(f_write(&WavFile, pHeaderBuff, 44, (UINT*)&byteswritten) != FR_OK){
 						Error_Handler();
 					}
 					totalBytesWrittenToFile += 44;
-
+				}else{
+					if(COMPRESSION_TYPE_FLAC == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+						//todo: FLAC compression
+					}else if(COMPRESSION_TYPE_OPUS == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+						//todo: OPUS compression
+					}
 				}
 
 			}
 
-			HAL_SAI_DMAStop(&hsai_BlockA1);
+		}
 
-			for(int i = 0; i < 10; i++){
-				setLED_Green(1000);
-				osDelay(100);
-				setLED_Green(0);
-				osDelay(100);
-			}
+		HAL_SAI_DMAStop(&hsai_BlockA1);
 
-			vTaskDelete( NULL );
+		for(int i = 0; i < 10; i++){
+			setLED_Green(1000);
+			osDelay(100);
+			setLED_Green(0);
+			osDelay(100);
+		}
 
-			//			if(f_lseek(&WavFile, 0) == FR_OK)
-			//			{
-			//				/* Update the wav file header save it into wav file */
-			//				WavProcess_HeaderUpdate(pHeaderBuff, totalBytesWrittenToFile);
-			//
-			//				if(f_write(&WavFile, pHeaderBuff, 44, (UINT*) &byteswritten) == FR_OK)
-			//				{
-			//
-			//				}
-			//			}
-			//
-			//			// Close the file
-			//			f_close(&WavFile);
-			//
-			//			// Flush the cached data to the SD card
-			//			f_sync(&WavFile);
+		vTaskDelete( NULL );
 
-			return;
-		}else Error_Handler();
+		//			if(f_lseek(&WavFile, 0) == FR_OK)
+		//			{
+		//				/* Update the wav file header save it into wav file */
+		//				WavProcess_HeaderUpdate(pHeaderBuff, totalBytesWrittenToFile);
+		//
+		//				if(f_write(&WavFile, pHeaderBuff, 44, (UINT*) &byteswritten) == FR_OK)
+		//				{
+		//
+		//				}
+		//			}
+		//
+		//			// Close the file
+		//			f_close(&WavFile);
+		//
+		//			// Flush the cached data to the SD card
+		//			f_sync(&WavFile);
+
+		return;
+
 	}else{
 		Error_Handler();
 	}
 }
 
+#define MAX_PRECISION	(10)
+static const double rounders[MAX_PRECISION + 1] =
+{
+	0.5,				// 0
+	0.05,				// 1
+	0.005,				// 2
+	0.0005,				// 3
+	0.00005,			// 4
+	0.000005,			// 5
+	0.0000005,			// 6
+	0.00000005,			// 7
+	0.000000005,		// 8
+	0.0000000005,		// 9
+	0.00000000005		// 10
+};
+
+char * ftoa(double f, char * buf, int precision)
+{
+	char * ptr = buf;
+	char * p = ptr;
+	char * p1;
+	char c;
+	long intPart;
+
+	// check precision bounds
+	if (precision > MAX_PRECISION)
+		precision = MAX_PRECISION;
+
+	// sign stuff
+	if (f < 0)
+	{
+		f = -f;
+		*ptr++ = '-';
+	}
+
+	if (precision < 0)  // negative precision == automatic precision guess
+	{
+		if (f < 1.0) precision = 6;
+		else if (f < 10.0) precision = 5;
+		else if (f < 100.0) precision = 4;
+		else if (f < 1000.0) precision = 3;
+		else if (f < 10000.0) precision = 2;
+		else if (f < 100000.0) precision = 1;
+		else precision = 0;
+	}
+
+	// round value according the precision
+	if (precision)
+		f += rounders[precision];
+
+	// integer part...
+	intPart = f;
+	f -= intPart;
+
+	if (!intPart)
+		*ptr++ = '0';
+	else
+	{
+		// save start pointer
+		p = ptr;
+
+		// convert (reverse order)
+		while (intPart)
+		{
+			*p++ = '0' + intPart % 10;
+			intPart /= 10;
+		}
+
+		// save end pos
+		p1 = p;
+
+		// reverse result
+		while (p > ptr)
+		{
+			c = *--p;
+			*p = *ptr;
+			*ptr++ = c;
+		}
+
+		// restore end pos
+		ptr = p1;
+	}
+
+	// decimal part
+	if (precision)
+	{
+		// place decimal point
+		*ptr++ = '.';
+
+		// convert
+		while (precision--)
+		{
+			f *= 10.0;
+			c = f;
+			*ptr++ = '0' + c;
+			f -= c;
+		}
+	}
+
+	// terminating zero
+	*ptr = 0;
+
+	return buf;
+}
 
 // Function to convert RTC time to FatFs time format
 WORD getFatTime(const RTC_TimeTypeDef *time, const RTC_DateTypeDef *date) {
@@ -2906,7 +3249,6 @@ void mainSystemTask(void *argument){
 	FRESULT res;
 
 	res = f_mount(&SDFatFs, "", 1);
-
 	/* read current config from SD card */
 
 	/* initiate system */
@@ -2919,11 +3261,13 @@ void mainSystemTask(void *argument){
 
 	//	mainSystemThreadId = osThreadNew(mainSystemTask, NULL, &mainSystemTask_attributes);
 
-		micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
 
 		bmeTaskHandle = osThreadNew(BME_Task, NULL, &bmeTask_attributes);
 
 		batteryMonitorTaskId = osThreadNew(batteryMonitorTask, NULL, &batteryMonitorTask_attributes);
+
+		osDelay(500);
+		micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
 
 
 //	while(1){

@@ -59,7 +59,7 @@ osThreadId_t configThreadId;
 
 const osThreadAttr_t mainSystemTask_attributes = { .name = "mainSystemTask", .attr_bits =
 		osThreadDetached, .cb_mem = NULL, .cb_size = 0, .stack_mem = NULL,
-		.stack_size = 256*8, .priority = (osPriority_t) osPriorityBelowNormal,
+		.stack_size = 256*8, .priority = (osPriority_t) osPriorityNormal,
 		.tz_module = 0, .reserved = 0 };
 osThreadId_t mainSystemThreadId;
 
@@ -71,20 +71,25 @@ osThreadId_t sampleThreadId;
 
 const osThreadAttr_t micTask_attributes = { .name = "micTask", .attr_bits =
 		osThreadDetached, .cb_mem = NULL, .cb_size = 0, .stack_mem = NULL,
-		.stack_size = 256*24, .priority = (osPriority_t) osPriorityNormal,
+		.stack_size = 256*20, .priority = (osPriority_t) osPriorityNormal,
 		.tz_module = 0, .reserved = 0 };
 osThreadId_t micThreadId;
 
 osThreadId_t bmeTaskHandle;
 const osThreadAttr_t bmeTask_attributes = { .name = "bmeTask", .attr_bits =
 		osThreadDetached, .cb_mem = NULL, .cb_size = 0, .stack_mem = NULL,
-		.stack_size = 512 * 10, .priority = (osPriority_t) osPriorityNormal,
+		.stack_size = 512 * 12, .priority = (osPriority_t) osPriorityBelowNormal,
 		.tz_module = 0, .reserved = 0 };
 
 const osThreadAttr_t batteryMonitorTask_attributes = { .name = "batteryMonTask", .attr_bits =
 		osThreadDetached, .cb_mem = NULL, .cb_size = 0, .stack_mem = NULL,
-		.stack_size = 512 * 4, .priority = (osPriority_t) osPriorityNormal,
+		.stack_size = 512 * 6, .priority = (osPriority_t) osPriorityBelowNormal,
 		.tz_module = 0, .reserved = 0 };
+
+const osThreadAttr_t chirpTask_attributes = { .name = "chirpTask",
+		.attr_bits = osThreadDetached, .cb_mem = NULL, .cb_size = 0,
+		.stack_mem = NULL, .stack_size = 256*4, .priority =
+				(osPriority_t) osPriorityAboveNormal, .tz_module = 0, .reserved = 0 };
 
 osMutexId_t messageI2C1_LockHandle;
 const osMutexAttr_t messageI2C1_Lock_attributes = { .name = "messageI2C1_Lock" };
