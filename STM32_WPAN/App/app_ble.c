@@ -337,6 +337,7 @@ static void BLE_StatusNot(HCI_TL_CmdStatus_t Status);
 static void Ble_Tl_Init(void);
 static void Ble_Hci_Gap_Gatt_Init(void);
 static const uint8_t* BleGetBdAddress(void);
+void Adv_Request(APP_BLE_ConnStatus_t NewStatus);
 static void Add_Advertisment_Service_UUID(uint16_t servUUID);
 static void Adv_Mgr(void);
 static void AdvUpdateProcess(void *argument);

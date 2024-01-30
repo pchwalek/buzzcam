@@ -104,6 +104,8 @@ static uint8_t bmeState[BSEC_MAX_STATE_BLOB_SIZE];
 
 static char outputString[120] = {0};
 
+static FIL sensorFile;
+
 void BME_Task(void *argument) {
 //	osDelay(2000);
 //	sensor_packet_t *packet = NULL;
@@ -163,12 +165,11 @@ void BME_Task(void *argument) {
 
 
 
-	FIL sensorFile;
 	char file_name[20] = "sensor.csv";
 
 	// add header
 	if(check_file_exists(file_name) == FR_NO_FILE){
-    	if(f_open(&sensorFile, file_name, FA_CREATE_ALWAYS | FA_WRITE | FA_OPEN_APPEND) == FR_OK){
+    	if(f_open(&sensorFile, file_name, FA_CREATE_NEW | FA_WRITE) == FR_OK){
 			strcpy(outputString, "timestamp, time_sensor, time_ms_start, signal, signal_dim, sensor_id, accuracy\n");
 			f_write(&sensorFile, outputString, strlen(outputString), NULL);
 	    	// Flush the cached data to the SD card
@@ -211,25 +212,43 @@ void BME_Task(void *argument) {
 				bmeData[bmeIdx++].accuracy = static_cast<bme680_accuracy_t>(bme.outputs.output[i].accuracy);
 			}
 
-
+			volatile FRESULT res;
 			if(bme.outputs.nOutputs != 0){
-				if(f_open(&sensorFile, file_name, FA_CREATE_ALWAYS | FA_WRITE | FA_OPEN_APPEND) != FR_OK){
+//				res = f_open(&sensorFile, file_name, FA_OPEN_APPEND | FA_WRITE | FA_READ);
+				do{
+					res = f_open(&sensorFile, file_name, FA_OPEN_APPEND | FA_WRITE | FA_READ);
+					if((res != FR_TIMEOUT) && (res != FR_OK)){
+						Error_Handler();
+					}
+				}while( ((res == FR_TIMEOUT) || (osDelay(10) == osOK)) &&
+						(res != FR_OK));
+
+				if(res != FR_OK){
 					Error_Handler();
 				}
 
 			    for (uint8_t i = 0; i < bmeIdx; i++) {
 			        formatBmePayload(outputString, sizeof(outputString), &bmeData[i]);
-					f_write(&sensorFile, outputString, strlen(outputString), NULL);
+					if(f_write(&sensorFile, outputString, strlen(outputString), NULL) != FR_OK){
+						Error_Handler();
+					}
 
 
 			        memset(outputString, '\0', sizeof(outputString));
 			    }
 
 		    	// Flush the cached data to the SD card
-				f_sync(&sensorFile);
-				// Close the file
-				f_close(&sensorFile);
+//			    res = f_sync(&sensorFile);
+//				if(res != FR_OK){
+//					Error_Handler();
+//				}
 
+				// Close the file
+			    res = f_close(&sensorFile);
+				if(res != FR_OK){
+					Error_Handler();
+				}
+//				memset(&sensorFile, '\0', sizeof(sensorFile));
 
 				bmeID++;
 				bmeIdx = 0;

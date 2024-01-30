@@ -76,6 +76,8 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+ADC_HandleTypeDef hadc1;
+
 I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c3;
 
@@ -98,13 +100,14 @@ UART_HandleTypeDef huart1;
 
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
-osThreadId_t chirpTaskHandle;
 //const osThreadAttr_t defaultTask_attributes = {
 //  .name = "defaultTask",
 //  .priority = (osPriority_t) osPriorityNormal,
 //  .stack_size = 256 * 4
 //};
 /* USER CODE BEGIN PV */
+osThreadId_t batteryMonitorTaskId;
+osThreadId_t chirpTaskHandle;
 const osThreadAttr_t defaultTask_attributes = { .name = "defaultTask",
 		.attr_bits = osThreadDetached, .cb_mem = NULL, .cb_size = 0,
 		.stack_mem = NULL, .stack_size = 256*4, .priority =
@@ -143,9 +146,13 @@ volatile uint8_t SAI_HALF_CALLBACK = 0;
 volatile uint8_t SAI_FULL_CALLBACK = 0;
 
 RTC_AlarmTypeDef sAlarm;
+
+FIL batteryFile;
+osTimerId_t periodicBatteryMonitorTimer_id;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
+void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
@@ -159,6 +166,7 @@ static void MX_TIM16_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_SPI2_Init(void);
 static void MX_USART1_UART_Init(void);
+static void MX_ADC1_Init(void);
 static void MX_RF_Init(void);
 void StartDefaultTask(void *argument);
 
@@ -232,6 +240,11 @@ void grabOrientation(char *folder_name);
 void chirpTask(void *argument);
 void chirp_timer_callback(void *argument);
 void toneSweep(uint8_t reverse);
+void save_config(char* folder_name);
+
+void batteryMonitorTask(void *argument);
+
+void triggerBatteryMonitorSample(void *argument);
 /* USER CODE END 0 */
 
 /**
@@ -241,7 +254,6 @@ void toneSweep(uint8_t reverse);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -252,7 +264,6 @@ int main(void)
   MX_APPE_Config();
 
   /* USER CODE BEGIN Init */
-
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -265,6 +276,8 @@ int main(void)
   MX_IPCC_Init();
 
   /* USER CODE BEGIN SysInit */
+
+
 	configPacket.has_header = true;
 	configPacket.header.epoch = 1111;
 	configPacket.header.system_uid = LL_FLASH_GetUDN();
@@ -284,7 +297,7 @@ int main(void)
 	configPacket.payload.config_packet.audio_config.estimated_record_time=12345678; //placeholder
 	configPacket.payload.config_packet.audio_config.sample_freq=MIC_SAMPLE_FREQ_SAMPLE_RATE_48000;
 	configPacket.payload.config_packet.audio_config.free_run_mode=true;
-//	configPacket.payload.config_packet.audio_config.chirp_enable=true;
+	configPacket.payload.config_packet.audio_config.chirp_enable=false;
 
 	configPacket.payload.config_packet.has_camera_control=true;
 	configPacket.payload.config_packet.camera_control.capture=false;
@@ -409,6 +422,7 @@ int main(void)
   MX_SPI2_Init();
   MX_USART1_UART_Init();
   MX_USB_Device_Init();
+  MX_ADC1_Init();
   MX_RF_Init();
   /* USER CODE BEGIN 2 */
 	//  GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -573,7 +587,7 @@ int main(void)
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
-//	mainSystemThreadId = osThreadNew(mainSystemTask, NULL, &mainSystemTask_attributes);
+	mainSystemThreadId = osThreadNew(mainSystemTask, NULL, &mainSystemTask_attributes);
 
 //	micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
 
@@ -677,7 +691,15 @@ void PeriphCommonClock_Config(void)
 
   /** Initializes the peripherals clock
   */
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SMPS|RCC_PERIPHCLK_RFWAKEUP;
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SMPS|RCC_PERIPHCLK_RFWAKEUP
+                              |RCC_PERIPHCLK_USB|RCC_PERIPHCLK_ADC;
+  PeriphClkInitStruct.PLLSAI1.PLLN = 20;
+  PeriphClkInitStruct.PLLSAI1.PLLP = RCC_PLLP_DIV8;
+  PeriphClkInitStruct.PLLSAI1.PLLQ = RCC_PLLQ_DIV2;
+  PeriphClkInitStruct.PLLSAI1.PLLR = RCC_PLLR_DIV2;
+  PeriphClkInitStruct.PLLSAI1.PLLSAI1ClockOut = RCC_PLLSAI1_USBCLK|RCC_PLLSAI1_ADCCLK;
+  PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_PLLSAI1;
+  PeriphClkInitStruct.AdcClockSelection = RCC_ADCCLKSOURCE_PLLSAI1;
   PeriphClkInitStruct.RFWakeUpClockSelection = RCC_RFWKPCLKSOURCE_LSE;
   PeriphClkInitStruct.SmpsClockSelection = RCC_SMPSCLKSOURCE_HSE;
   PeriphClkInitStruct.SmpsDivSelection = RCC_SMPSCLKDIV_RANGE0;
@@ -689,6 +711,64 @@ void PeriphCommonClock_Config(void)
   /* USER CODE BEGIN Smps */
 
   /* USER CODE END Smps */
+}
+
+/**
+  * @brief ADC1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_ADC1_Init(void)
+{
+
+  /* USER CODE BEGIN ADC1_Init 0 */
+
+  /* USER CODE END ADC1_Init 0 */
+
+  ADC_ChannelConfTypeDef sConfig = {0};
+
+  /* USER CODE BEGIN ADC1_Init 1 */
+
+  /* USER CODE END ADC1_Init 1 */
+
+  /** Common config
+  */
+  hadc1.Instance = ADC1;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV32;
+  hadc1.Init.Resolution = ADC_RESOLUTION_12B;
+  hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
+  hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+  hadc1.Init.LowPowerAutoWait = DISABLE;
+  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.NbrOfConversion = 1;
+  hadc1.Init.DiscontinuousConvMode = DISABLE;
+  hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+  hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+  hadc1.Init.DMAContinuousRequests = DISABLE;
+  hadc1.Init.Overrun = ADC_OVR_DATA_PRESERVED;
+  hadc1.Init.OversamplingMode = DISABLE;
+  if (HAL_ADC_Init(&hadc1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Regular Channel
+  */
+  sConfig.Channel = ADC_CHANNEL_15;
+  sConfig.Rank = ADC_REGULAR_RANK_1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_2CYCLES_5;
+  sConfig.SingleDiff = ADC_SINGLE_ENDED;
+  sConfig.OffsetNumber = ADC_OFFSET_NONE;
+  sConfig.Offset = 0;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN ADC1_Init 2 */
+
+  /* USER CODE END ADC1_Init 2 */
+
 }
 
 /**
@@ -901,7 +981,7 @@ static void MX_RTC_Init(void)
   sAlarm.AlarmTime.Seconds = 0x0;
   sAlarm.AlarmTime.SubSeconds = 0x0;
   sAlarm.AlarmTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
-  sAlarm.AlarmTime.StoreOperation = RTC_STOREOPERATION_RESET;
+  sAlarm.AlarmTime.StoreOperation = RTC_STOREOPERATION_SET;
   sAlarm.AlarmMask = RTC_ALARMMASK_NONE;
   sAlarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
   sAlarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_DATE;
@@ -1507,7 +1587,7 @@ void acousticSamplingTask(void *argument){
 
 	/* Audio capture start */
 
-	char folder_name[20] = {0};
+	char folder_name[30] = {0};
 
 	// create folder on mounted SD card
 	set_folder_from_time(folder_name);
@@ -1515,6 +1595,7 @@ void acousticSamplingTask(void *argument){
 //	osDelay(1000);
 
 	grabOrientation(folder_name);
+	save_config(folder_name);
 
 	if(configPacket.payload.config_packet.audio_config.chirp_enable){
 		chirpTaskHandle = osThreadNew(chirpTask, NULL, &defaultTask_attributes);
@@ -1528,6 +1609,94 @@ void acousticSamplingTask(void *argument){
 	}
 }
 
+
+
+void batteryMonitorTask(void *argument){
+	char file_name[20] = "battery.csv";
+	uint32_t flag = 0;
+	uint8_t battChgFlag = 0;
+	float battVltg;
+	char str[32];
+	FRESULT res;
+
+	// add header
+	if(check_file_exists(file_name) == FR_NO_FILE){
+    	if(f_open(&batteryFile, file_name, FA_CREATE_NEW | FA_WRITE) == FR_OK){
+			strcpy(str, "timestamp, voltage, charging\n");
+			f_write(&batteryFile, str, strlen(str), NULL);
+	    	// Flush the cached data to the SD card
+	    	f_sync(&batteryFile);
+	    	// Close the file
+	    	f_close(&batteryFile);
+
+	        memset(str, '\0', sizeof(str));
+    	}
+	}
+
+	periodicBatteryMonitorTimer_id = osTimerNew(triggerBatteryMonitorSample, osTimerPeriodic,
+				NULL, NULL);
+	osTimerStart(periodicBatteryMonitorTimer_id, 30000);
+
+	while(1){
+		flag = osThreadFlagsWait(UPDATE_EVENT | TERMINATE_EVENT, osFlagsWaitAny, osWaitForever);
+		if((flag & UPDATE_EVENT) == UPDATE_EVENT){
+
+			do{
+				res = f_open(&batteryFile, file_name, FA_OPEN_APPEND | FA_WRITE | FA_READ);
+				if((res != FR_TIMEOUT) && (res != FR_OK)){
+					Error_Handler();
+				}
+			}while( ((res == FR_TIMEOUT) || (osDelay(10) == osOK)) &&
+					(res != FR_OK));
+
+			if(res != FR_OK){
+				Error_Handler();
+			}
+
+			battChgFlag = HAL_GPIO_ReadPin(BATT_CHG_GPIO_Port, BATT_CHG_Pin);
+
+			HAL_GPIO_WritePin(EN_BATT_MON_GPIO_Port, EN_BATT_MON_Pin, GPIO_PIN_SET);
+			osDelay(1);
+
+			HAL_ADC_Start_IT(&hadc1);
+
+		    flag = osThreadFlagsWait(COMPLETE_EVENT, osFlagsWaitAny, osWaitForever);
+
+			battVltg = (((float) HAL_ADC_GetValue(&hadc1)) / 4096.0) * 3.3 * 2;
+			HAL_ADC_Stop(&hadc1);
+
+			HAL_GPIO_WritePin(EN_BATT_MON_GPIO_Port, EN_BATT_MON_Pin, GPIO_PIN_RESET);
+
+	        snprintf(str, sizeof(str), "%.3f,%u\n", battVltg, battChgFlag);
+			f_write(&batteryFile, str, strlen(str), NULL);
+			memset(str, '\0', sizeof(str));
+
+			// Close the file
+			res = f_close(&batteryFile);
+			if(res != FR_OK){
+				Error_Handler();
+			}
+
+		}
+
+		if((flag & TERMINATE_EVENT) == TERMINATE_EVENT){
+			vTaskDelete(NULL);
+		}
+
+	}
+
+}
+
+void triggerBatteryMonitorSample(void *argument){
+	osThreadFlagsSet (batteryMonitorTaskId, UPDATE_EVENT);
+}
+
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
+    if (hadc->Instance == ADC1) {
+        osThreadFlagsSet (batteryMonitorTaskId, COMPLETE_EVENT);
+    }
+}
+
 void exit_audio(void){
 	disableAudioPeripherals();
 	unmount_sd_card();
@@ -1537,6 +1706,142 @@ void unmount_sd_card(void){
 	f_mount(NULL, "", 1);
 }
 
+static FIL configFile;
+void save_config(char* folder_name){
+	char file_name[30] = {0};
+
+
+	strcpy(file_name, folder_name);
+	strcat(file_name, "/config.csv");
+
+	FIL configFile;
+
+
+	char str[50];
+	if(f_open(&configFile, file_name, FA_CREATE_NEW | FA_WRITE) == FR_OK){
+
+		snprintf(str, sizeof(str), "uid,%u\n", LL_FLASH_GetUDN());
+		f_write(&configFile, str, strlen(str), NULL);
+        memset(str, '\0', sizeof(str));
+
+        snprintf(str, sizeof(str), "bit res,%u\n", configPacket.payload.config_packet.audio_config.bit_resolution);
+		f_write(&configFile, str, strlen(str), NULL);
+		memset(str, '\0', sizeof(str));
+
+        snprintf(str, sizeof(str), "ch1,%u\n", configPacket.payload.config_packet.audio_config.channel_1);
+		f_write(&configFile, str, strlen(str), NULL);
+		memset(str, '\0', sizeof(str));
+
+        snprintf(str, sizeof(str), "ch2,%u\n", configPacket.payload.config_packet.audio_config.channel_2);
+		f_write(&configFile, str, strlen(str), NULL);
+		memset(str, '\0', sizeof(str));
+
+        snprintf(str, sizeof(str), "mic gain,%u\n", configPacket.payload.config_packet.audio_config.mic_gain);
+		f_write(&configFile, str, strlen(str), NULL);
+		memset(str, '\0', sizeof(str));
+
+        snprintf(str, sizeof(str), "compression factor,%u\n", configPacket.payload.config_packet.audio_config.audio_compression.compression_factor);
+		f_write(&configFile, str, strlen(str), NULL);
+		memset(str, '\0', sizeof(str));
+
+        snprintf(str, sizeof(str), "compression type,%u\n", configPacket.payload.config_packet.audio_config.audio_compression.compression_type);
+		f_write(&configFile, str, strlen(str), NULL);
+		memset(str, '\0', sizeof(str));
+
+        snprintf(str, sizeof(str), "en_compression,%u\n", configPacket.payload.config_packet.audio_config.audio_compression.enabled);
+		f_write(&configFile, str, strlen(str), NULL);
+		memset(str, '\0', sizeof(str));
+
+        snprintf(str, sizeof(str), "sample freq,%u\n", configPacket.payload.config_packet.audio_config.sample_freq);
+		f_write(&configFile, str, strlen(str), NULL);
+		memset(str, '\0', sizeof(str));
+
+        snprintf(str, sizeof(str), "free run mode,%u\n", configPacket.payload.config_packet.audio_config.free_run_mode);
+		f_write(&configFile, str, strlen(str), NULL);
+		memset(str, '\0', sizeof(str));
+
+        snprintf(str, sizeof(str), "en_chirp,%u\n", configPacket.payload.config_packet.audio_config.chirp_enable);
+		f_write(&configFile, str, strlen(str), NULL);
+		memset(str, '\0', sizeof(str));
+
+        snprintf(str, sizeof(str), "low power mode,%u\n", configPacket.payload.config_packet.low_power_config.low_power_mode);
+		f_write(&configFile, str, strlen(str), NULL);
+		memset(str, '\0', sizeof(str));
+
+        snprintf(str, sizeof(str), "en_gas,%u\n", configPacket.payload.config_packet.sensor_config.enable_gas);
+		f_write(&configFile, str, strlen(str), NULL);
+		memset(str, '\0', sizeof(str));
+
+        snprintf(str, sizeof(str), "en_humidity,%u\n", configPacket.payload.config_packet.sensor_config.enable_humidity);
+		f_write(&configFile, str, strlen(str), NULL);
+		memset(str, '\0', sizeof(str));
+
+        snprintf(str, sizeof(str), "en_temp,%u\n", configPacket.payload.config_packet.sensor_config.enable_temperature);
+		f_write(&configFile, str, strlen(str), NULL);
+		memset(str, '\0', sizeof(str));
+
+        snprintf(str, sizeof(str), "sample period (ms),%u\n", configPacket.payload.config_packet.sensor_config.sample_period_ms);
+		f_write(&configFile, str, strlen(str), NULL);
+		memset(str, '\0', sizeof(str));
+
+		for(int i = 0; i < configPacket.payload.config_packet.schedule_config_count; i++){
+			snprintf(str, sizeof(str), "schedule number,%u\n", i);
+			f_write(&configFile, str, strlen(str), NULL);
+			memset(str, '\0', sizeof(str));
+
+			snprintf(str, sizeof(str), "sunday,%u\n", configPacket.payload.config_packet.schedule_config[i].sunday);
+			f_write(&configFile, str, strlen(str), NULL);
+			memset(str, '\0', sizeof(str));
+
+			snprintf(str, sizeof(str), "monday,%u\n", configPacket.payload.config_packet.schedule_config[i].monday);
+			f_write(&configFile, str, strlen(str), NULL);
+			memset(str, '\0', sizeof(str));
+
+			snprintf(str, sizeof(str), "tuesday,%u\n", configPacket.payload.config_packet.schedule_config[i].tuesday);
+			f_write(&configFile, str, strlen(str), NULL);
+			memset(str, '\0', sizeof(str));
+
+			snprintf(str, sizeof(str), "wednesday,%u\n", configPacket.payload.config_packet.schedule_config[i].wednesday);
+			f_write(&configFile, str, strlen(str), NULL);
+			memset(str, '\0', sizeof(str));
+
+			snprintf(str, sizeof(str), "thursday,%u\n", configPacket.payload.config_packet.schedule_config[i].thursday);
+			f_write(&configFile, str, strlen(str), NULL);
+			memset(str, '\0', sizeof(str));
+
+			snprintf(str, sizeof(str), "friday,%u\n", configPacket.payload.config_packet.schedule_config[i].friday);
+			f_write(&configFile, str, strlen(str), NULL);
+			memset(str, '\0', sizeof(str));
+
+			snprintf(str, sizeof(str), "saturday,%u\n", configPacket.payload.config_packet.schedule_config[i].saturday);
+			f_write(&configFile, str, strlen(str), NULL);
+			memset(str, '\0', sizeof(str));
+
+			snprintf(str, sizeof(str), "start hour,%u\n", configPacket.payload.config_packet.schedule_config[i].start_hour);
+			f_write(&configFile, str, strlen(str), NULL);
+			memset(str, '\0', sizeof(str));
+
+			snprintf(str, sizeof(str), "start minute,%u\n", configPacket.payload.config_packet.schedule_config[i].start_minute);
+			f_write(&configFile, str, strlen(str), NULL);
+			memset(str, '\0', sizeof(str));
+
+			snprintf(str, sizeof(str), "stop hour,%u\n", configPacket.payload.config_packet.schedule_config[i].stop_hour);
+			f_write(&configFile, str, strlen(str), NULL);
+			memset(str, '\0', sizeof(str));
+
+			snprintf(str, sizeof(str), "stop minute,%u\n", configPacket.payload.config_packet.schedule_config[i].stop_minute);
+			f_write(&configFile, str, strlen(str), NULL);
+			memset(str, '\0', sizeof(str));
+		}
+
+	}else{
+		Error_Handler();
+	}
+
+	// Close the file
+	f_close(&configFile);
+
+}
 
 void set_folder_from_time(char* folder_name){
 //	char folder_name[20];
@@ -2242,10 +2547,16 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 
 	uint32_t file_index = 0;
 
+	uint32_t flag = 0;
+
 //	triggerSound();
 
 	sprintf(file_name, "/wav_%u.wav", file_index);
 	strcat(file_path, file_name);
+
+	setLED_Green(1000);
+	osDelay(1000);
+	setLED_Green(0);
 
 	/* Create a new file */
 	if(f_open(&WavFile, file_path, FA_CREATE_ALWAYS | FA_WRITE) == FR_OK)
@@ -2270,7 +2581,7 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 			while((totalBuffersWritten <= half_buffers_per_session) || (half_buffers_per_session == 0)){
 				while( (sampleCntr <= half_buffers_per_period) && ((totalBuffersWritten <= half_buffers_per_session) || (half_buffers_per_session == 0))){
 					// Wait for a notification
-					osThreadFlagsWait(0x0001U, osFlagsWaitAny, osWaitForever);
+					flag = osThreadFlagsWait(0x0001U | TERMINATE_EVENT, osFlagsWaitAny, osWaitForever);
 
 					if(SAI_HALF_CALLBACK){
 						SAI_HALF_CALLBACK = 0;
@@ -2286,6 +2597,12 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 						f_write(&WavFile, &audioSample[buffer_half_size], buffer_half_size * 2, (UINT*)&byteswritten);
 						totalBuffersWritten += 1;
 						totalBytesWrittenToFile += buffer_half_size * 2;
+					}
+
+					if((flag & TERMINATE_EVENT) == TERMINATE_EVENT){
+						f_close(&WavFile);
+						HAL_SAI_DMAStop(&hsai_BlockA1);
+						vTaskDelete( NULL );
 					}
 				}
 
@@ -2465,9 +2782,9 @@ void getFormattedTime(RTC_HandleTypeDef *hrtc, char *formattedTime) {
 	HAL_RTC_GetDate(hrtc, &sDate, RTC_FORMAT_BIN); // This line must be called after HAL_RTC_GetTime()!
 
 	// Format the time into the provided character array
-	snprintf(formattedTime, 17, "%02d_%02d_%02d_%02d_%02d",
+	snprintf(formattedTime, 25, "%02dy_%02dm_%02dd_%02dh_%02dm_%02ds",
 			sDate.Year, sDate.Month, sDate.Date,
-			sTime.Hours, sTime.Minutes);
+			sTime.Hours, sTime.Minutes, sTime.Seconds);
 }
 
 void disableAudioPeripherals(void){
@@ -2605,6 +2922,9 @@ void mainSystemTask(void *argument){
 		micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
 
 		bmeTaskHandle = osThreadNew(BME_Task, NULL, &bmeTask_attributes);
+
+		batteryMonitorTaskId = osThreadNew(batteryMonitorTask, NULL, &batteryMonitorTask_attributes);
+
 
 //	while(1){
 //		osDelay(10);

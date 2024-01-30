@@ -104,7 +104,7 @@
   * @{
   */
 
-extern USBD_DescriptorsTypeDef     AUDIO_Desc;
+extern USBD_DescriptorsTypeDef     CDC_Desc;
 
 /* USER CODE BEGIN EXPORTED_VARIABLES */
 

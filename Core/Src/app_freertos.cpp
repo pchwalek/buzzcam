@@ -81,6 +81,11 @@ const osThreadAttr_t bmeTask_attributes = { .name = "bmeTask", .attr_bits =
 		.stack_size = 512 * 10, .priority = (osPriority_t) osPriorityNormal,
 		.tz_module = 0, .reserved = 0 };
 
+const osThreadAttr_t batteryMonitorTask_attributes = { .name = "batteryMonTask", .attr_bits =
+		osThreadDetached, .cb_mem = NULL, .cb_size = 0, .stack_mem = NULL,
+		.stack_size = 512 * 4, .priority = (osPriority_t) osPriorityNormal,
+		.tz_module = 0, .reserved = 0 };
+
 osMutexId_t messageI2C1_LockHandle;
 const osMutexAttr_t messageI2C1_Lock_attributes = { .name = "messageI2C1_Lock" };
 

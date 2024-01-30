@@ -76,8 +76,6 @@
 #define USBD_LPM_ENABLED     1U
 /*---------- -----------*/
 #define USBD_SELF_POWERED     1U
-/*---------- -----------*/
-#define USBD_AUDIO_FREQ     22100U
 
 /****************************************/
 /* #define for FS and HS identification */

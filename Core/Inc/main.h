@@ -141,6 +141,8 @@ extern SPI_HandleTypeDef hspi1;
 #define SD_DETECT_GPIO_Port GPIOB
 #define P1_00_Pin GPIO_PIN_4
 #define P1_00_GPIO_Port GPIOC
+#define BATT_VLTGA8_Pin GPIO_PIN_8
+#define BATT_VLTGA8_GPIO_Port GPIOA
 #define INT_MAG_Pin GPIO_PIN_9
 #define INT_MAG_GPIO_Port GPIOA
 #define BUZZER_PWM_Pin GPIO_PIN_6
@@ -168,6 +170,7 @@ extern SPI_HandleTypeDef hspi1;
 #define SD_SPI_HANDLE hspi1
 
 #define CONFIG_UPDATED_EVENT  0x00000001
+#define UPDATE_EVENT  		  0x00000001
 #define TERMINATE_EVENT  	  0x00000002
 #define COMPLETE_EVENT  	  0x00000004
 #define RTC_EVENT		  	  0x00000008
@@ -194,6 +197,10 @@ extern osThreadId_t mainSystemThreadId;
 extern osThreadId_t micThreadId;
 extern osThreadId_t sampleThreadId;
 extern osThreadId_t bmeTaskHandle;
+extern osThreadId_t chirpTaskHandle;
+extern osThreadId_t batteryMonitorTaskId;
+
+extern osTimerId_t periodicBatteryMonitorTimer_id;
 
 extern const osThreadAttr_t markTask_attributes;
 extern const osThreadAttr_t configTask_attributes;
@@ -204,6 +211,7 @@ extern const osThreadAttr_t micTask_attributes;
 extern const osMutexAttr_t messageI2C1_Lock_attributes;
 extern const osSemaphoreAttr_t messageSPI1_Lock_attributes;
 extern const osThreadAttr_t bmeTask_attributes;
+extern const osThreadAttr_t batteryMonitorTask_attributes;
 
 void setLED_Blue(uint32_t intensity);
 void setLED_Green(uint32_t intensity);
