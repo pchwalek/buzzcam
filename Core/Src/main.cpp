@@ -60,7 +60,7 @@
 
 #define MAX_INTENSITY 1000
 
-#define AUDIO_BUFFER_LEN		(40000)
+#define AUDIO_BUFFER_LEN		(38000)
 //#define AUDIO_BUFFER_LEN		(1000)
 #define AUDIO_BUFFER_HALF_LEN	(AUDIO_BUFFER_LEN >> 1)
 
@@ -130,7 +130,7 @@ char SDPath[4]; /* SD card logical drive path */
 //FX_FILE         fx_file;
 //FX_FILE			WavFile;
 
-uint32_t media_memory[512 / sizeof(uint32_t)];
+//uint32_t media_memory[512 / sizeof(uint32_t)];
 
 WAVE_FormatTypeDef WaveFormat;
 
@@ -139,7 +139,7 @@ uint8_t pHeaderBuff[44];
 uint32_t byteswritten = 0;
 volatile uint32_t sampleCntr = 0;
 
-uint16_t audioSample[AUDIO_BUFFER_LEN] = {0};
+static uint16_t audioSample[AUDIO_BUFFER_LEN] = {0};
 
 volatile uint8_t SAI_HALF_CALLBACK = 0;
 volatile uint8_t SAI_FULL_CALLBACK = 0;
@@ -230,7 +230,7 @@ static DTS_STM_Payload_t PackedPayload;
 
 packet_t configPacket = PACKET_INIT_ZERO;
 packet_t infoPacket = PACKET_INIT_ZERO;
-uint8_t buffer[500];
+uint8_t buffer[500]; //needed for BLE
 size_t message_length;
 bool status;
 
@@ -261,12 +261,14 @@ void triggerBatteryMonitorSample(void *argument);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+	__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_OPTVERR);
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
+
   /* Config code for STM32_WPAN (HSE Tuning must be done before system clock configuration) */
   MX_APPE_Config();
 
@@ -276,6 +278,17 @@ int main(void)
   /* Configure the system clock */
   SystemClock_Config();
 
+	/**
+	 * Select LSE clock
+	 */
+	LL_RCC_LSE_Enable();
+	while(!LL_RCC_LSE_IsReady());
+
+	/**
+	 * Select wakeup source of BLE RF
+	 */
+	LL_RCC_SetRFWKPClockSource(LL_RCC_RFWKP_CLKSOURCE_LSE);
+
 /* Configure the peripherals common clocks */
   PeriphCommonClock_Config();
 
@@ -283,7 +296,7 @@ int main(void)
   MX_IPCC_Init();
 
   /* USER CODE BEGIN SysInit */
-  tflac_detect_cpu();
+//  tflac_detect_cpu();
 
 	configPacket.has_header = true;
 	configPacket.header.epoch = 1111;
@@ -427,8 +440,8 @@ int main(void)
   }
   MX_I2C1_Init();
   MX_SPI2_Init();
-  MX_USART1_UART_Init();
-  MX_USB_Device_Init();
+//  MX_USART1_UART_Init();
+//  MX_USB_Device_Init();
   MX_ADC1_Init();
   MX_RF_Init();
   /* USER CODE BEGIN 2 */
@@ -2395,7 +2408,11 @@ void grabInertialSample(float *pitch, float *roll, float *heading){
 			x_acc = ((int16_t) (((uint16_t) accData[1]) << 8)) + accData[0];
 			y_acc = ((int16_t) (((uint16_t) accData[3]) << 8)) + accData[2];
 			z_acc = ((int16_t) (((uint16_t) accData[5]) << 8)) + accData[4];
+		}else{
+			Error_Handler();
 		}
+	}else{
+		Error_Handler();
 	}
 
 
@@ -2513,7 +2530,11 @@ void grabInertialSample(float *pitch, float *roll, float *heading){
 			x_mag = ((int16_t) (((uint16_t) magData[1]) << 8)) + magData[0];
 			y_mag = ((int16_t) (((uint16_t) magData[3]) << 8)) + magData[2];
 			z_mag = ((int16_t) (((uint16_t) magData[5]) << 8)) + magData[4];
+		}else{
+			Error_Handler();
 		}
+	}else{
+		Error_Handler();
 	}
 
 	// shut off accelerometer and magnetometer
@@ -2659,7 +2680,7 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 	// assuming stereo recording
 	uint32_t max_seconds_per_file = MAX_BYTES_PER_WAV_FILE / (hsai_BlockA1.Init.AudioFrequency * 4);
 	uint32_t max_bytes_per_file = max_seconds_per_file * hsai_BlockA1.Init.AudioFrequency * 4;
-	uint32_t file_byte_counter = max_bytes_per_file;
+//	uint32_t file_byte_counter = max_bytes_per_file;
 
 	uint32_t max_bytes_for_session;
 	if(recording_duration_s != 0){
@@ -3267,7 +3288,7 @@ void mainSystemTask(void *argument){
 		batteryMonitorTaskId = osThreadNew(batteryMonitorTask, NULL, &batteryMonitorTask_attributes);
 
 		osDelay(500);
-		micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
+//		micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
 
 
 //	while(1){

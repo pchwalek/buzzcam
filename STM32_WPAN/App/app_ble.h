@@ -95,6 +95,9 @@ void Adv_Request(APP_BLE_ConnStatus_t NewStatus);
 #define BUZZCAM_INFO_CHAR_UUID                                     (0xCE71)
 #define BUZZCAM_CONFIG_CHAR_UUID                                   (0xCE72)
 #define BUZZCAM_RX_CHAR_UUID                                       (0xCE73)
+
+void APP_BLE_Init_Dyn_1( void );
+void APP_BLE_Init_Dyn_2( void );
 /* USER CODE END EF */
 
 #ifdef __cplusplus

@@ -218,13 +218,13 @@
  * Maximum number of simultaneous connections that the device will support.
  * Valid values are from 1 to 8
  */
-#define CFG_BLE_NUM_LINK            2
+#define CFG_BLE_NUM_LINK            4
 
 /**
  * Maximum number of Services that can be stored in the GATT database.
  * Note that the GAP and GATT services are automatically added so this parameter should be 2 plus the number of user services
  */
-#define CFG_BLE_NUM_GATT_SERVICES   8
+#define CFG_BLE_NUM_GATT_SERVICES   4
 
 /**
  * Maximum number of Attributes
@@ -233,12 +233,17 @@
  * Note that certain characteristics and relative descriptors are added automatically during device initialization
  * so this parameters should be 9 plus the number of user Attributes
  */
-#define CFG_BLE_NUM_GATT_ATTRIBUTES 68
+#define CFG_BLE_NUM_GATT_ATTRIBUTES 30
 
 /**
  * Maximum supported ATT_MTU size
  * This parameter is ignored by the CPU2 when CFG_BLE_OPTIONS has SHCI_C2_BLE_INIT_OPTIONS_LL_ONLY flag set
  */
+//#ifndef TESTING_ACTIVE
+//#define CFG_BLE_MAX_ATT_MTU             (300)
+//#else
+//#define CFG_BLE_MAX_ATT_MTU             (156)
+//#endif
 #define CFG_BLE_MAX_ATT_MTU             (300)
 
 /**
@@ -252,7 +257,13 @@
  *  The total amount of memory needed is the sum of the above quantities for each attribute.
  * This parameter is ignored by the CPU2 when CFG_BLE_OPTIONS has SHCI_C2_BLE_INIT_OPTIONS_LL_ONLY flag set
  */
+#ifndef TESTING_ACTIVE
 #define CFG_BLE_ATT_VALUE_ARRAY_SIZE    (1644)
+#else
+#define CFG_BLE_ATT_VALUE_ARRAY_SIZE    (1344)
+#endif
+
+
 
 /**
  * Prepare Write List size in terms of number of packet
@@ -375,7 +386,7 @@
 
 #define CFG_BLE_MAX_COC_INITIATOR_NBR   (32)
 
-#define CFG_BLE_MIN_TX_POWER            (-40)
+#define CFG_BLE_MIN_TX_POWER            (0)
 
 #define CFG_BLE_MAX_TX_POWER            (0)
 
@@ -667,7 +678,7 @@ typedef enum
  * max buffer Size to queue data traces and max data trace allowed.
  * Only Used if DBG_TRACE_USE_CIRCULAR_QUEUE is defined
  */
-#define DBG_TRACE_MSG_QUEUE_SIZE 4096
+#define DBG_TRACE_MSG_QUEUE_SIZE 1024
 #define MAX_DBG_TRACE_MSG_SIZE   1024
 
 /* USER CODE BEGIN Defines */
@@ -713,7 +724,21 @@ typedef enum
 #define CFG_HRS_PROCESS_STACK_SIZE            (128 * 20)
 
 /* USER CODE BEGIN FreeRTOS_Defines */
+#define CFG_THREAD_MSG_M0_TO_M4_PROCESS_NAME        "THREAD_MSG_M0_TO_M4_PROCESS"
+#define CFG_THREAD_MSG_M0_TO_M4_PROCESS_ATTR_BITS   (0)
+#define CFG_THREAD_MSG_M0_TO_M4_PROCESS_CB_MEM      (0)
+#define CFG_THREAD_MSG_M0_TO_M4_PROCESS_CB_SIZE     (0)
+#define CFG_THREAD_MSG_M0_TO_M4_PROCESS_STACK_MEM   (0)
+#define CFG_THREAD_MSG_M0_TO_M4_PROCESS_PRIORITY    osPriorityLow
+#define CFG_THREAD_MSG_M0_TO_M4_PROCESS_STACK_SIZE  (128 * 8)
 
+#define CFG_THREAD_CLI_PROCESS_NAME        "THREAD_CLI_PROCESS"
+#define CFG_THREAD_CLI_PROCESS_ATTR_BITS   (0)
+#define CFG_THREAD_CLI_PROCESS_CB_MEM      (0)
+#define CFG_THREAD_CLI_PROCESS_CB_SIZE     (0)
+#define CFG_THREAD_CLI_PROCESS_STACK_MEM   (0)
+#define CFG_THREAD_CLI_PROCESS_PRIORITY    osPriorityNormal
+#define CFG_THREAD_CLI_PROCESS_STACK_SIZE  (128 * 8)
 /* USER CODE END FreeRTOS_Defines */
 
 /******************************************************************************
@@ -728,7 +753,7 @@ typedef enum
   CFG_LPM_APP,
   CFG_LPM_APP_BLE,
   /* USER CODE BEGIN CFG_LPM_Id_t */
-
+  CFG_LPM_APP_THREAD,
   /* USER CODE END CFG_LPM_Id_t */
 } CFG_LPM_Id_t;
 

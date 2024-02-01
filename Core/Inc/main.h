@@ -39,6 +39,10 @@ extern "C" {
 #include "cmsis_os2.h"
 
 #include "projdefs.h"
+
+
+//#define OPENTHREAD_CONFIG_FILE <openthread_api_config_concurrent.h>
+
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -165,6 +169,8 @@ extern SPI_HandleTypeDef hspi1;
 #define SD_DETECT_2_GPIO_Port GPIOE
 
 /* USER CODE BEGIN Private defines */
+//#define TESTING_ACTIVE	1
+
 //#define FLAC__HAS_OGG 0
 //#define PACKAGE_VERSION 2.61
 #define TFLAC_32BIT_ONLY 1

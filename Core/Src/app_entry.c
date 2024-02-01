@@ -22,6 +22,7 @@
 #include "app_common.h"
 #include "main.h"
 #include "app_entry.h"
+#include "app_thread.h"
 #include "app_ble.h"
 #include "ble.h"
 #include "tl.h"
@@ -35,7 +36,7 @@
 
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+//#include "app_thread.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -133,7 +134,13 @@ void MX_APPE_Init(void)
   HW_TS_Init(hw_ts_InitMode_Full, &hrtc); /**< Initialize the TimerServer */
 
 /* USER CODE BEGIN APPE_Init_1 */
+  /* Enable RAM1 (because OT instance.o is located here for Concurrent Mode */
 
+  /**
+   * The Standby mode should not be entered before the initialization is over
+   * The default state of the Low Power Manager is to allow the Standby Mode so an request is needed here
+   */
+  UTIL_LPM_SetOffMode(1 << CFG_LPM_APP, UTIL_LPM_DISABLE);
 /* USER CODE END APPE_Init_1 */
   appe_Tl_Init();	/* Initialize all transport layers */
 
@@ -311,14 +318,28 @@ static void SystemPower_Config(void)
   /* Initialize low power manager */
   UTIL_LPM_Init();
   /* Initialize the CPU2 reset value before starting CPU2 with C2BOOT */
+#ifndef TESTING_ACTIVE
   LL_C2_PWR_SetPowerMode(LL_PWR_MODE_SHUTDOWN);
 
+  LL_C2_AHB1_GRP1_EnableClock(LL_C2_AHB1_GRP1_PERIPH_SRAM1);
+  LL_C2_AHB1_GRP1_EnableClockSleep(LL_C2_AHB1_GRP1_PERIPH_SRAM1);
+#else
+  /* Disable low power mode until INIT is complete */
+
+  UTIL_LPM_SetOffMode(1 << CFG_LPM_APP, UTIL_LPM_DISABLE);
+  UTIL_LPM_SetStopMode(1 << CFG_LPM_APP, UTIL_LPM_DISABLE);
+
+  /* Enable RAM1 (because OT instance.o is located here for Concurrent Mode */
+  LL_C2_AHB1_GRP1_EnableClock(LL_C2_AHB1_GRP1_PERIPH_SRAM1);
+  LL_C2_AHB1_GRP1_EnableClockSleep(LL_C2_AHB1_GRP1_PERIPH_SRAM1);
+#endif
 #if (CFG_USB_INTERFACE_ENABLE != 0)
   /**
    *  Enable USB power
    */
   HAL_PWREx_EnableVddUSB();
 #endif /* CFG_USB_INTERFACE_ENABLE != 0 */
+
 
   return;
 }
@@ -468,74 +489,121 @@ static void APPE_SysEvtError(void * pPayload)
 
 static void APPE_SysEvtReadyProcessing(void * pPayload)
 {
-  TL_AsynchEvt_t *p_sys_event;
-  SHCI_C2_Ready_Evt_t *p_sys_ready_event;
+//#ifndef TESTING_ACTIVE
+//  TL_AsynchEvt_t *p_sys_event;
+//
+//
+//  SHCI_C2_Ready_Evt_t *p_sys_ready_event;
+//
+//  SHCI_C2_CONFIG_Cmd_Param_t config_param = {0};
+//  uint32_t RevisionID=0;
+//  uint32_t DeviceID=0;
+//
+//  p_sys_ready_event = (SHCI_C2_Ready_Evt_t*) p_sys_event->payload;
+//
+//  p_sys_event = (TL_AsynchEvt_t*)(((tSHCI_UserEvtRxParam*)pPayload)->pckt->evtserial.evt.payload);
+//
+//  if (p_sys_ready_event->sysevt_ready_rsp == WIRELESS_FW_RUNNING)
+//  {
+//
+//    /**
+//    * The wireless firmware is running on the CPU2
+//    */
+//    APP_DBG_MSG(">>== WIRELESS_FW_RUNNING \n");
+//
+//    /* Traces channel initialization */
+//    APPD_EnableCPU2();
+//
+//    /* Enable all events Notification */
+//    config_param.PayloadCmdSize = SHCI_C2_CONFIG_PAYLOAD_CMD_SIZE;
+//    config_param.EvtMask1 = SHCI_C2_CONFIG_EVTMASK1_BIT0_ERROR_NOTIF_ENABLE
+//      +  SHCI_C2_CONFIG_EVTMASK1_BIT1_BLE_NVM_RAM_UPDATE_ENABLE
+//        +  SHCI_C2_CONFIG_EVTMASK1_BIT2_THREAD_NVM_RAM_UPDATE_ENABLE
+//          +  SHCI_C2_CONFIG_EVTMASK1_BIT3_NVM_START_WRITE_ENABLE
+//            +  SHCI_C2_CONFIG_EVTMASK1_BIT4_NVM_END_WRITE_ENABLE
+//              +  SHCI_C2_CONFIG_EVTMASK1_BIT5_NVM_START_ERASE_ENABLE
+//                +  SHCI_C2_CONFIG_EVTMASK1_BIT6_NVM_END_ERASE_ENABLE;
+//
+//    /* Read revision identifier */
+//    /**
+//    * @brief  Return the device revision identifier
+//    * @note   This field indicates the revision of the device.
+//    * @rmtoll DBGMCU_IDCODE REV_ID        LL_DBGMCU_GetRevisionID
+//    * @retval Values between Min_Data=0x00 and Max_Data=0xFFFF
+//    */
+//    RevisionID = LL_DBGMCU_GetRevisionID();
+//
+//    APP_DBG_MSG(">>== DBGMCU_GetRevisionID= %lx \n\r", RevisionID);
+//
+//    config_param.RevisionID = (uint16_t)RevisionID;
+//
+//    DeviceID = LL_DBGMCU_GetDeviceID();
+//    APP_DBG_MSG(">>== DBGMCU_GetDeviceID= %lx \n\r", DeviceID);
+//    config_param.DeviceID = (uint16_t)DeviceID;
+//    (void)SHCI_C2_Config(&config_param);
+//
+////    APP_BLE_Init();
+//
+////    APP_DBG("1- Initialisation of BLE Stack...");
+//    APP_BLE_Init_Dyn_1();
+////    APP_DBG("2- Initialisation of OpenThread Stack. FW info :");
+//    APP_THREAD_Init_Dyn_1();
+//
+////    APP_DBG("3- Start BLE ADV...");
+//    APP_BLE_Init_Dyn_2();
+////    APP_DBG("4- Configure OpenThread (Channel, PANID, IPv6 stack, ...) and Start it...");
+////    APP_THREAD_Init_Dyn_2();
+//    UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_ENABLE);
+//  }
+//  else if (p_sys_ready_event->sysevt_ready_rsp == FUS_FW_RUNNING)
+//  {
+//    /**
+//    * The FUS firmware is running on the CPU2
+//    * In the scope of this application, there should be no case when we get here
+//    */
+//    APP_DBG_MSG(">>== SHCI_SUB_EVT_CODE_READY - FUS_FW_RUNNING \n\r");
+//
+//    /* The packet shall not be released as this is not supported by the FUS */
+//    ((tSHCI_UserEvtRxParam*)pPayload)->status = SHCI_TL_UserEventFlow_Disable;
+//  }
+//  else
+//  {
+//    APP_DBG_MSG(">>== SHCI_SUB_EVT_CODE_READY - UNEXPECTED CASE \n\r");
+//  }
+//
+//  return;
+//#else
+  /* Traces channel initialization */
+   APPD_EnableCPU2();
 
-  SHCI_C2_CONFIG_Cmd_Param_t config_param = {0};
-  uint32_t RevisionID=0;
-  uint32_t DeviceID=0;
-
-  p_sys_event = (TL_AsynchEvt_t*)(((tSHCI_UserEvtRxParam*)pPayload)->pckt->evtserial.evt.payload);
-  p_sys_ready_event = (SHCI_C2_Ready_Evt_t*) p_sys_event->payload;
-
-  if (p_sys_ready_event->sysevt_ready_rsp == WIRELESS_FW_RUNNING)
-  {
-    /**
-    * The wireless firmware is running on the CPU2
+   /* In the Context of Dynamic Concurrent mode, the Init and start of each stack must be split and executed
+    * in the following order :
+    * APP_BLE_Init_Dyn_1()    : BLE Stack Init until it's ready to start ADV
+    * APP_THREAD_Init_Dyn_1() : Thread Stack Init until it's ready to be configured (default channel, PID, etc...)
+    * APP_BLE_Init_Dyn_2()    : Start ADV
+    * APP_THREAD_Init_Dyn_2() : Thread Stack configuration (default channel, PID, etc...) to be able to start scanning
+    *                           or joining a Thread Network
     */
-    APP_DBG_MSG(">>== WIRELESS_FW_RUNNING \n");
+//   APP_DBG("1- Initialisation of BLE Stack...");
+   APP_BLE_Init_Dyn_1();
+//   APP_DBG("2- Initialisation of OpenThread Stack. FW info :");
+   APP_THREAD_Init_Dyn_1();
 
-    /* Traces channel initialization */
-    APPD_EnableCPU2();
+//   APP_DBG("3- Start BLE ADV...");
+   APP_BLE_Init_Dyn_2();
+//   APP_DBG("4- Configure OpenThread (Channel, PANID, IPv6 stack, ...) and Start it...");
+   APP_THREAD_Init_Dyn_2();
 
-    /* Enable all events Notification */
-    config_param.PayloadCmdSize = SHCI_C2_CONFIG_PAYLOAD_CMD_SIZE;
-    config_param.EvtMask1 = SHCI_C2_CONFIG_EVTMASK1_BIT0_ERROR_NOTIF_ENABLE
-      +  SHCI_C2_CONFIG_EVTMASK1_BIT1_BLE_NVM_RAM_UPDATE_ENABLE
-        +  SHCI_C2_CONFIG_EVTMASK1_BIT2_THREAD_NVM_RAM_UPDATE_ENABLE
-          +  SHCI_C2_CONFIG_EVTMASK1_BIT3_NVM_START_WRITE_ENABLE
-            +  SHCI_C2_CONFIG_EVTMASK1_BIT4_NVM_END_WRITE_ENABLE
-              +  SHCI_C2_CONFIG_EVTMASK1_BIT5_NVM_START_ERASE_ENABLE
-                +  SHCI_C2_CONFIG_EVTMASK1_BIT6_NVM_END_ERASE_ENABLE;
+ #if ( CFG_LPM_SUPPORTED == 1)
+   /* Thread stack is initialized, low power mode can be enabled */
+   UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_ENABLE);
+   UTIL_LPM_SetStopMode(1U << CFG_LPM_APP, UTIL_LPM_ENABLE);
+ #endif
 
-    /* Read revision identifier */
-    /**
-    * @brief  Return the device revision identifier
-    * @note   This field indicates the revision of the device.
-    * @rmtoll DBGMCU_IDCODE REV_ID        LL_DBGMCU_GetRevisionID
-    * @retval Values between Min_Data=0x00 and Max_Data=0xFFFF
-    */
-    RevisionID = LL_DBGMCU_GetRevisionID();
+   return;
 
-    APP_DBG_MSG(">>== DBGMCU_GetRevisionID= %lx \n\r", RevisionID);
+//#endif
 
-    config_param.RevisionID = (uint16_t)RevisionID;
-
-    DeviceID = LL_DBGMCU_GetDeviceID();
-    APP_DBG_MSG(">>== DBGMCU_GetDeviceID= %lx \n\r", DeviceID);
-    config_param.DeviceID = (uint16_t)DeviceID;
-    (void)SHCI_C2_Config(&config_param);
-
-    APP_BLE_Init();
-    UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_ENABLE);
-  }
-  else if (p_sys_ready_event->sysevt_ready_rsp == FUS_FW_RUNNING)
-  {
-    /**
-    * The FUS firmware is running on the CPU2
-    * In the scope of this application, there should be no case when we get here
-    */
-    APP_DBG_MSG(">>== SHCI_SUB_EVT_CODE_READY - FUS_FW_RUNNING \n\r");
-
-    /* The packet shall not be released as this is not supported by the FUS */
-    ((tSHCI_UserEvtRxParam*)pPayload)->status = SHCI_TL_UserEventFlow_Disable;
-  }
-  else
-  {
-    APP_DBG_MSG(">>== SHCI_SUB_EVT_CODE_READY - UNEXPECTED CASE \n\r");
-  }
-
-  return;
 }
 
 /*************************************************************
