@@ -51,8 +51,10 @@ extern "C" {
  */
 typedef struct otCliCommand
 {
-    const char *mName;                        ///< A pointer to the command string.
-    void (*mCommand)(int argc, char *argv[]); ///< A function pointer to process the command.
+    const char *mName; ///< A pointer to the command string.
+    otError (*mCommand)(void   *aContext,
+                        uint8_t aArgsLength,
+                        char   *aArgs[]); ///< A function pointer to process the command.
 } otCliCommand;
 
 /**
@@ -68,72 +70,70 @@ typedef struct otCliCommand
 /**
  * This function pointer is called to notify about Console output.
  *
- * @param[in]  aBuf        A pointer to a buffer with an output.
- * @param[in]  aBufLength  A length of the output data stored in the buffer.
  * @param[out] aContext    A user context pointer.
+ * @param[in]  aFormat     The format string.
+ * @param[in]  aArguments  The format string arguments.
  *
- * @returns                Number of bytes processed by the callback.
+ * @returns                Number of bytes written by the callback.
  *
  */
-typedef int (*otCliConsoleOutputCallback)(const char *aBuf, uint16_t aBufLength, void *aContext);
+typedef int (*otCliOutputCallback)(void *aContext, const char *aFormat, va_list aArguments);
 
 /**
- * Initialize the CLI CONSOLE module.
+ * Initialize the CLI module.
  *
  * @param[in]  aInstance   The OpenThread instance structure.
- * @param[in]  aCallback   A callback method called to process console output.
+ * @param[in]  aCallback   A callback method called to process CLI output.
  * @param[in]  aContext    A user context pointer.
  *
  */
-void otCliConsoleInit(otInstance *aInstance, otCliConsoleOutputCallback aCallback, void *aContext);
+void otCliInit(otInstance *aInstance, otCliOutputCallback aCallback, void *aContext);
 
 /**
  * This method is called to feed in a console input line.
  *
- * @param[in]  aBuf        A pointer to a buffer with an input.
- * @param[in]  aBufLength  A length of the input data stored in the buffer.
+ * @param[in]  aBuf        A pointer to a null-terminated string.
  *
  */
-void otCliConsoleInputLine(char *aBuf, uint16_t aBufLength);
-
-/**
- * Initialize the CLI UART module.
- *
- * @param[in]  aInstance  The OpenThread instance structure.
- *
- */
-void otCliUartInit(otInstance *aInstance);
+void otCliInputLine(char *aBuf);
 
 /**
  * Set a user command table.
  *
  * @param[in]  aUserCommands  A pointer to an array with user commands.
  * @param[in]  aLength        @p aUserCommands length.
+ * @param[in]  aContext       @p The context passed to the handler.
+ *
  */
-void otCliUartSetUserCommands(const otCliCommand *aUserCommands, uint8_t aLength);
+void otCliSetUserCommands(const otCliCommand *aUserCommands, uint8_t aLength, void *aContext);
 
 /**
  * Write a number of bytes to the CLI console as a hex string.
  *
  * @param[in]  aBytes   A pointer to data which should be printed.
  * @param[in]  aLength  @p aBytes length.
+ *
  */
-void otCliUartOutputBytes(const uint8_t *aBytes, uint8_t aLength);
+void otCliOutputBytes(const uint8_t *aBytes, uint8_t aLength);
 
 /**
- * Write formatted string the CLI console
+ * Write formatted string to the CLI console
  *
  * @param[in]  aFmt   A pointer to the format string.
  * @param[in]  ...    A matching list of arguments.
+ *
  */
-void otCliUartOutputFormat(const char *aFmt, ...);
+void otCliOutputFormat(const char *aFmt, ...);
 
 /**
- * Write error code the CLI console
+ * Write error code to the CLI console
+ *
+ * If the @p aError is `OT_ERROR_PENDING` nothing will be outputted.
  *
  * @param[in]  aError Error code value.
+ *
  */
-void otCliUartAppendResult(otError aError);
+void otCliAppendResult(otError aError);
 
 /**
  * Callback to write the OpenThread Log to the CLI console
@@ -142,6 +142,7 @@ void otCliUartAppendResult(otError aError);
  * @param[in]  aLogRegion  The log region.
  * @param[in]  aFormat     A pointer to the format string.
  * @param[in]  aArgs       va_list matching aFormat.
+ *
  */
 void otCliPlatLogv(otLogLevel aLogLevel, otLogRegion aLogRegion, const char *aFormat, va_list aArgs);
 

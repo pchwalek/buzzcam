@@ -125,10 +125,8 @@ static void APP_THREAD_FreeRTOSSendCLIToM0Task(void *argument);
 static void APP_THREAD_SendCoapMsg(void);
 static void APP_THREAD_SendCoapMulticastRequest(uint8_t command);
 static void APP_THREAD_CoapRequestHandler(void                * pContext,
-                                          otCoapHeader        * pHeader,
                                           otMessage           * pMessage,
                                           const otMessageInfo * pMessageInfo);
-
 static void APP_THREAD_SetSleepyEndDeviceMode(void);
 static void APP_THREAD_CoapTimingElapsed(void);
 /* USER CODE END PFP */
@@ -170,7 +168,6 @@ static osThreadId_t OsTaskCliId;            /* Task used to manage CLI comamnd  
 static otCoapResource OT_Ressource = {C_RESSOURCE, APP_THREAD_CoapRequestHandler,"myCtx", NULL};
 static otMessageInfo OT_MessageInfo = {0};
 static uint8_t OT_Command = 0;
-static otCoapHeader  OT_Header = {0};
 static uint8_t OT_ReceivedCommand = 0;
 static otMessage   * pOT_Message = NULL;
 static otLinkModeConfig OT_LinkMode = {0};
@@ -212,7 +209,7 @@ void APP_THREAD_Init( void )
   APP_THREAD_TL_THREAD_INIT();
 
   /* Configure UART for sending CLI command from M4 */
-  APP_THREAD_Init_UART_CLI();
+//  APP_THREAD_Init_UART_CLI();
 
   /* Send Thread start system cmd to M0 */
   ThreadInitStatus = SHCI_C2_THREAD_Init();
@@ -299,11 +296,13 @@ void APP_THREAD_Error(uint32_t ErrId, uint32_t ErrCode)
 static void APP_THREAD_DeviceConfig(void)
 {
   otError error;
-  error = otInstanceErasePersistentInfo(NULL);
-  if (error != OT_ERROR_NONE)
-  {
-    APP_THREAD_Error(ERR_THREAD_ERASE_PERSISTENT_INFO,error);
-  }
+  otNetworkKey networkKey = {{0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF}};
+
+//  error = otInstanceErasePersistentInfo(NULL);
+//  if (error != OT_ERROR_NONE)
+//  {
+//    APP_THREAD_Error(ERR_THREAD_ERASE_PERSISTENT_INFO,error);
+//  }
   otInstanceFinalize(NULL);
   otInstanceInitSingle();
   error = otSetStateChangedCallback(NULL, APP_THREAD_StateNotif, NULL);
@@ -321,6 +320,11 @@ static void APP_THREAD_DeviceConfig(void)
   {
     APP_THREAD_Error(ERR_THREAD_SET_PANID,error);
   }
+  error = otThreadSetNetworkKey(NULL, &networkKey);
+  if (error != OT_ERROR_NONE)
+  {
+    APP_THREAD_Error(ERR_THREAD_SET_NETWORK_KEY,error);
+  }
   error = otIp6SetEnabled(NULL, true);
   if (error != OT_ERROR_NONE)
   {
@@ -333,7 +337,13 @@ static void APP_THREAD_DeviceConfig(void)
   }
 
   /* USER CODE BEGIN DEVICECONFIG */
-
+  error = otCoapStart(NULL, OT_DEFAULT_COAP_PORT);
+  if (error != OT_ERROR_NONE)
+  {
+    APP_THREAD_Error(ERR_THREAD_COAP_START,error);
+  }
+  /* Add COAP resources */
+//  otCoapAddResource(NULL, &OT_Ressource);
   /* USER CODE END DEVICECONFIG */
 }
 

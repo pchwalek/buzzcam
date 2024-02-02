@@ -7,13 +7,12 @@
   ******************************************************************************
   * @attention
  *
- * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
- * All rights reserved.</center></h2>
+ * Copyright (c) 2018-2021 STMicroelectronics.
+ * All rights reserved.
  *
- * This software component is licensed by ST under Ultimate Liberty license
- * SLA0044, the "License"; You may not use this file except in compliance with
- * the License. You may obtain a copy of the License at:
- *                             www.st.com/SLA0044
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
  *
  ******************************************************************************
  */
@@ -32,7 +31,7 @@
 
 extern otJamDetectionCallback otJamDetectionCallbackCb;
 
-#if OPENTHREAD_ENABLE_JAM_DETECTION
+#if OPENTHREAD_CONFIG_JAM_DETECTION_ENABLE
 otError otJamDetectionSetRssiThreshold(otInstance *aInstance, int8_t aRssiThreshold)
 {
     Pre_OtCmdProcessing();
@@ -217,4 +216,4 @@ uint64_t otJamDetectionGetHistoryBitmap(otInstance *aInstance)
     /* 64bit word is returned with two 32bits words (MSB are at offset 1 and LSB are offset 0) */
     return (uint64_t)((p_ot_req->Data[1] << 32) | p_ot_req->Data[0]);
 }
-#endif /* OPENTHREAD_ENABLE_JAM_DETECTION */
+#endif /* OPENTHREAD_CONFIG_JAM_DETECTION_ENABLE */

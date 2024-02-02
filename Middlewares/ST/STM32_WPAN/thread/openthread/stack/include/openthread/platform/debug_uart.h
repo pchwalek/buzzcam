@@ -56,7 +56,7 @@
  * intended to be present, or used in production system.
  */
 
-#if __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -106,9 +106,9 @@ void otPlatDebugUart_vprintf(const char *fmt, va_list ap);
  *
  * This function MUST be implemented by the platform
  *
- * @param[in] the_byte   what to transmit
+ * @param[in] c   what to transmit
  */
-void otPlatDebugUart_putchar_raw(int the_byte);
+void otPlatDebugUart_putchar_raw(int c);
 
 /**
  * Poll/test debug uart if a key has been pressed.
@@ -126,7 +126,7 @@ int otPlatDebugUart_kbhit(void);
  *
  * This function MUST be implemented by the platform
  *
- * @retval (negative) no data available, @sa otPlatDebugUart_kbhit()
+ * @retval (negative) no data available, see otPlatDebugUart_kbhit()
  * @retval (0x00..0x0ff) data byte value
  *
  */
@@ -138,9 +138,9 @@ int otPlatDebugUart_getc(void);
  * A WEAK default implementation is provided
  * that can be overridden as needed.
  *
- * @param[in] the_byte   the byte to transmit
+ * @param[in] c   the byte to transmit
  */
-void otPlatDebugUart_putchar(int the_byte);
+void otPlatDebugUart_putchar(int c);
 
 /**
  * identical to "man 3 puts" - terminates with lf
@@ -173,7 +173,7 @@ void otPlatDebugUart_write_bytes(const uint8_t *pBytes, int nBytes);
 void otPlatDebugUart_puts_no_nl(const char *s);
 
 /**
- * Some platforms (posix) can log to a file.
+ * Some platforms (simulation) can log to a file.
  *
  * @returns OT_ERROR_NONE
  * @returns OT_ERROR_FAILED
@@ -188,7 +188,7 @@ otError otPlatDebugUart_logfile(const char *filename);
  *
  */
 
-#if __cplusplus
+#ifdef __cplusplus
 } // extern "C"
 #endif
 

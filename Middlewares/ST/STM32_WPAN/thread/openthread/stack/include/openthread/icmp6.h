@@ -29,7 +29,7 @@
 /**
  * @file
  * @brief
- *  This file defines the top-level icmp6 functions for the OpenThread library.
+ *  This file defines the top-level ICMPv6 functions for the OpenThread library.
  */
 
 #ifndef OPENTHREAD_ICMP6_H_
@@ -56,18 +56,28 @@ extern "C" {
  * ICMPv6 Message Types
  *
  */
-typedef enum otIcmp6Type {
-    OT_ICMP6_TYPE_DST_UNREACH  = 1,   ///< Destination Unreachable
-    OT_ICMP6_TYPE_ECHO_REQUEST = 128, ///< Echo Request
-    OT_ICMP6_TYPE_ECHO_REPLY   = 129, ///< Echo Reply
+typedef enum otIcmp6Type
+{
+    OT_ICMP6_TYPE_DST_UNREACH       = 1,   ///< Destination Unreachable
+    OT_ICMP6_TYPE_PACKET_TO_BIG     = 2,   ///< Packet To Big
+    OT_ICMP6_TYPE_TIME_EXCEEDED     = 3,   ///< Time Exceeded
+    OT_ICMP6_TYPE_PARAMETER_PROBLEM = 4,   ///< Parameter Problem
+    OT_ICMP6_TYPE_ECHO_REQUEST      = 128, ///< Echo Request
+    OT_ICMP6_TYPE_ECHO_REPLY        = 129, ///< Echo Reply
+    OT_ICMP6_TYPE_ROUTER_SOLICIT    = 133, ///< Router Solicitation
+    OT_ICMP6_TYPE_ROUTER_ADVERT     = 134, ///< Router Advertisement
+    OT_ICMP6_TYPE_NEIGHBOR_SOLICIT  = 135, ///< Neighbor Solicitation
+    OT_ICMP6_TYPE_NEIGHBOR_ADVERT   = 136, ///< Neighbor Advertisement
 } otIcmp6Type;
 
 /**
  * ICMPv6 Message Codes
  *
  */
-typedef enum otIcmp6Code {
+typedef enum otIcmp6Code
+{
     OT_ICMP6_CODE_DST_UNREACH_NO_ROUTE = 0, ///< Destination Unreachable No Route
+    OT_ICMP6_CODE_FRAGM_REAS_TIME_EX   = 1, ///< Fragment Reassembly Time Exceeded
 } otIcmp6Code;
 
 #define OT_ICMP6_HEADER_DATA_SIZE 4 ///< Size of an message specific data of ICMPv6 Header.
@@ -107,8 +117,8 @@ typedef struct otIcmp6Header otIcmp6Header;
  * @param[in]  aIcmpHeader   A pointer to the received ICMPv6 header.
  *
  */
-typedef void (*otIcmp6ReceiveCallback)(void *               aContext,
-                                       otMessage *          aMessage,
+typedef void (*otIcmp6ReceiveCallback)(void                *aContext,
+                                       otMessage           *aMessage,
                                        const otMessageInfo *aMessageInfo,
                                        const otIcmp6Header *aIcmpHeader);
 
@@ -119,7 +129,7 @@ typedef void (*otIcmp6ReceiveCallback)(void *               aContext,
 typedef struct otIcmp6Handler
 {
     otIcmp6ReceiveCallback mReceiveCallback; ///< The ICMPv6 received callback
-    void *                 mContext;         ///< A pointer to arbitrary context information.
+    void                  *mContext;         ///< A pointer to arbitrary context information.
     struct otIcmp6Handler *mNext;            ///< A pointer to the next handler in the list.
 } otIcmp6Handler;
 
@@ -127,7 +137,8 @@ typedef struct otIcmp6Handler
  * ICMPv6 Echo Reply Modes
  *
  */
-typedef enum otIcmp6EchoMode {
+typedef enum otIcmp6EchoMode
+{
     OT_ICMP6_ECHO_HANDLER_DISABLED       = 0, ///< ICMPv6 Echo processing disabled
     OT_ICMP6_ECHO_HANDLER_UNICAST_ONLY   = 1, ///< ICMPv6 Echo processing enabled only for unicast requests only
     OT_ICMP6_ECHO_HANDLER_MULTICAST_ONLY = 2, ///< ICMPv6 Echo processing enabled only for multicast requests only
@@ -179,8 +190,8 @@ otError otIcmp6RegisterHandler(otInstance *aInstance, otIcmp6Handler *aHandler);
  *                           May be zero.
  *
  */
-otError otIcmp6SendEchoRequest(otInstance *         aInstance,
-                               otMessage *          aMessage,
+otError otIcmp6SendEchoRequest(otInstance          *aInstance,
+                               otMessage           *aMessage,
                                const otMessageInfo *aMessageInfo,
                                uint16_t             aIdentifier);
 

@@ -7,13 +7,12 @@
   ******************************************************************************
   * @attention
  *
- * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
- * All rights reserved.</center></h2>
+ * Copyright (c) 2018-2021 STMicroelectronics.
+ * All rights reserved.
  *
- * This software component is licensed by ST under Ultimate Liberty license
- * SLA0044, the "License"; You may not use this file except in compliance with
- * the License. You may obtain a copy of the License at:
- *                             www.st.com/SLA0044
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
  *
  ******************************************************************************
  */
@@ -31,7 +30,7 @@
 #include "child_supervision.h"
 
 
-#if OPENTHREAD_ENABLE_CHILD_SUPERVISION
+#if OPENTHREAD_CONFIG_CHILD_SUPERVISION_ENABLE
 
 uint16_t otChildSupervisionGetInterval(otInstance *aInstance)
 {
@@ -97,4 +96,4 @@ void otChildSupervisionSetCheckTimeout(otInstance *aInstance, uint16_t aTimeout)
     p_ot_req = THREAD_Get_OTCmdRspPayloadBuffer();
 }
 
-#endif /* OPENTHREAD_ENABLE_CHILD_SUPERVISION */
+#endif /* OPENTHREAD_CONFIG_CHILD_SUPERVISION_ENABLE */

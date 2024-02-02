@@ -180,7 +180,7 @@
  */
 #define CFG_BLE_MASTER_SCA   0
 
-#define DATA_NOTIFICATION_MAX_PACKET_SIZE           512
+#define DATA_NOTIFICATION_MAX_PACKET_SIZE           300
 //#define CFG_BLE_MAX_ATT_MTU             (512)
 
 #define CUSTOM_BT_PARAMETERS 1

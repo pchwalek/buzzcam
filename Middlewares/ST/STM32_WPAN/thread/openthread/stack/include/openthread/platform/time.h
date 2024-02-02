@@ -32,13 +32,21 @@
  *   This file includes the platform abstraction for the time service.
  */
 
-#ifndef TIME_H_
-#define TIME_H_
+#ifndef OPENTHREAD_PLATFORM_TIME_H_
+#define OPENTHREAD_PLATFORM_TIME_H_
 
 #include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
+#endif
+
+#if defined ( __ICCARM__ ) /* IAR */
+typedef uint64_t time_t;
+#endif
+  
+#if defined ( __ARMCC_VERSION ) /* KEIL with ARMCC or Clang */
+typedef unsigned int time_t;
 #endif
 
 /**
@@ -76,4 +84,4 @@ uint16_t otPlatTimeGetXtalAccuracy(void);
 } // extern "C"
 #endif
 
-#endif // TIME_H_
+#endif // OPENTHREAD_PLATFORM_TIME_H_

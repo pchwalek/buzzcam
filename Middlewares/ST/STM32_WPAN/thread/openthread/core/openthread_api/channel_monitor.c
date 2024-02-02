@@ -7,13 +7,12 @@
  ******************************************************************************
  * @attention
  *
- * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
- * All rights reserved.</center></h2>
+ * Copyright (c) 2018-2021 STMicroelectronics.
+ * All rights reserved.
  *
- * This software component is licensed by ST under Ultimate Liberty license
- * SLA0044, the "License"; You may not use this file except in compliance with
- * the License. You may obtain a copy of the License at:
- *                             www.st.com/SLA0044
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
  *
  ******************************************************************************
  */
@@ -31,7 +30,7 @@
 #include "channel_monitor.h"
 
 
-#if OPENTHREAD_ENABLE_CHANNEL_MONITOR
+#if OPENTHREAD_CONFIG_CHANNEL_MONITOR_ENABLE
 
 otError otChannelMonitorSetEnabled(otInstance *aInstance, bool aEnabled)
 {
@@ -147,5 +146,5 @@ uint16_t otChannelMonitorGetChannelOccupancy(otInstance *aInstance, uint8_t aCha
   return (uint16_t)p_ot_req->Data[0];
 }
 
-#endif /* OPENTHREAD_ENABLE_CHANNEL_MONITOR */
+#endif /* OPENTHREAD_CONFIG_CHANNEL_MONITOR_ENABLE */
 

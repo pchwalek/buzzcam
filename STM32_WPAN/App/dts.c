@@ -574,6 +574,7 @@ void DTS_STM_Init(void) {
 
 	if (hciCmdResult != 0) {
 		APP_DBG_MSG("error add char Tx 0x%x\n", hciCmdResult);
+		Error_Handler();
 #ifdef NUCLEO_LED_ACTIVE
     BSP_LED_On(LED_RED);
 #endif
@@ -593,7 +594,7 @@ void DTS_STM_Init(void) {
 
 	if (hciCmdResult != 0) {
 		APP_DBG_MSG("error add char Tx\n");
-
+		Error_Handler();
 #ifdef NUCLEO_LED_ACTIVE
     BSP_LED_On(LED_RED);
 #endif

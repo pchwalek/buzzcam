@@ -35,6 +35,7 @@
 #ifndef OPENTHREAD_BORDER_ROUTER_H_
 #define OPENTHREAD_BORDER_ROUTER_H_
 
+#include <openthread/border_routing.h>
 #include <openthread/ip6.h>
 #include <openthread/netdata.h>
 
@@ -55,16 +56,13 @@ extern "C" {
 /**
  * This method provides a full or stable copy of the local Thread Network Data.
  *
- * @param[in]     aInstance    A pointer to an OpenThread instance.
- * @param[in]     aStable      TRUE when copying the stable version, FALSE when copying the full version.
- * @param[out]    aData        A pointer to the data buffer.
- * @param[inout]  aDataLength  On entry, size of the data buffer pointed to by @p aData.
- *                             On exit, number of copied bytes.
+ * @param[in]      aInstance    A pointer to an OpenThread instance.
+ * @param[in]      aStable      TRUE when copying the stable version, FALSE when copying the full version.
+ * @param[out]     aData        A pointer to the data buffer.
+ * @param[in,out]  aDataLength  On entry, size of the data buffer pointed to by @p aData.
+ *                              On exit, number of copied bytes.
  */
-OTAPI otError OTCALL otBorderRouterGetNetData(otInstance *aInstance,
-                                              bool        aStable,
-                                              uint8_t *   aData,
-                                              uint8_t *   aDataLength);
+otError otBorderRouterGetNetData(otInstance *aInstance, bool aStable, uint8_t *aData, uint8_t *aDataLength);
 
 /**
  * Add a border router configuration to the local network data.
@@ -79,7 +77,7 @@ OTAPI otError OTCALL otBorderRouterGetNetData(otInstance *aInstance,
  * @sa otBorderRouterRemoveOnMeshPrefix
  * @sa otBorderRouterRegister
  */
-OTAPI otError OTCALL otBorderRouterAddOnMeshPrefix(otInstance *aInstance, const otBorderRouterConfig *aConfig);
+otError otBorderRouterAddOnMeshPrefix(otInstance *aInstance, const otBorderRouterConfig *aConfig);
 
 /**
  * Remove a border router configuration from the local network data.
@@ -93,23 +91,23 @@ OTAPI otError OTCALL otBorderRouterAddOnMeshPrefix(otInstance *aInstance, const 
  * @sa otBorderRouterAddOnMeshPrefix
  * @sa otBorderRouterRegister
  */
-OTAPI otError OTCALL otBorderRouterRemoveOnMeshPrefix(otInstance *aInstance, const otIp6Prefix *aPrefix);
+otError otBorderRouterRemoveOnMeshPrefix(otInstance *aInstance, const otIp6Prefix *aPrefix);
 
 /**
  * This function gets the next On Mesh Prefix in the local Network Data.
  *
- * @param[in]     aInstance  A pointer to an OpenThread instance.
- * @param[inout]  aIterator  A pointer to the Network Data iterator context. To get the first on-mesh entry
-                             it should be set to OT_NETWORK_DATA_ITERATOR_INIT.
- * @param[out]    aConfig    A pointer to the On Mesh Prefix information.
+ * @param[in]      aInstance  A pointer to an OpenThread instance.
+ * @param[in,out]  aIterator  A pointer to the Network Data iterator context. To get the first on-mesh entry
+                              it should be set to OT_NETWORK_DATA_ITERATOR_INIT.
+ * @param[out]     aConfig    A pointer to the On Mesh Prefix information.
  *
  * @retval OT_ERROR_NONE       Successfully found the next On Mesh prefix.
  * @retval OT_ERROR_NOT_FOUND  No subsequent On Mesh prefix exists in the Thread Network Data.
  *
  */
-OTAPI otError OTCALL otBorderRouterGetNextOnMeshPrefix(otInstance *           aInstance,
-                                                       otNetworkDataIterator *aIterator,
-                                                       otBorderRouterConfig * aConfig);
+otError otBorderRouterGetNextOnMeshPrefix(otInstance            *aInstance,
+                                          otNetworkDataIterator *aIterator,
+                                          otBorderRouterConfig  *aConfig);
 
 /**
  * Add an external route configuration to the local network data.
@@ -124,7 +122,7 @@ OTAPI otError OTCALL otBorderRouterGetNextOnMeshPrefix(otInstance *           aI
  * @sa otBorderRouterRemoveRoute
  * @sa otBorderRouterRegister
  */
-OTAPI otError OTCALL otBorderRouterAddRoute(otInstance *aInstance, const otExternalRouteConfig *aConfig);
+otError otBorderRouterAddRoute(otInstance *aInstance, const otExternalRouteConfig *aConfig);
 
 /**
  * Remove an external route configuration from the local network data.
@@ -138,23 +136,23 @@ OTAPI otError OTCALL otBorderRouterAddRoute(otInstance *aInstance, const otExter
  * @sa otBorderRouterAddRoute
  * @sa otBorderRouterRegister
  */
-OTAPI otError OTCALL otBorderRouterRemoveRoute(otInstance *aInstance, const otIp6Prefix *aPrefix);
+otError otBorderRouterRemoveRoute(otInstance *aInstance, const otIp6Prefix *aPrefix);
 
 /**
  * This function gets the next external route in the local Network Data.
  *
- * @param[in]     aInstance  A pointer to an OpenThread instance.
- * @param[inout]  aIterator  A pointer to the Network Data iterator context. To get the first external route entry
-                             it should be set to OT_NETWORK_DATA_ITERATOR_INIT.
- * @param[out]    aConfig    A pointer to the External Route information.
+ * @param[in]      aInstance  A pointer to an OpenThread instance.
+ * @param[in,out]  aIterator  A pointer to the Network Data iterator context. To get the first external route entry
+                              it should be set to OT_NETWORK_DATA_ITERATOR_INIT.
+ * @param[out]     aConfig    A pointer to the External Route information.
  *
  * @retval OT_ERROR_NONE       Successfully found the next External Route.
  * @retval OT_ERROR_NOT_FOUND  No subsequent external route entry exists in the Thread Network Data.
  *
  */
-OTAPI otError OTCALL otBorderRouterGetNextRoute(otInstance *           aInstance,
-                                                otNetworkDataIterator *aIterator,
-                                                otExternalRouteConfig *aConfig);
+otError otBorderRouterGetNextRoute(otInstance            *aInstance,
+                                   otNetworkDataIterator *aIterator,
+                                   otExternalRouteConfig *aConfig);
 
 /**
  * Immediately register the local network data with the Leader.
@@ -168,7 +166,7 @@ OTAPI otError OTCALL otBorderRouterGetNextRoute(otInstance *           aInstance
  * @sa otBorderRouterAddRoute
  * @sa otBorderRouterRemoveRoute
  */
-OTAPI otError OTCALL otBorderRouterRegister(otInstance *aInstance);
+otError otBorderRouterRegister(otInstance *aInstance);
 
 /**
  * @}

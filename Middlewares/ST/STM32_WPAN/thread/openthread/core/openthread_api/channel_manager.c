@@ -7,13 +7,12 @@
  ******************************************************************************
  * @attention
  *
- * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
- * All rights reserved.</center></h2>
+ * Copyright (c) 2018-2021 STMicroelectronics.
+ * All rights reserved.
  *
- * This software component is licensed by ST under Ultimate Liberty license
- * SLA0044, the "License"; You may not use this file except in compliance with
- * the License. You may obtain a copy of the License at:
- *                             www.st.com/SLA0044
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
  *
  ******************************************************************************
  */
@@ -31,9 +30,9 @@
 #include "channel_manager.h"
 
 
-#if OPENTHREAD_ENABLE_CHANNEL_MANAGER && OPENTHREAD_FTD
+#if OPENTHREAD_CONFIG_CHANNEL_MANAGER_ENABLE && OPENTHREAD_FTD
 
-void otChannelManagerRequestChannelChange(otInstance *aInstance, uint8_t aChannel)
+void otChannelManagerRequestChannelChange(otInstance *aInstance, uint8_t aChannel);
 {
   Pre_OtCmdProcessing();
   /* prepare buffer */
@@ -238,5 +237,33 @@ void otChannelManagerSetFavoredChannels(otInstance *aInstance, uint32_t aChannel
   Ot_Cmd_Transfer();
 }
 
-#endif  /* OPENTHREAD_ENABLE_CHANNEL_MANAGER && OPENTHREAD_FTD */
+uint16_t otChannelManagerGetCcaFailureRateThreshold(otInstance *aInstance)
+{
+  Pre_OtCmdProcessing();
+  /* prepare buffer */
+  Thread_OT_Cmd_Request_t* p_ot_req = THREAD_Get_OTCmdPayloadBuffer();
+
+  p_ot_req->ID = MSG_M4TOM0_OT_CHANNEL_MANAGER_GET_CCA_FAILURE_RATE_THRESHOLD;
+
+  p_ot_req->Size=0;
+
+  Ot_Cmd_Transfer();
+  return (uint32_t)p_ot_req->Data[0];
+}
+
+void otChannelManagerSetCcaFailureRateThreshold(otInstance *aInstance, uint16_t aThreshold)
+{
+  Pre_OtCmdProcessing();
+  /* prepare buffer */
+  Thread_OT_Cmd_Request_t* p_ot_req = THREAD_Get_OTCmdPayloadBuffer();
+
+  p_ot_req->ID = MSG_M4TOM0_OT_CHANNEL_MANAGER_SET_CCA_FAILURE_RATE_THRESHOLD;
+
+  p_ot_req->Size=1;
+  p_ot_req->Data[0] = aThreshold;
+
+  Ot_Cmd_Transfer();
+}
+
+#endif  /* OPENTHREAD_CONFIG_CHANNEL_MANAGER_ENABLE && OPENTHREAD_FTD */
 

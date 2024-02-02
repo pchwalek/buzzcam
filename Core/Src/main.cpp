@@ -39,7 +39,7 @@
 
 #include "app_ble.h"
 
-#include "time.h"
+#include "tools/arm-none-eabi/include/time.h"
 
 #include "bme.h"
 
@@ -604,10 +604,10 @@ int main(void)
 
   /* Create the thread(s) */
   /* creation of defaultTask */
-//  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
-	mainSystemThreadId = osThreadNew(mainSystemTask, NULL, &mainSystemTask_attributes);
+//	mainSystemThreadId = osThreadNew(mainSystemTask, NULL, &mainSystemTask_attributes);
 
 //	micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
 
