@@ -65,6 +65,18 @@ typedef struct _tSecurityParams
   uint8_t bonding_mode;
 
   /**
+   * Flag to tell whether OOB data has
+   * to be used during the pairing process
+   */
+  uint8_t OOB_Data_Present;
+
+  /**
+   * OOB data to be used in the pairing process if
+   * OOB_Data_Present is set to TRUE
+   */
+  uint8_t OOB_Data[16];
+
+  /**
    * this variable indicates whether to use a fixed pin
    * during the pairing process or a passkey has to be
    * requested to the application during the pairing process
@@ -91,7 +103,7 @@ typedef struct _tSecurityParams
   /**
    * this flag indicates whether the host has to initiate
    * the security, wait for pairing or does not have any security
-   * requirements.
+   * requirements.\n
    * 0x00 : no security required
    * 0x01 : host should initiate security by sending the slave security
    *        request command
@@ -100,9 +112,6 @@ typedef struct _tSecurityParams
    * processing
    */
   uint8_t initiateSecurity;
-  /* USER CODE BEGIN tSecurityParams*/
-
-  /* USER CODE END tSecurityParams */
 }tSecurityParams;
 
 /**
@@ -277,9 +286,9 @@ static const uint8_t a_BLE_CfgErValue[16] = CFG_BLE_ERK;
 				 * The MagicKeywordAdress shall be mapped @0x140 from start of the binary image
 				 * The MagicKeywordvalue is checked in the ble_ota application
 				 */
-				PLACE_IN_SECTION("TAG_OTA_END") const uint32_t MagicKeywordValue = 0x94448A29;
-				PLACE_IN_SECTION("TAG_OTA_START") const uint32_t MagicKeywordAddress = (uint32_t)&MagicKeywordValue;
-
+//				PLACE_IN_SECTION("TAG_OTA_END") const uint32_t MagicKeywordValue = 0x94448A29;
+//				PLACE_IN_SECTION("TAG_OTA_START") const uint32_t MagicKeywordAddress = (uint32_t)&MagicKeywordValue;
+//
 				PLACE_IN_SECTION("BLE_APP_CONTEXT") static BleApplicationContext_t BleApplicationContext;
 				PLACE_IN_SECTION("BLE_APP_CONTEXT") static uint16_t AdvIntervalMin,
 AdvIntervalMax;
@@ -490,14 +499,15 @@ void APP_BLE_Init(void)
       0,
       CFG_BLE_MAX_COC_INITIATOR_NBR,
       CFG_BLE_MIN_TX_POWER,
-      CFG_BLE_MAX_TX_POWER,
-      CFG_BLE_RX_MODEL_CONFIG,
-      CFG_BLE_MAX_ADV_SET_NBR,
-      CFG_BLE_MAX_ADV_DATA_LEN,
-      CFG_BLE_TX_PATH_COMPENS,
-      CFG_BLE_RX_PATH_COMPENS,
-      CFG_BLE_CORE_VERSION,
-      CFG_BLE_OPTIONS_EXT
+      CFG_BLE_MAX_TX_POWER
+//	  ,
+//      CFG_BLE_RX_MODEL_CONFIG,
+//      CFG_BLE_MAX_ADV_SET_NBR,
+//      CFG_BLE_MAX_ADV_DATA_LEN,
+//      CFG_BLE_TX_PATH_COMPENS,
+//      CFG_BLE_RX_PATH_COMPENS,
+//      CFG_BLE_CORE_VERSION,
+//      CFG_BLE_OPTIONS_EXT
      }
    };
 
@@ -954,39 +964,66 @@ void APP_BLE_Init_Dyn_1( void )
 
 
 	#else
+//	  SHCI_C2_Ble_Init_Cmd_Packet_t ble_init_cmd_packet =
+//	   {
+//	     {{0,0,0}},                          /**< Header unused */
+//	     {0,                                 /** pBleBufferAddress not used */
+//	      0,                                 /** BleBufferSize not used */
+//	      CFG_BLE_NUM_GATT_ATTRIBUTES,
+//	      CFG_BLE_NUM_GATT_SERVICES,
+//	      CFG_BLE_ATT_VALUE_ARRAY_SIZE,
+//	      CFG_BLE_NUM_LINK,
+//	      CFG_BLE_DATA_LENGTH_EXTENSION,
+//	      CFG_BLE_PREPARE_WRITE_LIST_SIZE,
+//	      CFG_BLE_MBLOCK_COUNT,
+//	      CFG_BLE_MAX_ATT_MTU,
+//	      CFG_BLE_SLAVE_SCA,
+//	      CFG_BLE_MASTER_SCA,
+//	      CFG_BLE_LS_SOURCE,
+//	      CFG_BLE_MAX_CONN_EVENT_LENGTH,
+//	      CFG_BLE_HSE_STARTUP_TIME,
+//	      CFG_BLE_VITERBI_MODE,
+//	      CFG_BLE_OPTIONS,
+//	      0,
+//	      CFG_BLE_MAX_COC_INITIATOR_NBR,
+//	      CFG_BLE_MIN_TX_POWER,
+//	      CFG_BLE_MAX_TX_POWER,
+//	      CFG_BLE_RX_MODEL_CONFIG,
+//	      CFG_BLE_MAX_ADV_SET_NBR,
+//	      CFG_BLE_MAX_ADV_DATA_LEN,
+//	      CFG_BLE_TX_PATH_COMPENS,
+//	      CFG_BLE_RX_PATH_COMPENS,
+//	      CFG_BLE_CORE_VERSION,
+//	      CFG_BLE_OPTIONS_EXT
+//	     }
+//	   };
+
 	  SHCI_C2_Ble_Init_Cmd_Packet_t ble_init_cmd_packet =
-	   {
-	     {{0,0,0}},                          /**< Header unused */
-	     {0,                                 /** pBleBufferAddress not used */
-	      0,                                 /** BleBufferSize not used */
-	      CFG_BLE_NUM_GATT_ATTRIBUTES,
-	      CFG_BLE_NUM_GATT_SERVICES,
-	      CFG_BLE_ATT_VALUE_ARRAY_SIZE,
-	      CFG_BLE_NUM_LINK,
-	      CFG_BLE_DATA_LENGTH_EXTENSION,
-	      CFG_BLE_PREPARE_WRITE_LIST_SIZE,
-	      CFG_BLE_MBLOCK_COUNT,
-	      CFG_BLE_MAX_ATT_MTU,
-	      CFG_BLE_SLAVE_SCA,
-	      CFG_BLE_MASTER_SCA,
-	      CFG_BLE_LS_SOURCE,
-	      CFG_BLE_MAX_CONN_EVENT_LENGTH,
-	      CFG_BLE_HSE_STARTUP_TIME,
-	      CFG_BLE_VITERBI_MODE,
-	      CFG_BLE_OPTIONS,
-	      0,
-	      CFG_BLE_MAX_COC_INITIATOR_NBR,
-	      CFG_BLE_MIN_TX_POWER,
-	      CFG_BLE_MAX_TX_POWER,
-	      CFG_BLE_RX_MODEL_CONFIG,
-	      CFG_BLE_MAX_ADV_SET_NBR,
-	      CFG_BLE_MAX_ADV_DATA_LEN,
-	      CFG_BLE_TX_PATH_COMPENS,
-	      CFG_BLE_RX_PATH_COMPENS,
-	      CFG_BLE_CORE_VERSION,
-	      CFG_BLE_OPTIONS_EXT
-	     }
-	   };
+	  {
+	    {{0,0,0}},                          /**< Header unused */
+	    {0,                                 /** pBleBufferAddress not used */
+	    0,                                  /** BleBufferSize not used */
+	    CFG_BLE_NUM_GATT_ATTRIBUTES,
+	    CFG_BLE_NUM_GATT_SERVICES,
+	    CFG_BLE_ATT_VALUE_ARRAY_SIZE,
+	    CFG_BLE_NUM_LINK,
+	    CFG_BLE_DATA_LENGTH_EXTENSION,
+	    CFG_BLE_PREPARE_WRITE_LIST_SIZE,
+	    CFG_BLE_MBLOCK_COUNT,
+	    CFG_BLE_MAX_ATT_MTU,
+	    CFG_BLE_SLAVE_SCA,
+	    CFG_BLE_MASTER_SCA,
+	    CFG_BLE_LS_SOURCE,
+	    CFG_BLE_MAX_CONN_EVENT_LENGTH,
+	    CFG_BLE_HSE_STARTUP_TIME,
+	    CFG_BLE_VITERBI_MODE,
+	    CFG_BLE_OPTIONS,
+	    0,
+	    CFG_BLE_MAX_COC_INITIATOR_NBR,
+	    CFG_BLE_MIN_TX_POWER,
+	    CFG_BLE_MAX_TX_POWER}
+	  };
+
 
 	  a_ManufDataCameraWakeup[0] = sizeof(a_ManufDataCameraWakeup) - 1;
 	  a_ManufDataCameraWakeup[1] = AD_TYPE_MANUFACTURER_SPECIFIC_DATA;
@@ -1098,6 +1135,8 @@ void APP_BLE_Init_Dyn_1( void )
 
 
 	#else
+
+	  aci_hal_set_radio_activity_mask(0x0006);
 	  /**
 	   * Create timer to handle the connection state machine
 	   */
@@ -1214,6 +1253,7 @@ static void Ble_Hci_Gap_Gatt_Init(void)
   uint8_t role;
   uint16_t gap_service_handle, gap_dev_name_char_handle, gap_appearance_char_handle;
   const uint8_t *p_bd_addr;
+  uint32_t srd_bd_addr[2];
   uint16_t a_appearance[1] = {BLE_CFG_GAP_APPEARANCE};
   tBleStatus ret = BLE_STATUS_INVALID_PARAMS;
   /* USER CODE BEGIN Ble_Hci_Gap_Gatt_Init*/
@@ -1260,6 +1300,17 @@ static void Ble_Hci_Gap_Gatt_Init(void)
   a_ManufData[ sizeof(a_ManufData)-2] = p_bd_addr[1];
   a_ManufData[ sizeof(a_ManufData)-1] = p_bd_addr[0];
 #endif /* CFG_BLE_ADDRESS_TYPE == GAP_PUBLIC_ADDR */
+
+  /**
+   * Static random Address
+   * The two upper bits shall be set to 1
+   * The lowest 32bits is read from the UDN to differentiate between devices
+   * The RNG may be used to provide a random number on each power on
+   */
+  srd_bd_addr[1] =  0x0000ED6E;
+  srd_bd_addr[0] =  LL_FLASH_GetUDN( );
+  aci_hal_write_config_data( CONFIG_DATA_RANDOM_ADDRESS_OFFSET, CONFIG_DATA_RANDOM_ADDRESS_LEN, (uint8_t*)srd_bd_addr );
+
 
   /**
    * Static random Address
