@@ -356,10 +356,27 @@ void HSEM_IRQHandler(void)
 /* USER CODE BEGIN 1 */
 void RTC_WKUP_IRQHandler(void)
 {
-  HW_TS_RTC_Wakeup_Handler();
+  HAL_RTCEx_WakeUpTimerIRQHandler(&hrtc);
 }
 
 void RTC_Alarm_IRQHandler(void) {
     HAL_RTC_AlarmIRQHandler(&hrtc);
 }
+
+/**
+  * @brief This function handles Flash global interrupt.
+  */
+void FLASH_IRQHandler(void)
+{
+  /* USER CODE BEGIN FLASH_IRQn 0 */
+
+  /* USER CODE END FLASH_IRQn 0 */
+  HAL_FLASH_IRQHandler();
+  /* USER CODE BEGIN FLASH_IRQn 1 */
+
+  /* USER CODE END FLASH_IRQn 1 */
+}
+
+
+
 /* USER CODE END 1 */

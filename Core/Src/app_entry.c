@@ -297,6 +297,7 @@ static void Init_Rtc(void)
   /* Enable RTC registers write protection */
   LL_RTC_EnableWriteProtection(RTC);
 
+
   return;
 }
 
@@ -310,6 +311,9 @@ static void Init_Rtc(void)
  */
 static void SystemPower_Config(void)
 {
+  // Before going to stop or standby modes, do the settings so that system clock and IP80215.4 clock
+  // start on HSI automatically
+  LL_RCC_HSI_EnableAutoFromStop();
   /**
    * Select HSI as system clock source after Wake Up from Stop mode
    */
@@ -319,7 +323,11 @@ static void SystemPower_Config(void)
   UTIL_LPM_Init();
   /* Initialize the CPU2 reset value before starting CPU2 with C2BOOT */
 #ifndef TESTING_ACTIVE
-  LL_C2_PWR_SetPowerMode(LL_PWR_MODE_SHUTDOWN);
+//  LL_C2_PWR_SetPowerMode(LL_PWR_MODE_SHUTDOWN);
+
+  /* Disable low power mode until INIT is complete */
+  UTIL_LPM_SetOffMode(1 << CFG_LPM_APP, UTIL_LPM_DISABLE);
+  UTIL_LPM_SetStopMode(1 << CFG_LPM_APP, UTIL_LPM_DISABLE);
 
   LL_C2_AHB1_GRP1_EnableClock(LL_C2_AHB1_GRP1_PERIPH_SRAM1);
   LL_C2_AHB1_GRP1_EnableClockSleep(LL_C2_AHB1_GRP1_PERIPH_SRAM1);
@@ -413,17 +421,17 @@ static void APPE_SysUserEvtRx(void * pPayload)
   {
   case SHCI_SUB_EVT_CODE_READY:
     /* Read the firmware version of both the wireless firmware and the FUS */
-    SHCI_GetWirelessFwInfo(&WirelessInfo);
-    APP_DBG_MSG("Wireless Firmware version %d.%d.%d\n", WirelessInfo.VersionMajor, WirelessInfo.VersionMinor, WirelessInfo.VersionSub);
-    APP_DBG_MSG("Wireless Firmware build %d\n", WirelessInfo.VersionReleaseType);
-    APP_DBG_MSG("FUS version %d.%d.%d\n", WirelessInfo.FusVersionMajor, WirelessInfo.FusVersionMinor, WirelessInfo.FusVersionSub);
-
-    APP_DBG_MSG(">>== SHCI_SUB_EVT_CODE_READY\n\r");
+//    SHCI_GetWirelessFwInfo(&WirelessInfo);
+//    APP_DBG_MSG("Wireless Firmware version %d.%d.%d\n", WirelessInfo.VersionMajor, WirelessInfo.VersionMinor, WirelessInfo.VersionSub);
+//    APP_DBG_MSG("Wireless Firmware build %d\n", WirelessInfo.VersionReleaseType);
+//    APP_DBG_MSG("FUS version %d.%d.%d\n", WirelessInfo.FusVersionMajor, WirelessInfo.FusVersionMinor, WirelessInfo.FusVersionSub);
+//
+//    APP_DBG_MSG(">>== SHCI_SUB_EVT_CODE_READY\n\r");
     APPE_SysEvtReadyProcessing(pPayload);
     break;
 
   case SHCI_SUB_EVT_ERROR_NOTIF:
-    APP_DBG_MSG(">>== SHCI_SUB_EVT_ERROR_NOTIF \n\r");
+//    APP_DBG_MSG(">>== SHCI_SUB_EVT_ERROR_NOTIF \n\r");
     APPE_SysEvtError(pPayload);
     break;
 
@@ -434,23 +442,23 @@ static void APPE_SysUserEvtRx(void * pPayload)
                 ((SHCI_C2_BleNvmRamUpdate_Evt_t*)p_sys_event->payload)->Size);
     break;
 
-  case SHCI_SUB_EVT_NVM_START_WRITE:
-    APP_DBG_MSG("==>> SHCI_SUB_EVT_NVM_START_WRITE : NumberOfWords = %ld\n",
-                ((SHCI_C2_NvmStartWrite_Evt_t*)p_sys_event->payload)->NumberOfWords);
-    break;
-
-  case SHCI_SUB_EVT_NVM_END_WRITE:
-    APP_DBG_MSG(">>== SHCI_SUB_EVT_NVM_END_WRITE\n\r");
-    break;
-
-  case SHCI_SUB_EVT_NVM_START_ERASE:
-    APP_DBG_MSG("==>>SHCI_SUB_EVT_NVM_START_ERASE : NumberOfSectors = %ld\n",
-                ((SHCI_C2_NvmStartErase_Evt_t*)p_sys_event->payload)->NumberOfSectors);
-    break;
-
-  case SHCI_SUB_EVT_NVM_END_ERASE:
-    APP_DBG_MSG(">>== SHCI_SUB_EVT_NVM_END_ERASE\n\r");
-    break;
+//  case SHCI_SUB_EVT_NVM_START_WRITE:
+//    APP_DBG_MSG("==>> SHCI_SUB_EVT_NVM_START_WRITE : NumberOfWords = %ld\n",
+//                ((SHCI_C2_NvmStartWrite_Evt_t*)p_sys_event->payload)->NumberOfWords);
+//    break;
+//
+//  case SHCI_SUB_EVT_NVM_END_WRITE:
+//    APP_DBG_MSG(">>== SHCI_SUB_EVT_NVM_END_WRITE\n\r");
+//    break;
+//
+//  case SHCI_SUB_EVT_NVM_START_ERASE:
+//    APP_DBG_MSG("==>>SHCI_SUB_EVT_NVM_START_ERASE : NumberOfSectors = %ld\n",
+//                ((SHCI_C2_NvmStartErase_Evt_t*)p_sys_event->payload)->NumberOfSectors);
+//    break;
+//
+//  case SHCI_SUB_EVT_NVM_END_ERASE:
+//    APP_DBG_MSG(">>== SHCI_SUB_EVT_NVM_END_ERASE\n\r");
+//    break;
 
   default:
     break;
@@ -593,6 +601,8 @@ static void APPE_SysEvtReadyProcessing(void * pPayload)
    APP_BLE_Init_Dyn_2();
 //   APP_DBG("4- Configure OpenThread (Channel, PANID, IPv6 stack, ...) and Start it...");
    APP_THREAD_Init_Dyn_2();
+
+
 
  #if ( CFG_LPM_SUPPORTED == 1)
    /* Thread stack is initialized, low power mode can be enabled */

@@ -41,7 +41,9 @@
 /**
  * Define Advertising parameters
  */
-#define CFG_ADV_BD_ADDRESS                (0x11aabbccddee)
+//#define CFG_ADV_BD_ADDRESS                (0x11aabbccddee)
+#define CFG_ADV_BD_ADDRESS                (0x7257acd87a6c)
+
 
 /**
  * Define BD_ADDR type: define proper address. Can only be GAP_PUBLIC_ADDR (0x00) or GAP_STATIC_RANDOM_ADDR (0x01)
@@ -84,7 +86,7 @@
 #define CFG_IO_CAPABILITY_NO_INPUT_NO_OUTPUT  (0x03)
 #define CFG_IO_CAPABILITY_KEYBOARD_DISPLAY    (0x04)
 
-#define CFG_IO_CAPABILITY                     CFG_IO_CAPABILITY_DISPLAY_YES_NO
+#define CFG_IO_CAPABILITY                     CFG_IO_CAPABILITY_DISPLAY_ONLY
 
 /**
  * Define MITM modes
@@ -149,7 +151,7 @@
  * SMPS not used when Set to 0
  * SMPS used when Set to 1
  */
-#define CFG_USE_SMPS    0
+#define CFG_USE_SMPS    1
 
 /* USER CODE BEGIN Generic_Parameters */
 /**
@@ -180,7 +182,7 @@
  */
 #define CFG_BLE_MASTER_SCA   0
 
-#define DATA_NOTIFICATION_MAX_PACKET_SIZE           300
+#define DATA_NOTIFICATION_MAX_PACKET_SIZE           CFG_BLE_MAX_ATT_MTU
 //#define CFG_BLE_MAX_ATT_MTU             (512)
 
 #define CUSTOM_BT_PARAMETERS 1
@@ -218,13 +220,17 @@
  * Maximum number of simultaneous connections that the device will support.
  * Valid values are from 1 to 8
  */
-#define CFG_BLE_NUM_LINK            4
+//#define CFG_BLE_NUM_LINK            4
+#define CFG_BLE_NUM_LINK            8
+
 
 /**
  * Maximum number of Services that can be stored in the GATT database.
  * Note that the GAP and GATT services are automatically added so this parameter should be 2 plus the number of user services
  */
-#define CFG_BLE_NUM_GATT_SERVICES   4
+//#define CFG_BLE_NUM_GATT_SERVICES   4
+#define CFG_BLE_NUM_GATT_SERVICES   8
+
 
 /**
  * Maximum number of Attributes
@@ -233,7 +239,8 @@
  * Note that certain characteristics and relative descriptors are added automatically during device initialization
  * so this parameters should be 9 plus the number of user Attributes
  */
-#define CFG_BLE_NUM_GATT_ATTRIBUTES 30
+//#define CFG_BLE_NUM_GATT_ATTRIBUTES 30
+#define CFG_BLE_NUM_GATT_ATTRIBUTES 68
 
 /**
  * Maximum supported ATT_MTU size
@@ -244,7 +251,8 @@
 //#else
 //#define CFG_BLE_MAX_ATT_MTU             (156)
 //#endif
-#define CFG_BLE_MAX_ATT_MTU             (300)
+//#define CFG_BLE_MAX_ATT_MTU             (300)
+#define CFG_BLE_MAX_ATT_MTU             (156)
 
 /**
  * Size of the storage area for Attribute values
@@ -257,12 +265,13 @@
  *  The total amount of memory needed is the sum of the above quantities for each attribute.
  * This parameter is ignored by the CPU2 when CFG_BLE_OPTIONS has SHCI_C2_BLE_INIT_OPTIONS_LL_ONLY flag set
  */
-#ifndef TESTING_ACTIVE
-#define CFG_BLE_ATT_VALUE_ARRAY_SIZE    (1644)
-#else
-#define CFG_BLE_ATT_VALUE_ARRAY_SIZE    (1344)
-#endif
+//#ifndef TESTING_ACTIVE
+//#define CFG_BLE_ATT_VALUE_ARRAY_SIZE    (1644)
+//#else
+//#define CFG_BLE_ATT_VALUE_ARRAY_SIZE    (1344)
+//#endif
 
+#define CFG_BLE_ATT_VALUE_ARRAY_SIZE    (1344)
 
 
 /**
@@ -367,7 +376,8 @@
  *          0: LE Power Class 2-3
  * other bits: complete with Options_extension flag
  */
-#define CFG_BLE_OPTIONS  (SHCI_C2_BLE_INIT_OPTIONS_LL_HOST | SHCI_C2_BLE_INIT_OPTIONS_WITH_SVC_CHANGE_DESC | SHCI_C2_BLE_INIT_OPTIONS_DEVICE_NAME_RW | SHCI_C2_BLE_INIT_OPTIONS_NO_EXT_ADV | SHCI_C2_BLE_INIT_OPTIONS_NO_CS_ALGO2 | SHCI_C2_BLE_INIT_OPTIONS_FULL_GATTDB_NVM | SHCI_C2_BLE_INIT_OPTIONS_GATT_CACHING_NOTUSED | SHCI_C2_BLE_INIT_OPTIONS_POWER_CLASS_2_3)
+//#define CFG_BLE_OPTIONS  (SHCI_C2_BLE_INIT_OPTIONS_LL_HOST | SHCI_C2_BLE_INIT_OPTIONS_WITH_SVC_CHANGE_DESC | SHCI_C2_BLE_INIT_OPTIONS_DEVICE_NAME_RW | SHCI_C2_BLE_INIT_OPTIONS_NO_EXT_ADV | SHCI_C2_BLE_INIT_OPTIONS_NO_CS_ALGO2 | SHCI_C2_BLE_INIT_OPTIONS_FULL_GATTDB_NVM | SHCI_C2_BLE_INIT_OPTIONS_GATT_CACHING_NOTUSED | SHCI_C2_BLE_INIT_OPTIONS_POWER_CLASS_2_3)
+#define CFG_BLE_OPTIONS  SHCI_C2_BLE_INIT_OPTIONS_LL_HOST
 
 /**
  * BLE stack Options_extension flags to be configured with:
@@ -418,7 +428,7 @@
  * This parameter is considered by the CPU2 when CFG_BLE_OPTIONS has SHCI_C2_BLE_INIT_OPTIONS_EXT_ADV flag set
  */
 
-#define CFG_BLE_MAX_ADV_DATA_LEN    (1650)
+//#define CFG_BLE_MAX_ADV_DATA_LEN    (1650)
 
  /* RF TX Path Compensation Value (16-bit signed integer). Units: 0.1 dB.
   * Range: -1280 .. 1280
@@ -439,7 +449,7 @@
    * which are used to set: 11(5.2), 12(5.3), 13(5.4).
    */
 
-#define CFG_BLE_CORE_VERSION   (SHCI_C2_BLE_INIT_BLE_CORE_5_4)
+//#define CFG_BLE_CORE_VERSION   (SHCI_C2_BLE_INIT_BLE_CORE_5_4)
 
 /******************************************************************************
  * Transport Layer
@@ -623,6 +633,10 @@ typedef enum
  */
 #define CFG_DEBUG_BLE_TRACE     0
 
+#define DYNAMIC_MODE 1
+
+#define CFG_FEATURE_THREAD_SWITCH               (0x40)
+
 /**
  * Enable or Disable traces in application
  */
@@ -729,16 +743,16 @@ typedef enum
 #define CFG_THREAD_MSG_M0_TO_M4_PROCESS_CB_MEM      (0)
 #define CFG_THREAD_MSG_M0_TO_M4_PROCESS_CB_SIZE     (0)
 #define CFG_THREAD_MSG_M0_TO_M4_PROCESS_STACK_MEM   (0)
-#define CFG_THREAD_MSG_M0_TO_M4_PROCESS_PRIORITY    osPriorityLow
+#define CFG_THREAD_MSG_M0_TO_M4_PROCESS_PRIORITY    osPriorityLow1
 #define CFG_THREAD_MSG_M0_TO_M4_PROCESS_STACK_SIZE  (128 * 8)
 
-#define CFG_THREAD_CLI_PROCESS_NAME        "THREAD_CLI_PROCESS"
-#define CFG_THREAD_CLI_PROCESS_ATTR_BITS   (0)
-#define CFG_THREAD_CLI_PROCESS_CB_MEM      (0)
-#define CFG_THREAD_CLI_PROCESS_CB_SIZE     (0)
-#define CFG_THREAD_CLI_PROCESS_STACK_MEM   (0)
-#define CFG_THREAD_CLI_PROCESS_PRIORITY    osPriorityNormal
-#define CFG_THREAD_CLI_PROCESS_STACK_SIZE  (128 * 8)
+//#define CFG_THREAD_CLI_PROCESS_NAME        "THREAD_CLI_PROCESS"
+//#define CFG_THREAD_CLI_PROCESS_ATTR_BITS   (0)
+//#define CFG_THREAD_CLI_PROCESS_CB_MEM      (0)
+//#define CFG_THREAD_CLI_PROCESS_CB_SIZE     (0)
+//#define CFG_THREAD_CLI_PROCESS_STACK_MEM   (0)
+//#define CFG_THREAD_CLI_PROCESS_PRIORITY    osPriorityNormal
+//#define CFG_THREAD_CLI_PROCESS_STACK_SIZE  (128 * 8)
 /* USER CODE END FreeRTOS_Defines */
 
 /******************************************************************************

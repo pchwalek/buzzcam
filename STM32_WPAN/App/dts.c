@@ -580,107 +580,107 @@ void DTS_STM_Init(void) {
 #endif
 	}
 
-	/**
-	 *  Add Data Transfer RX Characteristic (not intended to be used in the end)
-	 */
-	hciCmdResult = aci_gatt_add_char(aDataTransferContext.DataTransferSvcHdle,
-	DT_UUID_LENGTH, (Char_UUID_t*) DT_REQ_CHAR_CONFIG_UUID, DATA_TRANSFER_NOTIFICATION_LEN_MAX, /* DATA_TRANSFER_NOTIFICATION_LEN_MAX, */
-	CHAR_PROP_NOTIFY | CHAR_PROP_READ,
-	ATTR_PERMISSION_NONE,
-	GATT_NOTIFY_ATTRIBUTE_WRITE, //GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP, /* gattEvtMask */
-			10, /* encryKeySize */
-			1, /* isVariable */
-			&(aDataTransferContext.DataTransferCharControlHdle));
-
-	if (hciCmdResult != 0) {
-		APP_DBG_MSG("error add char Tx\n");
-		Error_Handler();
-#ifdef NUCLEO_LED_ACTIVE
-    BSP_LED_On(LED_RED);
-#endif
-	}
-
-	hciCmdResult = aci_gatt_add_char(aDataTransferContext.DataTransferSvcHdle,
-	DT_UUID_LENGTH, (Char_UUID_t*) DT_REQ_CHAR_RX_UUID, DATA_TRANSFER_NOTIFICATION_LEN_MAX, /* DATA_TRANSFER_NOTIFICATION_LEN_MAX, */
-//	CHAR_PROP_WRITE_WITHOUT_RESP,
-	CHAR_PROP_WRITE,
-	ATTR_PERMISSION_NONE,
-	GATT_NOTIFY_ATTRIBUTE_WRITE, //GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP, /* gattEvtMask */
-			10, /* encryKeySize */
-			1, /* isVariable */
-			&(aDataTransferContext.DataTransferRxCharHdle));
-
-//	updateSystemConfig_BLE(&sysState);
-
-
-	// add camera control characteristic
-	//CE81 (WRITE)
-	hciCmdResult = aci_gatt_add_char(aDataTransferContext.DataTransferSvcHdle,
-	DT_UUID_LENGTH, (Char_UUID_t*) DT_CAMERA_CE81_UUID, 20, /* DATA_TRANSFER_NOTIFICATION_LEN_MAX, */
-//	CHAR_PROP_WRITE_WITHOUT_RESP,
-	CHAR_PROP_WRITE,
-	ATTR_PERMISSION_NONE,
-	GATT_NOTIFY_ATTRIBUTE_WRITE, //GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP, /* gattEvtMask */
-			10, /* encryKeySize */
-			1, /* isVariable */
-			&(aDataTransferContext.DataCameraCE81CharHdle));
-
-
-	//CE83 (READ) -> curr value: 0x0102
-	hciCmdResult = aci_gatt_add_char(aDataTransferContext.DataTransferSvcHdle,
-	DT_UUID_LENGTH, (Char_UUID_t*) DT_CAMERA_CE83_UUID, 20, /* DATA_TRANSFER_NOTIFICATION_LEN_MAX, */
-//	CHAR_PROP_WRITE_WITHOUT_RESP,
-	CHAR_PROP_READ,
-	ATTR_PERMISSION_NONE,
-	GATT_NOTIFY_ATTRIBUTE_WRITE, //GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP, /* gattEvtMask */
-			10, /* encryKeySize */
-			1, /* isVariable */
-			&(aDataTransferContext.DataCameraCE83CharHdle));
-
-	tBleStatus ret;
-	uint8_t stock_val[4] = {1,2};
-	ret = aci_gatt_update_char_value(aDataTransferContext.DataTransferSvcHdle,
-					  aDataTransferContext.DataCameraCE83CharHdle, 0, /* charValOffset */
-					  2, /* charValueLen */
-					  (uint8_t*) stock_val);
-
-	//CE82
-	hciCmdResult = aci_gatt_add_char(aDataTransferContext.DataTransferSvcHdle,
-	DT_UUID_LENGTH, (Char_UUID_t*) DT_CAMERA_CTRL_UUID, 60, /* DATA_TRANSFER_NOTIFICATION_LEN_MAX, */
-//	CHAR_PROP_WRITE_WITHOUT_RESP,
-	CHAR_PROP_NOTIFY | CHAR_PROP_READ,
-	ATTR_PERMISSION_NONE,
-	GATT_NOTIFY_ATTRIBUTE_WRITE, //GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP, /* gattEvtMask */
-			10, /* encryKeySize */
-			1, /* isVariable */
-			&(aDataTransferContext.DataCameraCtrlCharHdle));
-
-    DTS_CamCtrl(SHUTTER);
-
-	/* Create a stream that will write to our buffer. */
-	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-	/* Now we are ready to encode the message! */
-	status = pb_encode(&stream, PACKET_FIELDS, &infoPacket);
-	PackedPayload.pPayload = (uint8_t*) buffer;
-	PackedPayload.Length = stream.bytes_written;
-    if(status) ret = DTS_STM_UpdateChar(BUZZCAM_INFO_CHAR_UUID, &PackedPayload);
-
-	/* Create a stream that will write to our buffer. */
-	stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-	/* Now we are ready to encode the message! */
-	status = pb_encode(&stream, PACKET_FIELDS, &configPacket);
-	PackedPayload.pPayload = (uint8_t*) buffer;
-	PackedPayload.Length = stream.bytes_written;
-    if(status) ret = DTS_STM_UpdateChar(BUZZCAM_CONFIG_CHAR_UUID,&PackedPayload);
-
-
-	if (hciCmdResult != 0) {
-		APP_DBG_MSG("error add char Tx\n");
-
-#ifdef NUCLEO_LED_ACTIVE
-    BSP_LED_On(LED_RED);
-#endif
-	}
+//	/**
+//	 *  Add Data Transfer RX Characteristic (not intended to be used in the end)
+//	 */
+//	hciCmdResult = aci_gatt_add_char(aDataTransferContext.DataTransferSvcHdle,
+//	DT_UUID_LENGTH, (Char_UUID_t*) DT_REQ_CHAR_CONFIG_UUID, DATA_TRANSFER_NOTIFICATION_LEN_MAX, /* DATA_TRANSFER_NOTIFICATION_LEN_MAX, */
+//	CHAR_PROP_NOTIFY | CHAR_PROP_READ,
+//	ATTR_PERMISSION_NONE,
+//	GATT_NOTIFY_ATTRIBUTE_WRITE, //GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP, /* gattEvtMask */
+//			10, /* encryKeySize */
+//			1, /* isVariable */
+//			&(aDataTransferContext.DataTransferCharControlHdle));
+//
+//	if (hciCmdResult != 0) {
+//		APP_DBG_MSG("error add char Tx\n");
+//		Error_Handler();
+//#ifdef NUCLEO_LED_ACTIVE
+//    BSP_LED_On(LED_RED);
+//#endif
+//	}
+//
+//	hciCmdResult = aci_gatt_add_char(aDataTransferContext.DataTransferSvcHdle,
+//	DT_UUID_LENGTH, (Char_UUID_t*) DT_REQ_CHAR_RX_UUID, DATA_TRANSFER_NOTIFICATION_LEN_MAX, /* DATA_TRANSFER_NOTIFICATION_LEN_MAX, */
+////	CHAR_PROP_WRITE_WITHOUT_RESP,
+//	CHAR_PROP_WRITE,
+//	ATTR_PERMISSION_NONE,
+//	GATT_NOTIFY_ATTRIBUTE_WRITE, //GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP, /* gattEvtMask */
+//			10, /* encryKeySize */
+//			1, /* isVariable */
+//			&(aDataTransferContext.DataTransferRxCharHdle));
+//
+////	updateSystemConfig_BLE(&sysState);
+//
+//
+//	// add camera control characteristic
+//	//CE81 (WRITE)
+//	hciCmdResult = aci_gatt_add_char(aDataTransferContext.DataTransferSvcHdle,
+//	DT_UUID_LENGTH, (Char_UUID_t*) DT_CAMERA_CE81_UUID, 20, /* DATA_TRANSFER_NOTIFICATION_LEN_MAX, */
+////	CHAR_PROP_WRITE_WITHOUT_RESP,
+//	CHAR_PROP_WRITE,
+//	ATTR_PERMISSION_NONE,
+//	GATT_NOTIFY_ATTRIBUTE_WRITE, //GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP, /* gattEvtMask */
+//			10, /* encryKeySize */
+//			1, /* isVariable */
+//			&(aDataTransferContext.DataCameraCE81CharHdle));
+//
+//
+//	//CE83 (READ) -> curr value: 0x0102
+//	hciCmdResult = aci_gatt_add_char(aDataTransferContext.DataTransferSvcHdle,
+//	DT_UUID_LENGTH, (Char_UUID_t*) DT_CAMERA_CE83_UUID, 20, /* DATA_TRANSFER_NOTIFICATION_LEN_MAX, */
+////	CHAR_PROP_WRITE_WITHOUT_RESP,
+//	CHAR_PROP_READ,
+//	ATTR_PERMISSION_NONE,
+//	GATT_NOTIFY_ATTRIBUTE_WRITE, //GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP, /* gattEvtMask */
+//			10, /* encryKeySize */
+//			1, /* isVariable */
+//			&(aDataTransferContext.DataCameraCE83CharHdle));
+//
+//	tBleStatus ret;
+//	uint8_t stock_val[4] = {1,2};
+//	ret = aci_gatt_update_char_value(aDataTransferContext.DataTransferSvcHdle,
+//					  aDataTransferContext.DataCameraCE83CharHdle, 0, /* charValOffset */
+//					  2, /* charValueLen */
+//					  (uint8_t*) stock_val);
+//
+//	//CE82
+//	hciCmdResult = aci_gatt_add_char(aDataTransferContext.DataTransferSvcHdle,
+//	DT_UUID_LENGTH, (Char_UUID_t*) DT_CAMERA_CTRL_UUID, 60, /* DATA_TRANSFER_NOTIFICATION_LEN_MAX, */
+////	CHAR_PROP_WRITE_WITHOUT_RESP,
+//	CHAR_PROP_NOTIFY | CHAR_PROP_READ,
+//	ATTR_PERMISSION_NONE,
+//	GATT_NOTIFY_ATTRIBUTE_WRITE, //GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP, /* gattEvtMask */
+//			10, /* encryKeySize */
+//			1, /* isVariable */
+//			&(aDataTransferContext.DataCameraCtrlCharHdle));
+//
+//    DTS_CamCtrl(SHUTTER);
+//
+//	/* Create a stream that will write to our buffer. */
+//	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+//	/* Now we are ready to encode the message! */
+//	status = pb_encode(&stream, PACKET_FIELDS, &infoPacket);
+//	PackedPayload.pPayload = (uint8_t*) buffer;
+//	PackedPayload.Length = stream.bytes_written;
+//    if(status) ret = DTS_STM_UpdateChar(BUZZCAM_INFO_CHAR_UUID, &PackedPayload);
+//
+//	/* Create a stream that will write to our buffer. */
+//	stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+//	/* Now we are ready to encode the message! */
+//	status = pb_encode(&stream, PACKET_FIELDS, &configPacket);
+//	PackedPayload.pPayload = (uint8_t*) buffer;
+//	PackedPayload.Length = stream.bytes_written;
+//    if(status) ret = DTS_STM_UpdateChar(BUZZCAM_CONFIG_CHAR_UUID,&PackedPayload);
+//
+//
+//	if (hciCmdResult != 0) {
+//		APP_DBG_MSG("error add char Tx\n");
+//
+//#ifdef NUCLEO_LED_ACTIVE
+//    BSP_LED_On(LED_RED);
+//#endif
+//	}
 
 	return;
 }

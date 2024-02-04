@@ -261,7 +261,8 @@ void triggerBatteryMonitorSample(void *argument);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_OPTVERR);
+	  __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_OPTVERR);
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -277,17 +278,6 @@ int main(void)
 
   /* Configure the system clock */
   SystemClock_Config();
-
-	/**
-	 * Select LSE clock
-	 */
-	LL_RCC_LSE_Enable();
-	while(!LL_RCC_LSE_IsReady());
-
-	/**
-	 * Select wakeup source of BLE RF
-	 */
-	LL_RCC_SetRFWKPClockSource(LL_RCC_RFWKP_CLKSOURCE_LSE);
 
 /* Configure the peripherals common clocks */
   PeriphCommonClock_Config();
@@ -431,6 +421,7 @@ int main(void)
   MX_DMA_Init();
   MX_I2C3_Init();
   MX_RTC_Init();
+
   MX_SAI1_Init();
   MX_SPI1_Init();
   MX_TIM2_Init();
@@ -440,8 +431,10 @@ int main(void)
   }
   MX_I2C1_Init();
   MX_SPI2_Init();
+
 //  MX_USART1_UART_Init();
 //  MX_USB_Device_Init();
+
   MX_ADC1_Init();
   MX_RF_Init();
   /* USER CODE BEGIN 2 */
@@ -649,6 +642,7 @@ void SystemClock_Config(void)
   /** Configure LSE Drive Capability
   */
   HAL_PWR_EnableBkUpAccess();
+  HAL_PWR_EnableBkUpAccess();
   __HAL_RCC_LSEDRIVE_CONFIG(RCC_LSEDRIVE_MEDIUMHIGH);
 
   /** Configure the main internal regulator output voltage
@@ -699,6 +693,7 @@ void SystemClock_Config(void)
   /** Enable MSI Auto calibration
   */
   HAL_RCCEx_EnableMSIPLLMode();
+
 }
 
 /**
@@ -4578,6 +4573,7 @@ void StartDefaultTask(void *argument)
 	for(;;)
 	{
 		osDelay(1);
+//		 osThreadFlagsWait(1,osFlagsWaitAll,osWaitForever);
 	}
   /* USER CODE END 5 */
 }
