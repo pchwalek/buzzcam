@@ -139,7 +139,7 @@ struct MainView: View {
                             // nearby devices dropdown
                             NearbyDevices()
                             
-                            Image("BuzzCam Logo").resizable()
+                            Image("BuzzCam Logo 1").resizable()
                                 .frame(width: 100, height: 100)
                                 .scaledToFit().padding() // replace with transparent background logo
                         }
