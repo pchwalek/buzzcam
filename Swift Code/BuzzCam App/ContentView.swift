@@ -38,35 +38,35 @@ struct ContentView: View {
                 // Launch screen
                 withAnimation {
                     ZStack {
-                        Color(red: 40/255, green: 35/255, blue: 41/255)
+                        Color.black
                             .edgesIgnoringSafeArea(.all) // Set the background color
-                            .opacity(showMainContent ? 0 : 1) // Fade out background color
+//                            .opacity(showMainContent ? 0 : 1) // Fade out background color
                         
-                        Image("BuzzCam Logo 1") // Replace "launch_image" with your image name
+                        Image("BuzzCam Logo 2")
                             .resizable()
                             .scaledToFit()
-                            .frame(width: 300, height: 300)
+                            .frame(width: 200, height: 200)
                             .edgesIgnoringSafeArea(.all)
                             .aspectRatio(contentMode: .fill)
-                            .opacity(showMainContent ? 0 : 1) // Fade out background color
+//                            .opacity(showMainContent ? 0 : 1) // Fade out background color
                         
-                        VStack(spacing: 20) {
-                            Spacer().frame(height: 400)
-                            Text("BuzzCam")
-                                .font(.largeTitle)
-                                .fontWeight(.bold)
-                                .foregroundColor(.white)
-                                .opacity(showMainContent ? 0 : 1) // Fade out background color
-                        }
+//                        VStack(spacing: 20) {
+//                            Spacer().frame(height: 300)
+//                            Text("BuzzCam")
+//                                .font(.largeTitle)
+//                                .fontWeight(.bold)
+//                                .foregroundColor(.white)
+////                                .opacity(showMainContent ? 0 : 1) // Fade out background color
+//                        }
                     }
                 }
                 .onAppear {
                     // Show launch screen for 3 seconds
                     DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-//                        withAnimation {
-//                            self.showMainContent = true
-//                        }
-                        self.showMainContent = true
+                        withAnimation {
+                            self.showMainContent = true
+                        }
+//                        self.showMainContent = true
                     }
                 }
             }
