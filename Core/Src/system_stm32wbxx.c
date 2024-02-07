@@ -129,7 +129,10 @@
 /*!< Uncomment the following line if you need to relocate CPU1 CM4 and/or CPU2
      CM0+ vector table anywhere in Sram or Flash. Else vector table will be kept
      at address 0x00 which correspond to automatic remap of boot address selected */
-/* #define USER_VECT_TAB_ADDRESS */
+ #define USER_VECT_TAB_ADDRESS
+#define VECT_TAB_SRAM
+
+
 #if defined(USER_VECT_TAB_ADDRESS)
 /*!< Uncomment this line for user vector table remap in Sram else user remap
      will be done in Flash. */
@@ -215,6 +218,8 @@ void SystemInit(void)
   /* Configure the Vector Table location add offset address ------------------*/
   SCB->VTOR = VECT_TAB_BASE_ADDRESS | VECT_TAB_OFFSET;
 #endif /* USER_VECT_TAB_ADDRESS */
+
+  SCB->VTOR = VECT_TAB_OFFSET;              /* Vector Table Relocation in Internal FLASH */
 
   /* FPU settings ------------------------------------------------------------*/
 #if (__FPU_PRESENT == 1) && (__FPU_USED == 1)

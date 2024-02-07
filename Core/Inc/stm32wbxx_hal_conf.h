@@ -144,6 +144,7 @@
 #define LSE_VALUE    32774U               /*!< Value of the External oscillator in Hz*/
 #endif /* LSE_VALUE */
 
+
 /**
   * @brief Internal Multiple Speed oscillator (HSI48) default value.
   *        This value is the default HSI48 range value after Reset.

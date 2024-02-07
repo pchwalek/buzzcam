@@ -65,13 +65,17 @@ PLACE_IN_SECTION("MB_MEM2") ALIGN(4) static uint8_t SystemSpareEvtBuffer[sizeof(
 PLACE_IN_SECTION("MB_MEM2") ALIGN(4) static uint8_t BleSpareEvtBuffer[sizeof(TL_PacketHeader_t) + TL_EVT_HDR_SIZE + 255];
 
 /* USER CODE BEGIN PV */
+uint8_t g_ot_notification_allowed = 0U;
 
+volatile uint8_t stopThread = 0;
 /* USER CODE END PV */
 
 /* Global variables ----------------------------------------------------------*/
 osMutexId_t MtxShciId;
 osSemaphoreId_t SemShciId;
 osThreadId_t ShciUserEvtProcessId;
+osSemaphoreId_t SemShciUserEvtProcessId;
+
 
 const osThreadAttr_t ShciUserEvtProcess_attr = {
     .name = CFG_SHCI_USER_EVT_PROCESS_NAME,
@@ -79,8 +83,9 @@ const osThreadAttr_t ShciUserEvtProcess_attr = {
     .cb_mem = CFG_SHCI_USER_EVT_PROCESS_CB_MEM,
     .cb_size = CFG_SHCI_USER_EVT_PROCESS_CB_SIZE,
     .stack_mem = CFG_SHCI_USER_EVT_PROCESS_STACK_MEM,
+	.stack_size = CFG_SHCI_USER_EVT_PROCESS_STACK_SIZE,
     .priority = CFG_SHCI_USER_EVT_PROCESS_PRIORITY,
-    .stack_size = CFG_SHCI_USER_EVT_PROCESS_STACK_SIZE
+	.tz_module = 0, .reserved = 0
 };
 
 /* Private functions prototypes-----------------------------------------------*/
@@ -134,6 +139,14 @@ void MX_APPE_Init(void)
   HW_TS_Init(hw_ts_InitMode_Full, &hrtc); /**< Initialize the TimerServer */
 
 /* USER CODE BEGIN APPE_Init_1 */
+
+  MtxShciId = osMutexNew(NULL);
+  SemShciId = osSemaphoreNew(1, 0, NULL); /*< Create the semaphore and make it busy at initialization */
+
+  SemShciUserEvtProcessId = osSemaphoreNew(1, 0, NULL); /*< Create the semaphore and make it busy at initialization */
+  /** FreeRTOS system task creation */
+  ShciUserEvtProcessId = osThreadNew(ShciUserEvtProcess, NULL, &ShciUserEvtProcess_attr);
+
   /* Enable RAM1 (because OT instance.o is located here for Concurrent Mode */
 
   /**
@@ -310,6 +323,10 @@ static void Init_Rtc(void)
  */
 static void SystemPower_Config(void)
 {
+	  // Before going to stop or standby modes, do the settings so that system clock and IP80215.4 clock
+	  // start on HSI automatically
+	  LL_RCC_HSI_EnableAutoFromStop();
+
   /**
    * Select HSI as system clock source after Wake Up from Stop mode
    */
@@ -319,7 +336,11 @@ static void SystemPower_Config(void)
   UTIL_LPM_Init();
   /* Initialize the CPU2 reset value before starting CPU2 with C2BOOT */
 #ifndef TESTING_ACTIVE
-  LL_C2_PWR_SetPowerMode(LL_PWR_MODE_SHUTDOWN);
+//  LL_C2_PWR_SetPowerMode(LL_PWR_MODE_SHUTDOWN);
+
+  /* Disable low power mode until INIT is complete */
+  UTIL_LPM_SetOffMode(1 << CFG_LPM_APP, UTIL_LPM_DISABLE);
+  UTIL_LPM_SetStopMode(1 << CFG_LPM_APP, UTIL_LPM_DISABLE);
 
   LL_C2_AHB1_GRP1_EnableClock(LL_C2_AHB1_GRP1_PERIPH_SRAM1);
   LL_C2_AHB1_GRP1_EnableClockSleep(LL_C2_AHB1_GRP1_PERIPH_SRAM1);
@@ -352,11 +373,6 @@ static void appe_Tl_Init(void)
   /**< Reference table initialization */
   TL_Init();
 
-  MtxShciId = osMutexNew(NULL);
-  SemShciId = osSemaphoreNew(1, 0, NULL); /*< Create the semaphore and make it busy at initialization */
-
-  /** FreeRTOS system task creation */
-  ShciUserEvtProcessId = osThreadNew(ShciUserEvtProcess, NULL, &ShciUserEvtProcess_attr);
 
   /**< System channel initialization */
   SHci_Tl_Init_Conf.p_cmdbuffer = (uint8_t*)&SystemCmdBuffer;
@@ -377,19 +393,20 @@ static void appe_Tl_Init(void)
 
 static void APPE_SysStatusNot(SHCI_TL_CmdStatus_t status)
 {
-  switch (status)
-  {
-    case SHCI_TL_CmdBusy:
-      osMutexAcquire(MtxShciId, osWaitForever);
-      break;
-
-    case SHCI_TL_CmdAvailable:
-      osMutexRelease(MtxShciId);
-      break;
-
-    default:
-      break;
-  }
+	 UNUSED(status);
+//  switch (status)
+//  {
+//    case SHCI_TL_CmdBusy:
+//      osMutexAcquire(MtxShciId, osWaitForever);
+//      break;
+//
+//    case SHCI_TL_CmdAvailable:
+//      osMutexRelease(MtxShciId);
+//      break;
+//
+//    default:
+//      break;
+//  }
   return;
 }
 
@@ -573,6 +590,7 @@ static void APPE_SysEvtReadyProcessing(void * pPayload)
 //
 //  return;
 //#else
+
   /* Traces channel initialization */
    APPD_EnableCPU2();
 
@@ -593,6 +611,9 @@ static void APPE_SysEvtReadyProcessing(void * pPayload)
    APP_BLE_Init_Dyn_2();
 //   APP_DBG("4- Configure OpenThread (Channel, PANID, IPv6 stack, ...) and Start it...");
    APP_THREAD_Init_Dyn_2();
+
+//   stopThread = 1;
+//	Adv_Request(APP_BLE_LP_ADV);
 
  #if ( CFG_LPM_SUPPORTED == 1)
    /* Thread stack is initialized, low power mode can be enabled */
@@ -619,7 +640,10 @@ static void ShciUserEvtProcess(void *argument)
     /* USER CODE BEGIN SHCI_USER_EVT_PROCESS_1 */
 
     /* USER CODE END SHCI_USER_EVT_PROCESS_1 */
-     osThreadFlagsWait(1, osFlagsWaitAny, osWaitForever);
+//     osThreadFlagsWait(1, osFlagsWaitAny, osWaitForever);
+	 osSemaphoreAcquire(SemShciUserEvtProcessId, osWaitForever);
+//		ot_StatusNot(ot_TL_CmdBusy);
+//		ot_StatusNot(ot_TL_CmdAvailable);
      shci_user_evt_proc();
     /* USER CODE BEGIN SHCI_USER_EVT_PROCESS_2 */
 
@@ -668,7 +692,8 @@ void HAL_Delay(uint32_t Delay)
 void shci_notify_asynch_evt(void* pdata)
 {
   UNUSED(pdata);
-  osThreadFlagsSet(ShciUserEvtProcessId, 1);
+//  osThreadFlagsSet(ShciUserEvtProcessId, 1);
+  osSemaphoreRelease(SemShciUserEvtProcessId);
   return;
 }
 

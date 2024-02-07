@@ -66,6 +66,7 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
+
 void SystemClock_Config(void);
 
 void triggerMark(void *argument);
@@ -228,6 +229,9 @@ void setLED_Blue(uint32_t intensity);
 void setLED_Green(uint32_t intensity);
 void setLED_Red(uint32_t intensity);
 void disableLEDs();
+void toggledRed();
+void toggledGreen();
+void toggledBlue();
 void i2c_error_check(I2C_HandleTypeDef *hi2c);
 
 void uint64ToString(uint64_t num, char* str);

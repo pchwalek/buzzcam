@@ -30,12 +30,17 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "cmsis_os.h"
 
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-
+typedef enum
+{
+  ot_TL_CmdBusy,
+  ot_TL_CmdAvailable
+} ot_TL_CmdStatus_t;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -45,11 +50,23 @@ extern "C" {
 
 /* Exported variables --------------------------------------------------------*/
 /* USER CODE BEGIN EV */
+extern osMutexId_t MtxHciId;
+extern osThreadId_t OsTaskMsgM0ToM4Id;      /* Task managing the M0 to M4 messaging        */
 
+extern osThreadId_t AdvUpdateProcessId;
+extern osThreadId_t HciUserEvtProcessId;
+
+extern osThreadId_t defaultTaskHandle;
+extern volatile uint8_t bluetoothCmdBusy;
+extern osThreadId_t ShciUserEvtProcessId;
+void ot_StatusNot( ot_TL_CmdStatus_t status );
+
+extern volatile uint8_t stopThread;
 /* USER CODE END EV */
 
 /* Exported macros ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
+static volatile int FlagCmdProcessingFromM0 = 0;
 
 /* USER CODE END EM */
 

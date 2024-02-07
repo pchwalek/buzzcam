@@ -152,7 +152,6 @@ typedef enum
 
 /* External variables --------------------------------------------------------*/
 /* USER CODE BEGIN EV */
-
 /* USER CODE END EV */
 
 /* Exported macros ------------------------------------------------------------*/

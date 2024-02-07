@@ -47,6 +47,8 @@
 
 #define TFLAC_IMPLEMENTATION
 #include "tflac.h"
+
+#include "app_entry.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -173,6 +175,8 @@ void StartDefaultTask(void *argument);
 void EnableExtADC(bool state);
 void runAnalogConverter(void);
 
+static void Reset_Device( void );
+
 void WAV_RECORD_TEST(void);
 static uint32_t WavProcess_HeaderInit(uint8_t* pHeader, WAVE_FormatTypeDef* pWaveFormatStruct);
 static uint32_t WavProcess_EncInit(uint32_t Freq, uint8_t *pHeader);
@@ -242,6 +246,8 @@ void enable_SD_Mux(void);
 void disable_SD_Mux(void);
 void mux_Select_SD_Card(uint8_t number);
 
+static void Reset_Device( void );
+
 void grabOrientation(char *folder_name);
 
 void chirpTask(void *argument);
@@ -262,6 +268,7 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
 	__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_OPTVERR);
+	Reset_Device();
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -273,21 +280,22 @@ int main(void)
   MX_APPE_Config();
 
   /* USER CODE BEGIN Init */
+
   /* USER CODE END Init */
 
   /* Configure the system clock */
   SystemClock_Config();
 
-	/**
-	 * Select LSE clock
-	 */
-	LL_RCC_LSE_Enable();
-	while(!LL_RCC_LSE_IsReady());
-
-	/**
-	 * Select wakeup source of BLE RF
-	 */
-	LL_RCC_SetRFWKPClockSource(LL_RCC_RFWKP_CLKSOURCE_LSE);
+//	/**
+//	 * Select LSE clock
+//	 */
+//	LL_RCC_LSE_Enable();
+//	while(!LL_RCC_LSE_IsReady());
+//
+//	/**
+//	 * Select wakeup source of BLE RF
+//	 */
+//	LL_RCC_SetRFWKPClockSource(LL_RCC_RFWKP_CLKSOURCE_LSE);
 
 /* Configure the peripherals common clocks */
   PeriphCommonClock_Config();
@@ -429,6 +437,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
+
   MX_I2C3_Init();
   MX_RTC_Init();
   MX_SAI1_Init();
@@ -440,49 +449,13 @@ int main(void)
   }
   MX_I2C1_Init();
   MX_SPI2_Init();
+
 //  MX_USART1_UART_Init();
 //  MX_USB_Device_Init();
+
   MX_ADC1_Init();
   MX_RF_Init();
   /* USER CODE BEGIN 2 */
-	//  GPIO_InitTypeDef GPIO_InitStruct = {0};
-	//  GPIO_InitStruct.Pin = GPIO_PIN_5;
-	//  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	//  GPIO_InitStruct.Pull = GPIO_NOPULL;
-	//  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-	//  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-	//
-	//  GPIO_InitStruct.Pin = GPIO_PIN_4 | GPIO_PIN_5;
-	//  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	//  GPIO_InitStruct.Pull = GPIO_NOPULL;
-	//  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-	//  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-	//	/* Turn on microphone and ADC */
-	//	HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_SET);
-	//
-	//	/* initialize SD card */
-	//	  HAL_GPIO_WritePin(EN_SD_REG_GPIO_Port, EN_SD_REG_Pin, GPIO_PIN_SET);
-	//	  HAL_GPIO_WritePin(EN_SD_REG_2_GPIO_Port, EN_SD_REG_2_Pin, GPIO_PIN_SET);
-	//
-	//	  /* start mux */
-	//	  HAL_GPIO_WritePin(EN_SD_MUX_GPIO_Port, EN_SD_MUX_Pin, GPIO_PIN_RESET); // enable mux
-	//	  HAL_GPIO_WritePin(SD_MUX_SEL_GPIO_Port, SD_MUX_SEL_Pin, GPIO_PIN_RESET);// sd card 1 selected
-	////	  HAL_GPIO_WritePin(SD_MUX_SEL_GPIO_Port, SD_MUX_SEL_Pin, GPIO_PIN_SET);// sd card 2 selected
-	//
-	//while(1){
-	//	//PB4, PB5, PA5
-	//
-	//	HAL_Delay(100);
-	//	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
-	//	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4 | GPIO_PIN_5, GPIO_PIN_RESET);
-	//
-	//	HAL_Delay(100);
-	//	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
-	//	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4 | GPIO_PIN_5 , GPIO_PIN_SET);
-	//}
-
-
 
 	//  while(1){};
 
@@ -555,13 +528,12 @@ int main(void)
 	//	status = HAL_I2C_Mem_Read(&hi2c3, FRAM_INFO_WORD_ADDR, FRAM_INFO_BYTE_ADDR, 1, (uint8_t*) &tempInfoPacket, sizeof(tempInfoPacket), 1000);
 
 	// enable SD card 1
-	enable_SD_Card_1();
-	disable_SD_Card_2();
-	enable_SD_Mux();
-	mux_Select_SD_Card(1);
+//	enable_SD_Card_1();
+//	disable_SD_Card_2();
+//	enable_SD_Mux();
+//	mux_Select_SD_Card(1);
 
-//	float pitch, roll, heading;
-//	grabInertialSample(&pitch, &roll, &heading);
+
 
 	HAL_Delay(200);
 
@@ -1518,6 +1490,73 @@ void mux_Select_SD_Card(uint8_t number){
 	}
 }
 
+static void Reset_IPCC( void )
+{
+	LL_AHB3_GRP1_EnableClock(LL_AHB3_GRP1_PERIPH_IPCC);
+
+	LL_C1_IPCC_ClearFlag_CHx(
+			IPCC,
+			LL_IPCC_CHANNEL_1 | LL_IPCC_CHANNEL_2 | LL_IPCC_CHANNEL_3 | LL_IPCC_CHANNEL_4
+			| LL_IPCC_CHANNEL_5 | LL_IPCC_CHANNEL_6);
+
+	LL_C2_IPCC_ClearFlag_CHx(
+			IPCC,
+			LL_IPCC_CHANNEL_1 | LL_IPCC_CHANNEL_2 | LL_IPCC_CHANNEL_3 | LL_IPCC_CHANNEL_4
+			| LL_IPCC_CHANNEL_5 | LL_IPCC_CHANNEL_6);
+
+	LL_C1_IPCC_DisableTransmitChannel(
+			IPCC,
+			LL_IPCC_CHANNEL_1 | LL_IPCC_CHANNEL_2 | LL_IPCC_CHANNEL_3 | LL_IPCC_CHANNEL_4
+			| LL_IPCC_CHANNEL_5 | LL_IPCC_CHANNEL_6);
+
+	LL_C2_IPCC_DisableTransmitChannel(
+			IPCC,
+			LL_IPCC_CHANNEL_1 | LL_IPCC_CHANNEL_2 | LL_IPCC_CHANNEL_3 | LL_IPCC_CHANNEL_4
+			| LL_IPCC_CHANNEL_5 | LL_IPCC_CHANNEL_6);
+
+	LL_C1_IPCC_DisableReceiveChannel(
+			IPCC,
+			LL_IPCC_CHANNEL_1 | LL_IPCC_CHANNEL_2 | LL_IPCC_CHANNEL_3 | LL_IPCC_CHANNEL_4
+			| LL_IPCC_CHANNEL_5 | LL_IPCC_CHANNEL_6);
+
+	LL_C2_IPCC_DisableReceiveChannel(
+			IPCC,
+			LL_IPCC_CHANNEL_1 | LL_IPCC_CHANNEL_2 | LL_IPCC_CHANNEL_3 | LL_IPCC_CHANNEL_4
+			| LL_IPCC_CHANNEL_5 | LL_IPCC_CHANNEL_6);
+
+	return;
+}
+
+static void Reset_BackupDomain( void )
+{
+	if ((LL_RCC_IsActiveFlag_PINRST() != FALSE) && (LL_RCC_IsActiveFlag_SFTRST() == FALSE))
+	{
+		HAL_PWR_EnableBkUpAccess(); /**< Enable access to the RTC registers */
+
+		/**
+		 *  Write twice the value to flush the APB-AHB bridge
+		 *  This bit shall be written in the register before writing the next one
+		 */
+		HAL_PWR_EnableBkUpAccess();
+
+		__HAL_RCC_BACKUPRESET_FORCE();
+		__HAL_RCC_BACKUPRESET_RELEASE();
+	}
+
+	return;
+}
+
+static void Reset_Device( void )
+{
+#if ( CFG_HW_RESET_BY_FW == 1 )
+	Reset_BackupDomain();
+
+	Reset_IPCC();
+#endif
+
+	return;
+}
+
 void acousticSamplingTask(void *argument){
 
 	/* Setup Audio Interface */
@@ -1876,6 +1915,20 @@ static void save_config(char* folder_name){
 	}else{
 		Error_Handler();
 	}
+
+}
+
+void RTOS_AppConfigureTimerForRuntimeStats()
+
+{
+
+}
+
+uint32_t RTOS_AppGetRuntimeCounterValueFromISR()
+
+{
+
+	return HAL_GetTick();
 
 }
 
@@ -3764,6 +3817,29 @@ void setLED_Red(uint32_t intensity){
 	}
 }
 
+#define TOGGLE_LED_INTENSITY 1000
+void toggledRed(){
+	if(redVal>0){
+		setLED_Red(0);
+	}else{
+		setLED_Red(TOGGLE_LED_INTENSITY);
+	}
+}
+void toggledGreen(){
+	if(greenVal>0){
+		setLED_Green(0);
+	}else{
+		setLED_Green(TOGGLE_LED_INTENSITY);
+	}
+}
+void toggledBlue(){
+	if(blueVal>0){
+		setLED_Blue(0);
+	}else{
+		setLED_Blue(TOGGLE_LED_INTENSITY);
+	}
+}
+
 void disableLEDs(){
 	setLED_Green(0);
 	setLED_Red(0);
@@ -4578,6 +4654,9 @@ void StartDefaultTask(void *argument)
 	for(;;)
 	{
 		osDelay(1);
+//		if(FlagCmdProcessingFromM0){
+//			ot_StatusNot(ot_TL_CmdAvailable);
+//		}
 	}
   /* USER CODE END 5 */
 }

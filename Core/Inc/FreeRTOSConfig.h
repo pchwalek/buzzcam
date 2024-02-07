@@ -68,8 +68,8 @@
 #define configTICK_RATE_HZ                       ((TickType_t)1000)
 #define configMAX_PRIORITIES                     ( 56 )
 #define configMINIMAL_STACK_SIZE                 ((uint16_t)256)
-#define configTOTAL_HEAP_SIZE                    ((size_t)40000)
-#define configMAX_TASK_NAME_LEN                  ( 16 )
+#define configTOTAL_HEAP_SIZE                    ((size_t)30000)
+#define configMAX_TASK_NAME_LEN                  ( 32 )
 #define configUSE_TRACE_FACILITY                 1
 #define configUSE_16_BIT_TICKS                   0
 #define configUSE_MUTEXES                        1
@@ -78,6 +78,7 @@
 #define configUSE_COUNTING_SEMAPHORES            1
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION  0
 /* USER CODE BEGIN MESSAGE_BUFFER_LENGTH_TYPE */
+#define configUSE_TICKLESS_IDLE                  0
 /* Defaults to size_t for backward compatibility, but can be changed
    if lengths will always be less than the number of bytes in a size_t. */
 #define configMESSAGE_BUFFER_LENGTH_TYPE         size_t
@@ -91,7 +92,7 @@
 #define configUSE_TIMERS                         1
 #define configTIMER_TASK_PRIORITY                ( 2 )
 #define configTIMER_QUEUE_LENGTH                 10
-#define configTIMER_TASK_STACK_DEPTH             512
+#define configTIMER_TASK_STACK_DEPTH             256
 
 /* The following flag must be enabled only when using newlib */
 #define configUSE_NEWLIB_REENTRANT          1
@@ -125,6 +126,7 @@ to exclude the API function. */
  * by the application thus the correct define need to be enabled below
  */
 #define USE_FreeRTOS_HEAP_4
+
 
 /* Cortex-M specific definitions. */
 #ifdef __NVIC_PRIO_BITS
@@ -168,6 +170,19 @@ standard names. */
 
 /* USER CODE BEGIN Defines */
 /* Section where parameter definitions can be added (for instance, to override default ones in FreeRTOS.h) */
+#define configGENERATE_RUN_TIME_STATS             1
+
+#if( configGENERATE_RUN_TIME_STATS == 1 )
+
+  extern void RTOS_AppConfigureTimerForRuntimeStats();
+
+  extern uint32_t RTOS_AppGetRuntimeCounterValueFromISR();
+
+  #define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS()    RTOS_AppConfigureTimerForRuntimeStats()
+
+  #define portGET_RUN_TIME_COUNTER_VALUE()            RTOS_AppGetRuntimeCounterValueFromISR()
+
+#endif
 /* USER CODE END Defines */
 
 #endif /* FREERTOS_CONFIG_H */

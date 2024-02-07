@@ -41,7 +41,7 @@
 /**
  * Define Advertising parameters
  */
-#define CFG_ADV_BD_ADDRESS                (0x11aabbccddee)
+#define CFG_ADV_BD_ADDRESS               (0x7257acd87a6c) /* (0x11aabbccddee) */
 
 /**
  * Define BD_ADDR type: define proper address. Can only be GAP_PUBLIC_ADDR (0x00) or GAP_STATIC_RANDOM_ADDR (0x01)
@@ -149,7 +149,7 @@
  * SMPS not used when Set to 0
  * SMPS used when Set to 1
  */
-#define CFG_USE_SMPS    0
+#define CFG_USE_SMPS    1
 
 /* USER CODE BEGIN Generic_Parameters */
 /**
@@ -218,13 +218,13 @@
  * Maximum number of simultaneous connections that the device will support.
  * Valid values are from 1 to 8
  */
-#define CFG_BLE_NUM_LINK            4
+#define CFG_BLE_NUM_LINK            8
 
 /**
  * Maximum number of Services that can be stored in the GATT database.
  * Note that the GAP and GATT services are automatically added so this parameter should be 2 plus the number of user services
  */
-#define CFG_BLE_NUM_GATT_SERVICES   4
+#define CFG_BLE_NUM_GATT_SERVICES   8
 
 /**
  * Maximum number of Attributes
@@ -233,7 +233,7 @@
  * Note that certain characteristics and relative descriptors are added automatically during device initialization
  * so this parameters should be 9 plus the number of user Attributes
  */
-#define CFG_BLE_NUM_GATT_ATTRIBUTES 30
+#define CFG_BLE_NUM_GATT_ATTRIBUTES 68
 
 /**
  * Maximum supported ATT_MTU size
@@ -244,7 +244,7 @@
 //#else
 //#define CFG_BLE_MAX_ATT_MTU             (156)
 //#endif
-#define CFG_BLE_MAX_ATT_MTU             (300)
+#define CFG_BLE_MAX_ATT_MTU             (251)
 
 /**
  * Size of the storage area for Attribute values
@@ -257,12 +257,12 @@
  *  The total amount of memory needed is the sum of the above quantities for each attribute.
  * This parameter is ignored by the CPU2 when CFG_BLE_OPTIONS has SHCI_C2_BLE_INIT_OPTIONS_LL_ONLY flag set
  */
-#ifndef TESTING_ACTIVE
-#define CFG_BLE_ATT_VALUE_ARRAY_SIZE    (1644)
-#else
+//#ifndef TESTING_ACTIVE
+//#define CFG_BLE_ATT_VALUE_ARRAY_SIZE    (1644)
+//#else
+//#define CFG_BLE_ATT_VALUE_ARRAY_SIZE    (1344)
+//#endif
 #define CFG_BLE_ATT_VALUE_ARRAY_SIZE    (1344)
-#endif
-
 
 
 /**
@@ -299,6 +299,14 @@
  * 7 : 0 ppm to 20 ppm
  */
 #define CFG_BLE_CENTRAL_SCA   0
+#define CFG_BLE_MASTER_SCA   0
+
+/**
+ *  Source for the 32 kHz slow speed clock
+ *  1 : internal RO
+ *  0 : external crystal ( no calibration )
+ */
+#define CFG_BLE_LSE_SOURCE  0
 
 /**
  * LsSource
@@ -367,7 +375,7 @@
  *          0: LE Power Class 2-3
  * other bits: complete with Options_extension flag
  */
-#define CFG_BLE_OPTIONS  (SHCI_C2_BLE_INIT_OPTIONS_LL_HOST | SHCI_C2_BLE_INIT_OPTIONS_WITH_SVC_CHANGE_DESC | SHCI_C2_BLE_INIT_OPTIONS_DEVICE_NAME_RW | SHCI_C2_BLE_INIT_OPTIONS_NO_EXT_ADV | SHCI_C2_BLE_INIT_OPTIONS_NO_CS_ALGO2 | SHCI_C2_BLE_INIT_OPTIONS_FULL_GATTDB_NVM | SHCI_C2_BLE_INIT_OPTIONS_GATT_CACHING_NOTUSED | SHCI_C2_BLE_INIT_OPTIONS_POWER_CLASS_2_3)
+//#define CFG_BLE_OPTIONS  (SHCI_C2_BLE_INIT_OPTIONS_LL_HOST | SHCI_C2_BLE_INIT_OPTIONS_WITH_SVC_CHANGE_DESC | SHCI_C2_BLE_INIT_OPTIONS_DEVICE_NAME_RW | SHCI_C2_BLE_INIT_OPTIONS_NO_EXT_ADV | SHCI_C2_BLE_INIT_OPTIONS_NO_CS_ALGO2 | SHCI_C2_BLE_INIT_OPTIONS_FULL_GATTDB_NVM | SHCI_C2_BLE_INIT_OPTIONS_GATT_CACHING_NOTUSED | SHCI_C2_BLE_INIT_OPTIONS_POWER_CLASS_2_3)
 
 /**
  * BLE stack Options_extension flags to be configured with:
@@ -383,6 +391,8 @@
  * other bits: reserved (shall be set to 0)
  */
 #define CFG_BLE_OPTIONS_EXT  (SHCI_C2_BLE_INIT_OPTIONS_APPEARANCE_READONLY | SHCI_C2_BLE_INIT_OPTIONS_ENHANCED_ATT_NOTSUPPORTED)
+
+#define CFG_BLE_OPTIONS  SHCI_C2_BLE_INIT_OPTIONS_LL_HOST
 
 #define CFG_BLE_MAX_COC_INITIATOR_NBR   (32)
 
@@ -610,7 +620,7 @@ typedef enum
  * This shall be set to 0 in a final product
  *
  */
-#define CFG_HW_RESET_BY_FW         0
+#define CFG_HW_RESET_BY_FW         1
 
 /**
  * keep debugger enabled while in any low power mode when set to 1
@@ -696,15 +706,15 @@ typedef enum
 #define CFG_SHCI_USER_EVT_PROCESS_CB_MEM      (0)
 #define CFG_SHCI_USER_EVT_PROCESS_CB_SIZE     (0)
 #define CFG_SHCI_USER_EVT_PROCESS_STACK_MEM   (0)
-#define CFG_SHCI_USER_EVT_PROCESS_PRIORITY    osPriorityNone
-#define CFG_SHCI_USER_EVT_PROCESS_STACK_SIZE  (128 * 20)
+#define CFG_SHCI_USER_EVT_PROCESS_PRIORITY    osPriorityBelowNormal
+#define CFG_SHCI_USER_EVT_PROCESS_STACK_SIZE  (128 * 10)
 
 #define CFG_HCI_USER_EVT_PROCESS_NAME         "HCI_USER_EVT_PROCESS"
 #define CFG_HCI_USER_EVT_PROCESS_ATTR_BITS    (0)
 #define CFG_HCI_USER_EVT_PROCESS_CB_MEM       (0)
 #define CFG_HCI_USER_EVT_PROCESS_CB_SIZE      (0)
 #define CFG_HCI_USER_EVT_PROCESS_STACK_MEM    (0)
-#define CFG_HCI_USER_EVT_PROCESS_PRIORITY     osPriorityNone
+#define CFG_HCI_USER_EVT_PROCESS_PRIORITY     osPriorityBelowNormal
 #define CFG_HCI_USER_EVT_PROCESS_STACK_SIZE   (128 * 40)
 
 #define CFG_ADV_UPDATE_PROCESS_NAME           "ADV_UPDATE_PROCESS"
@@ -712,7 +722,7 @@ typedef enum
 #define CFG_ADV_UPDATE_PROCESS_CB_MEM         (0)
 #define CFG_ADV_UPDATE_PROCESS_CB_SIZE        (0)
 #define CFG_ADV_UPDATE_PROCESS_STACK_MEM      (0)
-#define CFG_ADV_UPDATE_PROCESS_PRIORITY       osPriorityNone
+#define CFG_ADV_UPDATE_PROCESS_PRIORITY       osPriorityBelowNormal
 #define CFG_ADV_UPDATE_PROCESS_STACK_SIZE     (128 * 20)
 
 #define CFG_HRS_PROCESS_NAME                  "HRS_PROCESS"
@@ -720,7 +730,7 @@ typedef enum
 #define CFG_HRS_PROCESS_CB_MEM                (0)
 #define CFG_HRS_PROCESS_CB_SIZE               (0)
 #define CFG_HRS_PROCESS_STACK_MEM             (0)
-#define CFG_HRS_PROCESS_PRIORITY              osPriorityNone
+#define CFG_HRS_PROCESS_PRIORITY              osPriorityBelowNormal
 #define CFG_HRS_PROCESS_STACK_SIZE            (128 * 20)
 
 /* USER CODE BEGIN FreeRTOS_Defines */
@@ -729,7 +739,7 @@ typedef enum
 #define CFG_THREAD_MSG_M0_TO_M4_PROCESS_CB_MEM      (0)
 #define CFG_THREAD_MSG_M0_TO_M4_PROCESS_CB_SIZE     (0)
 #define CFG_THREAD_MSG_M0_TO_M4_PROCESS_STACK_MEM   (0)
-#define CFG_THREAD_MSG_M0_TO_M4_PROCESS_PRIORITY    osPriorityLow
+#define CFG_THREAD_MSG_M0_TO_M4_PROCESS_PRIORITY    osPriorityBelowNormal
 #define CFG_THREAD_MSG_M0_TO_M4_PROCESS_STACK_SIZE  (128 * 8)
 
 #define CFG_THREAD_CLI_PROCESS_NAME        "THREAD_CLI_PROCESS"
@@ -739,6 +749,8 @@ typedef enum
 #define CFG_THREAD_CLI_PROCESS_STACK_MEM   (0)
 #define CFG_THREAD_CLI_PROCESS_PRIORITY    osPriorityNormal
 #define CFG_THREAD_CLI_PROCESS_STACK_SIZE  (128 * 8)
+
+#define CFG_FEATURE_THREAD_SWITCH               (0x40)
 /* USER CODE END FreeRTOS_Defines */
 
 /******************************************************************************

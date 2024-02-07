@@ -43,7 +43,7 @@ typedef PACKED_STRUCT
 /* Private defines -----------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define GPIO_NBR_OF_RF_SIGNALS                  9
-#define GPIO_CFG_NBR_OF_FEATURES                38
+#define GPIO_CFG_NBR_OF_FEATURES                43
 #define NBR_OF_TRACES_CONFIG_PARAMETERS         4
 #define NBR_OF_GENERAL_CONFIG_PARAMETERS        4
 /**

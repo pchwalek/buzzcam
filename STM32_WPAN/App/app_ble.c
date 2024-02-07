@@ -65,6 +65,18 @@ typedef struct _tSecurityParams
   uint8_t bonding_mode;
 
   /**
+   * Flag to tell whether OOB data has
+   * to be used during the pairing process
+   */
+  uint8_t OOB_Data_Present;
+
+  /**
+   * OOB data to be used in the pairing process if
+   * OOB_Data_Present is set to TRUE
+   */
+  uint8_t OOB_Data[16];
+
+  /**
    * this variable indicates whether to use a fixed pin
    * during the pairing process or a passkey has to be
    * requested to the application during the pairing process
@@ -180,13 +192,15 @@ typedef struct
 
 /* USER CODE BEGIN PD */
 #else
-#define APPBLE_GAP_DEVICE_NAME_LENGTH 16
+#define APPBLE_GAP_DEVICE_NAME_LENGTH 16 // todo: was 16
 #define FAST_ADV_TIMEOUT               (30*1000*1000/CFG_TS_TICK_VAL) /**< 30s */
 #define INITIAL_ADV_TIMEOUT            (60*1000*1000/CFG_TS_TICK_VAL) /**< 60s */
 
 #define BD_ADDR_SIZE_LOCAL    6
 #endif
 char hexToAscii(uint8_t val);
+osMutexId_t MtxHciId;
+volatile uint8_t bluetoothCmdBusy = 0;
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -277,23 +291,27 @@ static const uint8_t a_BLE_CfgErValue[16] = CFG_BLE_ERK;
 				 * The MagicKeywordAdress shall be mapped @0x140 from start of the binary image
 				 * The MagicKeywordvalue is checked in the ble_ota application
 				 */
-				PLACE_IN_SECTION("TAG_OTA_END") const uint32_t MagicKeywordValue = 0x94448A29;
-				PLACE_IN_SECTION("TAG_OTA_START") const uint32_t MagicKeywordAddress = (uint32_t)&MagicKeywordValue;
-
-				PLACE_IN_SECTION("BLE_APP_CONTEXT") static BleApplicationContext_t BleApplicationContext;
-				PLACE_IN_SECTION("BLE_APP_CONTEXT") static uint16_t AdvIntervalMin,
-AdvIntervalMax;
+//				PLACE_IN_SECTION("TAG_OTA_END") const uint32_t MagicKeywordValue = 0x94448A29;
+//				PLACE_IN_SECTION("TAG_OTA_START") const uint32_t MagicKeywordAddress = (uint32_t)&MagicKeywordValue;
+//
+//				PLACE_IN_SECTION("BLE_APP_CONTEXT") static BleApplicationContext_t BleApplicationContext;
+//				PLACE_IN_SECTION("BLE_APP_CONTEXT") static uint16_t AdvIntervalMin,
+//AdvIntervalMax;
 //				static BleApplicationContext_t BleApplicationContext;
 //				static uint16_t AdvIntervalMin, AdvIntervalMax;
 
+static BleApplicationContext_t BleApplicationContext;
+static uint16_t AdvIntervalMin, AdvIntervalMax;
 
 uint8_t a_ManufData[14] = { sizeof(a_ManufData) - 1,
-AD_TYPE_MANUFACTURER_SPECIFIC_DATA, 0x01/*SKD version */, 0x00 /* Generic*/,
+AD_TYPE_MANUFACTURER_SPECIFIC_DATA, 0x01/*SKD version */, 0x83 /* Generic*/,
 		0x00 /* GROUP A Feature  */, 0x00 /* GROUP A Feature */,
-		0x00 /* GROUP B Feature */, 0x00 /* GROUP B Feature */, 0x00, /* BLE MAC start -MSB */
+		CFG_FEATURE_THREAD_SWITCH /* GROUP B Feature */, 0x00 /* GROUP B Feature */, 0x00, /* BLE MAC start -MSB */
 		0x00, 0x00, 0x00, 0x00, 0x00, /* BLE MAC stop */
 
 };
+
+//uint8_t manuf_data[15] = { 0x02, 0x01, 0x06, 0x0B, 0x16, 0xF6, 0xFF, 0x00, 0x00, 0x0F, 0xF1, 0xFF, 0x04, 0x80, 0x00, };
 
 uint8_t a_ManufDataCameraWakeup[28];
 
@@ -305,7 +323,6 @@ osThreadId_t AdvReqProcessId;
 /* USER CODE END PV */
 
 /* Global variables ----------------------------------------------------------*/
-osMutexId_t MtxHciId;
 osSemaphoreId_t SemHciId;
 osThreadId_t AdvUpdateProcessId;
 osThreadId_t HciUserEvtProcessId;
@@ -356,287 +373,287 @@ char a_camName[20];
 /* USER CODE END EV */
 
 /* Functions Definition ------------------------------------------------------*/
-void APP_BLE_Init(void)
-{
-  SHCI_CmdStatus_t status;
-  /* USER CODE BEGIN APP_BLE_Init_1 */
-#ifndef CUSTOM_BT_PARAMETERS
-  /* USER CODE END APP_BLE_Init_1 */
-  SHCI_C2_Ble_Init_Cmd_Packet_t ble_init_cmd_packet =
-  {
-    {{0,0,0}},                          /**< Header unused */
-    {0,                                 /** pBleBufferAddress not used */
-     0,                                 /** BleBufferSize not used */
-     CFG_BLE_NUM_GATT_ATTRIBUTES,
-     CFG_BLE_NUM_GATT_SERVICES,
-     CFG_BLE_ATT_VALUE_ARRAY_SIZE,
-     CFG_BLE_NUM_LINK,
-     CFG_BLE_DATA_LENGTH_EXTENSION,
-     CFG_BLE_PREPARE_WRITE_LIST_SIZE,
-     CFG_BLE_MBLOCK_COUNT,
-     CFG_BLE_MAX_ATT_MTU,
-     CFG_BLE_PERIPHERAL_SCA,
-     CFG_BLE_CENTRAL_SCA,
-     CFG_BLE_LS_SOURCE,
-     CFG_BLE_MAX_CONN_EVENT_LENGTH,
-     CFG_BLE_HSE_STARTUP_TIME,
-     CFG_BLE_VITERBI_MODE,
-     CFG_BLE_OPTIONS,
-     0,
-     CFG_BLE_MAX_COC_INITIATOR_NBR,
-     CFG_BLE_MIN_TX_POWER,
-     CFG_BLE_MAX_TX_POWER,
-     CFG_BLE_RX_MODEL_CONFIG,
-     CFG_BLE_MAX_ADV_SET_NBR,
-     CFG_BLE_MAX_ADV_DATA_LEN,
-     CFG_BLE_TX_PATH_COMPENS,
-     CFG_BLE_RX_PATH_COMPENS,
-     CFG_BLE_CORE_VERSION,
-     CFG_BLE_OPTIONS_EXT
-    }
-  };
-
-  /**
-   * Initialize Ble Transport Layer
-   */
-  Ble_Tl_Init();
-
-  /**
-   * Do not allow standby in the application
-   */
-  UTIL_LPM_SetOffMode(1 << CFG_LPM_APP_BLE, UTIL_LPM_DISABLE);
-
-  /**
-   * Register the hci transport layer to handle BLE User Asynchronous Events
-   */
-  HciUserEvtProcessId = osThreadNew(HciUserEvtProcess, NULL, &HciUserEvtProcess_attr);
-
-  /**
-   * Starts the BLE Stack on CPU2
-   */
-  status = SHCI_C2_BLE_Init(&ble_init_cmd_packet);
-  if (status != SHCI_Success)
-  {
-    APP_DBG_MSG("  Fail   : SHCI_C2_BLE_Init command, result: 0x%02x\n\r", status);
-    /* if you are here, maybe CPU2 doesn't contain STM32WB_Copro_Wireless_Binaries, see Release_Notes.html */
-    Error_Handler();
-  }
-  else
-  {
-    APP_DBG_MSG("  Success: SHCI_C2_BLE_Init command\n\r");
-  }
-
-  /**
-   * Initialization of HCI & GATT & GAP layer
-   */
-  Ble_Hci_Gap_Gatt_Init();
-
-  /**
-   * Initialization of the BLE Services
-   */
-  SVCCTL_Init();
-
-  /**
-   * Initialization of the BLE App Context
-   */
-  BleApplicationContext.Device_Connection_Status = APP_BLE_IDLE;
-  BleApplicationContext.BleApplicationContext_legacy.connectionHandle = 0xFFFF;
-
-  /**
-   * From here, all initialization are BLE application specific
-   */
-  AdvUpdateProcessId = osThreadNew(AdvUpdateProcess, NULL, &AdvUpdateProcess_attr);
-
-  /**
-   * Initialization of ADV - Ad Manufacturer Element - Support OTA Bit Mask
-   */
-#if (BLE_CFG_OTA_REBOOT_CHAR != 0)
-  a_ManufData[sizeof(a_ManufData)-8] = CFG_FEATURE_OTA_REBOOT;
-#endif /* BLE_CFG_OTA_REBOOT_CHAR != 0 */
-
-  /**
-   * Initialize DIS Application
-   */
-  DISAPP_Init();
-
-  /**
-   * Initialize HRS Application
-   */
-  HRSAPP_Init();
-
-  /* USER CODE BEGIN APP_BLE_Init_3 */
-  /* USER CODE BEGIN APP_BLE_Init_3 */
-#else
-  SHCI_C2_Ble_Init_Cmd_Packet_t ble_init_cmd_packet =
-   {
-     {{0,0,0}},                          /**< Header unused */
-     {0,                                 /** pBleBufferAddress not used */
-      0,                                 /** BleBufferSize not used */
-      CFG_BLE_NUM_GATT_ATTRIBUTES,
-      CFG_BLE_NUM_GATT_SERVICES,
-      CFG_BLE_ATT_VALUE_ARRAY_SIZE,
-      CFG_BLE_NUM_LINK,
-      CFG_BLE_DATA_LENGTH_EXTENSION,
-      CFG_BLE_PREPARE_WRITE_LIST_SIZE,
-      CFG_BLE_MBLOCK_COUNT,
-      CFG_BLE_MAX_ATT_MTU,
-      CFG_BLE_SLAVE_SCA,
-      CFG_BLE_MASTER_SCA,
-      CFG_BLE_LS_SOURCE,
-      CFG_BLE_MAX_CONN_EVENT_LENGTH,
-      CFG_BLE_HSE_STARTUP_TIME,
-      CFG_BLE_VITERBI_MODE,
-      CFG_BLE_OPTIONS,
-      0,
-      CFG_BLE_MAX_COC_INITIATOR_NBR,
-      CFG_BLE_MIN_TX_POWER,
-      CFG_BLE_MAX_TX_POWER,
-      CFG_BLE_RX_MODEL_CONFIG,
-      CFG_BLE_MAX_ADV_SET_NBR,
-      CFG_BLE_MAX_ADV_DATA_LEN,
-      CFG_BLE_TX_PATH_COMPENS,
-      CFG_BLE_RX_PATH_COMPENS,
-      CFG_BLE_CORE_VERSION,
-      CFG_BLE_OPTIONS_EXT
-     }
-   };
-
-  a_ManufDataCameraWakeup[0] = sizeof(a_ManufDataCameraWakeup) - 1;
-  a_ManufDataCameraWakeup[1] = AD_TYPE_MANUFACTURER_SPECIFIC_DATA;
-  /* set the manufacturing data for wakeon packet */
-  a_ManufDataCameraWakeup[2] = 0x4c;
-  a_ManufDataCameraWakeup[3] = 0x00;
-  a_ManufDataCameraWakeup[4] = 0x02;
-  a_ManufDataCameraWakeup[5] = 0x15;
-  a_ManufDataCameraWakeup[6] = 0x09;
-  a_ManufDataCameraWakeup[7] = 0x4f;
-  a_ManufDataCameraWakeup[8] = 0x52;
-  a_ManufDataCameraWakeup[9] = 0x42;
-  a_ManufDataCameraWakeup[10] = 0x49;
-  a_ManufDataCameraWakeup[11] = 0x54;
-  a_ManufDataCameraWakeup[12] = 0x09;
-  a_ManufDataCameraWakeup[13] = 0xff;
-  a_ManufDataCameraWakeup[14] = 0x0f;
-  a_ManufDataCameraWakeup[15] = 0x00;
-    /* note: see powerOnPrevConnectedCameras() for bytes 16-21 */
-  a_ManufDataCameraWakeup[22] = 0x00;
-  a_ManufDataCameraWakeup[23] = 0x00;
-  a_ManufDataCameraWakeup[24] = 0x00;
-  a_ManufDataCameraWakeup[25] = 0x00;
-  a_ManufDataCameraWakeup[26] = 0xe4;
-  a_ManufDataCameraWakeup[27] = 0x01;
-
-   /**
-    * Initialize Ble Transport Layer
-    */
-   Ble_Tl_Init();
-
-   /**
-    * Do not allow standby in the application
-    */
-   UTIL_LPM_SetOffMode(1 << CFG_LPM_APP_BLE, UTIL_LPM_DISABLE);
-
-   /**
-    * Register the hci transport layer to handle BLE User Asynchronous Events
-    */
-   HciUserEvtProcessId = osThreadNew(HciUserEvtProcess, NULL, &HciUserEvtProcess_attr);
-
-   /**
-    * Starts the BLE Stack on CPU2
-    */
-   status = SHCI_C2_BLE_Init(&ble_init_cmd_packet);
-   if (status != SHCI_Success)
-   {
-     APP_DBG_MSG("  Fail   : SHCI_C2_BLE_Init command, result: 0x%02x\n\r", status);
-     /* if you are here, maybe CPU2 doesn't contain STM32WB_Copro_Wireless_Binaries, see Release_Notes.html */
-     Error_Handler();
-   }
-   else
-   {
-     APP_DBG_MSG("  Success: SHCI_C2_BLE_Init command\n\r");
-   }
-
-   /**
-    * Initialization of HCI & GATT & GAP layer
-    */
-   Ble_Hci_Gap_Gatt_Init();
-
-   /**
-    * Initialization of the BLE Services
-    */
-   SVCCTL_Init();
-
-   /**
-    * Initialization of the BLE App Context
-    */
-   BleApplicationContext.Device_Connection_Status = APP_BLE_IDLE;
-   BleApplicationContext.BleApplicationContext_legacy.connectionHandle = 0xFFFF;
-
-   /**
-    * From here, all initialization are BLE application specific
-    */
-   AdvUpdateProcessId = osThreadNew(AdvUpdateProcess, NULL, &AdvUpdateProcess_attr);
-
-   /**
-    * Initialization of ADV - Ad Manufacturer Element - Support OTA Bit Mask
-    */
- #if (BLE_CFG_OTA_REBOOT_CHAR != 0)
-   a_ManufData[sizeof(a_ManufData)-8] = CFG_FEATURE_OTA_REBOOT;
- #endif /* BLE_CFG_OTA_REBOOT_CHAR != 0 */
-#endif
-
-#ifndef CUSTOM_BT_PARAMETERS
-  /* USER CODE END APP_BLE_Init_3 */
-
-  /**
-   * Create timer to handle the connection state machine
-   */
-  HW_TS_Create(CFG_TIM_PROC_ID_ISR, &(BleApplicationContext.Advertising_mgr_timer_Id), hw_ts_SingleShot, Adv_Mgr);
-
-  /**
-   * Make device discoverable
-   */
-  BleApplicationContext.BleApplicationContext_legacy.advtServUUID[0] = AD_TYPE_16_BIT_SERV_UUID;
-  BleApplicationContext.BleApplicationContext_legacy.advtServUUIDlen = 1;
-  Add_Advertisment_Service_UUID(HEART_RATE_SERVICE_UUID);
-
-  /* Initialize intervals for reconnexion without intervals update */
-  AdvIntervalMin = CFG_FAST_CONN_ADV_INTERVAL_MIN;
-  AdvIntervalMax = CFG_FAST_CONN_ADV_INTERVAL_MAX;
-
-  /**
-   * Start to Advertise to be connected by Collector
-   */
-  Adv_Request(APP_BLE_FAST_ADV);
-
-  /* USER CODE BEGIN APP_BLE_Init_2 */
-  /* USER CODE BEGIN APP_BLE_Init_2 */
-#else
-  /**
-   * Create timer to handle the connection state machine
-   */
-  HW_TS_Create(CFG_TIM_PROC_ID_ISR, &(BleApplicationContext.Advertising_mgr_timer_Id), hw_ts_SingleShot, Adv_Mgr);
-
-  /**
-   * Make device discoverable
-   */
-  BleApplicationContext.BleApplicationContext_legacy.advtServUUID[0] = AD_TYPE_16_BIT_SERV_UUID;
-  BleApplicationContext.BleApplicationContext_legacy.advtServUUIDlen = 1;
-  Add_Advertisment_Service_UUID(BUZZCAM_SERVICE_UUID);
-
-  /* Initialize intervals for reconnexion without intervals update */
-  AdvIntervalMin = CFG_FAST_CONN_ADV_INTERVAL_MIN;
-  AdvIntervalMax = CFG_FAST_CONN_ADV_INTERVAL_MAX;
-
-  /**
-   * Start to Advertise to be connected by Collector
-   */
-  Adv_Request(APP_BLE_FAST_ADV);
-#endif
-  /* USER CODE END APP_BLE_Init_2 */
-
-  return;
-}
+//void APP_BLE_Init(void)
+//{
+//  SHCI_CmdStatus_t status;
+//  /* USER CODE BEGIN APP_BLE_Init_1 */
+//#ifndef CUSTOM_BT_PARAMETERS
+//  /* USER CODE END APP_BLE_Init_1 */
+//  SHCI_C2_Ble_Init_Cmd_Packet_t ble_init_cmd_packet =
+//  {
+//    {{0,0,0}},                          /**< Header unused */
+//    {0,                                 /** pBleBufferAddress not used */
+//     0,                                 /** BleBufferSize not used */
+//     CFG_BLE_NUM_GATT_ATTRIBUTES,
+//     CFG_BLE_NUM_GATT_SERVICES,
+//     CFG_BLE_ATT_VALUE_ARRAY_SIZE,
+//     CFG_BLE_NUM_LINK,
+//     CFG_BLE_DATA_LENGTH_EXTENSION,
+//     CFG_BLE_PREPARE_WRITE_LIST_SIZE,
+//     CFG_BLE_MBLOCK_COUNT,
+//     CFG_BLE_MAX_ATT_MTU,
+//     CFG_BLE_PERIPHERAL_SCA,
+//     CFG_BLE_CENTRAL_SCA,
+//     CFG_BLE_LS_SOURCE,
+//     CFG_BLE_MAX_CONN_EVENT_LENGTH,
+//     CFG_BLE_HSE_STARTUP_TIME,
+//     CFG_BLE_VITERBI_MODE,
+//     CFG_BLE_OPTIONS,
+//     0,
+//     CFG_BLE_MAX_COC_INITIATOR_NBR,
+//     CFG_BLE_MIN_TX_POWER,
+//     CFG_BLE_MAX_TX_POWER,
+//     CFG_BLE_RX_MODEL_CONFIG,
+//     CFG_BLE_MAX_ADV_SET_NBR,
+//     CFG_BLE_MAX_ADV_DATA_LEN,
+//     CFG_BLE_TX_PATH_COMPENS,
+//     CFG_BLE_RX_PATH_COMPENS,
+//     CFG_BLE_CORE_VERSION,
+//     CFG_BLE_OPTIONS_EXT
+//    }
+//  };
+//
+//  /**
+//   * Initialize Ble Transport Layer
+//   */
+//  Ble_Tl_Init();
+//
+//  /**
+//   * Do not allow standby in the application
+//   */
+//  UTIL_LPM_SetOffMode(1 << CFG_LPM_APP_BLE, UTIL_LPM_DISABLE);
+//
+//  /**
+//   * Register the hci transport layer to handle BLE User Asynchronous Events
+//   */
+//  HciUserEvtProcessId = osThreadNew(HciUserEvtProcess, NULL, &HciUserEvtProcess_attr);
+//
+//  /**
+//   * Starts the BLE Stack on CPU2
+//   */
+//  status = SHCI_C2_BLE_Init(&ble_init_cmd_packet);
+//  if (status != SHCI_Success)
+//  {
+//    APP_DBG_MSG("  Fail   : SHCI_C2_BLE_Init command, result: 0x%02x\n\r", status);
+//    /* if you are here, maybe CPU2 doesn't contain STM32WB_Copro_Wireless_Binaries, see Release_Notes.html */
+//    Error_Handler();
+//  }
+//  else
+//  {
+//    APP_DBG_MSG("  Success: SHCI_C2_BLE_Init command\n\r");
+//  }
+//
+//  /**
+//   * Initialization of HCI & GATT & GAP layer
+//   */
+//  Ble_Hci_Gap_Gatt_Init();
+//
+//  /**
+//   * Initialization of the BLE Services
+//   */
+//  SVCCTL_Init();
+//
+//  /**
+//   * Initialization of the BLE App Context
+//   */
+//  BleApplicationContext.Device_Connection_Status = APP_BLE_IDLE;
+//  BleApplicationContext.BleApplicationContext_legacy.connectionHandle = 0xFFFF;
+//
+//  /**
+//   * From here, all initialization are BLE application specific
+//   */
+//  AdvUpdateProcessId = osThreadNew(AdvUpdateProcess, NULL, &AdvUpdateProcess_attr);
+//
+//  /**
+//   * Initialization of ADV - Ad Manufacturer Element - Support OTA Bit Mask
+//   */
+//#if (BLE_CFG_OTA_REBOOT_CHAR != 0)
+//  a_ManufData[sizeof(a_ManufData)-8] = CFG_FEATURE_OTA_REBOOT;
+//#endif /* BLE_CFG_OTA_REBOOT_CHAR != 0 */
+//
+//  /**
+//   * Initialize DIS Application
+//   */
+//  DISAPP_Init();
+//
+//  /**
+//   * Initialize HRS Application
+//   */
+//  HRSAPP_Init();
+//
+//  /* USER CODE BEGIN APP_BLE_Init_3 */
+//  /* USER CODE BEGIN APP_BLE_Init_3 */
+//#else
+//  SHCI_C2_Ble_Init_Cmd_Packet_t ble_init_cmd_packet =
+//   {
+//     {{0,0,0}},                          /**< Header unused */
+//     {0,                                 /** pBleBufferAddress not used */
+//      0,                                 /** BleBufferSize not used */
+//      CFG_BLE_NUM_GATT_ATTRIBUTES,
+//      CFG_BLE_NUM_GATT_SERVICES,
+//      CFG_BLE_ATT_VALUE_ARRAY_SIZE,
+//      CFG_BLE_NUM_LINK,
+//      CFG_BLE_DATA_LENGTH_EXTENSION,
+//      CFG_BLE_PREPARE_WRITE_LIST_SIZE,
+//      CFG_BLE_MBLOCK_COUNT,
+//      CFG_BLE_MAX_ATT_MTU,
+//      CFG_BLE_SLAVE_SCA,
+//      CFG_BLE_MASTER_SCA,
+//      CFG_BLE_LS_SOURCE,
+//      CFG_BLE_MAX_CONN_EVENT_LENGTH,
+//      CFG_BLE_HSE_STARTUP_TIME,
+//      CFG_BLE_VITERBI_MODE,
+//      CFG_BLE_OPTIONS,
+//      0,
+//      CFG_BLE_MAX_COC_INITIATOR_NBR,
+//      CFG_BLE_MIN_TX_POWER,
+//      CFG_BLE_MAX_TX_POWER,
+//      CFG_BLE_RX_MODEL_CONFIG,
+//      CFG_BLE_MAX_ADV_SET_NBR,
+//      CFG_BLE_MAX_ADV_DATA_LEN,
+//      CFG_BLE_TX_PATH_COMPENS,
+//      CFG_BLE_RX_PATH_COMPENS,
+//      CFG_BLE_CORE_VERSION,
+//      CFG_BLE_OPTIONS_EXT
+//     }
+//   };
+//
+//  a_ManufDataCameraWakeup[0] = sizeof(a_ManufDataCameraWakeup) - 1;
+//  a_ManufDataCameraWakeup[1] = AD_TYPE_MANUFACTURER_SPECIFIC_DATA;
+//  /* set the manufacturing data for wakeon packet */
+//  a_ManufDataCameraWakeup[2] = 0x4c;
+//  a_ManufDataCameraWakeup[3] = 0x00;
+//  a_ManufDataCameraWakeup[4] = 0x02;
+//  a_ManufDataCameraWakeup[5] = 0x15;
+//  a_ManufDataCameraWakeup[6] = 0x09;
+//  a_ManufDataCameraWakeup[7] = 0x4f;
+//  a_ManufDataCameraWakeup[8] = 0x52;
+//  a_ManufDataCameraWakeup[9] = 0x42;
+//  a_ManufDataCameraWakeup[10] = 0x49;
+//  a_ManufDataCameraWakeup[11] = 0x54;
+//  a_ManufDataCameraWakeup[12] = 0x09;
+//  a_ManufDataCameraWakeup[13] = 0xff;
+//  a_ManufDataCameraWakeup[14] = 0x0f;
+//  a_ManufDataCameraWakeup[15] = 0x00;
+//    /* note: see powerOnPrevConnectedCameras() for bytes 16-21 */
+//  a_ManufDataCameraWakeup[22] = 0x00;
+//  a_ManufDataCameraWakeup[23] = 0x00;
+//  a_ManufDataCameraWakeup[24] = 0x00;
+//  a_ManufDataCameraWakeup[25] = 0x00;
+//  a_ManufDataCameraWakeup[26] = 0xe4;
+//  a_ManufDataCameraWakeup[27] = 0x01;
+//
+//   /**
+//    * Initialize Ble Transport Layer
+//    */
+//   Ble_Tl_Init();
+//
+//   /**
+//    * Do not allow standby in the application
+//    */
+//   UTIL_LPM_SetOffMode(1 << CFG_LPM_APP_BLE, UTIL_LPM_DISABLE);
+//
+//   /**
+//    * Register the hci transport layer to handle BLE User Asynchronous Events
+//    */
+//   HciUserEvtProcessId = osThreadNew(HciUserEvtProcess, NULL, &HciUserEvtProcess_attr);
+//
+//   /**
+//    * Starts the BLE Stack on CPU2
+//    */
+//   status = SHCI_C2_BLE_Init(&ble_init_cmd_packet);
+//   if (status != SHCI_Success)
+//   {
+//     APP_DBG_MSG("  Fail   : SHCI_C2_BLE_Init command, result: 0x%02x\n\r", status);
+//     /* if you are here, maybe CPU2 doesn't contain STM32WB_Copro_Wireless_Binaries, see Release_Notes.html */
+//     Error_Handler();
+//   }
+//   else
+//   {
+//     APP_DBG_MSG("  Success: SHCI_C2_BLE_Init command\n\r");
+//   }
+//
+//   /**
+//    * Initialization of HCI & GATT & GAP layer
+//    */
+//   Ble_Hci_Gap_Gatt_Init();
+//
+//   /**
+//    * Initialization of the BLE Services
+//    */
+//   SVCCTL_Init();
+//
+//   /**
+//    * Initialization of the BLE App Context
+//    */
+//   BleApplicationContext.Device_Connection_Status = APP_BLE_IDLE;
+//   BleApplicationContext.BleApplicationContext_legacy.connectionHandle = 0xFFFF;
+//
+//   /**
+//    * From here, all initialization are BLE application specific
+//    */
+//   AdvUpdateProcessId = osThreadNew(AdvUpdateProcess, NULL, &AdvUpdateProcess_attr);
+//
+//   /**
+//    * Initialization of ADV - Ad Manufacturer Element - Support OTA Bit Mask
+//    */
+// #if (BLE_CFG_OTA_REBOOT_CHAR != 0)
+//   a_ManufData[sizeof(a_ManufData)-8] = CFG_FEATURE_OTA_REBOOT;
+// #endif /* BLE_CFG_OTA_REBOOT_CHAR != 0 */
+//#endif
+//
+//#ifndef CUSTOM_BT_PARAMETERS
+//  /* USER CODE END APP_BLE_Init_3 */
+//
+//  /**
+//   * Create timer to handle the connection state machine
+//   */
+//  HW_TS_Create(CFG_TIM_PROC_ID_ISR, &(BleApplicationContext.Advertising_mgr_timer_Id), hw_ts_SingleShot, Adv_Mgr);
+//
+//  /**
+//   * Make device discoverable
+//   */
+//  BleApplicationContext.BleApplicationContext_legacy.advtServUUID[0] = AD_TYPE_16_BIT_SERV_UUID;
+//  BleApplicationContext.BleApplicationContext_legacy.advtServUUIDlen = 1;
+//  Add_Advertisment_Service_UUID(HEART_RATE_SERVICE_UUID);
+//
+//  /* Initialize intervals for reconnexion without intervals update */
+//  AdvIntervalMin = CFG_FAST_CONN_ADV_INTERVAL_MIN;
+//  AdvIntervalMax = CFG_FAST_CONN_ADV_INTERVAL_MAX;
+//
+//  /**
+//   * Start to Advertise to be connected by Collector
+//   */
+//  Adv_Request(APP_BLE_FAST_ADV);
+//
+//  /* USER CODE BEGIN APP_BLE_Init_2 */
+//  /* USER CODE BEGIN APP_BLE_Init_2 */
+//#else
+//  /**
+//   * Create timer to handle the connection state machine
+//   */
+//  HW_TS_Create(CFG_TIM_PROC_ID_ISR, &(BleApplicationContext.Advertising_mgr_timer_Id), hw_ts_SingleShot, Adv_Mgr);
+//
+//  /**
+//   * Make device discoverable
+//   */
+//  BleApplicationContext.BleApplicationContext_legacy.advtServUUID[0] = AD_TYPE_16_BIT_SERV_UUID;
+//  BleApplicationContext.BleApplicationContext_legacy.advtServUUIDlen = 1;
+//  Add_Advertisment_Service_UUID(BUZZCAM_SERVICE_UUID);
+//
+//  /* Initialize intervals for reconnexion without intervals update */
+//  AdvIntervalMin = CFG_FAST_CONN_ADV_INTERVAL_MIN;
+//  AdvIntervalMax = CFG_FAST_CONN_ADV_INTERVAL_MAX;
+//
+//  /**
+//   * Start to Advertise to be connected by Collector
+//   */
+//  Adv_Request(APP_BLE_FAST_ADV);
+//#endif
+//  /* USER CODE END APP_BLE_Init_2 */
+//
+//  return;
+//}
 
 SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
 {
@@ -954,39 +971,62 @@ void APP_BLE_Init_Dyn_1( void )
 
 
 	#else
-	  SHCI_C2_Ble_Init_Cmd_Packet_t ble_init_cmd_packet =
-	   {
-	     {{0,0,0}},                          /**< Header unused */
-	     {0,                                 /** pBleBufferAddress not used */
-	      0,                                 /** BleBufferSize not used */
-	      CFG_BLE_NUM_GATT_ATTRIBUTES,
-	      CFG_BLE_NUM_GATT_SERVICES,
-	      CFG_BLE_ATT_VALUE_ARRAY_SIZE,
-	      CFG_BLE_NUM_LINK,
-	      CFG_BLE_DATA_LENGTH_EXTENSION,
-	      CFG_BLE_PREPARE_WRITE_LIST_SIZE,
-	      CFG_BLE_MBLOCK_COUNT,
-	      CFG_BLE_MAX_ATT_MTU,
-	      CFG_BLE_SLAVE_SCA,
-	      CFG_BLE_MASTER_SCA,
-	      CFG_BLE_LS_SOURCE,
-	      CFG_BLE_MAX_CONN_EVENT_LENGTH,
-	      CFG_BLE_HSE_STARTUP_TIME,
-	      CFG_BLE_VITERBI_MODE,
-	      CFG_BLE_OPTIONS,
-	      0,
-	      CFG_BLE_MAX_COC_INITIATOR_NBR,
-	      CFG_BLE_MIN_TX_POWER,
-	      CFG_BLE_MAX_TX_POWER,
-	      CFG_BLE_RX_MODEL_CONFIG,
-	      CFG_BLE_MAX_ADV_SET_NBR,
-	      CFG_BLE_MAX_ADV_DATA_LEN,
-	      CFG_BLE_TX_PATH_COMPENS,
-	      CFG_BLE_RX_PATH_COMPENS,
-	      CFG_BLE_CORE_VERSION,
-	      CFG_BLE_OPTIONS_EXT
-	     }
-	   };
+//	  SHCI_C2_Ble_Init_Cmd_Packet_t ble_init_cmd_packet =
+//	   {
+//	     {{0,0,0}},                          /**< Header unused */
+//	     {0,                                 /** pBleBufferAddress not used */
+//	      0,                                 /** BleBufferSize not used */
+//	      CFG_BLE_NUM_GATT_ATTRIBUTES,
+//	      CFG_BLE_NUM_GATT_SERVICES,
+//	      CFG_BLE_ATT_VALUE_ARRAY_SIZE,
+//	      CFG_BLE_NUM_LINK,
+//	      CFG_BLE_DATA_LENGTH_EXTENSION,
+//	      CFG_BLE_PREPARE_WRITE_LIST_SIZE,
+//	      CFG_BLE_MBLOCK_COUNT,
+//	      CFG_BLE_MAX_ATT_MTU,
+//	      CFG_BLE_SLAVE_SCA,
+//	      CFG_BLE_MASTER_SCA,
+//	      CFG_BLE_LS_SOURCE,
+//	      CFG_BLE_MAX_CONN_EVENT_LENGTH,
+//	      CFG_BLE_HSE_STARTUP_TIME,
+//	      CFG_BLE_VITERBI_MODE,
+//	      CFG_BLE_OPTIONS,
+//	      0,
+//	      CFG_BLE_MAX_COC_INITIATOR_NBR,
+//	      CFG_BLE_MIN_TX_POWER,
+//	      CFG_BLE_MAX_TX_POWER,
+//	      CFG_BLE_RX_MODEL_CONFIG,
+//	      CFG_BLE_MAX_ADV_SET_NBR,
+//	      CFG_BLE_MAX_ADV_DATA_LEN,
+//	      CFG_BLE_TX_PATH_COMPENS,
+//	      CFG_BLE_RX_PATH_COMPENS,
+//	      CFG_BLE_CORE_VERSION,
+//	      CFG_BLE_OPTIONS_EXT
+//	     }
+//	   };
+
+		SHCI_C2_Ble_Init_Cmd_Packet_t ble_init_cmd_packet = { { { 0, 0, 0 } }, /**< Header unused */
+		{ 0, /** pBleBufferAddress not used */
+		0, /** BleBufferSize not used */
+		CFG_BLE_NUM_GATT_ATTRIBUTES,
+		CFG_BLE_NUM_GATT_SERVICES,
+		CFG_BLE_ATT_VALUE_ARRAY_SIZE,
+		CFG_BLE_NUM_LINK,
+		CFG_BLE_DATA_LENGTH_EXTENSION,
+		CFG_BLE_PREPARE_WRITE_LIST_SIZE,
+		CFG_BLE_MBLOCK_COUNT,
+		CFG_BLE_MAX_ATT_MTU,
+		CFG_BLE_SLAVE_SCA,
+		CFG_BLE_MASTER_SCA,
+		CFG_BLE_LSE_SOURCE,
+		CFG_BLE_MAX_CONN_EVENT_LENGTH,
+		CFG_BLE_HSE_STARTUP_TIME,
+		CFG_BLE_VITERBI_MODE,
+		CFG_BLE_OPTIONS, 0,
+		CFG_BLE_MAX_COC_INITIATOR_NBR,
+		CFG_BLE_MIN_TX_POWER,
+		CFG_BLE_MAX_TX_POWER } };
+
 
 	  a_ManufDataCameraWakeup[0] = sizeof(a_ManufDataCameraWakeup) - 1;
 	  a_ManufDataCameraWakeup[1] = AD_TYPE_MANUFACTURER_SPECIFIC_DATA;
@@ -1022,6 +1062,10 @@ void APP_BLE_Init_Dyn_1( void )
 	    * Do not allow standby in the application
 	    */
 	   UTIL_LPM_SetOffMode(1 << CFG_LPM_APP_BLE, UTIL_LPM_DISABLE);
+
+
+	   MtxHciId = osMutexNew(NULL);
+	   SemHciId = osSemaphoreNew(1, 0, NULL); /*< Create the semaphore and make it busy at initialization */
 
 	   /**
 	    * Register the hci transport layer to handle BLE User Asynchronous Events
@@ -1063,6 +1107,8 @@ void APP_BLE_Init_Dyn_1( void )
 	    * From here, all initialization are BLE application specific
 	    */
 	   AdvUpdateProcessId = osThreadNew(AdvUpdateProcess, NULL, &AdvUpdateProcess_attr);
+
+	   aci_hal_set_radio_activity_mask(0x0006);
 
 	   /**
 	    * Initialization of ADV - Ad Manufacturer Element - Support OTA Bit Mask
@@ -1114,7 +1160,7 @@ void APP_BLE_Init_Dyn_2( void ) {
 	   * Make device discoverable
 	   */
 	  BleApplicationContext.BleApplicationContext_legacy.advtServUUID[0] = AD_TYPE_16_BIT_SERV_UUID;
-	  BleApplicationContext.BleApplicationContext_legacy.advtServUUIDlen = 1;
+	  BleApplicationContext.BleApplicationContext_legacy.advtServUUIDlen = 0;
 	  Add_Advertisment_Service_UUID(BUZZCAM_SERVICE_UUID);
 
 	//  /**
@@ -1198,9 +1244,6 @@ void SVCCTL_SvcInit(void)
 static void Ble_Tl_Init(void)
 {
   HCI_TL_HciInitConf_t Hci_Tl_Init_Conf;
-
-  MtxHciId = osMutexNew(NULL);
-  SemHciId = osSemaphoreNew(1, 0, NULL); /*< Create the semaphore and make it busy at initialization */
 
   Hci_Tl_Init_Conf.p_cmdbuffer = (uint8_t*)&BleCmdBuffer;
   Hci_Tl_Init_Conf.StatusNotCallBack = BLE_StatusNot;
@@ -1333,6 +1376,19 @@ static void Ble_Hci_Gap_Gatt_Init(void)
   }
 #endif /* CFG_BLE_ADDRESS_TYPE != GAP_PUBLIC_ADDR */
 
+	/**
+	 * Static random Address
+	 * The two upper bits shall be set to 1
+	 * The lowest 32bits is read from the UDN to differentiate between devices
+	 * The RNG may be used to provide a random number on each power on
+	 */
+  uint32_t srd_bd_addr[2];
+
+	srd_bd_addr[1] = 0x0000ED6E;
+	srd_bd_addr[0] = LL_FLASH_GetUDN();
+	aci_hal_write_config_data( CONFIG_DATA_RANDOM_ADDRESS_OFFSET, CONFIG_DATA_RANDOM_ADDRESS_LEN, (uint8_t*) srd_bd_addr);
+
+
   /**
    * Write Identity root key used to derive IRK and DHK(Legacy)
    */
@@ -1433,7 +1489,7 @@ static void Ble_Hci_Gap_Gatt_Init(void)
   {
     const char *name = "BUZZC";
     ret = aci_gap_init(role,
-                       CFG_PRIVACY,
+                       0,
                        APPBLE_GAP_DEVICE_NAME_LENGTH,
                        &gap_service_handle,
                        &gap_dev_name_char_handle,
@@ -1504,18 +1560,22 @@ static void Ble_Hci_Gap_Gatt_Init(void)
    * Initialize authentication
    */
   BleApplicationContext.BleApplicationContext_legacy.bleSecurityParam.mitm_mode = CFG_MITM_PROTECTION;
+  BleApplicationContext.BleApplicationContext_legacy.bleSecurityParam.OOB_Data_Present = 0;
   BleApplicationContext.BleApplicationContext_legacy.bleSecurityParam.encryptionKeySizeMin = CFG_ENCRYPTION_KEY_SIZE_MIN;
   BleApplicationContext.BleApplicationContext_legacy.bleSecurityParam.encryptionKeySizeMax = CFG_ENCRYPTION_KEY_SIZE_MAX;
   BleApplicationContext.BleApplicationContext_legacy.bleSecurityParam.Use_Fixed_Pin = CFG_USED_FIXED_PIN;
   BleApplicationContext.BleApplicationContext_legacy.bleSecurityParam.Fixed_Pin = CFG_FIXED_PIN;
   BleApplicationContext.BleApplicationContext_legacy.bleSecurityParam.bonding_mode = CFG_BONDING_MODE;
   /* USER CODE BEGIN Ble_Hci_Gap_Gatt_Init_1*/
-
+  for (uint8_t index = 0; index < 16; index++)
+  {
+    BleApplicationContext.BleApplicationContext_legacy.bleSecurityParam.OOB_Data[index] = (uint8_t) index;
+  }
   /* USER CODE END Ble_Hci_Gap_Gatt_Init_1*/
 
   ret = aci_gap_set_authentication_requirement(BleApplicationContext.BleApplicationContext_legacy.bleSecurityParam.bonding_mode,
                                                BleApplicationContext.BleApplicationContext_legacy.bleSecurityParam.mitm_mode,
-                                               CFG_SC_SUPPORT,
+                                               0,
                                                CFG_KEYPRESS_NOTIFICATION_SUPPORT,
                                                BleApplicationContext.BleApplicationContext_legacy.bleSecurityParam.encryptionKeySizeMin,
                                                BleApplicationContext.BleApplicationContext_legacy.bleSecurityParam.encryptionKeySizeMax,
@@ -1592,7 +1652,7 @@ void Adv_Request(APP_BLE_ConnStatus_t NewStatus)
   ret = aci_gap_set_discoverable(ADV_IND,
                                  Min_Inter,
                                  Max_Inter,
-                                 CFG_BLE_ADDRESS_TYPE,
+								 GAP_PUBLIC_ADDR,
                                  NO_WHITE_LIST_USE, /* use white list */
                                  sizeof(a_LocalName),
                                  (uint8_t*) &a_LocalName,
@@ -1611,30 +1671,33 @@ void Adv_Request(APP_BLE_ConnStatus_t NewStatus)
 
   /* Update Advertising data */
   ret = aci_gap_update_adv_data(sizeof(a_ManufData), (uint8_t*) a_ManufData);
-  if (ret != BLE_STATUS_SUCCESS)
-  {
-    if (NewStatus == APP_BLE_FAST_ADV)
-    {
-      APP_DBG_MSG("==>> Start Fast Advertising Failed , result: %d \n\r", ret);
-    }
-    else
-    {
-      APP_DBG_MSG("==>> Start Low Power Advertising Failed , result: %d \n\r", ret);
-    }
-  }
-  else
-  {
-    if (NewStatus == APP_BLE_FAST_ADV)
-    {
-      APP_DBG_MSG("==>> Success: Start Fast Advertising \n\r");
-      /* Start Timer to STOP ADV - TIMEOUT - and next Restart Low Power Advertising */
-      HW_TS_Start(BleApplicationContext.Advertising_mgr_timer_Id, INITIAL_ADV_TIMEOUT);
-    }
-    else
-    {
-      APP_DBG_MSG("==>> Success: Start Low Power Advertising \n\r");
-    }
-  }
+  HW_TS_Start(BleApplicationContext.Advertising_mgr_timer_Id, INITIAL_ADV_TIMEOUT);
+
+
+//  if (ret != BLE_STATUS_SUCCESS)
+//  {
+//    if (NewStatus == APP_BLE_FAST_ADV)
+//    {
+//      APP_DBG_MSG("==>> Start Fast Advertising Failed , result: %d \n\r", ret);
+//    }
+//    else
+//    {
+//      APP_DBG_MSG("==>> Start Low Power Advertising Failed , result: %d \n\r", ret);
+//    }
+//  }
+//  else
+//  {
+//    if (NewStatus == APP_BLE_FAST_ADV)
+//    {
+//      APP_DBG_MSG("==>> Success: Start Fast Advertising \n\r");
+//      /* Start Timer to STOP ADV - TIMEOUT - and next Restart Low Power Advertising */
+//      HW_TS_Start(BleApplicationContext.Advertising_mgr_timer_Id, INITIAL_ADV_TIMEOUT);
+//    }
+//    else
+//    {
+//      APP_DBG_MSG("==>> Success: Start Low Power Advertising \n\r");
+//    }
+//  }
 
   return;
 }
@@ -1723,29 +1786,38 @@ static void Adv_Mgr(void)
 static void AdvUpdateProcess(void *argument)
 {
   UNUSED(argument);
-
+  uint32_t flags;
   for(;;)
   {
-    osThreadFlagsWait(1, osFlagsWaitAny, osWaitForever);
-    Adv_Update();
+    flags = osThreadFlagsWait(1, osFlagsWaitAny, osWaitForever);
+
+    if( (flags & 0x1) == 0x1){
+    	ot_StatusNot(ot_TL_CmdBusy);
+    	ot_StatusNot(ot_TL_CmdAvailable);
+    	Adv_Update();
+    }
   }
 }
 
 static void Adv_Update(void)
 {
-  Adv_Request(APP_BLE_LP_ADV);
-
+//  Adv_Request(APP_BLE_LP_ADV);
+  Adv_Request(APP_BLE_FAST_ADV);
   return;
 }
 
 static void HciUserEvtProcess(void *argument)
 {
   UNUSED(argument);
-
+  uint32_t flag;
   for(;;)
   {
-    osThreadFlagsWait(1, osFlagsWaitAny, osWaitForever);
-    hci_user_evt_proc();
+    flag = osThreadFlagsWait(1, osFlagsWaitAny, osWaitForever);
+    if((flag & 0x1) == 0x1){
+    	ot_StatusNot(ot_TL_CmdBusy);
+    	ot_StatusNot(ot_TL_CmdAvailable);
+    	hci_user_evt_proc();
+    }
   }
 }
 
@@ -1806,14 +1878,25 @@ static void BLE_StatusNot(HCI_TL_CmdStatus_t Status)
   switch (Status)
   {
     case HCI_TL_CmdBusy:
-      osMutexAcquire(MtxHciId, osWaitForever);
+    if(osOK != osMutexAcquire(MtxHciId, osWaitForever)){
+    	Error_Handler();
+    }
+//  	ot_StatusNot(ot_TL_CmdBusy);
+
+
       /* USER CODE BEGIN HCI_TL_CmdBusy */
 
       /* USER CODE END HCI_TL_CmdBusy */
       break;
 
     case HCI_TL_CmdAvailable:
-      osMutexRelease(MtxHciId);
+
+        if(osOK != osMutexRelease(MtxHciId)){
+        	Error_Handler();
+        }
+//    	ot_StatusNot(ot_TL_CmdAvailable);
+
+
       /* USER CODE BEGIN HCI_TL_CmdAvailable */
 
       /* USER CODE END HCI_TL_CmdAvailable */

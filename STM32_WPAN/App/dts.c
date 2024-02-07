@@ -543,6 +543,34 @@ void DTS_STM_Init(void) {
 	 */
 	SVCCTL_RegisterSvcHandler(DTS_Event_Handler);
 
+//	hciCmdResult = aci_gatt_add_service(UUID_TYPE_16, (Service_UUID_t*) DT_SERVICE_UUID,
+//		PRIMARY_SERVICE, 8, &(aDataTransferContext.DataTransferSvcHdle));
+//
+//		if (hciCmdResult != 0) {
+//			APP_DBG_MSG("error add service 0x%x\n", hciCmdResult);
+//	#ifdef NUCLEO_LED_ACTIVE
+//	    BSP_LED_On(LED_RED);
+//	#endif
+//		}
+//		/**
+//		 *  Add RX Characteristic
+//		 */
+//	hciCmdResult = aci_gatt_add_char(aDataTransferContext.DataTransferSvcHdle,
+//		UUID_TYPE_128, DT_REQ_CHAR_INFO_UUID, 247,
+//		CHAR_PROP_WRITE,
+//		ATTR_PERMISSION_NONE,
+//		GATT_NOTIFY_ATTRIBUTE_WRITE | GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP, /* gattEvtMask */
+//		10, /* encryKeySize */
+//		1, /* isVariable */
+//		&(aDataTransferContext.DataTransferCharInfoHdle));
+//
+//		if (hciCmdResult != 0) {
+//			APP_DBG_MSG("error add service 0x%x\n", hciCmdResult);
+//	#ifdef NUCLEO_LED_ACTIVE
+//	    BSP_LED_On(LED_RED);
+//	#endif
+//		}
+
 	/* DT service and characteristics */
 //	hciCmdResult = aci_gatt_add_service(DT_UUID_LENGTH,
 //				(Service_UUID_t*) DATA_TRANSFER_SERVICE_UUID,
