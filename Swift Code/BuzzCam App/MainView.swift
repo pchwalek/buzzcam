@@ -24,6 +24,9 @@ struct MainView: View {
     @EnvironmentObject var bluetoothModel: BluetoothModel
     @State private var cancellables: Set<AnyCancellable> = Set()
     
+    let customFontTitle = Font.custom("Futura-Bold", size: 25) // Define a custom font
+    let customFontText = Font.custom("AvenirNext-Regular", size: 18) // Define a custom font
+    
     var body: some View {
         NavigationView {
             ScrollView(showsIndicators: false) {
@@ -35,7 +38,7 @@ struct MainView: View {
                             // upper box
                             VStack(alignment: .center){
                                 HStack {
-                                    Text(String(bluetoothModel.connectedPeripheral?.name ?? "BuzzCam")).font(.custom("Menlo-Bold", size: 30))
+                                    Text(String(bluetoothModel.connectedPeripheral?.name ?? "BuzzCam")).font(customFontTitle)
                                     Spacer()
                                     
                                     Button(action: {
@@ -65,8 +68,10 @@ struct MainView: View {
                             //mark box
                             VStack{
                                 HStack{
-                                    Text("Mark #")
-                                    Text(String(bluetoothModel.systemInfoPacketData?.mark_number ?? 0)).font(.title)
+                                    Text("Mark #").foregroundColor(Color.black)
+                                    Text(String(bluetoothModel.systemInfoPacketData?.mark_number ?? 0))
+                                        .font(customFontTitle)
+                                        .foregroundColor(Color.black)
                                 }
                                 HStack {
                                     Spacer()
@@ -130,6 +135,7 @@ struct MainView: View {
                                     .cornerRadius(15)
                             }.padding(.vertical, 25.0)
                             
+                            
                             // statuses dropdown
                             StatusesView()
                             Spacer()
@@ -139,9 +145,9 @@ struct MainView: View {
                             // nearby devices dropdown
                             NearbyDevices()
                             
-                            Image("BuzzCam Logo 1").resizable()
-                                .frame(width: 100, height: 100)
-                                .scaledToFit().padding() // replace with transparent background logo
+//                            Image("BuzzCam Logo 1").resizable()
+//                                .frame(width: 100, height: 100)
+//                                .scaledToFit().padding() // replace with transparent background logo
                         }
                     } else {
                         // Placeholder view while the peripheral name is not available, waiting for it to load

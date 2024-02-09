@@ -12,12 +12,15 @@ struct NearbyDevices: View {
     @State private var isExpanded = false
     @EnvironmentObject var bluetoothModel: BluetoothModel
     
+    let customFontTitle = Font.custom("Futura-Bold", size: 20) // Define a custom font
+    let customFontText = Font.custom("AvenirNext-Regular", size: 18) // Define a custom font
+    
     var body: some View {
         VStack (alignment: .leading) {
             HStack {
                 Spacer()
                 Text("Nearby Devices")
-                    .font(.title)
+                    .font(customFontTitle)
                     .padding()
                 
                 Image(systemName: "chevron.down")

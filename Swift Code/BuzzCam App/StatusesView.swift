@@ -14,12 +14,15 @@ struct StatusesView: View {
     @EnvironmentObject var bluetoothModel: BluetoothModel
     @State private var cancellables: Set<AnyCancellable> = Set()
     
+    let customFontTitle = Font.custom("Futura-Bold", size: 20) // Define a custom font
+    let customFontText = Font.custom("AvenirNext-Regular", size: 18) // Define a custom font
+    
     var body: some View {
         VStack (alignment: .leading) {
             HStack {
                 Spacer()
                 Text("Statuses")
-                    .font(.title)
+                    .font(customFontTitle)
                     .padding()
                 
                 Image(systemName: "chevron.down")
