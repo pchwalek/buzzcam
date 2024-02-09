@@ -11,7 +11,7 @@ import SwiftUI
 struct BuzzCam_AppApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView().preferredColorScheme(.dark)
         }
     }
 }

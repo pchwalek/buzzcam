@@ -21,49 +21,99 @@ struct DiscoverView: View {
     @Binding var connected: Bool
     @State private var isAnimated = false
     
-    let customFont = Font.custom("Helvetica-Bold", size: 30) // Define a custom font
+    let customFontTitle = Font.custom("Futura-Bold", size: 30) // Define a custom font
+    let customFontText = Font.custom("AvenirNext-Regular", size: 18) // Define a custom font
+    //HiraginoSans-W3
+//    let customFontText = Font.custom("HiraginoSans-W3", size: 17) // Define a custom font
 
     var body: some View {
-        NavigationView {
+//        NavigationView {
             ZStack {
-                Color(red: 243/255, green: 237/255, blue: 151/255)
-                    .edgesIgnoringSafeArea(.all)
+//                Color(red: 243/255, green: 237/255, blue: 151/255)
+//                    .edgesIgnoringSafeArea(.all)
+                
+                StarrySkyView()
                 
                 VStack {
                     Text("Discover Devices")
 //                        .font(.title)
-                        .font(customFont)
-                        .foregroundColor(Color.white)
-                        .padding(.vertical, 40)
+                        .font(customFontTitle)
+//                        .foregroundColor(Color.white)
+                        .padding(.top, 40)
                     
+                    Text("All discoverable devices shown below. Click on any to connect.")
+                        .font(customFontText)
+                        .padding(.horizontal, 40)
+                        .padding(.vertical, 20)
+//                        .foregroundColor(Color.white)
+                        .multilineTextAlignment(.center)
                     
-                    List {
-                        ForEach(bluetoothModel.filteredPeripherals) { peripheral in
-                            HStack {
-                                Text(peripheral.name ?? "Unknown")
-                                    .font(.body)
-                                
-                                Spacer()
-                                
-                                Button(action: {
-                                    // Action when Connect button is clicked
-                                    connected = true // Set this to true to trigger the navigation
-                                    bluetoothModel.connectToPeripheral(peripheral)
-                                    isConnected = true
-                                }) {
-                                    Text("Connect")
-                                        .foregroundColor(.white)
-                                        .padding(.horizontal, 10)
-                                        .padding(.vertical, 5)
-                                        .background(Color.green)
-                                        .cornerRadius(5)
+                    ScrollView {
+                        VStack(spacing: 16) {
+                            ForEach(bluetoothModel.filteredPeripherals) { peripheral in
+                                VStack {
+                                    Rectangle()
+                                        .fill(Color(red: 243/255, green: 237/255, blue: 151/255).opacity(0.5))
+                                        .frame(height: 60)
+                                        .cornerRadius(8)
+                                        .overlay(
+                                            HStack {
+                                                Text(peripheral.name ?? "Unknown")
+                                                    .font(customFontText)
+                                                
+                                                
+                                                
+                                                Spacer()
+                                                
+                                                Button(action: {
+                                                    // Action when Connect button is clicked
+                                                    connected = true // Set this to true to trigger the navigation
+                                                    bluetoothModel.connectToPeripheral(peripheral)
+                                                    isConnected = true
+                                                }) {
+                                                    Text("Connect")
+                                                        .font(customFontText)
+                                                        .foregroundColor(.white)
+                                                        .padding(.horizontal, 13)
+                                                        .padding(.vertical, 7)
+                                                        .background(Color(red: 0.4588, green: 0.0510, blue: 0.2157).opacity(0.4))
+                                                        .cornerRadius(5)
+                                                }
+                                            }
+                                            .padding()
+                                        )
                                 }
                             }
-                            .padding(.vertical, 8)
                         }
-                        .transition(.fanInOut)
+                        .padding(.horizontal)
                     }
-                }
+//                    List {
+//                        ForEach(bluetoothModel.filteredPeripherals) { peripheral in
+//                            HStack {
+//                                Text(peripheral.name ?? "Unknown")
+//                                    .font(.body)
+//                                
+//                                Spacer()
+//                                
+//                                Button(action: {
+//                                    // Action when Connect button is clicked
+//                                    connected = true // Set this to true to trigger the navigation
+//                                    bluetoothModel.connectToPeripheral(peripheral)
+//                                    isConnected = true
+//                                }) {
+//                                    Text("Connect")
+//                                        .foregroundColor(.white)
+//                                        .padding(.horizontal, 10)
+//                                        .padding(.vertical, 5)
+//                                        .background(Color.green)
+//                                        .cornerRadius(5)
+//                                }
+//                            }
+//                            .padding(.vertical, 8)
+//                        }
+//                        .transition(.fanInOut)
+//                    }
+//                }
             }
         }
         .onAppear {
@@ -74,13 +124,13 @@ struct DiscoverView: View {
     }
 }
 
-extension AnyTransition {
-    static var fanInOut: AnyTransition {
-        let insertion = AnyTransition.move(edge: .top).combined(with: .opacity)
-        let removal = AnyTransition.move(edge: .bottom).combined(with: .opacity)
-        return .asymmetric(insertion: insertion, removal: removal)
-    }
-}
+//extension AnyTransition {
+//    static var fanInOut: AnyTransition {
+//        let insertion = AnyTransition.move(edge: .top).combined(with: .opacity)
+//        let removal = AnyTransition.move(edge: .bottom).combined(with: .opacity)
+//        return .asymmetric(insertion: insertion, removal: removal)
+//    }
+//}
 
 
 //struct DiscoverView: View {

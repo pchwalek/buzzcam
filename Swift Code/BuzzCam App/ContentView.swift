@@ -62,7 +62,7 @@ struct ContentView: View {
                 }
                 .onAppear {
                     // Show launch screen for 3 seconds
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                         withAnimation {
                             self.showMainContent = true
                         }
