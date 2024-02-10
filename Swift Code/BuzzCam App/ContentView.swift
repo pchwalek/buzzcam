@@ -45,7 +45,7 @@ struct ContentView: View {
                                 .padding(.horizontal, 26)
                                 .padding(.bottom, 20) // Add padding to the bottom of the tab bar
                             }
-                        }
+                        }.foregroundColor(Color.black)
                         .edgesIgnoringSafeArea(.bottom) // Ignore safe area for bottom of the screen
                     } else { // show discover devices
                         DiscoverView(connected: $connected).environmentObject(bluetoothModel)
