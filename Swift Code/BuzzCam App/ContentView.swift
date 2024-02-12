@@ -5,6 +5,8 @@
 //  Created by Responsive Environments on 10/17/23.
 //
 
+// tabview from https://medium.com/geekculture/custom-tabbar-in-swiftui-4d239410ee73
+
 import SwiftUI
 
 
@@ -40,9 +42,9 @@ struct ContentView: View {
                                         .padding(6)
                                     }
                                 }
-                                .background(Color(red: 117/255, green: 13/255, blue: 55/255, opacity: 0.3))
+                                .background(Color(red: 117/255, green: 13/255, blue: 55/255, opacity: 0.5))
                                 .cornerRadius(35)
-                                .padding(.horizontal, 26)
+                                .padding(.horizontal, 60)
                                 .padding(.bottom, 20) // Add padding to the bottom of the tab bar
                             }
                         }.foregroundColor(Color.black)
@@ -50,23 +52,53 @@ struct ContentView: View {
                     } else { // show discover devices
                         DiscoverView(connected: $connected).environmentObject(bluetoothModel)
                     }
-                } else { // Show splash screen
+                } 
+                else { // Show splash screen
                     // Launch screen
                     withAnimation {
                         ZStack {
                             Color.black
+                                .edgesIgnoringSafeArea(.all) // Set the background color
+                                .opacity(showMainContent ? 0 : 1) // Fade out background color
+    
+                            Image("BuzzCam Logo 2")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 200, height: 200)
                                 .edgesIgnoringSafeArea(.all)
+                                .aspectRatio(contentMode: .fill)
+                                .opacity(showMainContent ? 0 : 1) // Fade out when showMainContent is true
                         }
                     }
+                    .animation(.easeInOut(duration: 0.5)) // Add fade animation
                     .onAppear {
                         // Show launch screen for 3 seconds
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                             withAnimation {
                                 self.showMainContent = true
                             }
+    //                        self.showMainContent = true
                         }
                     }
                 }
+
+//                else { // Show splash screen
+//                    // Launch screen
+//                    withAnimation {
+//                        ZStack {
+//                            Color.black
+//                                .edgesIgnoringSafeArea(.all)
+//                        }
+//                    }
+//                    .onAppear {
+//                        // Show launch screen for 3 seconds
+//                        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+//                            withAnimation {
+//                                self.showMainContent = true
+//                            }
+//                        }
+//                    }
+//                }
             }
             .background(Color.clear) // Set the background color of the Group to clear
         }

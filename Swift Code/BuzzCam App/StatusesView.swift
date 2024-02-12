@@ -23,6 +23,7 @@ struct StatusesView: View {
                 Spacer()
                 Text("Statuses")
                     .font(customFontTitle)
+                    .foregroundColor(Color.white)
                     .padding()
                 
                 Image(systemName: "chevron.down")

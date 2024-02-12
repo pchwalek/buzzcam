@@ -15,6 +15,7 @@ import SwiftUI
 import CoreBluetooth
 import SwiftProtobuf
 import Combine
+import Liquid
 
 struct MainView: View {
     @State private var beepOn = false
@@ -38,7 +39,10 @@ struct MainView: View {
                             // upper box
                             VStack(alignment: .center){
                                 HStack {
-                                    Text(String(bluetoothModel.connectedPeripheral?.name ?? "BuzzCam")).font(customFontTitle)
+                                    Text(String(bluetoothModel.connectedPeripheral?.name ?? "BuzzCam"))
+                                        .font(customFontTitle)
+                                        .foregroundColor(Color.white)
+                                        .shadow(color: .black, radius: 2, x: 0, y: 2)
                                     Spacer()
                                     
                                     Button(action: {
@@ -52,6 +56,7 @@ struct MainView: View {
                                     }
                                     .padding()
                                     .background(Color(white: 0.2))
+                                    .opacity(0.8)
                                     .cornerRadius(5)
                                 }
                             }
@@ -63,16 +68,51 @@ struct MainView: View {
                                 maxHeight: .infinity,
                                 alignment: .topLeading
                             )
-                            .background(Color(white: 0.5))
+                            .background(
+                                Image("patagonia 4") // Replace "your_image_name" with the name of your image asset
+                                    .resizable()
+                                    .scaledToFill()
+                                    .edgesIgnoringSafeArea(.all)
+                                    .opacity(0.9) // Adjust the opacity of the image if needed
+//                                    .blur(radius: 1)
+                            )
                             
                             //mark box
                             VStack{
-                                HStack{
-                                    Text("Mark #").foregroundColor(Color.black)
-                                    Text(String(bluetoothModel.systemInfoPacketData?.mark_number ?? 0))
-                                        .font(customFontTitle)
-                                        .foregroundColor(Color.black)
-                                }
+                                
+                                ZStack {
+                                            Liquid()
+                                                .frame(width: 240, height: 240)
+                                                .foregroundColor(Color(red: 0x3D / 255, green: 0xA5 / 255, blue: 0xD9 / 255))
+                                                .opacity(0.3)
+
+
+                                            Liquid()
+                                                .frame(width: 220, height: 220)
+                                                .foregroundColor(Color(red: 0x3D / 255, green: 0xA5 / 255, blue: 0xD9 / 255))
+                                                .opacity(0.6)
+
+                                            Liquid(samples: 5)
+                                                .frame(width: 200, height: 200)
+                                                .foregroundColor(Color(red: 0x3D / 255, green: 0xA5 / 255, blue: 0xD9 / 255))
+                                    
+                                            
+                                            HStack{
+                                                Text("Mark #").foregroundColor(Color.white).font(.title2)
+                                                Text(String(bluetoothModel.systemInfoPacketData?.mark_number ?? 0))
+                                                    .font(customFontTitle)
+                                                    .foregroundColor(Color.white)
+                                                    .contentTransition(.numericText())
+                                            }
+                                        }
+                                
+                                
+//                                HStack{
+//                                    Text("Mark #").foregroundColor(Color.black)
+//                                    Text(String(bluetoothModel.systemInfoPacketData?.mark_number ?? 0))
+//                                        .font(customFontTitle)
+//                                        .foregroundColor(Color.black)
+//                                }
                                 HStack {
                                     Spacer()
                                     Button(action: {
@@ -97,6 +137,7 @@ struct MainView: View {
                                     text: $annotationText
                                 )
                                 .textFieldStyle(.roundedBorder)
+                                .foregroundColor(Color.white)
                             }
                             .padding()
                             .frame(

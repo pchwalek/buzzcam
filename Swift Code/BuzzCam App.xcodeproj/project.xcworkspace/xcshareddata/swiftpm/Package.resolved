@@ -1,6 +1,15 @@
 {
   "pins" : [
     {
+      "identity" : "liquid",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/maustinstar/liquid",
+      "state" : {
+        "branch" : "master",
+        "revision" : "067aecd19425b3d37d1bca176aca9a0dc5ff6ed0"
+      }
+    },
+    {
       "identity" : "swift-protobuf",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-protobuf.git",

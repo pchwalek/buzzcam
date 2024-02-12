@@ -12,6 +12,7 @@
 		21152BCD2B29039F0078ADD4 /* testview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21152BCC2B29039F0078ADD4 /* testview.swift */; };
 		216B6DC62B757C49005D5538 /* StarryNightView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 216B6DC52B757C49005D5538 /* StarryNightView.swift */; };
 		216B6DC92B757CF8005D5538 /* LoadingParticle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 216B6DC82B757CF8005D5538 /* LoadingParticle.swift */; };
+		218DACB72B7ABF770085981D /* Liquid in Frameworks */ = {isa = PBXBuildFile; productRef = 218DACB62B7ABF770085981D /* Liquid */; };
 		21A5600B2B16A55D00292A6A /* message.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21A5600A2B16A55D00292A6A /* message.pb.swift */; };
 		21A5600E2B1942AF00292A6A /* AudioConfigView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21A5600D2B1942AF00292A6A /* AudioConfigView.swift */; };
 		21BEAA4B2AFEE135001B89E6 /* BluetoothModelHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21BEAA4A2AFEE135001B89E6 /* BluetoothModelHelper.swift */; };
@@ -93,6 +94,7 @@
 			files = (
 				21C0A2272AF0E50A00BA2ABC /* SwiftProtobufPluginLibrary in Frameworks */,
 				21C0A2252AF0E50500BA2ABC /* protoc-gen-swift in Frameworks */,
+				218DACB72B7ABF770085981D /* Liquid in Frameworks */,
 				21C0A2232AF0E50100BA2ABC /* SwiftProtobuf in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -257,6 +259,7 @@
 				21C0A2222AF0E50100BA2ABC /* SwiftProtobuf */,
 				21C0A2242AF0E50500BA2ABC /* protoc-gen-swift */,
 				21C0A2262AF0E50A00BA2ABC /* SwiftProtobufPluginLibrary */,
+				218DACB62B7ABF770085981D /* Liquid */,
 			);
 			productName = "BuzzCam App";
 			productReference = 21DAA5D12ADF221F00E70BF2 /* BuzzCam App.app */;
@@ -332,6 +335,7 @@
 			mainGroup = 21DAA5C82ADF221F00E70BF2;
 			packageReferences = (
 				21C0A2202AF04DC800BA2ABC /* XCRemoteSwiftPackageReference "swift-protobuf" */,
+				218DACB52B7ABF770085981D /* XCRemoteSwiftPackageReference "liquid" */,
 			);
 			productRefGroup = 21DAA5D22ADF221F00E70BF2 /* Products */;
 			projectDirPath = "";
@@ -751,6 +755,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		218DACB52B7ABF770085981D /* XCRemoteSwiftPackageReference "liquid" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/maustinstar/liquid";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
 		21C0A2202AF04DC800BA2ABC /* XCRemoteSwiftPackageReference "swift-protobuf" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/apple/swift-protobuf.git";
@@ -762,6 +774,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		218DACB62B7ABF770085981D /* Liquid */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 218DACB52B7ABF770085981D /* XCRemoteSwiftPackageReference "liquid" */;
+			productName = Liquid;
+		};
 		21C0A2222AF0E50100BA2ABC /* SwiftProtobuf */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 21C0A2202AF04DC800BA2ABC /* XCRemoteSwiftPackageReference "swift-protobuf" */;
