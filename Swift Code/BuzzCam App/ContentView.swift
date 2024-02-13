@@ -73,7 +73,7 @@ struct ContentView: View {
                     .animation(.easeInOut(duration: 0.5)) // Add fade animation
                     .onAppear {
                         // Show launch screen for 3 seconds
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { // change to 2
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { // change to 2
                             withAnimation {
                                 self.showMainContent = true
                             }
