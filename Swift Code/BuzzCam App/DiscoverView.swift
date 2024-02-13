@@ -23,6 +23,7 @@ struct DiscoverView: View {
     
     let customFontTitle = Font.custom("Futura-Bold", size: 30) // Define a custom font
     let customFontText = Font.custom("AvenirNext-Regular", size: 18) // Define a custom font
+    let customFontTextBold = Font.custom("AvenirNext-Bold", size: 18) // Define a custom font
     //HiraginoSans-W3
 //    let customFontText = Font.custom("HiraginoSans-W3", size: 17) // Define a custom font
 
@@ -59,7 +60,7 @@ struct DiscoverView: View {
                                         .overlay(
                                             HStack {
                                                 Text(peripheral.name ?? "Unknown")
-                                                    .font(customFontText)
+                                                    .font(customFontTextBold)
                                                 
                                                 
                                                 

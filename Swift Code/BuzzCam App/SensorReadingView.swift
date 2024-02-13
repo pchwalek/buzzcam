@@ -13,6 +13,7 @@ struct SensorReadingView: View {
     
     let customFontTitle = Font.custom("Futura-Bold", size: 20) // Define a custom font
     let customFontText = Font.custom("AvenirNext-Regular", size: 18) // Define a custom font
+    let customFontTextBold = Font.custom("AvenirNext-DemiBold", size: 23) // Define a custom font
     
     var body: some View {
         VStack (alignment: .leading) {
@@ -20,12 +21,29 @@ struct SensorReadingView: View {
                 Spacer()
                 Text("Sensor Readings")
                     .font(customFontTitle)
+                    .foregroundColor(Color.white)
+                    .shadow(color: .black, radius: 5, x: 0, y: 2)
                     .padding()
                 
-                Image(systemName: "chevron.down")
+                Image(systemName: "chevron.down.circle.fill")
                     .rotationEffect(.degrees(isExpanded ? 180 : 0))
+                    .shadow(color: .black, radius: 5, x: 0, y: 2)
+                    .foregroundColor(Color.white)
                 Spacer()
-            }.background(Color(white:0.75)).onTapGesture {
+            }.frame(maxWidth: .infinity)
+                .background(
+                    GeometryReader { proxy in
+                            Image("flowers 1") // Replace "your_image_name" with the name of your image asset
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: proxy.size.width, height: proxy.size.height)
+                                .clipped()
+                                .opacity(0.7)
+                                .allowsHitTesting(false) // Prevents the image from capturing taps
+                                .contentShape(Rectangle()) // Set content shape to Rectangle to allow tap gesture
+                        }
+                )
+                .onTapGesture {
                 withAnimation {
                     isExpanded.toggle()
                 }
@@ -37,9 +55,9 @@ struct SensorReadingView: View {
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 40, height: 40)
                         Text("Temperature:")
-                            .font(.body)
+                            .font(customFontText)
                         Text(String(bluetoothModel.systemInfoPacketData?.temperature ?? 0))
-                            .font(.title3)
+                            .font(customFontTextBold)
                             .fontWeight(.bold)
                     }
                     
@@ -48,10 +66,9 @@ struct SensorReadingView: View {
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 40, height: 40)
                         Text("Humidity:")
-                            .font(.body)
+                            .font(customFontText)
                         Text(String(bluetoothModel.systemInfoPacketData?.humidity ?? 0))
-                            .font(.title3)
-                            .fontWeight(.bold)
+                            .font(customFontTextBold)
                     }
                     
                     HStack {
@@ -70,9 +87,9 @@ struct SensorReadingView: View {
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 40, height: 40)
                         Text("Light level:")
-                            .font(.body)
+                            .font(customFontText)
                         Text(String(bluetoothModel.systemInfoPacketData?.light_level ?? 0))
-                            .font(.title3)
+                            .font(customFontTextBold)
                             .fontWeight(.bold)
                     }
                 }

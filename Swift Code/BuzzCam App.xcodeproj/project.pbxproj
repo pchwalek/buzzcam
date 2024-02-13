@@ -10,6 +10,7 @@
 		21152BC92B2790920078ADD4 /* NearbyDevicesConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21152BC82B2790920078ADD4 /* NearbyDevicesConfig.swift */; };
 		21152BCB2B29002E0078ADD4 /* SchedulesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21152BCA2B29002E0078ADD4 /* SchedulesView.swift */; };
 		21152BCD2B29039F0078ADD4 /* testview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21152BCC2B29039F0078ADD4 /* testview.swift */; };
+		212DA4BE2B7AFEAA00324DDA /* Shiny in Frameworks */ = {isa = PBXBuildFile; productRef = 212DA4BD2B7AFEAA00324DDA /* Shiny */; };
 		216B6DC62B757C49005D5538 /* StarryNightView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 216B6DC52B757C49005D5538 /* StarryNightView.swift */; };
 		216B6DC92B757CF8005D5538 /* LoadingParticle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 216B6DC82B757CF8005D5538 /* LoadingParticle.swift */; };
 		218DACB72B7ABF770085981D /* Liquid in Frameworks */ = {isa = PBXBuildFile; productRef = 218DACB62B7ABF770085981D /* Liquid */; };
@@ -95,6 +96,7 @@
 				21C0A2272AF0E50A00BA2ABC /* SwiftProtobufPluginLibrary in Frameworks */,
 				21C0A2252AF0E50500BA2ABC /* protoc-gen-swift in Frameworks */,
 				218DACB72B7ABF770085981D /* Liquid in Frameworks */,
+				212DA4BE2B7AFEAA00324DDA /* Shiny in Frameworks */,
 				21C0A2232AF0E50100BA2ABC /* SwiftProtobuf in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -260,6 +262,7 @@
 				21C0A2242AF0E50500BA2ABC /* protoc-gen-swift */,
 				21C0A2262AF0E50A00BA2ABC /* SwiftProtobufPluginLibrary */,
 				218DACB62B7ABF770085981D /* Liquid */,
+				212DA4BD2B7AFEAA00324DDA /* Shiny */,
 			);
 			productName = "BuzzCam App";
 			productReference = 21DAA5D12ADF221F00E70BF2 /* BuzzCam App.app */;
@@ -336,6 +339,7 @@
 			packageReferences = (
 				21C0A2202AF04DC800BA2ABC /* XCRemoteSwiftPackageReference "swift-protobuf" */,
 				218DACB52B7ABF770085981D /* XCRemoteSwiftPackageReference "liquid" */,
+				212DA4BC2B7AFEAA00324DDA /* XCRemoteSwiftPackageReference "shiny" */,
 			);
 			productRefGroup = 21DAA5D22ADF221F00E70BF2 /* Products */;
 			projectDirPath = "";
@@ -755,6 +759,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		212DA4BC2B7AFEAA00324DDA /* XCRemoteSwiftPackageReference "shiny" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/maustinstar/shiny";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
 		218DACB52B7ABF770085981D /* XCRemoteSwiftPackageReference "liquid" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/maustinstar/liquid";
@@ -774,6 +786,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		212DA4BD2B7AFEAA00324DDA /* Shiny */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 212DA4BC2B7AFEAA00324DDA /* XCRemoteSwiftPackageReference "shiny" */;
+			productName = Shiny;
+		};
 		218DACB62B7ABF770085981D /* Liquid */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 218DACB52B7ABF770085981D /* XCRemoteSwiftPackageReference "liquid" */;

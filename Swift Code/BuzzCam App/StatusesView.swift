@@ -16,6 +16,7 @@ struct StatusesView: View {
     
     let customFontTitle = Font.custom("Futura-Bold", size: 20) // Define a custom font
     let customFontText = Font.custom("AvenirNext-Regular", size: 18) // Define a custom font
+    let customFontTextBold = Font.custom("AvenirNext-DemiBold", size: 23) // Define a custom font
     
     var body: some View {
         VStack (alignment: .leading) {
@@ -24,12 +25,29 @@ struct StatusesView: View {
                 Text("Statuses")
                     .font(customFontTitle)
                     .foregroundColor(Color.white)
+                    .shadow(color: .black, radius: 5, x: 0, y: 2)
                     .padding()
                 
-                Image(systemName: "chevron.down")
+                Image(systemName: "chevron.down.circle.fill")
                     .rotationEffect(.degrees(isExpanded ? 180 : 0))
+                    .shadow(color: .black, radius: 5, x: 0, y: 2)
+                    .foregroundColor(Color.white)
                 Spacer()
-            }.background(Color(white:0.75)).onTapGesture {
+            }
+            .frame(maxWidth: .infinity)
+            .background(
+                GeometryReader { proxy in
+                        Image("flowers 5")
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: proxy.size.width, height: proxy.size.height)
+                            .clipped()
+                            .opacity(0.7)
+                            .allowsHitTesting(false) // Prevents the image from capturing taps
+                            .contentShape(Rectangle()) // Set content shape to Rectangle to allow tap gesture
+                    }
+            )
+                .onTapGesture {
                 withAnimation {
                     isExpanded.toggle()
                 }
@@ -37,7 +55,7 @@ struct StatusesView: View {
             if isExpanded {
                 VStack (alignment: .leading, spacing: 20) {
                     HStack {
-                        Text("Device enabled").font(.title2)
+                        Text("Device enabled").font(customFontTextBold)
                             .fontWeight(.bold).padding()
                         Toggle("",isOn: $deviceEnabled).labelsHidden().onAppear {
                             // Add an observer to monitor changes to systemInfoPacketData
@@ -59,15 +77,15 @@ struct StatusesView: View {
                     
                     VStack(alignment: .leading) {
                         Text("SD Card Status")
-                            .font(.title2)
+                            .font(customFontTextBold)
                             .fontWeight(.bold)
                         VStack (alignment: .leading, spacing: 10){
                             Text("Detected: " + String(bluetoothModel.systemInfoPacketData?.sd_detected ?? false))
-                                .font(.body)
+                                .font(customFontText)
                             Text("Space remaining: " + String(bluetoothModel.systemInfoPacketData?.space_remaining ?? 0))
-                                .font(.body)
+                                .font(customFontText)
                             Text("Estimated recording time: " + String(bluetoothModel.systemInfoPacketData?.estimated_recording_time ?? 0))
-                                .font(.body)
+                                .font(customFontText)
                         }
                         .padding()
                     }
@@ -83,13 +101,13 @@ struct StatusesView: View {
                     
                     VStack(alignment: .leading) {
                         Text("Battery Status")
-                            .font(.title2)
+                            .font(customFontTextBold)
                             .fontWeight(.bold)
                         VStack (alignment: .leading, spacing: 10){
                             Text("Is charging: " + String(bluetoothModel.systemInfoPacketData?.battery_charging ?? false))
-                                .font(.body)
+                                .font(customFontText)
                             Text("Battery Voltage: " +  String(bluetoothModel.systemInfoPacketData?.battery_voltage ?? 0))
-                                .font(.body)
+                                .font(customFontText)
                         }
                         .padding()
                     }
