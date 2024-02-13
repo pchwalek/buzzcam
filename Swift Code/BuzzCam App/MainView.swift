@@ -127,6 +127,7 @@ struct MainView: View {
                                     }) {
                                         Text("Mark")
                                             .font(customFontText)
+                                            .fontWeight(.bold)
                                             .padding()
                                             .background(Color(white: 0.7))
                                             .cornerRadius(5)
@@ -140,20 +141,27 @@ struct MainView: View {
                                     Spacer()
                                 }
                                 
-                                TextField("", text: $annotationText)
-                                    .foregroundColor(.white)
-                                    .padding()
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 5)
-                                            .fill(Color.white)
-                                            .opacity(0.8)
-                                    )
-                                    .overlay(
-                                        Text("Add observation (max 40 char.)")
-                                            .foregroundColor(.gray)
-                                            .opacity(annotationText.isEmpty ? 1 : 0)
-                                            .padding(.horizontal, 8) // Adjust padding as needed
-                                    )
+                                VStack(alignment: .leading) {
+                                    Text("Add observation (max 40 char.)")
+                                        .foregroundColor(.black)
+                                        .font(customFontText)
+//                                        .padding(.horizontal, 8) // Adjust padding as needed
+                                    
+                                    TextField("", text: $annotationText)
+                                        .padding()
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 5)
+                                                .fill(Color.white.opacity(0.8))
+                                        )
+                                        .foregroundColor(.black)
+                                }
+//                                    .padding(.horizontal, 8) // Adjust padding as needed
+//                                    .overlay(
+//                                        Text("Add observation (max 40 char.)")
+//                                            .foregroundColor(.black)
+//                                            .opacity(annotationText.isEmpty ? 1 : 0)
+//                                            .padding(.horizontal, 8) // Adjust padding as needed
+//                                    )
                                                             }
                             .padding()
                             .frame(
