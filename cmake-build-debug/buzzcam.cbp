@@ -1,0 +1,2912 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="buzzcam"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/Users/chwalek/dev/buzzcam/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j10 -f &quot;/Users/chwalek/dev/buzzcam/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j10 -f &quot;/Users/chwalek/dev/buzzcam/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j10 -f &quot;/Users/chwalek/dev/buzzcam/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j10 -f &quot;/Users/chwalek/dev/buzzcam/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="buzzcam.elf">
+				<Option output="/Users/chwalek/dev/buzzcam/cmake-build-debug/buzzcam.elf" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/chwalek/dev/buzzcam/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DARM_MATH_CM4"/>
+					<Add option="-DARM_MATH_MATRIX_CHECK"/>
+					<Add option="-DARM_MATH_ROUNDING"/>
+					<Add option="-DCFG_FULL_LOW_POWER=1"/>
+					<Add option="-DDYNAMIC_MODE"/>
+					<Add option="-DTHREAD_WB"/>
+					<Add option="-DOPENTHREAD_CONFIG_FILE=&lt;openthread_api_config_ftd.h&gt;"/>
+					<Add option="-DDEBUG"/>
+					<Add option="-DUSE_HAL_DRIVER"/>
+					<Add option="-DSTM32WB5Mxx"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/FATFS/Target"/>
+					<Add directory="/Applications/STM32CubeIDE.app/Contents/Eclipse/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.11.3.rel1.macos64_1.1.100.202310310803"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/FATFS/App"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Core/Inc"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/STM32_WPAN/App"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/Legacy"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Utilities/lpm/tiny_lpm"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FatFs/src"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/tl"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/shci"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/utilities"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/core"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/core/auto"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/core/template"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/Device/ST/STM32WBxx/Include"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/Include"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/include"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/protobuf"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/STM32_AdafruitSensor"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/inc"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/STM32_BME680"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/USB_Device/App"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/USB_Device/Target"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_USB_Device_Library/Core/Inc"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/platform"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/tflac"/>
+					<Add directory="/opt/homebrew/Cellar/arm-none-eabi-gcc/10.3-2021.10/gcc/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/include/c++/10.3.1"/>
+					<Add directory="/opt/homebrew/Cellar/arm-none-eabi-gcc/10.3-2021.10/gcc/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/include/c++/10.3.1/arm-none-eabi"/>
+					<Add directory="/opt/homebrew/Cellar/arm-none-eabi-gcc/10.3-2021.10/gcc/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/include/c++/10.3.1/backward"/>
+					<Add directory="/opt/homebrew/Cellar/arm-none-eabi-gcc/10.3-2021.10/gcc/bin/../lib/gcc/arm-none-eabi/10.3.1/include"/>
+					<Add directory="/opt/homebrew/Cellar/arm-none-eabi-gcc/10.3-2021.10/gcc/bin/../lib/gcc/arm-none-eabi/10.3.1/include-fixed"/>
+					<Add directory="/opt/homebrew/Cellar/arm-none-eabi-gcc/10.3-2021.10/gcc/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j10 -f &quot;/Users/chwalek/dev/buzzcam/cmake-build-debug/Makefile&quot;  VERBOSE=1 buzzcam.elf"/>
+					<CompileFile command="/usr/bin/make -j10 -f &quot;/Users/chwalek/dev/buzzcam/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j10 -f &quot;/Users/chwalek/dev/buzzcam/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j10 -f &quot;/Users/chwalek/dev/buzzcam/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="buzzcam.elf/fast">
+				<Option output="/Users/chwalek/dev/buzzcam/cmake-build-debug/buzzcam.elf" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/chwalek/dev/buzzcam/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DARM_MATH_CM4"/>
+					<Add option="-DARM_MATH_MATRIX_CHECK"/>
+					<Add option="-DARM_MATH_ROUNDING"/>
+					<Add option="-DCFG_FULL_LOW_POWER=1"/>
+					<Add option="-DDYNAMIC_MODE"/>
+					<Add option="-DTHREAD_WB"/>
+					<Add option="-DOPENTHREAD_CONFIG_FILE=&lt;openthread_api_config_ftd.h&gt;"/>
+					<Add option="-DDEBUG"/>
+					<Add option="-DUSE_HAL_DRIVER"/>
+					<Add option="-DSTM32WB5Mxx"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/FATFS/Target"/>
+					<Add directory="/Applications/STM32CubeIDE.app/Contents/Eclipse/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.11.3.rel1.macos64_1.1.100.202310310803"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/FATFS/App"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Core/Inc"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/STM32_WPAN/App"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/Legacy"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Utilities/lpm/tiny_lpm"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FatFs/src"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/tl"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/shci"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/utilities"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/core"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/core/auto"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/core/template"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/Device/ST/STM32WBxx/Include"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/Include"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/include"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/protobuf"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/STM32_AdafruitSensor"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/inc"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/STM32_BME680"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/USB_Device/App"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/USB_Device/Target"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_USB_Device_Library/Core/Inc"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/platform"/>
+					<Add directory="/Users/chwalek/dev/buzzcam/tflac"/>
+					<Add directory="/opt/homebrew/Cellar/arm-none-eabi-gcc/10.3-2021.10/gcc/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/include/c++/10.3.1"/>
+					<Add directory="/opt/homebrew/Cellar/arm-none-eabi-gcc/10.3-2021.10/gcc/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/include/c++/10.3.1/arm-none-eabi"/>
+					<Add directory="/opt/homebrew/Cellar/arm-none-eabi-gcc/10.3-2021.10/gcc/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/include/c++/10.3.1/backward"/>
+					<Add directory="/opt/homebrew/Cellar/arm-none-eabi-gcc/10.3-2021.10/gcc/bin/../lib/gcc/arm-none-eabi/10.3.1/include"/>
+					<Add directory="/opt/homebrew/Cellar/arm-none-eabi-gcc/10.3-2021.10/gcc/bin/../lib/gcc/arm-none-eabi/10.3.1/include-fixed"/>
+					<Add directory="/opt/homebrew/Cellar/arm-none-eabi-gcc/10.3-2021.10/gcc/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j10 -f &quot;/Users/chwalek/dev/buzzcam/cmake-build-debug/Makefile&quot;  VERBOSE=1 buzzcam.elf/fast"/>
+					<CompileFile command="/usr/bin/make -j10 -f &quot;/Users/chwalek/dev/buzzcam/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j10 -f &quot;/Users/chwalek/dev/buzzcam/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j10 -f &quot;/Users/chwalek/dev/buzzcam/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/Users/chwalek/dev/buzzcam/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j10 -f &quot;/Users/chwalek/dev/buzzcam/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j10 -f &quot;/Users/chwalek/dev/buzzcam/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j10 -f &quot;/Users/chwalek/dev/buzzcam/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j10 -f &quot;/Users/chwalek/dev/buzzcam/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/Users/chwalek/dev/buzzcam/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j10 -f &quot;/Users/chwalek/dev/buzzcam/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j10 -f &quot;/Users/chwalek/dev/buzzcam/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j10 -f &quot;/Users/chwalek/dev/buzzcam/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j10 -f &quot;/Users/chwalek/dev/buzzcam/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Core/.DS_Store">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Core/Inc/FreeRTOSConfig.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Core/Inc/app_common.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Core/Inc/app_conf.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Core/Inc/app_debug.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Core/Inc/app_entry.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Core/Inc/bme.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Core/Inc/hw_conf.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Core/Inc/hw_if.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Core/Inc/main.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Core/Inc/stm32_lpm_if.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Core/Inc/stm32wbxx_hal_conf.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Core/Inc/stm32wbxx_it.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Core/Inc/stm_logging.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Core/Inc/utilities_conf.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Core/Src/app_debug.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Core/Src/app_entry.cpp">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Core/Src/app_freertos.cpp">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Core/Src/bme.cpp">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Core/Src/freertos_port.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Core/Src/hw_timerserver.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Core/Src/main.cpp">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Core/Src/stm32_lpm_if.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Core/Src/stm32wbxx_hal_msp.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Core/Src/stm32wbxx_hal_timebase_tim.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Core/Src/stm32wbxx_it.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Core/Src/syscalls.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Core/Src/sysmem.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Core/Src/system_stm32wbxx.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Core/Startup/startup_stm32wb5mmghx.s">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/.DS_Store">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/DSP/Include/arm_common_tables.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/DSP/Include/arm_const_structs.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/DSP/Include/arm_math.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/DSP/Lib/GCC/libarm_cortexM4lf_math.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/Device/ST/STM32WBxx/Include/stm32wb5mxx.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/Device/ST/STM32WBxx/Include/stm32wbxx.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/Device/ST/STM32WBxx/Include/system_stm32wbxx.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/Device/ST/STM32WBxx/LICENSE.txt">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/Include/cmsis_armcc.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/Include/cmsis_armclang.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/Include/cmsis_armclang_ltm.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/Include/cmsis_compiler.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/Include/cmsis_gcc.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/Include/cmsis_iccarm.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/Include/cmsis_version.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/Include/core_armv81mml.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/Include/core_armv8mbl.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/Include/core_armv8mml.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/Include/core_cm0.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/Include/core_cm0plus.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/Include/core_cm1.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/Include/core_cm23.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/Include/core_cm3.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/Include/core_cm33.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/Include/core_cm35p.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/Include/core_cm4.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/Include/core_cm7.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/Include/core_sc000.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/Include/core_sc300.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/Include/mpu_armv7.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/Include/mpu_armv8.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/Include/tz_context.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/CMSIS/LICENSE.txt">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal_adc.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal_adc_ex.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal_cortex.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal_def.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal_dma.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal_dma_ex.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal_exti.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal_flash.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal_flash_ex.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal_gpio.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal_gpio_ex.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal_hsem.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal_i2c.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal_i2c_ex.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal_ipcc.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal_pcd.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal_pcd_ex.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal_pwr.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal_pwr_ex.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal_rcc.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal_rcc_ex.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal_rtc.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal_rtc_ex.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal_sai.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal_sai_ex.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal_spi.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal_spi_ex.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal_tim.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal_tim_ex.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal_uart.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal_uart_ex.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_ll_adc.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_ll_bus.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_ll_cortex.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_ll_crs.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_ll_dma.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_ll_dmamux.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_ll_exti.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_ll_gpio.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_ll_hsem.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_ll_i2c.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_ll_ipcc.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_ll_lpuart.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_ll_pwr.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_ll_rcc.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_ll_rtc.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_ll_spi.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_ll_system.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_ll_tim.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_ll_usart.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_ll_usb.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_ll_utils.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/LICENSE.txt">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_adc.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_adc_ex.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_cortex.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_dma.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_dma_ex.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_exti.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_flash.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_flash_ex.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_gpio.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_hsem.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_i2c.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_i2c_ex.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_ipcc.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_pcd.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_pcd_ex.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_pwr.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_pwr_ex.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_rcc.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_rcc_ex.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_rtc.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_rtc_ex.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_sai.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_sai_ex.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_spi.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_spi_ex.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_tim.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_tim_ex.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_uart.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_uart_ex.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_ll_adc.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_ll_rcc.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_ll_usb.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/FATFS/.DS_Store">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/FATFS/App/app_fatfs.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/FATFS/App/app_fatfs.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/FATFS/Target/ffconf.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/FATFS/Target/user_diskio.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/FATFS/Target/user_diskio.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/FATFS/Target/user_diskio_spi.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/FATFS/Target/user_diskio_spi.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/.DS_Store">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/.DS_Store">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc/usbd_cdc.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_core.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_USB_Device_Library/LICENSE.txt">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/.DS_Store">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/ble.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/ble_common.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/core/auto/ble_events.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/core/auto/ble_events.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/core/auto/ble_gap_aci.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/core/auto/ble_gap_aci.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/core/auto/ble_gatt_aci.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/core/auto/ble_gatt_aci.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/core/auto/ble_hal_aci.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/core/auto/ble_hal_aci.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/core/auto/ble_hci_le.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/core/auto/ble_hci_le.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/core/auto/ble_l2cap_aci.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/core/auto/ble_l2cap_aci.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/core/auto/ble_types.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/core/auto/ble_vs_codes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/core/ble_bufsize.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/core/ble_core.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/core/ble_defs.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/core/ble_legacy.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/core/ble_std.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/core/doc/STM32WB_BLE_Wireless_Interface.html">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/core/template/ble_const.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/core/template/compiler.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/core/template/osal.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/core/template/osal.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/svc/Inc/bas.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/svc/Inc/bls.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/svc/Inc/bvopus_service_stm.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/svc/Inc/crs_stm.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/svc/Inc/dis.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/svc/Inc/eds_stm.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/svc/Inc/hids.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/svc/Inc/hrs.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/svc/Inc/hts.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/svc/Inc/ias.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/svc/Inc/lls.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/svc/Inc/mesh.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/svc/Inc/motenv_stm.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/svc/Inc/opus_interface_stm.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/svc/Inc/otas_stm.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/svc/Inc/p2p_stm.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/svc/Inc/svc_ctl.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/svc/Inc/template_stm.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/svc/Inc/tps.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/svc/Inc/uuid.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/svc/Inc/zdd_stm.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/svc/Src/common_blesvc.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/svc/Src/dis.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/svc/Src/hrs.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/ble/svc/Src/svc_ctl.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/hw.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/shci/shci.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/shci/shci.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/tl/hci_tl.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/tl/hci_tl.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/tl/hci_tl_if.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/tl/mbox_def.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/tl/shci_tl.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/tl/shci_tl.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/tl/shci_tl_if.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/tl/tl.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/tl/tl_mbox.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/tl/tl_thread_hci.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/tl/tl_thread_hci.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/stm32_wpan_common.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/Release_Notes.html">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/STM32WBxx_OpenThread_API_User_Manual.chm">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/_htmresc/Add button.svg">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/_htmresc/CMSIS_Logo_Final.jpg">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/_htmresc/ThreadLayers.png">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/_htmresc/Update.svg">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/_htmresc/favicon.png">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/_htmresc/logo.bmp">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/_htmresc/mini-st.css">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/_htmresc/mini-st_2020.css">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/_htmresc/st_logo.png">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/_htmresc/st_logo_2020.png">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/_htmresc/stmtouch.bmp">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/backbone_router.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/backbone_router_ftd.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/border_agent.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/border_router.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/border_routing.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/channel_manager.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/channel_monitor.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/child_supervision.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/coap.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/coap_secure.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/commissioner.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/crypto.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/dataset.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/dataset_ftd.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/dataset_updater.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/diag.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/dns.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/dns_server.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/entropy.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/errors.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/heap.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/history_tracker.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/icmp6.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/instance.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/ip6.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/jam_detection.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/joiner.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/link.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/link_metrics.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/link_raw.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/logging.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/message.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/multi_radio.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/nat64.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/netdata.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/netdata_publisher.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/netdiag.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/network_time.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/openthread.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/openthread_api_config_ftd.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/openthread_api_config_ftd_full.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/openthread_api_config_light.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/openthread_api_config_matter.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/openthread_api_config_mtd.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/openthread_api_config_rcp.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/openthread_api_wb.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/openthread_api_wb.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/ping_sender.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/radio.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/random_crypto.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/random_noncrypto.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/server.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/sntp.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/srp_client.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/srp_client_buffers.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/srp_server.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/stm32wbxx_core_interface_def.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/tasklet.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/tcp.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/tcp_ext.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/thread.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/thread_ftd.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/trel.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/core/openthread_api/udp.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/BUILD.gn">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/backbone_router.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/backbone_router_ftd.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/border_agent.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/border_router.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/border_routing.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/channel_manager.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/channel_monitor.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/child_supervision.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/cli.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/coap.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/coap_secure.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/commissioner.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/config.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/crypto.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/dataset.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/dataset_ftd.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/dataset_updater.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/diag.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/dns.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/dns_client.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/dnssd_server.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/error.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/heap.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/history_tracker.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/icmp6.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/instance.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/ip6.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/jam_detection.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/joiner.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/link.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/link_metrics.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/link_raw.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/logging.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/message.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/multi_radio.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/nat64.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/ncp.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/netdata.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/netdata_publisher.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/netdiag.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/network_time.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/ping_sender.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/platform/alarm-micro.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/platform/alarm-milli.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/platform/crypto.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/platform/debug_uart.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/platform/diag.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/platform/dso_transport.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/platform/entropy.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/platform/flash.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/platform/infra_if.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/platform/logging.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/platform/memory.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/platform/messagepool.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/platform/misc.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/platform/otns.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/platform/radio.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/platform/settings.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/platform/spi-slave.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/platform/time.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/platform/toolchain.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/platform/trel.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/platform/udp.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/random_crypto.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/random_noncrypto.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/server.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/sntp.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/srp_client.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/srp_client_buffers.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/srp_server.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/tasklet.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/tcp.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/tcp_ext.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/thread.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/thread_ftd.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/trel.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread/udp.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/strings.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/sys/types.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/announce_sender.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/backbone_router.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/border_agent.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/border_router.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/border_routing.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/channel_manager.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/channel_monitor.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/child_supervision.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/coap.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/commissioner.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/crypto.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/dataset_updater.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/dhcp6_client.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/dhcp6_server.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/diag.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/dns_client.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/dns_dso.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/dnssd_server.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/dtls.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/history_tracker.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/ip6.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/joiner.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/link_quality.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/link_raw.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/logging.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/mac.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/misc.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/mle.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/nat64.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/netdata_publisher.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/openthread-core-config-check.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/parent_search.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/ping_sender.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/platform.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/power_calibration.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/radio_link.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/sntp_client.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/srp_client.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/srp_server.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/time_sync.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config/tmf.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/openthread-core-config.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/mbedtls-config.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/aes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/aesni.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/arc4.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/aria.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/asn1.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/asn1write.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/base64.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/bignum.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/blowfish.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/bn_mul.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/camellia.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/ccm.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/certs.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/chacha20.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/chachapoly.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/check_config.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/cipher.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/cipher_internal.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/cmac.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/compat-1.3.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/config.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/config_psa.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/constant_time.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/ctr_drbg.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/debug.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/des.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/dhm.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/ecdh.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/ecdsa.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/ecjpake.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/ecp.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/ecp_internal.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/entropy.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/entropy_poll.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/error.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/gcm.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/havege.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/hkdf.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/hmac_drbg.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/md.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/md2.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/md4.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/md5.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/md_internal.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/memory_buffer_alloc.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/net.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/net_sockets.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/nist_kw.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/oid.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/padlock.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/pem.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/pk.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/pk_internal.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/pkcs11.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/pkcs12.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/pkcs5.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/platform.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/platform_time.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/platform_util.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/poly1305.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/psa_util.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/ripemd160.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/rsa.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/rsa_internal.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/sha1.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/sha256.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/sha512.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/ssl.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/ssl_cache.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/ssl_ciphersuites.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/ssl_cookie.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/ssl_internal.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/ssl_ticket.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/threading.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/timing.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/version.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/x509.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/x509_crl.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/x509_crt.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/x509_csr.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls/xtea.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/utilities/dbg_trace.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/utilities/dbg_trace.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/utilities/otp.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/utilities/otp.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/utilities/stm_list.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/utilities/stm_list.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/utilities/stm_queue.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/utilities/stm_queue.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/ST/STM32_WPAN/utilities/utilities_common.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/STM32_AdafruitSensor/.git">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/STM32_AdafruitSensor/Adafruit_Sensor.cpp">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/STM32_AdafruitSensor/Adafruit_Sensor.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/STM32_BME680/.git">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/STM32_BME680/Adafruit_BME680.cpp">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/STM32_BME680/Adafruit_BME680.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/STM32_BME680/bme68x.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/STM32_BME680/bme68x.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/STM32_BME680/bme68x_defs.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Sensirion_Core/.DS_Store">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Sensirion_Core/.clang-format">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Sensirion_Core/.editorconfig">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Sensirion_Core/.gitignore">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Sensirion_Core/.gitlab-ci.yml">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Sensirion_Core/README.md">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Sensirion_Core/keywords.txt">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Sensirion_Core/src/SensirionCore.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Sensirion_Core/src/SensirionCoreArduinoLibrary.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Sensirion_Core/src/SensirionCrc.cpp">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Sensirion_Core/src/SensirionCrc.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Sensirion_Core/src/SensirionErrors.cpp">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Sensirion_Core/src/SensirionErrors.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Sensirion_Core/src/SensirionI2CCommunication.cpp">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Sensirion_Core/src/SensirionI2CCommunication.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Sensirion_Core/src/SensirionI2CRxFrame.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Sensirion_Core/src/SensirionI2CTxFrame.cpp">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Sensirion_Core/src/SensirionI2CTxFrame.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Sensirion_Core/src/SensirionRxFrame.cpp">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Sensirion_Core/src/SensirionRxFrame.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Sensirion_Core/tests/compile_test.py">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Sensirion_Core/tests/run_cppcheck.sh">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Sensirion_Core/tests/syntax_check.sh">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FatFs/src/diskio.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FatFs/src/diskio.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FatFs/src/ff.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FatFs/src/ff.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FatFs/src/ff_gen_drv.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FatFs/src/ff_gen_drv.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FatFs/src/integer.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FatFs/src/option/ccsbcs.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FatFs/src/option/syscall.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/freertos_mpool.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/freertos_os2.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/croutine.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/event_groups.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/include/StackMacros.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/include/atomic.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/include/croutine.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/include/list.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/include/message_buffer.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/include/mpu_prototypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/include/portable.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/include/queue.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/include/stack_macros.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/include/stream_buffer.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/include/task.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/include/timers.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/list.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/queue.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/tasks.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/Third_Party/FreeRTOS/Source/timers.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/.DS_Store">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/BSEC2 Binary Size Information.pdf">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/D01_518_Release Notes_BSEC_2.2.0.0websiterelease_06132022.pdf">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/.DS_Store">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/.DS_Store">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/.DS_Store">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR7/Cortex_M0+/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR7/Cortex_M0+/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR7/Cortex_M0+/libalgobsec.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR7/Cortex_M0+/libalgobsec.a.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR7/Cortex_M0/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR7/Cortex_M0/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR7/Cortex_M0/libalgobsec.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR7/Cortex_M0/libalgobsec.a.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR7/Cortex_M3/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR7/Cortex_M3/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR7/Cortex_M3/libalgobsec.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR7/Cortex_M3/libalgobsec.a.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR7/Cortex_M4/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR7/Cortex_M4/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR7/Cortex_M4/libalgobsec.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR7/Cortex_M4/libalgobsec.a.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR7/Cortex_M4F/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR7/Cortex_M4F/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR7/Cortex_M4F/libalgobsec.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR7/Cortex_M4F/libalgobsec.a.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR7/Cortex_M7/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR7/Cortex_M7/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR7/Cortex_M7/libalgobsec.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR7/Cortex_M7/libalgobsec.a.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR8/Cortex_M0+/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR8/Cortex_M0+/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR8/Cortex_M0+/libalgobsec.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR8/Cortex_M0+/libalgobsec.a.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR8/Cortex_M0/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR8/Cortex_M0/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR8/Cortex_M0/libalgobsec.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR8/Cortex_M0/libalgobsec.a.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR8/Cortex_M3/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR8/Cortex_M3/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR8/Cortex_M3/libalgobsec.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR8/Cortex_M3/libalgobsec.a.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR8/Cortex_M4/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR8/Cortex_M4/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR8/Cortex_M4/libalgobsec.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR8/Cortex_M4/libalgobsec.a.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR8/Cortex_M4F/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR8/Cortex_M4F/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR8/Cortex_M4F/libalgobsec.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR8/Cortex_M4F/libalgobsec.a.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR8/Cortex_M7/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR8/Cortex_M7/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR8/Cortex_M7/libalgobsec.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/IAR/IAR8/Cortex_M7/libalgobsec.a.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/RaspberryPi/PiThree_ArmV6/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/RaspberryPi/PiThree_ArmV6/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/RaspberryPi/PiThree_ArmV6/libalgobsec.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/RaspberryPi/PiThree_ArmV6/libalgobsec.a.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/RaspberryPi/PiThree_ArmV8/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/RaspberryPi/PiThree_ArmV8/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/RaspberryPi/PiThree_ArmV8/libalgobsec.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/RaspberryPi/PiThree_ArmV8/libalgobsec.a.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/armcc/.DS_Store">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/armcc/Cortex_M0+/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/armcc/Cortex_M0+/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/armcc/Cortex_M0+/libalgobsec.lib">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/armcc/Cortex_M0+/libalgobsec.lib.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/armcc/Cortex_M0/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/armcc/Cortex_M0/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/armcc/Cortex_M0/libalgobsec.lib">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/armcc/Cortex_M0/libalgobsec.lib.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/armcc/Cortex_M3/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/armcc/Cortex_M3/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/armcc/Cortex_M3/libalgobsec.lib">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/armcc/Cortex_M3/libalgobsec.lib.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/armcc/Cortex_M4/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/armcc/Cortex_M4/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/armcc/Cortex_M4/libalgobsec.lib">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/armcc/Cortex_M4/libalgobsec.lib.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/armcc/Cortex_M4F/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/armcc/Cortex_M4F/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/armcc/Cortex_M4F/libalgobsec.lib">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/armcc/Cortex_M4F/libalgobsec.lib.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/armcc/Cortex_M7/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/armcc/Cortex_M7/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/armcc/Cortex_M7/libalgobsec.lib">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/armcc/Cortex_M7/libalgobsec.lib.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/avr/AVR32/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/avr/AVR32/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/avr/AVR32/libalgobsec.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/avr/AVR32/libalgobsec.a.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/avr/AVR8_XMEGA/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/avr/AVR8_XMEGA/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/avr/AVR8_XMEGA/libalgobsec.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/avr/AVR8_XMEGA/libalgobsec.a.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/avr/AVR8_megaAVR/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/avr/AVR8_megaAVR/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/avr/AVR8_megaAVR/libalgobsec.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/avr/AVR8_megaAVR/libalgobsec.a.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/dll/x64/BSECLibrary64.dll">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/dll/x64/BSECLibrary64.exp">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/dll/x64/BSECLibrary64.lib">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/dll/x64/BSECLibrary64.pdb">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/dll/x86/BSECLibrary32.dll">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/dll/x86/BSECLibrary32.exp">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/dll/x86/BSECLibrary32.lib">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/dll/x86/BSECLibrary32.pdb">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/esp/.DS_Store">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/esp/esp32/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/esp/esp32/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/esp/esp32/libalgobsec.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/esp/esp32/libalgobsec.a.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/esp/esp8266/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/esp/esp8266/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/esp/esp8266/libalgobsec.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/esp/esp8266/libalgobsec.a.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/ARMv8/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/ARMv8/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/ARMv8/libalgobsec.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/ARMv8/libalgobsec.a.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_A7/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_A7/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_A7/libalgobsec.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_A7/libalgobsec.a.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_A73/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_A73/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_A73/libalgobsec.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_A73/libalgobsec.a.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_M0+/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_M0+/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_M0+/libalgobsec.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_M0+/libalgobsec.a.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_M0/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_M0/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_M0/libalgobsec.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_M0/libalgobsec.a.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_M3/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_M3/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_M3/libalgobsec.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_M3/libalgobsec.a.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_M33/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_M33/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_M33/libalgobsec.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_M33/libalgobsec.a.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_M33F/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_M33F/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_M33F/libalgobsec.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_M33F/libalgobsec.a.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_M4/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_M4/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_M4/libalgobsec.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_M4/libalgobsec.a.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_M4F/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_M4F/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_M4F/libalgobsec.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_M4F/libalgobsec.a.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_M7/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_M7/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_M7/libalgobsec.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Cortex_M7/libalgobsec.a.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Linux/m32/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Linux/m32/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Linux/m32/libalgobsec.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Linux/m32/libalgobsec.a.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Linux/m64/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Linux/m64/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Linux/m64/libalgobsec.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/Linux/m64/libalgobsec.a.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/windows/x64/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/windows/x64/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/windows/x64/libalgobsec.lib">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/windows/x64/libalgobsec.lib.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/windows/x86/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/windows/x86/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/windows/x86/libalgobsec.lib">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/gcc/windows/x86/libalgobsec.lib.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/msp430/MSP430_GCC_OUT/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/msp430/MSP430_GCC_OUT/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/msp430/MSP430_GCC_OUT/libalgobsec.a">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/bin/msp430/MSP430_GCC_OUT/libalgobsec.a.Size.log">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/inc/bsec_datatypes.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/algo/normal_version/inc/bsec_interface.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/.DS_Store">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/Default_H2S_NonH2S/Default_H2S_NonH2S.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/Default_H2S_NonH2S/Default_H2S_NonH2S.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/FieldAir_HandSanitizer/FieldAir_HandSanitizer.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/FieldAir_HandSanitizer/FieldAir_HandSanitizer.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/bsec_sel_iaq_18v_300s_28d/2022_05_17_01_09_bsec_h2s_nonh2s_2_2_0_0.config">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/bsec_sel_iaq_18v_300s_28d/bsec_selectivity.csv">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/bsec_sel_iaq_18v_300s_28d/bsec_serialized_configurations_selectivity.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/bsec_sel_iaq_18v_300s_28d/bsec_serialized_configurations_selectivity.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/bsec_sel_iaq_18v_300s_4d/2022_05_17_01_09_bsec_h2s_nonh2s_2_2_0_0.config">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/bsec_sel_iaq_18v_300s_4d/bsec_selectivity.csv">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/bsec_sel_iaq_18v_300s_4d/bsec_serialized_configurations_selectivity.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/bsec_sel_iaq_18v_300s_4d/bsec_serialized_configurations_selectivity.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/bsec_sel_iaq_18v_3s_28d/2022_05_17_01_09_bsec_h2s_nonh2s_2_2_0_0.config">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/bsec_sel_iaq_18v_3s_28d/bsec_selectivity.csv">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/bsec_sel_iaq_18v_3s_28d/bsec_serialized_configurations_selectivity.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/bsec_sel_iaq_18v_3s_28d/bsec_serialized_configurations_selectivity.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/bsec_sel_iaq_18v_3s_4d/2022_05_17_01_09_bsec_h2s_nonh2s_2_2_0_0.config">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/bsec_sel_iaq_18v_3s_4d/bsec_selectivity.csv">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/bsec_sel_iaq_18v_3s_4d/bsec_serialized_configurations_selectivity.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/bsec_sel_iaq_18v_3s_4d/bsec_serialized_configurations_selectivity.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/bsec_sel_iaq_33v_300s_28d/2022_05_17_01_09_bsec_h2s_nonh2s_2_2_0_0.config">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/bsec_sel_iaq_33v_300s_28d/bsec_selectivity.csv">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/bsec_sel_iaq_33v_300s_28d/bsec_serialized_configurations_selectivity.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/bsec_sel_iaq_33v_300s_28d/bsec_serialized_configurations_selectivity.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/bsec_sel_iaq_33v_300s_4d/2022_05_17_01_09_bsec_h2s_nonh2s_2_2_0_0.config">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/bsec_sel_iaq_33v_300s_4d/bsec_selectivity.csv">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/bsec_sel_iaq_33v_300s_4d/bsec_serialized_configurations_selectivity.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/bsec_sel_iaq_33v_300s_4d/bsec_serialized_configurations_selectivity.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/bsec_sel_iaq_33v_3s_28d/2022_05_17_01_09_bsec_h2s_nonh2s_2_2_0_0.config">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/bsec_sel_iaq_33v_3s_28d/bsec_selectivity.csv">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/bsec_sel_iaq_33v_3s_28d/bsec_serialized_configurations_selectivity.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/bsec_sel_iaq_33v_3s_28d/bsec_serialized_configurations_selectivity.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/bsec_sel_iaq_33v_3s_4d/2022_05_17_01_09_bsec_h2s_nonh2s_2_2_0_0.config">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/bsec_sel_iaq_33v_3s_4d/bsec_selectivity.csv">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/bsec_sel_iaq_33v_3s_4d/bsec_serialized_configurations_selectivity.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/config/bsec_sel_iaq_33v_3s_4d/bsec_serialized_configurations_selectivity.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/integration_guide/BST-BME688-Integration-Guide-AN011-20.pdf">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/readme_API.txt">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/bsec_2_2_0_0/readme_BSEC_In_Arduino.txt">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/.clang-format">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/.git">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/.gitignore">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/.gitlab-ci.yml">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/CHANGELOG.md">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/README.md">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/python-wrapper/.gitignore">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/python-wrapper/.gitlab-ci.yml">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/python-wrapper/CHANGELOG.rst">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/python-wrapper/MANIFEST.in">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/python-wrapper/README.md">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/python-wrapper/README.rst">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/python-wrapper/ci/set_git_config.sh">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/python-wrapper/conftest.py">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/python-wrapper/docs/.gitignore">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/python-wrapper/docs/api.rst">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/python-wrapper/docs/conf.py">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/python-wrapper/docs/favicon.ico">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/python-wrapper/docs/index.rst">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/python-wrapper/docs/make.bat">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/python-wrapper/docs/quickstart.rst">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/python-wrapper/example_linux.py">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/python-wrapper/example_low_power.py">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/python-wrapper/example_sensorbridge.py">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/python-wrapper/generate_swig_wrapper.sh">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/python-wrapper/sensirion_gas_index_algorithm/__init__.py">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/python-wrapper/sensirion_gas_index_algorithm/gas_index_algorithm.py">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/python-wrapper/sensirion_gas_index_algorithm/nox_algorithm.py">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/python-wrapper/sensirion_gas_index_algorithm/version.py">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/python-wrapper/sensirion_gas_index_algorithm/voc_algorithm.py">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/python-wrapper/setup.cfg">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/python-wrapper/setup.py">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/python-wrapper/swig/sensirion_gas_index_algorithm.i">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/python-wrapper/tests/data/voc.csv">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/python-wrapper/tests/test_imports.py">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/python-wrapper/tests/test_nox_algorithm.py">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/python-wrapper/tests/test_voc_algorithm.py">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/sensirion_gas_index_algorithm/sensirion_gas_index_algorithm.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/sensirion_gas_index_algorithm/sensirion_gas_index_algorithm.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/sensirion_gas_index_algorithm_fixpoint/sensirion_gas_index_algorithm.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Middlewares/gas-index-algorithm/sensirion_gas_index_algorithm_fixpoint/sensirion_gas_index_algorithm.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/STM32WB5MMGHX_FLASH.ld">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/STM32_WPAN/.DS_Store">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/STM32_WPAN/App/app_ble.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/STM32_WPAN/App/app_ble.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/STM32_WPAN/App/app_thread.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/STM32_WPAN/App/app_thread.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/STM32_WPAN/App/ble_conf.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/STM32_WPAN/App/ble_dbg_conf.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/STM32_WPAN/App/dis_app.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/STM32_WPAN/App/dis_app.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/STM32_WPAN/App/dt_client_app.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/STM32_WPAN/App/dt_client_app.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/STM32_WPAN/App/dt_server_app.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/STM32_WPAN/App/dt_server_app.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/STM32_WPAN/App/dts.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/STM32_WPAN/App/dts.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/STM32_WPAN/App/hrs_app.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/STM32_WPAN/App/hrs_app.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/STM32_WPAN/App/tl_dbg_conf.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/STM32_WPAN/Target/hw_ipcc.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/USB_Device/App/usb_device.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/USB_Device/App/usb_device.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/USB_Device/App/usbd_cdc_if.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/USB_Device/App/usbd_cdc_if.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/USB_Device/App/usbd_desc.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/USB_Device/App/usbd_desc.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/USB_Device/Target/usbd_conf.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/USB_Device/Target/usbd_conf.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Utilities/lpm/tiny_lpm/stm32_lpm.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/Utilities/lpm/tiny_lpm/stm32_lpm.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/protobuf/message.options">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/protobuf/message.pb.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/protobuf/message.pb.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/protobuf/message.pb.swift">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/protobuf/message.proto">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/protobuf/message_pb2.py">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/protobuf/pb.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/protobuf/pb_common.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/protobuf/pb_common.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/protobuf/pb_decode.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/protobuf/pb_decode.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/protobuf/pb_encode.c">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/protobuf/pb_encode.h">
+			<Option target="buzzcam.elf"/>
+		</Unit>
+		<Unit filename="/Users/chwalek/dev/buzzcam/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>

@@ -150,6 +150,8 @@ RTC_AlarmTypeDef sAlarm;
 
 FIL batteryFile;
 osTimerId_t periodicBatteryMonitorTimer_id;
+
+packet_t rxPacket = PACKET_INIT_ZERO;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -176,6 +178,8 @@ void EnableExtADC(bool state);
 void runAnalogConverter(void);
 
 static void Reset_Device( void );
+
+void systemTestCode(void);
 
 void WAV_RECORD_TEST(void);
 static uint32_t WavProcess_HeaderInit(uint8_t* pHeader, WAVE_FormatTypeDef* pWaveFormatStruct);
@@ -276,6 +280,7 @@ int main(void)
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
+
   /* Config code for STM32_WPAN (HSE Tuning must be done before system clock configuration) */
   MX_APPE_Config();
 
@@ -286,22 +291,23 @@ int main(void)
   /* Configure the system clock */
   SystemClock_Config();
 
-//	/**
-//	 * Select LSE clock
-//	 */
-//	LL_RCC_LSE_Enable();
-//	while(!LL_RCC_LSE_IsReady());
-//
-//	/**
-//	 * Select wakeup source of BLE RF
-//	 */
-//	LL_RCC_SetRFWKPClockSource(LL_RCC_RFWKP_CLKSOURCE_LSE);
+	/**
+	 * Select LSE clock
+	 */
+	LL_RCC_LSE_Enable();
+	while(!LL_RCC_LSE_IsReady());
+
+	/**
+	 * Select wakeup source of BLE RF
+	 */
+	LL_RCC_SetRFWKPClockSource(LL_RCC_RFWKP_CLKSOURCE_LSE);
 
 /* Configure the peripherals common clocks */
   PeriphCommonClock_Config();
 
   /* IPCC initialisation */
   MX_IPCC_Init();
+  Init_Exti( );
 
   /* USER CODE BEGIN SysInit */
 //  tflac_detect_cpu();
@@ -327,31 +333,23 @@ int main(void)
 	configPacket.payload.config_packet.audio_config.free_run_mode=true;
 	configPacket.payload.config_packet.audio_config.chirp_enable=false;
 
-	configPacket.payload.config_packet.has_camera_control=true;
-	configPacket.payload.config_packet.camera_control.capture=false;
-	configPacket.payload.config_packet.camera_control.pair_with_nearby_cameras=false;
-	configPacket.payload.config_packet.camera_control.wakeup_cameras=false;
+//	configPacket.payload.config_packet.has_camera_control=true;
+//	configPacket.payload.config_packet.camera_control.capture=false;
+//	configPacket.payload.config_packet.camera_control.pair_with_nearby_cameras=false;
+//	configPacket.payload.config_packet.camera_control.wakeup_cameras=false;
 
 	configPacket.payload.config_packet.has_low_power_config=true;
 	configPacket.payload.config_packet.low_power_config.low_power_mode=false;
 
 	configPacket.payload.config_packet.has_network_state=true;
-	configPacket.payload.config_packet.network_state.discovered_device_uid_count=12;
+	configPacket.payload.config_packet.network_state.discovered_device_uid_count=10;
 	configPacket.payload.config_packet.network_state.number_of_discovered_devices=configPacket.payload.config_packet.network_state.discovered_device_uid_count;
-	configPacket.payload.config_packet.network_state.discovered_device_uid[0] = 0xDEADBEEF;
-	configPacket.payload.config_packet.network_state.discovered_device_uid[1] = 0xDEADBEAF;
-	configPacket.payload.config_packet.network_state.discovered_device_uid[2] = 0xDEADBEBF;
-	configPacket.payload.config_packet.network_state.discovered_device_uid[3] = 0xDEADBECF;
-	configPacket.payload.config_packet.network_state.discovered_device_uid[4] = 0xDEADBEDF;
-	configPacket.payload.config_packet.network_state.discovered_device_uid[5] = 0xDEADBEEF;
-	configPacket.payload.config_packet.network_state.discovered_device_uid[6] = 0xDEADBEFF;
-	configPacket.payload.config_packet.network_state.discovered_device_uid[7] = 0xDEADBAEF;
-	configPacket.payload.config_packet.network_state.discovered_device_uid[8] = 0xDEADBBEF;
-	configPacket.payload.config_packet.network_state.discovered_device_uid[9] = 0xDEADBCEF;
-	configPacket.payload.config_packet.network_state.discovered_device_uid[10] = 0xDEADBDEF;
-	configPacket.payload.config_packet.network_state.discovered_device_uid[11] = 0xDEADBFEF;
-	configPacket.payload.config_packet.network_state.number_of_discovered_devices=123;
-	configPacket.payload.config_packet.network_state.force_rediscovery=false;
+//	configPacket.payload.config_packet.network_state.discovered_device_uid[0].addr;
+//	configPacket.payload.config_packet.network_state.force_rediscovery=false;
+	configPacket.payload.config_packet.network_state.channel = 23;
+	configPacket.payload.config_packet.network_state.pan_id = 0x1234;
+	configPacket.payload.config_packet.network_state.slave_sync = false;
+	configPacket.payload.config_packet.network_state.master_node = true;
 
 	configPacket.payload.config_packet.has_sensor_config=true;
 	configPacket.payload.config_packet.sensor_config.enable_gas=true;
@@ -527,15 +525,17 @@ int main(void)
 	//	status = HAL_I2C_Mem_Read(&hi2c3, FRAM_CONFIG_WORD_ADDR, FRAM_CONFIG_BYTE_ADDR, 1, (uint8_t*) &tempConfigPacket, sizeof(tempConfigPacket), 1000);
 	//	status = HAL_I2C_Mem_Read(&hi2c3, FRAM_INFO_WORD_ADDR, FRAM_INFO_BYTE_ADDR, 1, (uint8_t*) &tempInfoPacket, sizeof(tempInfoPacket), 1000);
 
-	// enable SD card 1
-//	enable_SD_Card_1();
-//	disable_SD_Card_2();
-//	enable_SD_Mux();
-//	mux_Select_SD_Card(1);
+
+		systemTestCode();
+
+		// enable SD card 1
+		enable_SD_Card_1();
+		disable_SD_Card_2();
+		enable_SD_Mux();
+		mux_Select_SD_Card(1);
 
 
-
-	HAL_Delay(200);
+	HAL_Delay(1000);
 
 	HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(EN_UWB_REG_GPIO_Port, EN_UWB_REG_Pin, GPIO_PIN_SET);
@@ -576,10 +576,10 @@ int main(void)
 
   /* Create the thread(s) */
   /* creation of defaultTask */
-  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+//  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
-//	mainSystemThreadId = osThreadNew(mainSystemTask, NULL, &mainSystemTask_attributes);
+	mainSystemThreadId = osThreadNew(mainSystemTask, NULL, &mainSystemTask_attributes);
 
 //	micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
 
@@ -589,6 +589,7 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_EVENTS */
 	/* add events, ... */
+	MX_IPCC_Init();
   /* USER CODE END RTOS_EVENTS */
 
   /* Init code for STM32_WPAN */
@@ -951,20 +952,21 @@ static void MX_RTC_Init(void)
 
   /** Initialize RTC and set the Time and Date
   */
-  sTime.Hours = 0x0;
-  sTime.Minutes = 0x0;
+  sTime.Hours = 17;
+  sTime.Minutes = 16;
   sTime.Seconds = 0x0;
   sTime.SubSeconds = 0x0;
+  sTime.TimeFormat = RTC_HOURFORMAT12_PM;
   sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
   sTime.StoreOperation = RTC_STOREOPERATION_SET;
   if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
   {
     Error_Handler();
   }
-  sDate.WeekDay = RTC_WEEKDAY_MONDAY;
-  sDate.Month = RTC_MONTH_JANUARY;
-  sDate.Date = 0x1;
-  sDate.Year = 0x0;
+  sDate.WeekDay = RTC_WEEKDAY_FRIDAY;
+  sDate.Month = RTC_MONTH_FEBRUARY;
+  sDate.Date = 0x9;
+  sDate.Year = 24;
   if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
   {
     Error_Handler();
@@ -1660,6 +1662,9 @@ void acousticSamplingTask(void *argument){
 	grabOrientation(folder_name);
 	save_config(folder_name);
 
+//	toneSweep(1);
+//	toneSweep(0);
+
 	if(configPacket.payload.config_packet.audio_config.chirp_enable){
 		chirpTaskHandle = osThreadNew(chirpTask, NULL, &chirpTask_attributes);
 	}
@@ -1785,7 +1790,8 @@ static void save_config(char* folder_name){
 	FIL configFile;
 
 	char str[50];
-	if(f_open(&configFile, file_name, FA_CREATE_NEW | FA_WRITE) == FR_OK){
+	FRESULT res = f_open(&configFile, file_name, FA_CREATE_NEW | FA_WRITE);
+	if(res == FR_OK){
 
 		snprintf(str, sizeof(str), "uid,%u\n", LL_FLASH_GetUDN());
 		f_write(&configFile, str, strlen(str), NULL);
@@ -2307,6 +2313,42 @@ void grabOrientation(char *folder_name){
 
 	// Close the file
 	f_close(&orientationFile);
+
+
+}
+
+void systemTestCode(void){
+
+//	uint32_t freq = 5000;
+//
+//	uint32_t divider = 1000000 / freq;
+//
+//	HAL_TIM_Base_Start(&htim16);
+//
+//	htim16.Instance->ARR = divider;
+//	htim16.Instance->CCR1 = divider >> 1;
+//
+//	HAL_TIM_PWM_Start(&htim16, TIM_CHANNEL_1);
+//
+//	HAL_Delay(500);
+//
+//	HAL_TIM_PWM_Stop(&htim16, TIM_CHANNEL_1);
+
+	setLED_Red(1000);
+	HAL_Delay(500);
+	setLED_Red(0);
+
+	setLED_Green(1000);
+	HAL_Delay(500);
+	setLED_Green(0);
+
+	setLED_Blue(1000);
+	HAL_Delay(500);
+	setLED_Blue(0);
+
+
+//	while(1);
+
 
 
 }
@@ -2840,6 +2882,8 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 				// Wait for a notification
 				flag = osThreadFlagsWait(0x0001U | TERMINATE_EVENT, osFlagsWaitAny, osWaitForever);
 
+//				toggledBlue();
+
 				if(SAI_HALF_CALLBACK){
 					SAI_HALF_CALLBACK = 0;
 
@@ -2903,6 +2947,8 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 					//todo: OPUS compression
 				}
 			}
+
+
 
 			if((totalBytesWrittenToFile > max_bytes_per_file) || ( (totalBuffersWritten > half_buffers_per_session) && (half_buffers_per_session != 0))){
 
@@ -3195,8 +3241,8 @@ void getFormattedTime(RTC_HandleTypeDef *hrtc, char *formattedTime) {
 	RTC_DateTypeDef sDate;
 
 	// Get the RTC current Time and Date
-	HAL_RTC_GetTime(hrtc, &sTime, RTC_FORMAT_BIN);
-	HAL_RTC_GetDate(hrtc, &sDate, RTC_FORMAT_BIN); // This line must be called after HAL_RTC_GetTime()!
+	HAL_RTC_GetTime(hrtc, &sTime, RTC_FORMAT_BCD);
+	HAL_RTC_GetDate(hrtc, &sDate, RTC_FORMAT_BCD); // This line must be called after HAL_RTC_GetTime()!
 
 	// Format the time into the provided character array
 	snprintf(formattedTime, 25, "%02dy_%02dm_%02dd_%02dh_%02dm_%02ds",
@@ -3317,12 +3363,29 @@ void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc){
 	osThreadFlagsSet(micThreadId, RTC_EVENT);
 }
 
+#define IS_CONFIG_EVENT(X)				(((X && CONFIG_UPDATED_EVENT) == CONFIG_UPDATED_EVENT) ? (1) : (0))
+#define IS_OPENTHREAD_EVENT(X)			(((X && OPENTHREAD_EVENT) == OPENTHREAD_EVENT) ? (1) : (0))
+#define IS_CAMERA_EVENT(X)				(((X && CAMERA_EVENT) == CAMERA_EVENT) ? (1) : (0))
+#define IS_FORMAT_MEMORY_EVENT(X)		(((X && FORMAT_MEMORY) == FORMAT_MEMORY) ? (1) : (0))
+#define IS_UWB_START_EVENT(X)			(((X && UWB_START) == UWB_START) ? (1) : (0))
+#define IS_UWB_UPDATE_RANGE_EVENT(X)	(((X && UWB_UPDATE_RANGE) == UWB_UPDATE_RANGE) ? (1) : (0))
+
+
 void mainSystemTask(void *argument){
 	uint32_t flags = 0;
 
 	FRESULT res;
 
 	res = f_mount(&SDFatFs, "", 1);
+	if(res != FR_OK){
+//		if(res == FR_NOT_READY){
+//
+//		}else{
+
+		Error_Handler();
+//		}
+	}
+
 	/* read current config from SD card */
 
 	/* initiate system */
@@ -3333,86 +3396,71 @@ void mainSystemTask(void *argument){
 //		}
 //	}
 
-	//	mainSystemThreadId = osThreadNew(mainSystemTask, NULL, &mainSystemTask_attributes);
+	/* battery monitoring thread will never be exited unless SD card is changed */
+	batteryMonitorTaskId = osThreadNew(batteryMonitorTask, NULL, &batteryMonitorTask_attributes);
+
+	if(configPacket.payload.config_packet.sensor_config.enable_gas ||
+			configPacket.payload.config_packet.sensor_config.enable_humidity ||
+			configPacket.payload.config_packet.sensor_config.enable_temperature){
+//		bmeTaskHandle = osThreadNew(BME_Task, NULL, &bmeTask_attributes);
+	}
+
+	/* start audio recording if enabled and no sensor schedule has been given*/
+	osDelay(500);
+
+	if(configPacket.payload.config_packet.network_state.master_node){
+		if(configPacket.payload.config_packet.has_audio_config & configPacket.payload.config_packet.enable_recording &
+				(configPacket.payload.config_packet.schedule_config_count == 0)){
+			osThreadState_t state = osThreadGetState(micThreadId);
+			if( (state != osThreadReady) || (state != osThreadRunning) || (state != osThreadInactive) || (state != osThreadBlocked) ){
+				micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
+			}
+		}
+		/* or if a schedule is given, start next alarm or start right away if within schedule */
+		else if(configPacket.payload.config_packet.enable_recording &&
+				(configPacket.payload.config_packet.schedule_config_count > 0)){
+			//todo: start alarm based on schedule
+
+		}
+	}else{
+		//todo: check Openthread network is a master exists, what desired configuration is, and if we should be running
+	}
+
+	while(1){
 
 
-		bmeTaskHandle = osThreadNew(BME_Task, NULL, &bmeTask_attributes);
+		flags = osThreadFlagsWait (CONFIG_UPDATED_EVENT |
+									CAMERA_EVENT |
+									FORMAT_MEMORY |
+									OPENTHREAD_EVENT |
+									UWB_START |
+									UWB_UPDATE_RANGE, 		osFlagsWaitAny, osWaitForever);
 
-		batteryMonitorTaskId = osThreadNew(batteryMonitorTask, NULL, &batteryMonitorTask_attributes);
+		if( IS_CONFIG_EVENT(flags) ||
+				(IS_OPENTHREAD_EVENT(flags) && configPacket.payload.config_packet.network_state.slave_sync)){
+			/* shut off threads */
+			osThreadFlagsSet(micThreadId, TERMINATE_EVENT);
+		}
 
-		osDelay(500);
-//		micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
+		//todo: optimize below wait sequence (reference AirSpecs)
+		osDelay(1000); // give time for threads to cancel
+
+		if(IS_UWB_START_EVENT(flags)){
+			//todo: tell UWB chip to start ranging with all known connected devices
+
+		}
+
+//		if(IS_UWB_UPDATE_RANGE_EVENT(flags)){
+//			//todo: update BLE characteristic with new ranges
+//
+//		}
 
 
-//	while(1){
-//		osDelay(10);
-////		tBleStatus ret = BLE_STATUS_INVALID_PARAMS;
-////
-////		float pitch, roll, heading;
-////		grabInertialSample(&pitch, &roll, &heading);
-////
-////		while(1){
-////			for(int i = 0; i<400;i+=5){
-////				setLED_Red(i);
-////				osDelay(25);
-////			}
-////			for(int i = 400; i>=0;i-=5){
-////				setLED_Red(i);
-////				osDelay(25);
-////			}
-////
-////			for(int i = 0; i<400;i+=5){
-////				setLED_Green(i);
-////				osDelay(25);
-////			}
-////			for(int i = 400; i>=0;i-=5){
-////				setLED_Green(i);
-////				osDelay(25);
-////			}
-////
-////			for(int i = 0; i<400;i+=5){
-////				setLED_Blue(i);
-////				osDelay(25);
-////			}
-////			for(int i = 400; i>=0;i-=5){
-////				setLED_Blue(i);
-////				osDelay(25);
-////			}
-//
-//			//			setLED_Green(200);
-//			//			osDelay(500);
-//			//			setLED_Green(0);
-//			//			osDelay(500);
-//			//
-//			//			setLED_Blue(200);
-//			//			osDelay(500);
-//			//			setLED_Blue(0);
-//			//			osDelay(500);
-//
-//			//			 uint16_t index = 10;
-//			//			  HAL_TIM_Base_Start(&htim16);
-//			//			  HAL_TIM_PWM_Start(&htim16, TIM_CHANNEL_1);
-//			//
-//			//			  while(1){
-//			//
-//			//			  htim16.Instance->ARR = index;
-//			//			  htim16.Instance->CCR1 = index >> 1;
-//			//
-//			//			  osDelay(5);
-//			//
-//			//				index+=2;
-//			//				if(index == 500) {
-//			//					/* stop buzzer pwm */
-//			//					HAL_TIM_PWM_Stop(&htim16, TIM_CHANNEL_1);
-//			//					osDelay(10);
-//			//					break;
-//			//				}
-//			//			  }
-//
-//
-//			//				osDelay(5000);
-//
-//
+
+
+
+	}
+
 //			//			deactivateCameraMode();
 //			////			activateCameraMode();
 //			//			osDelay(30000);
@@ -3589,17 +3637,7 @@ void updateSystemConfig(void *argument){
 				(uint8_t*)&new_config.audio_config,
 				sizeof(new_config.audio_config));
 	}
-	if(new_config.has_camera_control){
-		if(configPacket.payload.config_packet.camera_control.capture){
-			/* trigger a capture */
-		}
-		if(configPacket.payload.config_packet.camera_control.pair_with_nearby_cameras){
-			/* pair with nearby cameras */
-		}
-		if(configPacket.payload.config_packet.camera_control.wakeup_cameras){
-			/* wake up cameras */
-		}
-	}
+
 	if(new_config.has_low_power_config){
 		memcpy((uint8_t*)&configPacket.payload.config_packet.low_power_config,
 				(uint8_t*)&new_config.low_power_config,
@@ -3613,10 +3651,21 @@ void updateSystemConfig(void *argument){
 	}
 
 	if(new_config.has_network_state){
-		if(configPacket.payload.config_packet.network_state.force_rediscovery){
-			/* trigger UWB rediscovery */
+		configPacket.payload.config_packet.network_state.channel = new_config.network_state.channel;
+		configPacket.payload.config_packet.network_state.pan_id = new_config.network_state.pan_id;
+
+		if(new_config.network_state.master_node == 1){
+			configPacket.payload.config_packet.network_state.master_node = 1;
+			configPacket.payload.config_packet.network_state.slave_sync = 0;
+		}else{
+			configPacket.payload.config_packet.network_state.slave_sync = new_config.network_state.slave_sync;
 		}
+
+		memcpy((uint8_t*)&configPacket.payload.config_packet.network_state,
+						(uint8_t*)&new_config.network_state,
+						sizeof(new_config.network_state));
 	}
+
 	if(new_config.has_sensor_config){
 		memcpy((uint8_t*)&configPacket.payload.config_packet.sensor_config,
 				(uint8_t*)&new_config.sensor_config,

@@ -604,11 +604,16 @@ static void APPE_SysEvtReadyProcessing(void * pPayload)
     */
 //   APP_DBG("1- Initialisation of BLE Stack...");
    APP_BLE_Init_Dyn_1();
+
+//   osDelay(500);
 //   APP_DBG("2- Initialisation of OpenThread Stack. FW info :");
    APP_THREAD_Init_Dyn_1();
 
+//   osDelay(500);
 //   APP_DBG("3- Start BLE ADV...");
    APP_BLE_Init_Dyn_2();
+
+//   osDelay(500);
 //   APP_DBG("4- Configure OpenThread (Channel, PANID, IPv6 stack, ...) and Start it...");
    APP_THREAD_Init_Dyn_2();
 
@@ -635,15 +640,28 @@ static void APPE_SysEvtReadyProcessing(void * pPayload)
 static void ShciUserEvtProcess(void *argument)
 {
   UNUSED(argument);
+  osStatus_t ret;
   for(;;)
   {
     /* USER CODE BEGIN SHCI_USER_EVT_PROCESS_1 */
 
     /* USER CODE END SHCI_USER_EVT_PROCESS_1 */
 //     osThreadFlagsWait(1, osFlagsWaitAny, osWaitForever);
-	 osSemaphoreAcquire(SemShciUserEvtProcessId, osWaitForever);
+	 ret = osSemaphoreAcquire(SemShciUserEvtProcessId, osWaitForever);
 //		ot_StatusNot(ot_TL_CmdBusy);
 //		ot_StatusNot(ot_TL_CmdAvailable);
+	 if(MtxHciId != 0){
+		 if(osOK != osMutexAcquire(MtxHciId, osWaitForever)){
+			Error_Handler();
+		 }
+		 ot_StatusNot(ot_TL_CmdBusy);
+		 if(osOK != osMutexRelease(MtxHciId)){
+			Error_Handler();
+		 }
+		 ot_StatusNot(ot_TL_CmdAvailable);
+	 }
+
+
      shci_user_evt_proc();
     /* USER CODE BEGIN SHCI_USER_EVT_PROCESS_2 */
 
@@ -712,5 +730,15 @@ void shci_cmd_resp_wait(uint32_t timeout)
 }
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */
-
+void TL_TRACES_EvtReceived( TL_EvtPacket_t * hcievt )
+{
+#if(CFG_DEBUG_TRACE != 0)
+  /* Call write/print function using DMA from dbg_trace */
+  /* - Cast to TL_AsynchEvt_t* to get "real" payload (without Sub Evt code 2bytes),
+     - (-2) to size to remove Sub Evt Code */
+  DbgTraceWrite(1U, (const unsigned char *) ((TL_AsynchEvt_t *)(hcievt->evtserial.evt.payload))->payload, hcievt->evtserial.evt.plen - 2U);
+#endif /* CFG_DEBUG_TRACE */
+  /* Release buffer */
+  TL_MM_EvtDone( hcievt );
+}
 /* USER CODE END FD_WRAP_FUNCTIONS */

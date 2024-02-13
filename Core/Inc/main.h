@@ -180,12 +180,20 @@ extern SPI_HandleTypeDef hspi1;
 
 #define SD_SPI_HANDLE hspi1
 
-#define CONFIG_UPDATED_EVENT  0x00000001
 #define UPDATE_EVENT  		  0x00000001
 #define TERMINATE_EVENT  	  0x00000002
 #define COMPLETE_EVENT  	  0x00000004
 #define RTC_EVENT		  	  0x00000008
 #define CHIRP_EVENT		  	  0x00000010
+
+#define CONFIG_UPDATED_EVENT  0x00000001
+#define CAMERA_EVENT		  0x00000004
+#define FORMAT_MEMORY		  0x00000008
+#define OPENTHREAD_EVENT	  0x00000010
+#define UWB_START			  0x00000020
+#define UWB_UPDATE_ADDR	      0x00000040
+#define UWB_UPDATE_RANGE      0x00000080
+
 
 #define GRAB_SAMPLE_BIT							0x0100
 #define TERMINATE_THREAD_BIT					0x0200
@@ -197,6 +205,8 @@ extern packet_t infoPacket;
 extern uint8_t buffer[500];
 extern size_t message_length;
 extern bool status;
+
+extern packet_t rxPacket;
 
 extern osMutexId_t messageI2C1_LockHandle;
 //extern osMutexId_t messageSPI1_LockHandle;

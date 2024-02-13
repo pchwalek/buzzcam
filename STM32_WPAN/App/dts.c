@@ -63,7 +63,7 @@ static DTS_STM_Payload_t PackedPayload;
 
 #ifdef PROTOBUF_RX
 uint8_t rxBuffer[250];
-static packet_t rxPacket = PACKET_INIT_ZERO;
+
 //union ColorComplex airspecColors;
 #else
 RX_PacketHeader rxPacketHeader;
@@ -215,7 +215,39 @@ static SVCCTL_EvtAckStatus_t DTS_Event_Handler(void *Event) {
 						}
 											break;
 					case PACKET_SPECIAL_FUNCTION_TAG:
-											break;
+						switch(rxPacket.payload.special_function.which_payload){
+						case SPECIAL_FUNCTION_FORMAT_SDCARD_TAG:
+							if(rxPacket.payload.special_function.payload.format_sdcard){
+								//todo: format any connected SD cards (WARNING: stop all threads to do this)
+							}
+							break;
+						case SPECIAL_FUNCTION_CAMERA_CONTROL_TAG:
+							if(rxPacket.payload.special_function.payload.camera_control.capture){
+								//todo: trigger any connected cameras
+							}
+							else if(rxPacket.payload.special_function.payload.camera_control.pair_with_nearby_cameras){
+								//todo: put device in pairing mode for any nearby cameras
+							}
+							else if(rxPacket.payload.special_function.payload.camera_control.wakeup_cameras){
+								//todo: wakeup any sleeping cameras
+							}
+							break;
+						case SPECIAL_FUNCTION_UWB_PACKET_TAG:
+							if(rxPacket.payload.special_function.payload.uwb_packet.start_ranging){
+								//todo: tell UWB module to start ranging with current UWB UID table
+							}
+							break;
+						case SPECIAL_FUNCTION_OPENTHREAD_SYNC_TIME_TAG:
+							if(rxPacket.payload.special_function.payload.openthread_sync_time){
+								//todo: implement function to sync time from this node with all other nodes via OT
+							}
+							break;
+						case SPECIAL_FUNCTION_FUNCTION_5_TAG:
+							break;
+						case SPECIAL_FUNCTION_FUNCTION_6_TAG:
+							break;
+						default: break;
+						}
 					default: break;
 					}
 				}else{
@@ -542,7 +574,6 @@ void DTS_STM_Init(void) {
 	 *	Register the event handler to the BLE controller
 	 */
 	SVCCTL_RegisterSvcHandler(DTS_Event_Handler);
-
 //	hciCmdResult = aci_gatt_add_service(UUID_TYPE_16, (Service_UUID_t*) DT_SERVICE_UUID,
 //		PRIMARY_SERVICE, 8, &(aDataTransferContext.DataTransferSvcHdle));
 //
@@ -608,9 +639,6 @@ void DTS_STM_Init(void) {
 #endif
 	}
 
-	/**
-	 *  Add Data Transfer RX Characteristic (not intended to be used in the end)
-	 */
 	hciCmdResult = aci_gatt_add_char(aDataTransferContext.DataTransferSvcHdle,
 	DT_UUID_LENGTH, (Char_UUID_t*) DT_REQ_CHAR_CONFIG_UUID, DATA_TRANSFER_NOTIFICATION_LEN_MAX, /* DATA_TRANSFER_NOTIFICATION_LEN_MAX, */
 	CHAR_PROP_NOTIFY | CHAR_PROP_READ,
@@ -628,20 +656,25 @@ void DTS_STM_Init(void) {
 #endif
 	}
 
-	hciCmdResult = aci_gatt_add_char(aDataTransferContext.DataTransferSvcHdle,
-	DT_UUID_LENGTH, (Char_UUID_t*) DT_REQ_CHAR_RX_UUID, DATA_TRANSFER_NOTIFICATION_LEN_MAX, /* DATA_TRANSFER_NOTIFICATION_LEN_MAX, */
-//	CHAR_PROP_WRITE_WITHOUT_RESP,
-	CHAR_PROP_WRITE,
-	ATTR_PERMISSION_NONE,
-	GATT_NOTIFY_ATTRIBUTE_WRITE, //GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP, /* gattEvtMask */
-			10, /* encryKeySize */
-			1, /* isVariable */
-			&(aDataTransferContext.DataTransferRxCharHdle));
 
-//	updateSystemConfig_BLE(&sysState);
+//	/**
+//	 *  Add Data Transfer RX Characteristic (not intended to be used in the end)
+//	 */
+//	hciCmdResult = aci_gatt_add_char(aDataTransferContext.DataTransferSvcHdle,
+//	DT_UUID_LENGTH, (Char_UUID_t*) DT_REQ_CHAR_RX_UUID, DATA_TRANSFER_NOTIFICATION_LEN_MAX, /* DATA_TRANSFER_NOTIFICATION_LEN_MAX, */
+////	CHAR_PROP_WRITE_WITHOUT_RESP,
+//	CHAR_PROP_WRITE,
+//	ATTR_PERMISSION_NONE,
+//	GATT_NOTIFY_ATTRIBUTE_WRITE, //GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP, /* gattEvtMask */
+//			10, /* encryKeySize */
+//			1, /* isVariable */
+//			&(aDataTransferContext.DataTransferRxCharHdle));
+//
+////	updateSystemConfig_BLE(&sysState);
 
 
-	// add camera control characteristic
+	/* add camera control characteristic */
+
 	//CE81 (WRITE)
 	hciCmdResult = aci_gatt_add_char(aDataTransferContext.DataTransferSvcHdle,
 	DT_UUID_LENGTH, (Char_UUID_t*) DT_CAMERA_CE81_UUID, 20, /* DATA_TRANSFER_NOTIFICATION_LEN_MAX, */

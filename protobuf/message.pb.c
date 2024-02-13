@@ -57,13 +57,22 @@ PB_BIND(LOW_POWER_CONFIG, low_power_config_t, AUTO)
 PB_BIND(CAMERA_CONTROL, camera_control_t, AUTO)
 
 
+PB_BIND(DEVICE_UID, device_uid_t, AUTO)
+
+
 PB_BIND(NETWORK_STATE, network_state_t, AUTO)
 
 
 PB_BIND(CONFIG_PACKET, config_packet_t, 2)
 
 
-PB_BIND(SPECIAL_FUNCTION, special_function_t, AUTO)
+PB_BIND(UWB_RANGE, uwb_range_t, AUTO)
+
+
+PB_BIND(UWB_PACKET, uwb_packet_t, 2)
+
+
+PB_BIND(SPECIAL_FUNCTION, special_function_t, 2)
 
 
 PB_BIND(PACKET, packet_t, 2)

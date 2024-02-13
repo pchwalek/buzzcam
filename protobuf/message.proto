@@ -207,11 +207,17 @@ message CameraControl{
     bool capture = 3;
 }
 
+message DeviceUID{
+    string addr = 1; 
+}
+
 message NetworkState{
     uint32 number_of_discovered_devices = 1;
-    //repeated uint32 discovered_device_UID = 2 [(nanopb).max_count = 20];
-    repeated uint32 discovered_device_UID = 2;
-    bool force_rediscovery = 3;
+    repeated DeviceUID discovered_device_UID = 2;
+    uint32 channel = 3;
+    uint32 panID = 4;  
+    bool slaveSync = 5;
+    bool masterNode = 6;
 }
 
 message ConfigPacket{
@@ -219,17 +225,26 @@ message ConfigPacket{
     repeated ScheduleConfig schedule_config = 2;
     SensorConfig sensor_config = 3;
     LowPowerConfig low_power_config = 4;
-    CameraControl camera_control = 5;
-    NetworkState network_state = 6;
-    bool enable_recording = 7;
+    NetworkState network_state = 5;
+    bool enable_recording = 6;
+}
+
+message UWB_Range{
+    DeviceUID device_UID = 1;
+    float range = 2;
+}
+
+message UWB_Packet{
+    bool startRanging = 1;
+    repeated UWB_Range ranges = 2;
 }
 
 message SpecialFunction{
     oneof payload{
         bool format_sdcard = 1;
-        bool function_2 = 2;
-        bool function_3 = 3;
-        bool function_4 = 4;
+        CameraControl camera_control = 2;
+        UWB_Packet uwb_packet = 3;
+        bool openthread_sync_time = 4;
         bool function_5 = 5;
         bool function_6 = 6;
     }
@@ -243,6 +258,7 @@ message Packet {
         MarkPacket mark_packet = 3;
         ConfigPacket config_packet = 4;
         SpecialFunction special_function = 5;
+
     }
 }
 

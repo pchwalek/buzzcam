@@ -1067,10 +1067,6 @@ void APP_BLE_Init_Dyn_1( void )
 	   MtxHciId = osMutexNew(NULL);
 	   SemHciId = osSemaphoreNew(1, 0, NULL); /*< Create the semaphore and make it busy at initialization */
 
-	   /**
-	    * Register the hci transport layer to handle BLE User Asynchronous Events
-	    */
-	   HciUserEvtProcessId = osThreadNew(HciUserEvtProcess, NULL, &HciUserEvtProcess_attr);
 
 	   /**
 	    * Starts the BLE Stack on CPU2
@@ -1086,6 +1082,7 @@ void APP_BLE_Init_Dyn_1( void )
 	   {
 	     APP_DBG_MSG("  Success: SHCI_C2_BLE_Init command\n\r");
 	   }
+
 
 	   /**
 	    * Initialization of HCI & GATT & GAP layer
@@ -1104,11 +1101,23 @@ void APP_BLE_Init_Dyn_1( void )
 	   BleApplicationContext.BleApplicationContext_legacy.connectionHandle = 0xFFFF;
 
 	   /**
+	    * Register the hci transport layer to handle BLE User Asynchronous Events
+	    */
+	   HciUserEvtProcessId = osThreadNew(HciUserEvtProcess, NULL, &HciUserEvtProcess_attr);
+
+	   /**
 	    * From here, all initialization are BLE application specific
 	    */
 	   AdvUpdateProcessId = osThreadNew(AdvUpdateProcess, NULL, &AdvUpdateProcess_attr);
 
 	   aci_hal_set_radio_activity_mask(0x0006);
+
+		  /**
+		   * Make device discoverable
+		   */
+		  BleApplicationContext.BleApplicationContext_legacy.advtServUUID[0] = AD_TYPE_16_BIT_SERV_UUID;
+		  BleApplicationContext.BleApplicationContext_legacy.advtServUUIDlen = 0;
+		  Add_Advertisment_Service_UUID(BUZZCAM_SERVICE_UUID);
 
 	   /**
 	    * Initialization of ADV - Ad Manufacturer Element - Support OTA Bit Mask
@@ -1156,12 +1165,7 @@ void APP_BLE_Init_Dyn_1( void )
 }
 
 void APP_BLE_Init_Dyn_2( void ) {
-	  /**
-	   * Make device discoverable
-	   */
-	  BleApplicationContext.BleApplicationContext_legacy.advtServUUID[0] = AD_TYPE_16_BIT_SERV_UUID;
-	  BleApplicationContext.BleApplicationContext_legacy.advtServUUIDlen = 0;
-	  Add_Advertisment_Service_UUID(BUZZCAM_SERVICE_UUID);
+
 
 	//  /**
 	//   * Make device discoverable
@@ -1559,13 +1563,21 @@ static void Ble_Hci_Gap_Gatt_Init(void)
   /**
    * Initialize authentication
    */
+//  BleApplicationContext.BleApplicationContext_legacy.bleSecurityParam.mitm_mode = CFG_MITM_PROTECTION;
+//  BleApplicationContext.BleApplicationContext_legacy.bleSecurityParam.OOB_Data_Present = 0;
+//  BleApplicationContext.BleApplicationContext_legacy.bleSecurityParam.encryptionKeySizeMin = CFG_ENCRYPTION_KEY_SIZE_MIN;
+//  BleApplicationContext.BleApplicationContext_legacy.bleSecurityParam.encryptionKeySizeMax = CFG_ENCRYPTION_KEY_SIZE_MAX;
+//  BleApplicationContext.BleApplicationContext_legacy.bleSecurityParam.Use_Fixed_Pin = CFG_USED_FIXED_PIN;
+//  BleApplicationContext.BleApplicationContext_legacy.bleSecurityParam.Fixed_Pin = CFG_FIXED_PIN;
+//  BleApplicationContext.BleApplicationContext_legacy.bleSecurityParam.bonding_mode = CFG_BONDING_MODE;
+
   BleApplicationContext.BleApplicationContext_legacy.bleSecurityParam.mitm_mode = CFG_MITM_PROTECTION;
   BleApplicationContext.BleApplicationContext_legacy.bleSecurityParam.OOB_Data_Present = 0;
-  BleApplicationContext.BleApplicationContext_legacy.bleSecurityParam.encryptionKeySizeMin = CFG_ENCRYPTION_KEY_SIZE_MIN;
-  BleApplicationContext.BleApplicationContext_legacy.bleSecurityParam.encryptionKeySizeMax = CFG_ENCRYPTION_KEY_SIZE_MAX;
-  BleApplicationContext.BleApplicationContext_legacy.bleSecurityParam.Use_Fixed_Pin = CFG_USED_FIXED_PIN;
-  BleApplicationContext.BleApplicationContext_legacy.bleSecurityParam.Fixed_Pin = CFG_FIXED_PIN;
-  BleApplicationContext.BleApplicationContext_legacy.bleSecurityParam.bonding_mode = CFG_BONDING_MODE;
+  BleApplicationContext.BleApplicationContext_legacy.bleSecurityParam.encryptionKeySizeMin = 8;
+  BleApplicationContext.BleApplicationContext_legacy.bleSecurityParam.encryptionKeySizeMax = 16;
+  BleApplicationContext.BleApplicationContext_legacy.bleSecurityParam.Use_Fixed_Pin = 1;
+  BleApplicationContext.BleApplicationContext_legacy.bleSecurityParam.Fixed_Pin = 111111;
+  BleApplicationContext.BleApplicationContext_legacy.bleSecurityParam.bonding_mode = 1;
   /* USER CODE BEGIN Ble_Hci_Gap_Gatt_Init_1*/
   for (uint8_t index = 0; index < 16; index++)
   {
@@ -1794,6 +1806,13 @@ static void AdvUpdateProcess(void *argument)
     if( (flags & 0x1) == 0x1){
     	ot_StatusNot(ot_TL_CmdBusy);
     	ot_StatusNot(ot_TL_CmdAvailable);
+
+    	osDelay(5000);
+
+//    	  LL_C1_IPCC_EnableTransmitChannel( IPCC, HW_IPCC_SYSTEM_CMD_RSP_CHANNEL );
+//    	  HW_IPCC_BLE_Init();
+//    	  LL_C1_IPCC_ClearFlag_CHx( IPCC, HW_IPCC_BLE_EVENT_CHANNEL );
+
     	Adv_Update();
     }
   }
@@ -1802,7 +1821,7 @@ static void AdvUpdateProcess(void *argument)
 static void Adv_Update(void)
 {
 //  Adv_Request(APP_BLE_LP_ADV);
-  Adv_Request(APP_BLE_FAST_ADV);
+  Adv_Request(APP_BLE_LP_ADV);
   return;
 }
 

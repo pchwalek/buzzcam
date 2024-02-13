@@ -1,0 +1,3 @@
+/Users/chwalek/dev/buzzcam/cmake-build-debug/CMakeFiles/buzzcam.elf.dir
+/Users/chwalek/dev/buzzcam/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/chwalek/dev/buzzcam/cmake-build-debug/CMakeFiles/rebuild_cache.dir

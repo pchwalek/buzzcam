@@ -71,7 +71,7 @@ osThreadId_t sampleThreadId;
 
 const osThreadAttr_t micTask_attributes = { .name = "micTask", .attr_bits =
 		osThreadDetached, .cb_mem = NULL, .cb_size = 0, .stack_mem = NULL,
-		.stack_size = 256*10, .priority = (osPriority_t) osPriorityNormal,
+		.stack_size = 256*14, .priority = (osPriority_t) osPriorityNormal,
 		.tz_module = 0, .reserved = 0 };
 osThreadId_t micThreadId;
 

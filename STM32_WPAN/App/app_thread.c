@@ -41,6 +41,10 @@
 #include "coap.h"
 #include "main.h"
 #include "queue.h"
+#include "pb.h"
+#include "pb_decode.h"
+#include "pb_encode.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -81,6 +85,7 @@ const osThreadAttr_t ThreadCliProcess_attr = {
 /* Private macros ------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
 #define C_RESSOURCE             "buzz"
+#define C_CONFIG_RESSOURCE		"config"
 
 #define COAP_SEND_TIMEOUT               (5*100*1000/CFG_TS_TICK_VAL) /**< 1s */
 #define THREAD_CHANGE_MODE_TIMEOUT      (1*1000*1000/CFG_TS_TICK_VAL) /**< 1s */
@@ -132,8 +137,22 @@ static void APP_THREAD_SendCoapMulticastRequest(uint8_t command);
 static void APP_THREAD_CoapRequestHandler(void                * pContext,
                                           otMessage           * pMessage,
                                           const otMessageInfo * pMessageInfo);
+static void APP_THREAD_CoapConfigHandler(void                * pContext,
+                                          otMessage           * pMessage,
+                                          const otMessageInfo * pMessageInfo);
 static void APP_THREAD_SetSleepyEndDeviceMode(void);
 static void APP_THREAD_CoapTimingElapsed(void);
+
+static void APP_THREAD_CoapSendRequest(otCoapResource* aCoapRessource,
+    otCoapType aCoapType,
+    otCoapCode aCoapCode,
+    const char *aStringAddress,
+    const otIp6Address* aPeerAddress,
+    uint8_t* aPayload,
+    uint16_t Size,
+    otCoapResponseHandler aHandler,
+    void *aContext);
+
 //static void ot_StatusNot( ot_TL_CmdStatus_t status );
 osMutexId_t MtxOtCmdId;
 osMutexId_t MtxOtAckId;
@@ -178,6 +197,7 @@ static osThreadId_t OsTaskCliId;            /* Task used to manage CLI comamnd  
 #endif /* (CFG_FULL_LOW_POWER == 0) */
 
 /* USER CODE BEGIN PV */
+static otCoapResource OT_ConfigRessource = {C_CONFIG_RESSOURCE, APP_THREAD_CoapConfigHandler,"config", NULL};
 static otCoapResource OT_Ressource = {C_RESSOURCE, APP_THREAD_CoapRequestHandler,"buzz", NULL};
 static otMessageInfo OT_MessageInfo = {0};
 static uint8_t OT_Command = 0;
@@ -334,12 +354,12 @@ static void APP_THREAD_DeviceConfig(void)
   {
     APP_THREAD_Error(ERR_THREAD_SET_STATE_CB,error);
   }
-  error = otLinkSetChannel(NULL, C_CHANNEL_NB);
+  error = otLinkSetChannel(NULL, configPacket.payload.config_packet.network_state.channel);
   if (error != OT_ERROR_NONE)
   {
     APP_THREAD_Error(ERR_THREAD_SET_CHANNEL,error);
   }
-  error = otLinkSetPanId(NULL, C_PANID);
+  error = otLinkSetPanId(NULL, configPacket.payload.config_packet.network_state.pan_id);
   if (error != OT_ERROR_NONE)
   {
     APP_THREAD_Error(ERR_THREAD_SET_PANID,error);
@@ -368,6 +388,14 @@ static void APP_THREAD_DeviceConfig(void)
   }
   /* Add COAP resources */
   otCoapAddResource(NULL, &OT_Ressource);
+
+  if(configPacket.payload.config_packet.network_state.master_node){
+
+  }
+
+  else if(configPacket.payload.config_packet.network_state.slave_sync){
+
+  }
   /* USER CODE END DEVICECONFIG */
 }
 
@@ -513,6 +541,13 @@ static void APP_THREAD_FreeRTOSProcessMsgM0ToM4Task(void *argument)
 	while(waitingForAck && !FlagReceiveAckFromM0){
 		osDelay(1);
 	}
+
+    if(osOK != osMutexAcquire(MtxHciId, osWaitForever)){
+    	Error_Handler();
+    }
+    if(osOK != osMutexRelease(MtxHciId)){
+    	Error_Handler();
+    }
 
 	if (uxQueueMessagesWaiting(MoNotifQueue) > 1U) {
 		APP_THREAD_Error(ERR_REC_MULTI_MSG_FROM_M0, 0);
@@ -1196,9 +1231,9 @@ static void APP_THREAD_CoapRequestHandler(void                * pContext,
 //    }
 	  uint16_t receivedBytes;
 	  receivedBytes = otMessageRead(pMessage, otMessageGetOffset(pMessage), PayloadRead, sizeof(PayloadRead));
-	  if (strncmp(PayloadRead, "test", 4) == 0) {
-		  toggledBlue();
-			osThreadFlagsSet(AdvUpdateProcessId, 1);
+	  if (strncmp(PayloadRead, "light", 5) == 0) {
+		  toggledGreen();
+//			osThreadFlagsSet(AdvUpdateProcessId, 1);
 
 	  } else {
 //		  printf("The string does not start with 'test'.\n");
@@ -1214,6 +1249,62 @@ static void APP_THREAD_CoapRequestHandler(void                * pContext,
 //      BSP_LED_Toggle(LED3);
 //      APP_DBG("**** Recept COAP nb **** %d ",DebugRxCoapCpt++);
     }
+
+    /* If Message is Confirmable, send response */
+    if (otCoapMessageGetType(pMessage) == OT_COAP_TYPE_CONFIRMABLE)
+    {
+      APP_THREAD_CoapSendDataResponse(pMessage, pMessageInfo);
+    }
+
+  } while (false);
+}
+
+static void APP_THREAD_CoapConfigHandler(void                * pContext,
+                                          otMessage           * pMessage,
+                                          const otMessageInfo * pMessageInfo)
+{
+  do
+  {
+//    if (otCoapMessageGetType(pMessage) != OT_COAP_TYPE_NON_CONFIRMABLE)
+//    {
+//      break;
+//    }
+
+    if (otCoapMessageGetCode(pMessage) != OT_COAP_CODE_PUT)
+    {
+
+	  uint16_t receivedBytes;
+	  receivedBytes = otMessageRead(pMessage, otMessageGetOffset(pMessage), buffer, sizeof(buffer));
+
+
+		uint8_t status;
+		/* Create a stream that reads from the buffer. */
+		pb_istream_t stream = pb_istream_from_buffer(buffer, receivedBytes);
+		/* Now we are ready to decode the message. */
+		status = pb_decode(&stream, PACKET_FIELDS, &rxPacket);
+
+		if(status){
+			if(configPacket.payload.config_packet.network_state.slave_sync){
+				osThreadState_t state = osThreadGetState(configThreadId);
+				if( (state != osThreadReady) || (state != osThreadRunning) || (state != osThreadInactive) || (state != osThreadBlocked) ){
+					configThreadId = osThreadNew(updateSystemConfig, &rxPacket.payload.config_packet, &configTask_attributes);
+				}
+			}
+		}
+
+
+	  if (strncmp(PayloadRead, "light", 5) == 0) {
+		  toggledGreen();
+//			osThreadFlagsSet(AdvUpdateProcessId, 1);
+
+	  } else {
+//		  printf("The string does not start with 'test'.\n");
+	  }
+
+
+      break;
+    }
+
 
     /* If Message is Confirmable, send response */
     if (otCoapMessageGetType(pMessage) == OT_COAP_TYPE_CONFIRMABLE)
@@ -1259,6 +1350,123 @@ static void APP_THREAD_CoapSendDataResponse(otMessage  * pMessage,
 //      APP_THREAD_Error(ERR_THREAD_COAP_DATA_RESPONSE,error);
     }
   }while(false);
+}
+
+/**
+ * @brief Send a CoAP request with defined parameters.
+ *
+ * @param[in]  aCoapRessource   A pointer to a otCoapResource.
+ * @param[in]  aCoapType        otCoapType.
+ * @param[in]  aCoapCode        otCoapCode.
+ * @param[in]  aStringAddress   A pointer to a NULL-terminated string representing the address. Example: "FF03::1" for Multicast.
+ * @param[in]  aPeerAddress     A pointer to otIp6Address Peer Address.
+ * @param[in]  aPayload         A pointer to payload.
+ * @param[in]  aHandler         A pointer to CoAP response handler.
+ * @param[in]  aContext         A pointer to application specific context.
+ *
+ * @retval none.
+ */
+static void APP_THREAD_CoapSendRequest(otCoapResource* aCoapRessource,
+    otCoapType aCoapType,
+    otCoapCode aCoapCode,
+    const char *aStringAddress,
+    const otIp6Address* aPeerAddress,
+    uint8_t* aPayload,
+    uint16_t Size,
+    otCoapResponseHandler aHandler,
+    void* aContext)
+{
+  otError error = OT_ERROR_NONE;
+
+  do{
+    pOT_Message = otCoapNewMessage(NULL, NULL);
+    if (pOT_Message == NULL)
+    {
+      APP_THREAD_Error(ERR_THREAD_COAP_NEW_MSG,error);
+      break;
+    }
+
+    otCoapMessageInit(pOT_Message, aCoapType, aCoapCode);
+    otCoapMessageAppendUriPathOptions(pOT_Message, aCoapRessource->mUriPath);
+    otCoapMessageSetPayloadMarker(pOT_Message);
+
+    if((aPayload != NULL) && (Size > 0))
+    {
+      error = otMessageAppend(pOT_Message, aPayload, Size);
+      if (error != OT_ERROR_NONE)
+      {
+        APP_THREAD_Error(ERR_THREAD_COAP_APPEND,error);
+        break;
+      }
+    }
+    else
+    {
+      APP_DBG("APP_THREAD_CoapSendRequest: No payload passed");
+    }
+
+    memset(&OT_MessageInfo, 0, sizeof(OT_MessageInfo));
+    OT_MessageInfo.mPeerPort = OT_DEFAULT_COAP_PORT;
+
+    if((aPeerAddress == NULL) && (aStringAddress != NULL))
+    {
+      APP_DBG("Use String Address : %s ", aStringAddress);
+      otIp6AddressFromString(aStringAddress, &OT_MessageInfo.mPeerAddr);
+    }
+    else
+    if (aPeerAddress != NULL)
+    {
+      APP_DBG("Use Peer Address");
+      memcpy(&OT_MessageInfo.mPeerAddr, aPeerAddress, sizeof(OT_MessageInfo.mPeerAddr));
+    }
+    else
+    {
+      APP_DBG("ERROR: Address string and Peer Address not defined");
+      APP_THREAD_Error(ERR_THREAD_COAP_ADDRESS_NOT_DEFINED, 0);
+    }
+
+    if(aCoapType == OT_COAP_TYPE_NON_CONFIRMABLE)
+    {
+      APP_DBG("aCoapType == OT_COAP_TYPE_NON_CONFIRMABLE");
+      error = otCoapSendRequest(NULL,
+          pOT_Message,
+          &OT_MessageInfo,
+          NULL,
+          NULL);
+    }
+    if(aCoapType == OT_COAP_TYPE_CONFIRMABLE)
+    {
+      APP_DBG("aCoapType == OT_COAP_TYPE_CONFIRMABLE");
+      error = otCoapSendRequest(NULL,
+          pOT_Message,
+          &OT_MessageInfo,
+          aHandler,
+          aContext);
+    }
+  }while(false);
+  if (error != OT_ERROR_NONE && pOT_Message != NULL)
+  {
+    otMessageFree(pOT_Message);
+    APP_THREAD_Error(ERR_THREAD_COAP_SEND_REQUEST,error);
+  }
+}
+
+void sendConfigToNodes(void){
+
+	/* Create a stream that will write to our buffer. */
+	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+	/* Now we are ready to encode the message! */
+	status = pb_encode(&stream, PACKET_FIELDS, &configPacket);
+
+	  APP_THREAD_CoapSendRequest(&OT_ConfigRessource,
+	      OT_COAP_TYPE_NON_CONFIRMABLE,
+	      OT_COAP_CODE_PUT,
+	      MULICAST_FTD_MED,
+	      NULL,
+		  buffer,
+		  stream.bytes_written,
+	      NULL,
+	      NULL);
+
 }
 /* USER CODE END FD_WRAP_FUNCTIONS */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
