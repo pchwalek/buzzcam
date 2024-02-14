@@ -230,8 +230,10 @@ message ConfigPacket{
 }
 
 message UWB_Range{
-    DeviceUID device_UID = 1;
-    float range = 2;
+    DeviceUID openthread_UID = 1;
+    uint32 system_UID = 2;
+    uint32 UWB_addr = 3;
+    float range = 4;
 }
 
 message UWB_Packet{
@@ -245,8 +247,11 @@ message SpecialFunction{
         CameraControl camera_control = 2;
         UWB_Packet uwb_packet = 3;
         bool openthread_sync_time = 4;
-        bool function_5 = 5;
-        bool function_6 = 6;
+        bool mag_calibration = 5;
+        bool slave_req_config = 6;
+        bool timestamp = 7;
+        bool special_function_8 = 8;
+        bool special_function_9 = 9;
     }
 }
 
@@ -258,7 +263,7 @@ message Packet {
         MarkPacket mark_packet = 3;
         ConfigPacket config_packet = 4;
         SpecialFunction special_function = 5;
-
+        
     }
 }
 

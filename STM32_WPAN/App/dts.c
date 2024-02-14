@@ -197,6 +197,10 @@ static SVCCTL_EvtAckStatus_t DTS_Event_Handler(void *Event) {
 
 				osThreadState_t state;
 				if(status){
+					if(rxPacket.header.epoch < 1707866274000){
+						updateRTC_MS(rxPacket.header.epoch);
+					}
+
 					// update system
 					switch(rxPacket.which_payload){
 					case PACKET_MARK_PACKET_TAG:
@@ -242,9 +246,13 @@ static SVCCTL_EvtAckStatus_t DTS_Event_Handler(void *Event) {
 								//todo: implement function to sync time from this node with all other nodes via OT
 							}
 							break;
-						case SPECIAL_FUNCTION_FUNCTION_5_TAG:
+						case SPECIAL_FUNCTION_MAG_CALIBRATION_TAG:
+							if(rxPacket.payload.special_function.payload.mag_calibration){
+								//todo: implement mag calibration
+								osThreadFlagsSet(mainSystemThreadId, MAG_CAL_EVENT);
+							}
 							break;
-						case SPECIAL_FUNCTION_FUNCTION_6_TAG:
+						case SPECIAL_FUNCTION_SLAVE_REQ_CONFIG_TAG:
 							break;
 						default: break;
 						}

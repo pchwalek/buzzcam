@@ -49,6 +49,8 @@
 #include "tflac.h"
 
 #include "app_entry.h"
+
+#include "app_thread.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -77,7 +79,30 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
+	// FRAM is on I2C3
+	// FM24CL16B
+	// ADDR: 1010XXXb (7-bit)
+#define FRAM_START_ADDR	0x50
 
+//reserve first page for metadata
+#define FRAM_CONFIG_START_ADDR			0x0100
+
+#define FRAM_CONFIG_ADDR				FRAM_CONFIG_START_ADDR
+#define FRAM_CONFIG_BYTE_ADDR			(FRAM_CONFIG_ADDR & 0xFF)
+#define FRAM_CONFIG_WORD_ADDR			((FRAM_START_ADDR | (FRAM_CONFIG_ADDR >> 8)) << 1)
+#define FRAM_CONFIG_SIZE				sizeof(packet_t)
+
+#define FRAM_INFO_ADDR					(FRAM_CONFIG_START_ADDR + sizeof(packet_t))
+#define FRAM_INFO_BYTE_ADDR				(FRAM_INFO_ADDR & 0xFF)
+#define FRAM_INFO_WORD_ADDR 			((FRAM_START_ADDR | (FRAM_INFO_ADDR >> 8)) << 1)
+#define FRAM_INFO_SIZE					sizeof(packet_t)
+
+#define FRAM_MAG_ADDR					(FRAM_INFO_ADDR + sizeof(packet_t))
+#define FRAM_MAG_CAL_BYTE_ADDR			(FRAM_MAG_ADDR & 0xFF)
+#define FRAM_MAG_CAL_WORD_ADDR 			((FRAM_START_ADDR | (FRAM_MAG_ADDR >> 8)) << 1)
+#define FRAM_MAG_CAL_SIZE				sizeof(MagCal)
+
+#define FRAM_SIZE		16000
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -107,6 +132,8 @@ UART_HandleTypeDef huart1;
 osThreadId_t defaultTaskHandle;
 
 /* USER CODE BEGIN PV */
+RTC_AlarmTypeDef sAlarm = {0};
+
 osThreadId_t batteryMonitorTaskId;
 osThreadId_t chirpTaskHandle;
 const osThreadAttr_t defaultTask_attributes = { .name = "defaultTask",
@@ -146,8 +173,6 @@ static uint16_t audioSample[AUDIO_BUFFER_LEN] = {0};
 volatile uint8_t SAI_HALF_CALLBACK = 0;
 volatile uint8_t SAI_FULL_CALLBACK = 0;
 
-RTC_AlarmTypeDef sAlarm;
-
 FIL batteryFile;
 osTimerId_t periodicBatteryMonitorTimer_id;
 
@@ -174,6 +199,10 @@ static void MX_RF_Init(void);
 void StartDefaultTask(void *argument);
 
 /* USER CODE BEGIN PFP */
+static void writeDefaultConfig(void);
+void writeSystemStateToFRAM(void);
+void readSystemStateToFRAM(void);
+
 void EnableExtADC(bool state);
 void runAnalogConverter(void);
 
@@ -241,6 +270,8 @@ packet_t infoPacket = PACKET_INIT_ZERO;
 uint8_t buffer[500]; //needed for BLE
 size_t message_length;
 bool status;
+
+volatile uint8_t coapSetup = 0;
 
 void enable_SD_Card_1(void);
 void enable_SD_Card_2(void);
@@ -312,124 +343,8 @@ int main(void)
   /* USER CODE BEGIN SysInit */
 //  tflac_detect_cpu();
 
-	configPacket.has_header = true;
-	configPacket.header.epoch = 1111;
-	configPacket.header.system_uid = LL_FLASH_GetUDN();
-	configPacket.header.ms_from_start = HAL_GetTick();
 
-	configPacket.which_payload = PACKET_CONFIG_PACKET_TAG;
 
-	configPacket.payload.config_packet.has_audio_config=true;
-	configPacket.payload.config_packet.audio_config.bit_resolution=MIC_BIT_RESOLUTION_BIT_RES_16;
-	configPacket.payload.config_packet.audio_config.channel_1=true;
-	configPacket.payload.config_packet.audio_config.channel_2=true;
-	configPacket.payload.config_packet.audio_config.mic_gain = MIC_GAIN_GAIN_9_DB;
-	configPacket.payload.config_packet.audio_config.has_audio_compression=true;
-	configPacket.payload.config_packet.audio_config.audio_compression.compression_factor=0;
-	configPacket.payload.config_packet.audio_config.audio_compression.compression_type=COMPRESSION_TYPE_FLAC;
-	configPacket.payload.config_packet.audio_config.audio_compression.enabled=false;
-	configPacket.payload.config_packet.audio_config.estimated_record_time=12345678; //placeholder
-	configPacket.payload.config_packet.audio_config.sample_freq=MIC_SAMPLE_FREQ_SAMPLE_RATE_48000;
-	configPacket.payload.config_packet.audio_config.free_run_mode=true;
-	configPacket.payload.config_packet.audio_config.chirp_enable=false;
-
-//	configPacket.payload.config_packet.has_camera_control=true;
-//	configPacket.payload.config_packet.camera_control.capture=false;
-//	configPacket.payload.config_packet.camera_control.pair_with_nearby_cameras=false;
-//	configPacket.payload.config_packet.camera_control.wakeup_cameras=false;
-
-	configPacket.payload.config_packet.has_low_power_config=true;
-	configPacket.payload.config_packet.low_power_config.low_power_mode=false;
-
-	configPacket.payload.config_packet.has_network_state=true;
-	configPacket.payload.config_packet.network_state.discovered_device_uid_count=10;
-	configPacket.payload.config_packet.network_state.number_of_discovered_devices=configPacket.payload.config_packet.network_state.discovered_device_uid_count;
-//	configPacket.payload.config_packet.network_state.discovered_device_uid[0].addr;
-//	configPacket.payload.config_packet.network_state.force_rediscovery=false;
-	configPacket.payload.config_packet.network_state.channel = 23;
-	configPacket.payload.config_packet.network_state.pan_id = 0x1234;
-	configPacket.payload.config_packet.network_state.slave_sync = false;
-	configPacket.payload.config_packet.network_state.master_node = true;
-
-	configPacket.payload.config_packet.has_sensor_config=true;
-	configPacket.payload.config_packet.sensor_config.enable_gas=true;
-	configPacket.payload.config_packet.sensor_config.enable_humidity=true;
-	configPacket.payload.config_packet.sensor_config.enable_temperature=true;
-//	configPacket.payload.config_packet.sensor_config.sample_period_ms=1000;
-
-	configPacket.payload.config_packet.schedule_config_count = 2;
-	configPacket.payload.config_packet.schedule_config[0].monday = true;
-	configPacket.payload.config_packet.schedule_config[0].wednesday = true;
-	configPacket.payload.config_packet.schedule_config[0].start_hour = 7;
-	configPacket.payload.config_packet.schedule_config[0].start_minute = 35;
-	configPacket.payload.config_packet.schedule_config[0].stop_hour = 10;
-	configPacket.payload.config_packet.schedule_config[0].stop_minute = 05;
-	configPacket.payload.config_packet.schedule_config[1].tuesday = true;
-	configPacket.payload.config_packet.schedule_config[1].wednesday = true;
-	configPacket.payload.config_packet.schedule_config[1].thursday = true;
-	configPacket.payload.config_packet.schedule_config[1].friday = true;
-	configPacket.payload.config_packet.schedule_config[1].start_hour = 13;
-	configPacket.payload.config_packet.schedule_config[1].start_minute = 03;
-	configPacket.payload.config_packet.schedule_config[1].stop_hour = 17;
-	configPacket.payload.config_packet.schedule_config[1].stop_minute = 47;
-
-	infoPacket.has_header = true;
-	infoPacket.header.epoch = 1111;
-	infoPacket.header.system_uid = LL_FLASH_GetUDN();
-	infoPacket.header.ms_from_start = HAL_GetTick();
-
-	infoPacket.which_payload = PACKET_SYSTEM_INFO_PACKET_TAG;
-	infoPacket.payload.system_info_packet.has_battery_state = true;
-	infoPacket.payload.system_info_packet.battery_state.charging=false;
-	infoPacket.payload.system_info_packet.battery_state.has_percentage=true;
-	infoPacket.payload.system_info_packet.battery_state.percentage=50.0;
-	infoPacket.payload.system_info_packet.battery_state.voltage=3.75;
-
-	infoPacket.payload.system_info_packet.has_discovered_devices = true;
-	infoPacket.payload.system_info_packet.discovered_devices.device_count=12;
-	infoPacket.payload.system_info_packet.discovered_devices.number_of_devices=infoPacket.payload.system_info_packet.discovered_devices.device_count;
-	infoPacket.payload.system_info_packet.discovered_devices.device[0].uid = 0xDEADBEEF;
-	infoPacket.payload.system_info_packet.discovered_devices.device[1].uid = 0xDEADBEAF;
-	infoPacket.payload.system_info_packet.discovered_devices.device[2].uid = 0xDEADBEBF;
-	infoPacket.payload.system_info_packet.discovered_devices.device[3].uid = 0xDEADBECF;
-	infoPacket.payload.system_info_packet.discovered_devices.device[4].uid = 0xDEADBEDF;
-	infoPacket.payload.system_info_packet.discovered_devices.device[5].uid = 0xDEADBEEF;
-	infoPacket.payload.system_info_packet.discovered_devices.device[6].uid = 0xDEADBEFF;
-	infoPacket.payload.system_info_packet.discovered_devices.device[7].uid = 0xDEADBAEF;
-	infoPacket.payload.system_info_packet.discovered_devices.device[8].uid = 0xDEADBBEF;
-	infoPacket.payload.system_info_packet.discovered_devices.device[9].uid = 0xDEADBCEF;
-	infoPacket.payload.system_info_packet.discovered_devices.device[10].uid = 0xDEADBDEF;
-	infoPacket.payload.system_info_packet.discovered_devices.device[11].uid = 0xDEADBFEF;
-	infoPacket.payload.system_info_packet.discovered_devices.device[0].range = 1.0;
-	infoPacket.payload.system_info_packet.discovered_devices.device[1].range = 2;
-	infoPacket.payload.system_info_packet.discovered_devices.device[2].range = 3;
-	infoPacket.payload.system_info_packet.discovered_devices.device[3].range = 4;
-	infoPacket.payload.system_info_packet.discovered_devices.device[4].range = 5;
-	infoPacket.payload.system_info_packet.discovered_devices.device[5].range = 6;
-	infoPacket.payload.system_info_packet.discovered_devices.device[6].range = 7;
-	infoPacket.payload.system_info_packet.discovered_devices.device[7].range = 8;
-	infoPacket.payload.system_info_packet.discovered_devices.device[8].range = 9.12;
-	infoPacket.payload.system_info_packet.discovered_devices.device[9].range = 10.2321;
-	infoPacket.payload.system_info_packet.discovered_devices.device[10].range =11.2;
-	infoPacket.payload.system_info_packet.discovered_devices.device[11].range = 12.1;
-
-	infoPacket.payload.system_info_packet.has_mark_state = true;
-	//  infoPacket.payload.system_info_packet.mark_state.beep_enabled=false;
-	infoPacket.payload.system_info_packet.mark_state.mark_number=123;
-	infoPacket.payload.system_info_packet.mark_state.timestamp_unix=123;
-
-	infoPacket.payload.system_info_packet.has_sdcard_state = true;
-	infoPacket.payload.system_info_packet.sdcard_state.detected=true;
-	infoPacket.payload.system_info_packet.sdcard_state.estimated_remaining_recording_time=1234;
-	infoPacket.payload.system_info_packet.sdcard_state.space_remaining=1234;
-
-	infoPacket.payload.system_info_packet.has_simple_sensor_reading = true;
-	infoPacket.payload.system_info_packet.simple_sensor_reading.co2=458.0;
-	infoPacket.payload.system_info_packet.simple_sensor_reading.humidity=40.0;
-	infoPacket.payload.system_info_packet.simple_sensor_reading.index=123;
-	infoPacket.payload.system_info_packet.simple_sensor_reading.light_level=100.0;
-	infoPacket.payload.system_info_packet.simple_sensor_reading.temperature=76;
-	infoPacket.payload.system_info_packet.simple_sensor_reading.timestamp_unix=1234;
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -455,76 +370,10 @@ int main(void)
   MX_RF_Init();
   /* USER CODE BEGIN 2 */
 
-	//  while(1){};
-
-	// FRAM is on I2C3
-	// FM24CL16B
-	// ADDR: 1010XXXb (7-bit)
-#define FRAM_START_ADDR	0x50
-
-	//reserve first page for metadata
-
-#define FRAM_CONFIG_START_ADDR			0x0100
-
-#define FRAM_CONFIG_ADDR				FRAM_CONFIG_START_ADDR
-#define FRAM_CONFIG_BYTE_ADDR			(FRAM_CONFIG_ADDR & 0xFF)
-#define FRAM_CONFIG_WORD_ADDR			((FRAM_START_ADDR | (FRAM_CONFIG_ADDR >> 8)) << 1)
-#define FRAM_CONFIG_SIZE				sizeof(packet_t)
-
-#define FRAM_INFO_ADDR					(FRAM_CONFIG_START_ADDR + sizeof(packet_t))
-#define FRAM_INFO_BYTE_ADDR				(FRAM_INFO_ADDR & 0xFF)
-#define FRAM_INFO_WORD_ADDR 			((FRAM_START_ADDR | (FRAM_INFO_ADDR >> 8)) << 1)
-#define FRAM_INFO_SIZE					sizeof(packet_t)
-
-#define FRAM_MAG_ADDR					(FRAM_INFO_ADDR + sizeof(packet_t))
-#define FRAM_MAG_CAL_BYTE_ADDR			(FRAM_MAG_ADDR & 0xFF)
-#define FRAM_MAG_CAL_WORD_ADDR 			((FRAM_START_ADDR | (FRAM_MAG_ADDR >> 8)) << 1)
-#define FRAM_MAG_CAL_SIZE				sizeof(MagCal)
-
-	//#define FRAM_BME_START_WORD				0x05
-	//#define FRAM_BME_CONFIG_BYTE_ADDR		(0)
-	//#define FRAM_BME_CONFIG_WORD_ADDR		( (FRAM_START_ADDR | FRAM_BME_START_WORD) << 1)
-	//#define FRAM_BME_CONFIG_SIZE			BSEC_MAX_PROPERTY_BLOB_SIZE
-	//#define FRAM_BME_STATE_BYTE_ADDR		(FRAM_BME_CONFIG_SIZE & 0xFF)
-	//#define FRAM_BME_STATE_WORD_ADDR		( (FRAM_START_ADDR | (FRAM_BME_START_WORD + (FRAM_BME_CONFIG_SIZE >> 8))) << 1)
-	//#define FRAM_BME_STATE_SIZE				BSEC_MAX_STATE_BLOB_SIZE
-	//#define FRAM_BME_FIRST_RUN_BYTE_ADDR	((FRAM_BME_STATE_BYTE_ADDR + FRAM_BME_STATE_SIZE) & 0xFF)
-	//#define FRAM_BME_FIRST_RUN_WORD_ADDR	( (FRAM_START_ADDR | (FRAM_BME_START_WORD + ((FRAM_BME_CONFIG_SIZE + FRAM_BME_STATE_SIZE) >> 8))) << 1)
-	//#define FRAM_BME_FIRST_RUN_SIZE			sizeof(uint8_t)
-
-	//#define FRAM_INFO_BYTE_ADDR_UN ((FRAM_CONFIG_BYTE_ADDR + ((uint32_t) sizeof(configPacket)) % 256) << 1)
-	//#define FRAM_INFO_WORD_ADDR	(( FRAM_START_ADDR | (FRAM_CONFIG_WORD_ADDR + ((uint32_t) sizeof(configPacket)) / 256) + ((uint32_t) (FRAM_INFO_BYTE_ADDR_UN / 256))) << 1)
-	//#define FRAM_INFO_BYTE_ADDR (FRAM_INFO_BYTE_ADDR_UN % 256)
-
-#define FRAM_SIZE		16000
-
-
-		HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET); // powers FRAM
-		HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_SET); // needed for I2C pins on FRAM
 
 		HAL_Delay(1); // 1ms startup delay before write/read
-	//
-	//	packet_t tempConfigPacket = PACKET_INIT_ZERO;
-	//	packet_t tempInfoPacket = PACKET_INIT_ZERO;
-	//
-	//	// (1) device address is ((FRAM_START_ADDR | (256-byte page address) << 1)
-	//	// (2) memory address is the byte within the page
-	//	uint32_t testVar = 0xDEADBEEF;
-	//	uint32_t testVar2 = 0;
-	//
-	//	status = HAL_I2C_Mem_Write(&hi2c3, FRAM_START_ADDR << 1, 0, 1, (uint8_t*) &testVar, sizeof(testVar), 1000);
-	//	status = HAL_I2C_Mem_Read(&hi2c3, FRAM_START_ADDR << 1, 0, 1, (uint8_t*) &testVar2, sizeof(testVar2), 1000);
-	//
-//		status = HAL_I2C_Mem_Write(&hi2c3, FRAM_CONFIG_WORD_ADDR, FRAM_CONFIG_BYTE_ADDR, 1, (uint8_t*) &configPacket, sizeof(configPacket), 1000);
-	//
-	//	//  uint8_t word_pos = sizeof(configPacket) / 256;
-	//	//  uint8_t byte_pos = sizeof(configPacket) % 256;
-//		status = HAL_I2C_Mem_Write(&hi2c3, FRAM_INFO_WORD_ADDR, FRAM_INFO_BYTE_ADDR, 1, (uint8_t*) &infoPacket, sizeof(infoPacket), 1000);
-	//
-	//
-	//	status = HAL_I2C_Mem_Read(&hi2c3, FRAM_CONFIG_WORD_ADDR, FRAM_CONFIG_BYTE_ADDR, 1, (uint8_t*) &tempConfigPacket, sizeof(tempConfigPacket), 1000);
-	//	status = HAL_I2C_Mem_Read(&hi2c3, FRAM_INFO_WORD_ADDR, FRAM_INFO_BYTE_ADDR, 1, (uint8_t*) &tempInfoPacket, sizeof(tempInfoPacket), 1000);
-
+		HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET); // powers FRAM
+		HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_SET); // needed for I2C pins on FRAM
 
 		systemTestCode();
 
@@ -540,6 +389,14 @@ int main(void)
 	HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(EN_UWB_REG_GPIO_Port, EN_UWB_REG_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_SET);
+
+//   readSystemStateToFRAM();
+//   if(infoPacket.header.system_uid != LL_FLASH_GetUDN()){
+//	   writeDefaultConfig();
+//   }
+   writeDefaultConfig();
+
+
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -609,6 +466,7 @@ int main(void)
 	}
   /* USER CODE END 3 */
 }
+
 
 /**
   * @brief System Clock Configuration
@@ -928,6 +786,9 @@ static void MX_RTC_Init(void)
   RTC_AlarmTypeDef sAlarm = {0};
 
   /* USER CODE BEGIN RTC_Init 1 */
+#else
+  RTC_TimeTypeDef sTime = {0};
+  RTC_DateTypeDef sDate = {0};
 #endif
   /* USER CODE END RTC_Init 1 */
 
@@ -959,7 +820,7 @@ static void MX_RTC_Init(void)
   sTime.TimeFormat = RTC_HOURFORMAT12_PM;
   sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
   sTime.StoreOperation = RTC_STOREOPERATION_SET;
-  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
+  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BIN) != HAL_OK)
   {
     Error_Handler();
   }
@@ -967,7 +828,7 @@ static void MX_RTC_Init(void)
   sDate.Month = RTC_MONTH_FEBRUARY;
   sDate.Date = 0x9;
   sDate.Year = 24;
-  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
+  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BIN) != HAL_OK)
   {
     Error_Handler();
   }
@@ -985,7 +846,7 @@ static void MX_RTC_Init(void)
   sAlarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_DATE;
   sAlarm.AlarmDateWeekDay = 0x1;
   sAlarm.Alarm = RTC_ALARM_A;
-  if (HAL_RTC_SetAlarm(&hrtc, &sAlarm, RTC_FORMAT_BCD) != HAL_OK)
+  if (HAL_RTC_SetAlarm(&hrtc, &sAlarm, RTC_FORMAT_BIN) != HAL_OK)
   {
     Error_Handler();
   }
@@ -994,6 +855,26 @@ static void MX_RTC_Init(void)
   */
   sAlarm.Alarm = RTC_ALARM_B;
   /* USER CODE BEGIN RTC_Init 2 */
+#else
+//  sTime.Hours = 21;
+//  sTime.Minutes = 17;
+//  sTime.Seconds = 0x0;
+//  sTime.SubSeconds = 0x0;
+//  sTime.TimeFormat = RTC_HOURFORMAT12_PM;
+//  sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+//  sTime.StoreOperation = RTC_STOREOPERATION_SET;
+//  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BIN) != HAL_OK)
+//  {
+//    Error_Handler();
+//  }
+//  sDate.WeekDay = RTC_WEEKDAY_TUESDAY;
+//  sDate.Month = RTC_MONTH_FEBRUARY;
+//  sDate.Date = 13;
+//  sDate.Year = 24;
+//  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BIN) != HAL_OK)
+//  {
+//    Error_Handler();
+//  }
 #endif
     HAL_NVIC_SetPriority(RTC_Alarm_IRQn, 5, 0);
     HAL_NVIC_EnableIRQ(RTC_Alarm_IRQn);
@@ -1561,6 +1442,8 @@ static void Reset_Device( void )
 
 void acousticSamplingTask(void *argument){
 
+	if(configPacket.payload.config_packet.network_state.master_node) sendConfigToNodes(true);
+
 	/* Setup Audio Interface */
 	disableAudioPeripherals();
 	//	unmount_sd_card();
@@ -1645,7 +1528,7 @@ void acousticSamplingTask(void *argument){
 //
 //    sAlarm.Alarm = RTC_ALARM_A;      // Specify the alarm to use
 //
-//    if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BCD) != HAL_OK) {
+//    if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN) != HAL_OK) {
 //        // Setting the Alarm Error
 //    }
 	/*** END Start timer based on schedule */
@@ -1665,7 +1548,8 @@ void acousticSamplingTask(void *argument){
 //	toneSweep(1);
 //	toneSweep(0);
 
-	if(configPacket.payload.config_packet.audio_config.chirp_enable){
+	if(configPacket.payload.config_packet.audio_config.chirp_enable &&
+			configPacket.payload.config_packet.network_state.master_node){
 		chirpTaskHandle = osThreadNew(chirpTask, NULL, &chirpTask_attributes);
 	}
 
@@ -1758,7 +1642,133 @@ void batteryMonitorTask(void *argument){
 
 }
 
+static void writeDefaultConfig(void){
 
+	configPacket.has_header = true;
+	configPacket.header.epoch = 1111;
+	configPacket.header.system_uid = LL_FLASH_GetUDN();
+	configPacket.header.ms_from_start = HAL_GetTick();
+
+	configPacket.which_payload = PACKET_CONFIG_PACKET_TAG;
+
+	configPacket.payload.config_packet.enable_recording=true;
+
+	configPacket.payload.config_packet.has_audio_config=true;
+	configPacket.payload.config_packet.audio_config.bit_resolution=MIC_BIT_RESOLUTION_BIT_RES_16;
+	configPacket.payload.config_packet.audio_config.channel_1=true;
+	configPacket.payload.config_packet.audio_config.channel_2=true;
+	configPacket.payload.config_packet.audio_config.mic_gain = MIC_GAIN_GAIN_9_DB;
+	configPacket.payload.config_packet.audio_config.has_audio_compression=true;
+	configPacket.payload.config_packet.audio_config.audio_compression.compression_factor=0;
+	configPacket.payload.config_packet.audio_config.audio_compression.compression_type=COMPRESSION_TYPE_FLAC;
+	configPacket.payload.config_packet.audio_config.audio_compression.enabled=false;
+	configPacket.payload.config_packet.audio_config.estimated_record_time=12345678; //placeholder
+	configPacket.payload.config_packet.audio_config.sample_freq=MIC_SAMPLE_FREQ_SAMPLE_RATE_48000;
+	configPacket.payload.config_packet.audio_config.free_run_mode=true;
+	configPacket.payload.config_packet.audio_config.chirp_enable=false;
+
+//	configPacket.payload.config_packet.has_camera_control=true;
+//	configPacket.payload.config_packet.camera_control.capture=false;
+//	configPacket.payload.config_packet.camera_control.pair_with_nearby_cameras=false;
+//	configPacket.payload.config_packet.camera_control.wakeup_cameras=false;
+
+	configPacket.payload.config_packet.has_low_power_config=true;
+	configPacket.payload.config_packet.low_power_config.low_power_mode=false;
+
+	configPacket.payload.config_packet.has_network_state=true;
+	configPacket.payload.config_packet.network_state.discovered_device_uid_count=10;
+	configPacket.payload.config_packet.network_state.number_of_discovered_devices=configPacket.payload.config_packet.network_state.discovered_device_uid_count;
+//	configPacket.payload.config_packet.network_state.discovered_device_uid[0].addr;
+//	configPacket.payload.config_packet.network_state.force_rediscovery=false;
+	configPacket.payload.config_packet.network_state.channel = 23;
+	configPacket.payload.config_packet.network_state.pan_id = 0x1234;
+	configPacket.payload.config_packet.network_state.slave_sync = false;
+	configPacket.payload.config_packet.network_state.master_node = true;
+
+	configPacket.payload.config_packet.has_sensor_config=true;
+	configPacket.payload.config_packet.sensor_config.enable_gas=true;
+	configPacket.payload.config_packet.sensor_config.enable_humidity=true;
+	configPacket.payload.config_packet.sensor_config.enable_temperature=true;
+//	configPacket.payload.config_packet.sensor_config.sample_period_ms=1000;
+
+	configPacket.payload.config_packet.schedule_config_count = 2;
+	configPacket.payload.config_packet.schedule_config[0].monday = true;
+	configPacket.payload.config_packet.schedule_config[0].tuesday = true;
+	configPacket.payload.config_packet.schedule_config[0].wednesday = true;
+	configPacket.payload.config_packet.schedule_config[0].start_hour = 23;
+	configPacket.payload.config_packet.schedule_config[0].start_minute = 6;
+	configPacket.payload.config_packet.schedule_config[0].stop_hour = 23;
+	configPacket.payload.config_packet.schedule_config[0].stop_minute = 8;
+	configPacket.payload.config_packet.schedule_config[1].tuesday = true;
+	configPacket.payload.config_packet.schedule_config[1].wednesday = true;
+	configPacket.payload.config_packet.schedule_config[1].thursday = true;
+	configPacket.payload.config_packet.schedule_config[1].friday = true;
+	configPacket.payload.config_packet.schedule_config[1].start_hour = 13;
+	configPacket.payload.config_packet.schedule_config[1].start_minute = 03;
+	configPacket.payload.config_packet.schedule_config[1].stop_hour = 17;
+	configPacket.payload.config_packet.schedule_config[1].stop_minute = 47;
+
+	infoPacket.has_header = true;
+	infoPacket.header.epoch = 1111;
+	infoPacket.header.system_uid = LL_FLASH_GetUDN();
+	infoPacket.header.ms_from_start = HAL_GetTick();
+
+	infoPacket.which_payload = PACKET_SYSTEM_INFO_PACKET_TAG;
+	infoPacket.payload.system_info_packet.has_battery_state = true;
+	infoPacket.payload.system_info_packet.battery_state.charging=false;
+	infoPacket.payload.system_info_packet.battery_state.has_percentage=true;
+	infoPacket.payload.system_info_packet.battery_state.percentage=50.0;
+	infoPacket.payload.system_info_packet.battery_state.voltage=3.75;
+
+	infoPacket.payload.system_info_packet.has_discovered_devices = true;
+	infoPacket.payload.system_info_packet.discovered_devices.device_count=12;
+	infoPacket.payload.system_info_packet.discovered_devices.number_of_devices=infoPacket.payload.system_info_packet.discovered_devices.device_count;
+	infoPacket.payload.system_info_packet.discovered_devices.device[0].uid = 0xDEADBEEF;
+	infoPacket.payload.system_info_packet.discovered_devices.device[1].uid = 0xDEADBEAF;
+	infoPacket.payload.system_info_packet.discovered_devices.device[2].uid = 0xDEADBEBF;
+	infoPacket.payload.system_info_packet.discovered_devices.device[3].uid = 0xDEADBECF;
+	infoPacket.payload.system_info_packet.discovered_devices.device[4].uid = 0xDEADBEDF;
+	infoPacket.payload.system_info_packet.discovered_devices.device[5].uid = 0xDEADBEEF;
+	infoPacket.payload.system_info_packet.discovered_devices.device[6].uid = 0xDEADBEFF;
+	infoPacket.payload.system_info_packet.discovered_devices.device[7].uid = 0xDEADBAEF;
+	infoPacket.payload.system_info_packet.discovered_devices.device[8].uid = 0xDEADBBEF;
+	infoPacket.payload.system_info_packet.discovered_devices.device[9].uid = 0xDEADBCEF;
+	infoPacket.payload.system_info_packet.discovered_devices.device[10].uid = 0xDEADBDEF;
+	infoPacket.payload.system_info_packet.discovered_devices.device[11].uid = 0xDEADBFEF;
+	infoPacket.payload.system_info_packet.discovered_devices.device[0].range = 1.0;
+	infoPacket.payload.system_info_packet.discovered_devices.device[1].range = 2;
+	infoPacket.payload.system_info_packet.discovered_devices.device[2].range = 3;
+	infoPacket.payload.system_info_packet.discovered_devices.device[3].range = 4;
+	infoPacket.payload.system_info_packet.discovered_devices.device[4].range = 5;
+	infoPacket.payload.system_info_packet.discovered_devices.device[5].range = 6;
+	infoPacket.payload.system_info_packet.discovered_devices.device[6].range = 7;
+	infoPacket.payload.system_info_packet.discovered_devices.device[7].range = 8;
+	infoPacket.payload.system_info_packet.discovered_devices.device[8].range = 9.12;
+	infoPacket.payload.system_info_packet.discovered_devices.device[9].range = 10.2321;
+	infoPacket.payload.system_info_packet.discovered_devices.device[10].range =11.2;
+	infoPacket.payload.system_info_packet.discovered_devices.device[11].range = 12.1;
+
+	infoPacket.payload.system_info_packet.has_mark_state = true;
+	//  infoPacket.payload.system_info_packet.mark_state.beep_enabled=false;
+	infoPacket.payload.system_info_packet.mark_state.mark_number=123;
+	infoPacket.payload.system_info_packet.mark_state.timestamp_unix=123;
+
+	infoPacket.payload.system_info_packet.has_sdcard_state = true;
+	infoPacket.payload.system_info_packet.sdcard_state.detected=true;
+	infoPacket.payload.system_info_packet.sdcard_state.estimated_remaining_recording_time=1234;
+	infoPacket.payload.system_info_packet.sdcard_state.space_remaining=1234;
+
+	infoPacket.payload.system_info_packet.has_simple_sensor_reading = true;
+	infoPacket.payload.system_info_packet.simple_sensor_reading.co2=458.0;
+	infoPacket.payload.system_info_packet.simple_sensor_reading.humidity=40.0;
+	infoPacket.payload.system_info_packet.simple_sensor_reading.index=123;
+	infoPacket.payload.system_info_packet.simple_sensor_reading.light_level=100.0;
+	infoPacket.payload.system_info_packet.simple_sensor_reading.temperature=76;
+	infoPacket.payload.system_info_packet.simple_sensor_reading.timestamp_unix=1234;
+
+	   writeSystemStateToFRAM();
+
+}
 
 void triggerBatteryMonitorSample(void *argument){
 	osThreadFlagsSet (batteryMonitorTaskId, UPDATE_EVENT);
@@ -2271,6 +2281,7 @@ uint8_t check_file_exists(const char* path) {
 void grabOrientation(char *folder_name){
 
 	FIL orientationFile;
+	FRESULT res;
 
 	float pitch, roll, heading;
 	grabInertialSample(&pitch, &roll, &heading);
@@ -2280,7 +2291,7 @@ void grabOrientation(char *folder_name){
 
 
 	char file_name[20] = "/orientation.csv";
-	char file_path[40] = {0};
+	char file_path[42] = {0};
 
 	strcpy(file_path, folder_name);
 	strcat(file_path, file_name);
@@ -2294,7 +2305,8 @@ void grabOrientation(char *folder_name){
     	}
 
     }else{
-    	if(f_open(&orientationFile, file_path, FA_CREATE_ALWAYS | FA_WRITE | FA_OPEN_APPEND) != FR_OK){
+    	res = f_open(&orientationFile, file_path, FA_CREATE_ALWAYS | FA_WRITE | FA_OPEN_APPEND);
+    	if(res != FR_OK){
     		Error_Handler();
     	}
 
@@ -2455,6 +2467,205 @@ void tone(uint32_t freq, uint32_t duration_ms){
 	HAL_TIM_PWM_Stop(&htim16, TIM_CHANNEL_1);
 }
 
+// Example function to determine if the current time is within a given schedule's start and stop time
+bool is_within_schedule(RTC_TimeTypeDef current_time, schedule_config_t schedule) {
+    uint32_t current_minutes = current_time.Hours * 60 + current_time.Minutes;
+    uint32_t start_minutes = schedule.start_hour * 60 + schedule.start_minute;
+    uint32_t stop_minutes = schedule.stop_hour * 60 + schedule.stop_minute;
+
+    return current_minutes >= start_minutes && current_minutes <= stop_minutes;
+}
+
+// Converts the current day to a boolean array index
+bool is_today_scheduled(uint8_t weekday, schedule_config_t schedule) {
+    switch (weekday) {
+        case 1: return schedule.monday;
+        case 2: return schedule.tuesday;
+        case 3: return schedule.wednesday;
+        case 4: return schedule.thursday;
+        case 5: return schedule.friday;
+        case 6: return schedule.saturday;
+        case 7: return schedule.sunday;
+        default: return false;
+    }
+}
+
+// Main function to find the next scheduled time
+void find_next_schedule(RTC_TimeTypeDef current_time, RTC_DateTypeDef current_date, schedule_config_t schedules[], size_t schedule_count) {
+    bool is_currently_within_schedule = false;
+    // Iterate through the schedules
+    for (size_t i = 0; i < schedule_count; ++i) {
+        if (is_today_scheduled(current_date.WeekDay, schedules[i])) {
+            // Check if the current time is within the schedule's start and stop time
+            if (is_within_schedule(current_time, schedules[i])) {
+                is_currently_within_schedule = true;
+                // Handle current time within schedule
+                break;
+            }
+        }
+    }
+
+    if (!is_currently_within_schedule) {
+        // Logic to find the next schedule if not currently within one
+        // This would involve comparing the current day and time with the schedule
+        // and determining the closest future schedule.
+    }
+
+    // Depending on your requirements, you might return some value or take action here
+}
+
+// Function to find the next alarm time
+void find_next_alarm(RTC_TimeTypeDef current_time, RTC_DateTypeDef current_date, schedule_config_t schedules[], size_t schedule_count) {
+    int closest_time_diff = 24 * 60; // Max difference in minutes
+    schedule_config_t* next_schedule = NULL;
+    uint8_t next_schedule_day = current_date.WeekDay;
+    bool found = false;
+
+    for (int day_offset = 0; day_offset < 7; ++day_offset) { // Check the next 7 days
+        uint8_t check_day = (current_date.WeekDay + day_offset - 1) % 7 + 1; // Adjust for wrap-around
+        for (size_t i = 0; i < schedule_count; ++i) {
+            if (!is_today_scheduled(check_day, schedules[i])) continue; // Skip if not scheduled on this day
+
+            int schedule_start_in_minutes = schedules[i].start_hour * 60 + schedules[i].start_minute;
+            int current_time_in_minutes = current_time.Hours * 60 + current_time.Minutes;
+            int time_diff = schedule_start_in_minutes - current_time_in_minutes;
+
+            if (day_offset > 0 || time_diff > 0) { // Future schedule
+                if (day_offset > 0) {
+                    // Add full day minutes for days ahead
+                    time_diff += 24 * 60 * day_offset;
+                }
+
+                if (time_diff < closest_time_diff) {
+                    closest_time_diff = time_diff;
+                    next_schedule = &schedules[i];
+                    next_schedule_day = check_day;
+                    found = true;
+                }
+            }
+        }
+
+        if (found) break; // Stop if we found the next schedule
+    }
+
+    if (next_schedule != NULL) {
+        printf("Next alarm is on day %d at %02d:%02d\n", next_schedule_day, next_schedule->start_hour, next_schedule->start_minute);
+    } else {
+        printf("No next alarm found.\n");
+    }
+}
+
+uint32_t calculateTimeDifference(RTC_TimeTypeDef current_time, RTC_DateTypeDef current_date, schedule_config_t schedule){
+	if(is_today_scheduled(current_date.WeekDay, schedule)){
+		return (schedule.start_hour * 24 + schedule.start_minute) - (current_time.Hours * 24 + current_time.Minutes);
+	}else{
+		uint32_t time_diff = (24*60 - (current_time.Hours * 24 + current_time.Minutes)) + schedule.start_hour * 24 + schedule.start_minute;
+		for(int i = 1; i < 7; i++){
+			if(is_today_scheduled((current_date.WeekDay + i) % 7, schedule)){
+				return time_diff;
+			}else{
+				time_diff += 60*24;
+			}
+		}
+	}
+}
+
+/* The objective of the below function is to determine when the next alarm will
+ * be and set the RTC interrupt.
+ *
+ * In additon, if we are within a sampling period, we should enable the system
+ *
+ * Return:
+ *  1: we should start the system
+ *  0: we should wait until RTC interrupt
+ */
+uint8_t setAlarm(schedule_config_t schedules[], uint8_t schedule_count){
+
+	HAL_RTC_DeactivateAlarm(&hrtc, RTC_ALARM_A);
+
+	/* if RTC is not set properly, just start the recorder and exit */
+	if(getEpoch() < 1707859083) return 1;
+
+	/* grab current time */
+	RTC_TimeTypeDef current_time = {0};
+	RTC_DateTypeDef current_date = {0};
+
+	HAL_RTC_GetTime(&hrtc, &current_time, RTC_FORMAT_BIN);
+	HAL_RTC_GetDate(&hrtc, &current_date, RTC_FORMAT_BIN);
+
+    schedule_config_t* next_schedule = NULL;
+
+    // Iterate through the schedules
+    for (uint8_t i = 0; i < schedule_count; ++i) {
+        if (is_today_scheduled(current_date.WeekDay, schedules[i])) {
+            // Check if the current time is within the schedule's start and stop time
+            if (is_within_schedule(current_time, schedules[i])) {
+                // Handle current time within schedule
+
+                sAlarm.AlarmTime.Hours = schedules[i].stop_hour;
+				sAlarm.AlarmTime.Minutes = schedules[i].stop_minute;
+				sAlarm.AlarmTime.Seconds = 0x0;
+				sAlarm.AlarmTime.SubSeconds = 0x0;
+				sAlarm.AlarmTime.TimeFormat = 0;
+				sAlarm.AlarmTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+				sAlarm.AlarmTime.StoreOperation = RTC_STOREOPERATION_SET;
+				sAlarm.AlarmMask = RTC_ALARMMASK_NONE;
+				sAlarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
+				sAlarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_WEEKDAY;
+				if(schedules[i].start_hour > schedules[i].stop_hour){
+					sAlarm.AlarmDateWeekDay = (current_date.WeekDay + 1) % 7;
+				}else{
+					sAlarm.AlarmDateWeekDay = current_date.WeekDay;
+				}
+				sAlarm.Alarm = RTC_ALARM_A;
+				if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN) != HAL_OK)
+				{
+				Error_Handler();
+				}
+
+                return 1;
+            }
+        }
+    }
+
+    uint32_t time_diff_minutes = 7*24*60; // max difference in time over one week
+    uint32_t new_time_difference = 0;
+    for (uint8_t i = 0; i < schedule_count; ++i) {
+    	new_time_difference = calculateTimeDifference(current_time, current_date, schedules[i]);
+    	if(new_time_difference < time_diff_minutes){
+    		time_diff_minutes = new_time_difference;
+    		next_schedule = &schedules[i];
+    	}
+    }
+
+    for(int i = 0; i < 7; i++){
+		if(is_today_scheduled((current_date.WeekDay + i) % 7, *next_schedule)){
+			sAlarm.AlarmDateWeekDay = (current_date.WeekDay + i) % 7;
+			break;
+		}
+	}
+
+	  /** Enable the Alarm A
+	  */
+	  sAlarm.AlarmTime.Hours = next_schedule->start_hour;
+	  sAlarm.AlarmTime.Minutes = next_schedule->start_minute;
+	  sAlarm.AlarmTime.Seconds = 0x0;
+	  sAlarm.AlarmTime.SubSeconds = 0x0;
+	  sAlarm.AlarmTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+	  sAlarm.AlarmTime.StoreOperation = RTC_STOREOPERATION_SET;
+	  sAlarm.AlarmMask = RTC_ALARMMASK_NONE;
+	  sAlarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
+	  sAlarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_WEEKDAY;
+
+	  sAlarm.Alarm = RTC_ALARM_A;
+	  if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN) != HAL_OK)
+	  {
+	    Error_Handler();
+	  }
+
+	  return 0;
+}
+
 void grabInertialSample(float *pitch, float *roll, float *heading){
 
 #define MAG_ADDR (0x1E << 1)
@@ -2605,7 +2816,21 @@ void grabInertialSample(float *pitch, float *roll, float *heading){
 	  readFRAM(FRAM_MAG_CAL_WORD_ADDR, FRAM_MAG_CAL_BYTE_ADDR, (uint8_t *) &mag_calibration, FRAM_MAG_CAL_SIZE);
 	  if(mag_calibration.delimiter != 0xDEADBEEF){
 		  performMagCalibration(2000);
+
+			txData = 0b10000000; // ODR 10Hz, temperature compensation,continous mode
+			status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_CFG_REG_A, 1, &txData, 1, 100);
+
+			txData = 0b00000001; // digital filter enabled (ODR/4)
+			status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_CFG_REG_B, 1, &txData, 1, 100);
+
+			txData = 0b00000000;
+			status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_CFG_REG_C, 1, &txData, 1, 100);
+
+			osDelay(500);
 	  }
+
+		// new data available
+		status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_OFFSET_X_REG_L, 1,magData, 6, 100);
 
 //	  readFRAM(FRAM_MAG_CAL_WORD_ADDR, FRAM_MAG_CAL_BYTE_ADDR, mag_cal_vals, FRAM_MAG_CAL_SIZE);
 //	  writeFRAM(FRAM_MAG_CAL_WORD_ADDR, FRAM_MAG_CAL_BYTE_ADDR, mag_cal_vals, FRAM_MAG_CAL_SIZE);
@@ -2882,7 +3107,7 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 				// Wait for a notification
 				flag = osThreadFlagsWait(0x0001U | TERMINATE_EVENT, osFlagsWaitAny, osWaitForever);
 
-//				toggledBlue();
+				toggledBlue();
 
 				if(SAI_HALF_CALLBACK){
 					SAI_HALF_CALLBACK = 0;
@@ -2923,6 +3148,7 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 				}
 
 				if((flag & TERMINATE_EVENT) == TERMINATE_EVENT){
+					if(configPacket.payload.config_packet.network_state.master_node) sendConfigToNodes(false);
 					f_close(&WavFile);
 					HAL_SAI_DMAStop(&hsai_BlockA1);
 					vTaskDelete( NULL );
@@ -3004,12 +3230,16 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 
 		}
 
+		if(configPacket.payload.config_packet.network_state.master_node) sendConfigToNodes(false);
+
 		HAL_SAI_DMAStop(&hsai_BlockA1);
 
 		for(int i = 0; i < 10; i++){
 			setLED_Green(1000);
+			setLED_Red(1000);
 			osDelay(100);
 			setLED_Green(0);
+			setLED_Red(0);
 			osDelay(100);
 		}
 
@@ -3037,6 +3267,20 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 	}else{
 		Error_Handler();
 	}
+}
+
+void writeSystemStateToFRAM(void){
+			HAL_StatusTypeDef status = HAL_I2C_Mem_Write(&hi2c3, FRAM_CONFIG_WORD_ADDR, FRAM_CONFIG_BYTE_ADDR, 1, (uint8_t*) &configPacket, sizeof(configPacket), 1000);
+			if(status != HAL_OK) Error_Handler();
+			status = HAL_I2C_Mem_Write(&hi2c3, FRAM_INFO_WORD_ADDR, FRAM_INFO_BYTE_ADDR, 1, (uint8_t*) &infoPacket, sizeof(infoPacket), 1000);
+			if(status != HAL_OK) Error_Handler();
+}
+
+void readSystemStateToFRAM(void){
+				status = HAL_I2C_Mem_Read(&hi2c3, FRAM_CONFIG_WORD_ADDR, FRAM_CONFIG_BYTE_ADDR, 1, (uint8_t*) &configPacket, sizeof(configPacket), 1000);
+				if(status != HAL_OK) Error_Handler();
+				status = HAL_I2C_Mem_Read(&hi2c3, FRAM_INFO_WORD_ADDR, FRAM_INFO_BYTE_ADDR, 1, (uint8_t*) &infoPacket, sizeof(infoPacket), 1000);
+				if(status != HAL_OK) Error_Handler();
 }
 
 #define MAX_PRECISION	(10)
@@ -3241,8 +3485,8 @@ void getFormattedTime(RTC_HandleTypeDef *hrtc, char *formattedTime) {
 	RTC_DateTypeDef sDate;
 
 	// Get the RTC current Time and Date
-	HAL_RTC_GetTime(hrtc, &sTime, RTC_FORMAT_BCD);
-	HAL_RTC_GetDate(hrtc, &sDate, RTC_FORMAT_BCD); // This line must be called after HAL_RTC_GetTime()!
+	HAL_RTC_GetTime(hrtc, &sTime, RTC_FORMAT_BIN);
+	HAL_RTC_GetDate(hrtc, &sDate, RTC_FORMAT_BIN); // This line must be called after HAL_RTC_GetTime()!
 
 	// Format the time into the provided character array
 	snprintf(formattedTime, 25, "%02dy_%02dm_%02dd_%02dh_%02dm_%02ds",
@@ -3359,22 +3603,15 @@ void MX_SAI1_Init_Custom(SAI_HandleTypeDef &hsai_handle, uint8_t bit_resolution)
 	//	  return status;
 }
 
-void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc){
-	osThreadFlagsSet(micThreadId, RTC_EVENT);
-}
 
-#define IS_CONFIG_EVENT(X)				(((X && CONFIG_UPDATED_EVENT) == CONFIG_UPDATED_EVENT) ? (1) : (0))
-#define IS_OPENTHREAD_EVENT(X)			(((X && OPENTHREAD_EVENT) == OPENTHREAD_EVENT) ? (1) : (0))
-#define IS_CAMERA_EVENT(X)				(((X && CAMERA_EVENT) == CAMERA_EVENT) ? (1) : (0))
-#define IS_FORMAT_MEMORY_EVENT(X)		(((X && FORMAT_MEMORY) == FORMAT_MEMORY) ? (1) : (0))
-#define IS_UWB_START_EVENT(X)			(((X && UWB_START) == UWB_START) ? (1) : (0))
-#define IS_UWB_UPDATE_RANGE_EVENT(X)	(((X && UWB_UPDATE_RANGE) == UWB_UPDATE_RANGE) ? (1) : (0))
+
 
 
 void mainSystemTask(void *argument){
 	uint32_t flags = 0;
 
 	FRESULT res;
+	uint8_t scheduleRun = 0;
 
 	res = f_mount(&SDFatFs, "", 1);
 	if(res != FR_OK){
@@ -3408,22 +3645,35 @@ void mainSystemTask(void *argument){
 	/* start audio recording if enabled and no sensor schedule has been given*/
 	osDelay(500);
 
+	osDelay(10000);
+
 	if(configPacket.payload.config_packet.network_state.master_node){
-		if(configPacket.payload.config_packet.has_audio_config & configPacket.payload.config_packet.enable_recording &
-				(configPacket.payload.config_packet.schedule_config_count == 0)){
-			osThreadState_t state = osThreadGetState(micThreadId);
-			if( (state != osThreadReady) || (state != osThreadRunning) || (state != osThreadInactive) || (state != osThreadBlocked) ){
+		while(coapSetup != 1){
+			osDelay(100);
+		}
+
+		sendConfigToNodes(false);
+
+		if(configPacket.payload.config_packet.enable_recording){
+			/* start immediately if a slave device or no schedule is given */
+			if(configPacket.payload.config_packet.schedule_config_count == 0){
 				micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
+
+			}
+			/* or if a schedule is given, start next alarm or start right away if within schedule */
+			else if(configPacket.payload.config_packet.enable_recording &&
+					(configPacket.payload.config_packet.schedule_config_count > 0)){
+				/* start alarm based on schedule */
+				scheduleRun = setAlarm(configPacket.payload.config_packet.schedule_config,
+						configPacket.payload.config_packet.schedule_config_count);
+				if(scheduleRun) micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
 			}
 		}
-		/* or if a schedule is given, start next alarm or start right away if within schedule */
-		else if(configPacket.payload.config_packet.enable_recording &&
-				(configPacket.payload.config_packet.schedule_config_count > 0)){
-			//todo: start alarm based on schedule
-
-		}
 	}else{
-		//todo: check Openthread network is a master exists, what desired configuration is, and if we should be running
+		//todo: check Openthread network if a master exists, what desired configuration is, and if we should be running
+		/* broadcast that we are a new slave and need config */
+		alertMaster();
+
 	}
 
 	while(1){
@@ -3437,9 +3687,13 @@ void mainSystemTask(void *argument){
 									UWB_UPDATE_RANGE, 		osFlagsWaitAny, osWaitForever);
 
 		if( IS_CONFIG_EVENT(flags) ||
+				IS_MAG_CAL_EVENT(flags) ||
 				(IS_OPENTHREAD_EVENT(flags) && configPacket.payload.config_packet.network_state.slave_sync)){
 			/* shut off threads */
-			osThreadFlagsSet(micThreadId, TERMINATE_EVENT);
+			if(micThreadId != NULL) osThreadFlagsSet(micThreadId, TERMINATE_EVENT);
+			HAL_RTC_DeactivateAlarm(&hrtc, RTC_ALARM_A);
+			micThreadId = 0;
+			osDelay(500);
 		}
 
 		//todo: optimize below wait sequence (reference AirSpecs)
@@ -3455,9 +3709,32 @@ void mainSystemTask(void *argument){
 //
 //		}
 
+		if(IS_MAG_CAL_EVENT(flags)){
+			performMagCalibration(2000);
+		}
+
+		if(configPacket.payload.config_packet.enable_recording){
+			while(coapSetup != 1){
+				osDelay(100);
+			}
 
 
 
+			if(configPacket.payload.config_packet.enable_recording){
+				/* start immediately if a slave device or no schedule is given */
+				if(configPacket.payload.config_packet.schedule_config_count == 0){
+					micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
+				}
+				/* or if a schedule is given, start next alarm or start right away if within schedule */
+				else if(configPacket.payload.config_packet.enable_recording &&
+						(configPacket.payload.config_packet.schedule_config_count > 0)){
+					/* start alarm based on schedule */
+					scheduleRun = setAlarm(configPacket.payload.config_packet.schedule_config,
+							configPacket.payload.config_packet.schedule_config_count);
+					if(scheduleRun) micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
+				}
+			}
+		}
 
 	}
 
@@ -3659,6 +3936,7 @@ void updateSystemConfig(void *argument){
 			configPacket.payload.config_packet.network_state.slave_sync = 0;
 		}else{
 			configPacket.payload.config_packet.network_state.slave_sync = new_config.network_state.slave_sync;
+			configPacket.payload.config_packet.enable_recording = false;
 		}
 
 		memcpy((uint8_t*)&configPacket.payload.config_packet.network_state,
@@ -4686,6 +4964,11 @@ uint64_t RTC_ToEpochMS(RTC_TimeTypeDef *time, RTC_DateTypeDef *date) {
 
 	uint64_t timestamp_ms = mktime(&currTime);
 	return (timestamp_ms * 1000) + 1000 - ((time->SubSeconds*1000) /  time->SecondFraction);
+}
+
+void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc)
+{
+	osThreadFlagsSet(mainSystemThreadId, UPDATE_EVENT);
 }
 /* USER CODE END 4 */
 

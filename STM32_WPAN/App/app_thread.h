@@ -35,7 +35,7 @@ extern "C" {
 #include OPENTHREAD_CONFIG_FILE
 
 /* USER CODE BEGIN Includes */
-
+#include "message.pb.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -171,7 +171,10 @@ void APP_THREAD_Init_Dyn_1(void);
 void APP_THREAD_Init_Dyn_2(void);
 void APP_THREAD_Stop(void);
 void APP_THREAD_CleanCallbacks(void);
-void sendConfigToNodes(void);
+void sendConfigToNodes(bool record_enable);
+void alertMaster(void);
+extern uwb_packet_t uwb_table;
+
 /* USER CODE END EF */
 
 #ifdef __cplusplus

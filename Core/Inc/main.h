@@ -193,7 +193,15 @@ extern SPI_HandleTypeDef hspi1;
 #define UWB_START			  0x00000020
 #define UWB_UPDATE_ADDR	      0x00000040
 #define UWB_UPDATE_RANGE      0x00000080
+#define MAG_CAL_EVENT		  0x00000100
 
+#define IS_CONFIG_EVENT(X)				(((X & CONFIG_UPDATED_EVENT) == CONFIG_UPDATED_EVENT) ? (1) : (0))
+#define IS_OPENTHREAD_EVENT(X)			(((X & OPENTHREAD_EVENT) == OPENTHREAD_EVENT) ? (1) : (0))
+#define IS_CAMERA_EVENT(X)				(((X & CAMERA_EVENT) == CAMERA_EVENT) ? (1) : (0))
+#define IS_FORMAT_MEMORY_EVENT(X)		(((X & FORMAT_MEMORY) == FORMAT_MEMORY) ? (1) : (0))
+#define IS_UWB_START_EVENT(X)			(((X & UWB_START) == UWB_START) ? (1) : (0))
+#define IS_UWB_UPDATE_RANGE_EVENT(X)	(((X & UWB_UPDATE_RANGE) == UWB_UPDATE_RANGE) ? (1) : (0))
+#define IS_MAG_CAL_EVENT(X)				(((X & MAG_CAL_EVENT) == MAG_CAL_EVENT) ? (1) : (0))
 
 #define GRAB_SAMPLE_BIT							0x0100
 #define TERMINATE_THREAD_BIT					0x0200
@@ -234,6 +242,8 @@ extern const osSemaphoreAttr_t messageSPI1_Lock_attributes;
 extern const osThreadAttr_t bmeTask_attributes;
 extern const osThreadAttr_t batteryMonitorTask_attributes;
 extern const osThreadAttr_t chirpTask_attributes;
+
+extern volatile uint8_t coapSetup;
 
 void setLED_Blue(uint32_t intensity);
 void setLED_Green(uint32_t intensity);

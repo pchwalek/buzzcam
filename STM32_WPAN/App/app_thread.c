@@ -44,7 +44,6 @@
 #include "pb.h"
 #include "pb_decode.h"
 #include "pb_encode.h"
-
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -143,6 +142,8 @@ static void APP_THREAD_CoapConfigHandler(void                * pContext,
 static void APP_THREAD_SetSleepyEndDeviceMode(void);
 static void APP_THREAD_CoapTimingElapsed(void);
 
+void updateTable(uwb_range_t newEntry);
+
 static void APP_THREAD_CoapSendRequest(otCoapResource* aCoapRessource,
     otCoapType aCoapType,
     otCoapCode aCoapCode,
@@ -160,6 +161,8 @@ osMutexId_t MtxOtAckId;
 static void ot_Ack( ot_TL_CmdStatus_t status );
 
 void Ot_Cmd_TransferWithNotif(void);
+
+void sendConfig(otIp6Address addr);
 /* USER CODE END PFP */
 
 /* Private variables -----------------------------------------------*/
@@ -220,6 +223,8 @@ static uint8_t PayloadRead[30]= {0};
 static volatile uint8_t waitingForAck = 0;
 
 extern volatile uint8_t g_ot_notification_allowed;
+
+uwb_packet_t uwb_table = {0};
 
 /* USER CODE END PV */
 
@@ -388,14 +393,17 @@ static void APP_THREAD_DeviceConfig(void)
   }
   /* Add COAP resources */
   otCoapAddResource(NULL, &OT_Ressource);
+  otCoapAddResource(NULL, &OT_ConfigRessource);
 
-  if(configPacket.payload.config_packet.network_state.master_node){
+  coapSetup = 1;
 
-  }
-
-  else if(configPacket.payload.config_packet.network_state.slave_sync){
-
-  }
+//  if(configPacket.payload.config_packet.network_state.master_node){
+//
+//  }
+//
+//  else if(configPacket.payload.config_packet.network_state.slave_sync){
+//
+//  }
   /* USER CODE END DEVICECONFIG */
 }
 
@@ -893,8 +901,6 @@ void Pre_OtCmdProcessing(void)
 	 * the other tasks are disabled
 	 */
 
-	//todo
-
 
 }
 
@@ -1259,6 +1265,7 @@ static void APP_THREAD_CoapRequestHandler(void                * pContext,
   } while (false);
 }
 
+
 static void APP_THREAD_CoapConfigHandler(void                * pContext,
                                           otMessage           * pMessage,
                                           const otMessageInfo * pMessageInfo)
@@ -1284,12 +1291,80 @@ static void APP_THREAD_CoapConfigHandler(void                * pContext,
 		status = pb_decode(&stream, PACKET_FIELDS, &rxPacket);
 
 		if(status){
-			if(configPacket.payload.config_packet.network_state.slave_sync){
-				osThreadState_t state = osThreadGetState(configThreadId);
-				if( (state != osThreadReady) || (state != osThreadRunning) || (state != osThreadInactive) || (state != osThreadBlocked) ){
-					configThreadId = osThreadNew(updateSystemConfig, &rxPacket.payload.config_packet, &configTask_attributes);
+
+			switch(rxPacket.which_payload){
+				case PACKET_MARK_PACKET_TAG:
+//					state = osThreadGetState(markThreadId);
+//					if( (state != osThreadReady) || (state != osThreadRunning) || (state != osThreadInactive) || (state != osThreadBlocked) ){
+//						markThreadId = osThreadNew(triggerMark, &rxPacket.payload.mark_packet, &markTask_attributes);
+//					}
+					break;
+				case PACKET_SYSTEM_INFO_PACKET_TAG:
+										break;
+				case PACKET_CONFIG_PACKET_TAG:
+					/* only update config if in slave mode */
+					if(configPacket.payload.config_packet.network_state.slave_sync){
+						osThreadState_t state = osThreadGetState(configThreadId);
+						if( (state != osThreadReady) || (state != osThreadRunning) || (state != osThreadInactive) || (state != osThreadBlocked) ){
+							configThreadId = osThreadNew(updateSystemConfig, &rxPacket.payload.config_packet, &configTask_attributes);
+						}
+					}
+
+					/* failure conditon: if another master node is broadcasting, demote yourself to slave_node */
+					if( (rxPacket.payload.config_packet.network_state.master_node == 1) &&
+							(configPacket.payload.config_packet.network_state.master_node == 0)){
+						configPacket.payload.config_packet.network_state.slave_sync = 1;
+						configPacket.payload.config_packet.network_state.master_node = 0;
+
+						osThreadState_t state = osThreadGetState(configThreadId);
+						if( (state != osThreadReady) || (state != osThreadRunning) || (state != osThreadInactive) || (state != osThreadBlocked) ){
+							configThreadId = osThreadNew(updateSystemConfig, &rxPacket.payload.config_packet, &configTask_attributes);
+						}
+					}
+										break;
+				case PACKET_SPECIAL_FUNCTION_TAG:
+					switch(rxPacket.payload.special_function.which_payload){
+						case SPECIAL_FUNCTION_FORMAT_SDCARD_TAG:
+							break;
+						case SPECIAL_FUNCTION_CAMERA_CONTROL_TAG:
+							if(rxPacket.payload.special_function.payload.camera_control.capture){
+								//todo: trigger any connected cameras
+							}
+							else if(rxPacket.payload.special_function.payload.camera_control.pair_with_nearby_cameras){
+								//todo: put device in pairing mode for any nearby cameras
+							}
+							else if(rxPacket.payload.special_function.payload.camera_control.wakeup_cameras){
+								//todo: wakeup any sleeping cameras
+							}
+							break;
+						case SPECIAL_FUNCTION_UWB_PACKET_TAG:
+							if(rxPacket.payload.special_function.payload.uwb_packet.start_ranging){
+								//todo: turn on UWB if not already on
+							}
+							if(rxPacket.payload.special_function.payload.uwb_packet.ranges_count == 1){
+								// update UWB entry
+								updateTable(rxPacket.payload.special_function.payload.uwb_packet.ranges[0]);
+							}
+							break;
+						case SPECIAL_FUNCTION_OPENTHREAD_SYNC_TIME_TAG:
+							if(rxPacket.header.epoch < 1707859083){
+								updateRTC_MS(rxPacket.header.epoch);
+							}
+							break;
+						case SPECIAL_FUNCTION_MAG_CALIBRATION_TAG:
+							break;
+						case SPECIAL_FUNCTION_SLAVE_REQ_CONFIG_TAG:
+							// if a master node, unicast config to a slave device
+							if(configPacket.payload.config_packet.network_state.master_node){
+								sendConfig(pMessageInfo->mPeerAddr);
+							}
+							break;
+						default: break;
+					}
+				default: break;
 				}
-			}
+
+
 		}
 
 
@@ -1313,6 +1388,24 @@ static void APP_THREAD_CoapConfigHandler(void                * pContext,
     }
 
   } while (false);
+}
+
+
+void updateTable(uwb_range_t newEntry){
+
+	for(int i = 0; i < sizeof(uwb_table); i++){
+
+		if(uwb_table.ranges[i].system_uid == newEntry.system_uid){
+			//update existing entry
+			memcpy(&uwb_table.ranges[i], &newEntry, sizeof(newEntry));
+			return;
+		}else if(i == uwb_table.ranges_count){
+			//new entry
+			memcpy(&uwb_table.ranges[i], &newEntry, sizeof(newEntry));
+			uwb_table.ranges_count++;
+			return;
+		}
+	}
 }
 
 /**
@@ -1395,7 +1488,7 @@ static void APP_THREAD_CoapSendRequest(otCoapResource* aCoapRessource,
       error = otMessageAppend(pOT_Message, aPayload, Size);
       if (error != OT_ERROR_NONE)
       {
-        APP_THREAD_Error(ERR_THREAD_COAP_APPEND,error);
+        Error_Handler();
         break;
       }
     }
@@ -1409,19 +1502,16 @@ static void APP_THREAD_CoapSendRequest(otCoapResource* aCoapRessource,
 
     if((aPeerAddress == NULL) && (aStringAddress != NULL))
     {
-      APP_DBG("Use String Address : %s ", aStringAddress);
       otIp6AddressFromString(aStringAddress, &OT_MessageInfo.mPeerAddr);
     }
     else
     if (aPeerAddress != NULL)
     {
-      APP_DBG("Use Peer Address");
       memcpy(&OT_MessageInfo.mPeerAddr, aPeerAddress, sizeof(OT_MessageInfo.mPeerAddr));
     }
     else
     {
-      APP_DBG("ERROR: Address string and Peer Address not defined");
-      APP_THREAD_Error(ERR_THREAD_COAP_ADDRESS_NOT_DEFINED, 0);
+    	 Error_Handler();
     }
 
     if(aCoapType == OT_COAP_TYPE_NON_CONFIRMABLE)
@@ -1450,8 +1540,29 @@ static void APP_THREAD_CoapSendRequest(otCoapResource* aCoapRessource,
   }
 }
 
-void sendConfigToNodes(void){
+void sendConfigToNodes(bool record_enable){
+	/* Create a stream that will write to our buffer. */
+	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+	/* Now we are ready to encode the message! */
+	bool prevState = configPacket.payload.config_packet.enable_recording;
+	configPacket.payload.config_packet.enable_recording = record_enable;
+	status = pb_encode(&stream, PACKET_FIELDS, &configPacket);
 
+	configPacket.payload.config_packet.enable_recording = prevState;
+
+	  APP_THREAD_CoapSendRequest(&OT_ConfigRessource,
+	      OT_COAP_TYPE_NON_CONFIRMABLE,
+	      OT_COAP_CODE_PUT,
+	      MULICAST_FTD_MED,
+	      NULL,
+		  buffer,
+		  stream.bytes_written,
+	      NULL,
+	      NULL);
+
+}
+
+void sendConfig(otIp6Address addr){
 	/* Create a stream that will write to our buffer. */
 	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
 	/* Now we are ready to encode the message! */
@@ -1460,8 +1571,32 @@ void sendConfigToNodes(void){
 	  APP_THREAD_CoapSendRequest(&OT_ConfigRessource,
 	      OT_COAP_TYPE_NON_CONFIRMABLE,
 	      OT_COAP_CODE_PUT,
-	      MULICAST_FTD_MED,
 	      NULL,
+		  &addr,
+		  buffer,
+		  stream.bytes_written,
+	      NULL,
+	      NULL);
+
+}
+
+void alertMaster(void){
+
+	memcpy(&rxPacket,NULL,sizeof(rxPacket));
+	rxPacket.which_payload = PACKET_SPECIAL_FUNCTION_TAG;
+	rxPacket.payload.special_function.which_payload = SPECIAL_FUNCTION_SLAVE_REQ_CONFIG_TAG;
+	rxPacket.payload.special_function.payload.slave_req_config = true;
+
+	/* Create a stream that will write to our buffer. */
+	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+	/* Now we are ready to encode the message! */
+	status = pb_encode(&stream, PACKET_FIELDS, &rxPacket);
+
+	  APP_THREAD_CoapSendRequest(&OT_ConfigRessource,
+	      OT_COAP_TYPE_NON_CONFIRMABLE,
+	      OT_COAP_CODE_PUT,
+		  MULICAST_FTD_MED,
+		  NULL,
 		  buffer,
 		  stream.bytes_written,
 	      NULL,

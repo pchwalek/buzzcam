@@ -5,4 +5,3 @@ ConfigPacket.schedule_config	     max_count:10;
 DeviceUID.addr                       max_size:10;
 NetworkState.discovered_device_UID	     max_count:10;	
 UWB_Packet.ranges                  max_count:20;
-

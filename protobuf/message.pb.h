@@ -251,8 +251,10 @@ typedef struct config_packet {
 } config_packet_t;
 
 typedef struct uwb_range {
-    bool has_device_uid;
-    device_uid_t device_uid;
+    bool has_openthread_uid;
+    device_uid_t openthread_uid;
+    uint32_t system_uid;
+    uint32_t uwb_addr;
     float range;
 } uwb_range_t;
 
@@ -269,8 +271,11 @@ typedef struct special_function {
         camera_control_t camera_control;
         uwb_packet_t uwb_packet;
         bool openthread_sync_time;
-        bool function_5;
-        bool function_6;
+        bool mag_calibration;
+        bool slave_req_config;
+        bool special_function_7;
+        bool special_function_8;
+        bool special_function_9;
     } payload;
 } special_function_t;
 
@@ -368,7 +373,7 @@ extern "C" {
 #define DEVICE_UID_INIT_DEFAULT                  {""}
 #define NETWORK_STATE_INIT_DEFAULT               {0, 0, {DEVICE_UID_INIT_DEFAULT, DEVICE_UID_INIT_DEFAULT, DEVICE_UID_INIT_DEFAULT, DEVICE_UID_INIT_DEFAULT, DEVICE_UID_INIT_DEFAULT, DEVICE_UID_INIT_DEFAULT, DEVICE_UID_INIT_DEFAULT, DEVICE_UID_INIT_DEFAULT, DEVICE_UID_INIT_DEFAULT, DEVICE_UID_INIT_DEFAULT}, 0, 0, 0, 0}
 #define CONFIG_PACKET_INIT_DEFAULT               {false, AUDIO_CONFIG_INIT_DEFAULT, 0, {SCHEDULE_CONFIG_INIT_DEFAULT, SCHEDULE_CONFIG_INIT_DEFAULT, SCHEDULE_CONFIG_INIT_DEFAULT, SCHEDULE_CONFIG_INIT_DEFAULT, SCHEDULE_CONFIG_INIT_DEFAULT, SCHEDULE_CONFIG_INIT_DEFAULT, SCHEDULE_CONFIG_INIT_DEFAULT, SCHEDULE_CONFIG_INIT_DEFAULT, SCHEDULE_CONFIG_INIT_DEFAULT, SCHEDULE_CONFIG_INIT_DEFAULT}, false, SENSOR_CONFIG_INIT_DEFAULT, false, LOW_POWER_CONFIG_INIT_DEFAULT, false, NETWORK_STATE_INIT_DEFAULT, 0}
-#define UWB_RANGE_INIT_DEFAULT                   {false, DEVICE_UID_INIT_DEFAULT, 0}
+#define UWB_RANGE_INIT_DEFAULT                   {false, DEVICE_UID_INIT_DEFAULT, 0, 0, 0}
 #define UWB_PACKET_INIT_DEFAULT                  {0, 0, {UWB_RANGE_INIT_DEFAULT, UWB_RANGE_INIT_DEFAULT, UWB_RANGE_INIT_DEFAULT, UWB_RANGE_INIT_DEFAULT, UWB_RANGE_INIT_DEFAULT, UWB_RANGE_INIT_DEFAULT, UWB_RANGE_INIT_DEFAULT, UWB_RANGE_INIT_DEFAULT, UWB_RANGE_INIT_DEFAULT, UWB_RANGE_INIT_DEFAULT, UWB_RANGE_INIT_DEFAULT, UWB_RANGE_INIT_DEFAULT, UWB_RANGE_INIT_DEFAULT, UWB_RANGE_INIT_DEFAULT, UWB_RANGE_INIT_DEFAULT, UWB_RANGE_INIT_DEFAULT, UWB_RANGE_INIT_DEFAULT, UWB_RANGE_INIT_DEFAULT, UWB_RANGE_INIT_DEFAULT, UWB_RANGE_INIT_DEFAULT}}
 #define SPECIAL_FUNCTION_INIT_DEFAULT            {0, {0}}
 #define PACKET_INIT_DEFAULT                      {false, PACKET_HEADER_INIT_DEFAULT, 0, {SYSTEM_INFO_PACKET_INIT_DEFAULT}}
@@ -392,7 +397,7 @@ extern "C" {
 #define DEVICE_UID_INIT_ZERO                     {""}
 #define NETWORK_STATE_INIT_ZERO                  {0, 0, {DEVICE_UID_INIT_ZERO, DEVICE_UID_INIT_ZERO, DEVICE_UID_INIT_ZERO, DEVICE_UID_INIT_ZERO, DEVICE_UID_INIT_ZERO, DEVICE_UID_INIT_ZERO, DEVICE_UID_INIT_ZERO, DEVICE_UID_INIT_ZERO, DEVICE_UID_INIT_ZERO, DEVICE_UID_INIT_ZERO}, 0, 0, 0, 0}
 #define CONFIG_PACKET_INIT_ZERO                  {false, AUDIO_CONFIG_INIT_ZERO, 0, {SCHEDULE_CONFIG_INIT_ZERO, SCHEDULE_CONFIG_INIT_ZERO, SCHEDULE_CONFIG_INIT_ZERO, SCHEDULE_CONFIG_INIT_ZERO, SCHEDULE_CONFIG_INIT_ZERO, SCHEDULE_CONFIG_INIT_ZERO, SCHEDULE_CONFIG_INIT_ZERO, SCHEDULE_CONFIG_INIT_ZERO, SCHEDULE_CONFIG_INIT_ZERO, SCHEDULE_CONFIG_INIT_ZERO}, false, SENSOR_CONFIG_INIT_ZERO, false, LOW_POWER_CONFIG_INIT_ZERO, false, NETWORK_STATE_INIT_ZERO, 0}
-#define UWB_RANGE_INIT_ZERO                      {false, DEVICE_UID_INIT_ZERO, 0}
+#define UWB_RANGE_INIT_ZERO                      {false, DEVICE_UID_INIT_ZERO, 0, 0, 0}
 #define UWB_PACKET_INIT_ZERO                     {0, 0, {UWB_RANGE_INIT_ZERO, UWB_RANGE_INIT_ZERO, UWB_RANGE_INIT_ZERO, UWB_RANGE_INIT_ZERO, UWB_RANGE_INIT_ZERO, UWB_RANGE_INIT_ZERO, UWB_RANGE_INIT_ZERO, UWB_RANGE_INIT_ZERO, UWB_RANGE_INIT_ZERO, UWB_RANGE_INIT_ZERO, UWB_RANGE_INIT_ZERO, UWB_RANGE_INIT_ZERO, UWB_RANGE_INIT_ZERO, UWB_RANGE_INIT_ZERO, UWB_RANGE_INIT_ZERO, UWB_RANGE_INIT_ZERO, UWB_RANGE_INIT_ZERO, UWB_RANGE_INIT_ZERO, UWB_RANGE_INIT_ZERO, UWB_RANGE_INIT_ZERO}}
 #define SPECIAL_FUNCTION_INIT_ZERO               {0, {0}}
 #define PACKET_INIT_ZERO                         {false, PACKET_HEADER_INIT_ZERO, 0, {SYSTEM_INFO_PACKET_INIT_ZERO}}
@@ -481,16 +486,21 @@ extern "C" {
 #define CONFIG_PACKET_LOW_POWER_CONFIG_TAG       4
 #define CONFIG_PACKET_NETWORK_STATE_TAG          5
 #define CONFIG_PACKET_ENABLE_RECORDING_TAG       6
-#define UWB_RANGE_DEVICE_UID_TAG                 1
-#define UWB_RANGE_RANGE_TAG                      2
+#define UWB_RANGE_OPENTHREAD_UID_TAG             1
+#define UWB_RANGE_SYSTEM_UID_TAG                 2
+#define UWB_RANGE_UWB_ADDR_TAG                   3
+#define UWB_RANGE_RANGE_TAG                      4
 #define UWB_PACKET_START_RANGING_TAG             1
 #define UWB_PACKET_RANGES_TAG                    2
 #define SPECIAL_FUNCTION_FORMAT_SDCARD_TAG       1
 #define SPECIAL_FUNCTION_CAMERA_CONTROL_TAG      2
 #define SPECIAL_FUNCTION_UWB_PACKET_TAG          3
 #define SPECIAL_FUNCTION_OPENTHREAD_SYNC_TIME_TAG 4
-#define SPECIAL_FUNCTION_FUNCTION_5_TAG          5
-#define SPECIAL_FUNCTION_FUNCTION_6_TAG          6
+#define SPECIAL_FUNCTION_MAG_CALIBRATION_TAG     5
+#define SPECIAL_FUNCTION_SLAVE_REQ_CONFIG_TAG    6
+#define SPECIAL_FUNCTION_SPECIAL_FUNCTION_7_TAG  7
+#define SPECIAL_FUNCTION_SPECIAL_FUNCTION_8_TAG  8
+#define SPECIAL_FUNCTION_SPECIAL_FUNCTION_9_TAG  9
 #define PACKET_HEADER_TAG                        1
 #define PACKET_SYSTEM_INFO_PACKET_TAG            2
 #define PACKET_MARK_PACKET_TAG                   3
@@ -676,11 +686,13 @@ X(a, STATIC,   SINGULAR, BOOL,     enable_recording,   6)
 #define config_packet_t_network_state_MSGTYPE network_state_t
 
 #define UWB_RANGE_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  device_uid,        1) \
-X(a, STATIC,   SINGULAR, FLOAT,    range,             2)
+X(a, STATIC,   OPTIONAL, MESSAGE,  openthread_uid,    1) \
+X(a, STATIC,   SINGULAR, UINT32,   system_uid,        2) \
+X(a, STATIC,   SINGULAR, UINT32,   uwb_addr,          3) \
+X(a, STATIC,   SINGULAR, FLOAT,    range,             4)
 #define UWB_RANGE_CALLBACK NULL
 #define UWB_RANGE_DEFAULT NULL
-#define uwb_range_t_device_uid_MSGTYPE device_uid_t
+#define uwb_range_t_openthread_uid_MSGTYPE device_uid_t
 
 #define UWB_PACKET_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, BOOL,     start_ranging,     1) \
@@ -694,8 +706,11 @@ X(a, STATIC,   ONEOF,    BOOL,     (payload,format_sdcard,payload.format_sdcard)
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,camera_control,payload.camera_control),   2) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,uwb_packet,payload.uwb_packet),   3) \
 X(a, STATIC,   ONEOF,    BOOL,     (payload,openthread_sync_time,payload.openthread_sync_time),   4) \
-X(a, STATIC,   ONEOF,    BOOL,     (payload,function_5,payload.function_5),   5) \
-X(a, STATIC,   ONEOF,    BOOL,     (payload,function_6,payload.function_6),   6)
+X(a, STATIC,   ONEOF,    BOOL,     (payload,mag_calibration,payload.mag_calibration),   5) \
+X(a, STATIC,   ONEOF,    BOOL,     (payload,slave_req_config,payload.slave_req_config),   6) \
+X(a, STATIC,   ONEOF,    BOOL,     (payload,special_function_7,payload.special_function_7),   7) \
+X(a, STATIC,   ONEOF,    BOOL,     (payload,special_function_8,payload.special_function_8),   8) \
+X(a, STATIC,   ONEOF,    BOOL,     (payload,special_function_9,payload.special_function_9),   9)
 #define SPECIAL_FUNCTION_CALLBACK NULL
 #define SPECIAL_FUNCTION_DEFAULT NULL
 #define special_function_t_payload_camera_control_MSGTYPE camera_control_t
@@ -781,16 +796,16 @@ extern const pb_msgdesc_t packet_t_msg;
 #define MARK_STATE_SIZE                          17
 #define NETWORK_STATE_SIZE                       152
 #define PACKET_HEADER_SIZE                       23
-#define PACKET_SIZE                              630
+#define PACKET_SIZE                              673
 #define SCHEDULE_CONFIG_SIZE                     38
 #define SD_CARD_STATE_SIZE                       24
 #define SENSOR_CONFIG_SIZE                       6
 #define SENSOR_READING_PAYLOAD_SIZE              41
 #define SIMPLE_SENSOR_READING_SIZE               32
-#define SPECIAL_FUNCTION_SIZE                    405
+#define SPECIAL_FUNCTION_SIZE                    645
 #define SYSTEM_INFO_PACKET_SIZE                  370
-#define UWB_PACKET_SIZE                          402
-#define UWB_RANGE_SIZE                           18
+#define UWB_PACKET_SIZE                          642
+#define UWB_RANGE_SIZE                           30
 
 #ifdef __cplusplus
 } /* extern "C" */
