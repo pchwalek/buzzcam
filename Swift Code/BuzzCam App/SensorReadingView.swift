@@ -53,18 +53,18 @@ struct SensorReadingView: View {
                     HStack {
                         Image(systemName: "thermometer").resizable()
                             .aspectRatio(contentMode: .fit)
-                            .frame(width: 40, height: 40)
+                            .frame(width: 30, height: 30)
                         Text("Temperature:")
                             .font(customFontText)
                         Text(String(bluetoothModel.systemInfoPacketData?.temperature ?? 0))
                             .font(customFontTextBold)
-                            .fontWeight(.bold)
+//                            .fontWeight(.bold)
                     }
                     
                     HStack {
                         Image(systemName: "humidity").resizable()
                             .aspectRatio(contentMode: .fit)
-                            .frame(width: 40, height: 40)
+                            .frame(width: 30, height: 30)
                         Text("Humidity:")
                             .font(customFontText)
                         Text(String(bluetoothModel.systemInfoPacketData?.humidity ?? 0))
@@ -74,23 +74,23 @@ struct SensorReadingView: View {
                     HStack {
                         Image(systemName: "wind").resizable()
                             .aspectRatio(contentMode: .fit)
-                            .frame(width: 40, height: 40)
+                            .frame(width: 30, height: 30)
                         Text("CO2:")
                             .font(.body)
                         Text(String(bluetoothModel.systemInfoPacketData?.co2 ?? 0))
-                            .font(.title3)
-                            .fontWeight(.bold)
+                            .font(customFontTextBold)
+//                            .fontWeight(.bold)
                     }
                     
                     HStack {
                         Image(systemName: "lightbulb.max").resizable()
                             .aspectRatio(contentMode: .fit)
-                            .frame(width: 40, height: 40)
+                            .frame(width: 30, height: 30)
                         Text("Light level:")
                             .font(customFontText)
                         Text(String(bluetoothModel.systemInfoPacketData?.light_level ?? 0))
                             .font(customFontTextBold)
-                            .fontWeight(.bold)
+//                            .fontWeight(.bold)
                     }
                 }
                 .padding(30)

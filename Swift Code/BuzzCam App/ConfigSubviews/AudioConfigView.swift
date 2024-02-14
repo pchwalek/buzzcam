@@ -184,7 +184,7 @@ struct AudioConfigView: View {
                                     }
                                 })
                                 .padding()
-                                Text("Estimated recording time: " + String(bluetoothModel.configPacketData_Audio?.estimatedRecordTime ?? 0))
+                                Text("Estimated recording time: " + String(bluetoothModel.configPacketData_Audio?.estimatedRecordTime ?? 0)).fontWeight(.bold)
                                     .font(.body)
                             }
                         }
@@ -306,7 +306,7 @@ struct CompressionTypeCell: View {
     
     let compressionType: CompressionType
     @Binding var selectedCompressionType: CompressionType?
-    let compressionStrings: [String] = ["Opus"]
+    let compressionStrings: [String] = ["Opus", "Flac"]
     
     var body: some View {
         HStack {

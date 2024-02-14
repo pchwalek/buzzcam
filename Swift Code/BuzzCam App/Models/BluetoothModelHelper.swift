@@ -200,7 +200,7 @@ extension BluetoothModel {
             
             configPacket = currentConfigPacket
             
-            print("Sent new compression type")
+            print("Sent new compression type", compressionType)
             
             sendConfigPacket()
         }

@@ -54,24 +54,29 @@ struct StatusesView: View {
             }
             if isExpanded {
                 VStack (alignment: .leading, spacing: 20) {
-                    HStack {
-                        Text("Device enabled").font(customFontTextBold)
-                            .fontWeight(.bold).padding()
-                        Toggle("",isOn: $deviceEnabled).labelsHidden().onAppear {
-                            // Add an observer to monitor changes to systemInfoPacketData
-                            bluetoothModel.$systemInfoPacketData
-                                .sink { systemInfoPacketData in
-                                    // Update deviceEnabled when systemInfoPacketData changes
-                                    self.updateDeviceEnabledOn(systemInfoPacketData)
-                                }
-                                .store(in: &cancellables) // Store the cancellable to avoid memory leaks
+                    VStack (alignment: .leading) {
+                        HStack {
+                            Text("Device enabled").font(customFontTextBold)
+                                .fontWeight(.bold).padding(.horizontal)
                             
-                            // Trigger the initial update
-                            self.updateDeviceEnabledOn(bluetoothModel.systemInfoPacketData)
-                        }.onChange(of: deviceEnabled) {
-                            // Call your function when the toggle is changed
-                            bluetoothModel.deviceEnabledUpdates(deviceEnabled: deviceEnabled)
+                            Toggle("",isOn: $deviceEnabled).labelsHidden().onAppear {
+                                // Add an observer to monitor changes to systemInfoPacketData
+                                bluetoothModel.$systemInfoPacketData
+                                    .sink { systemInfoPacketData in
+                                        // Update deviceEnabled when systemInfoPacketData changes
+                                        self.updateDeviceEnabledOn(systemInfoPacketData)
+                                    }
+                                    .store(in: &cancellables) // Store the cancellable to avoid memory leaks
+                                
+                                // Trigger the initial update
+                                self.updateDeviceEnabledOn(bluetoothModel.systemInfoPacketData)
+                            }.onChange(of: deviceEnabled) {
+                                // Call your function when the toggle is changed
+                                bluetoothModel.deviceEnabledUpdates(deviceEnabled: deviceEnabled)
+                            }.tint(Color(red: 117/255, green: 13/255, blue: 55/255, opacity: 0.5))
                         }
+                        
+                        Text("Needs to be activated for the recorder to run. However, this will be disable in slave mode").font(customFontText).padding(.leading)
                     }
                     
                     

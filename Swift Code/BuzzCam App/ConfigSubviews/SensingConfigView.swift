@@ -37,38 +37,38 @@ struct SensingConfigView: View {
             }
             if isExpanded {
                 VStack (alignment: .leading, spacing: 20) {
-                    VStack(alignment: .leading) {
-                        Text("Sensor Sample Period: \(Int(selectedSamplePeriod))").font(.title3).fontWeight(.bold)
-                        Slider(value: Binding(
-                            get: {
-                                Double(selectedSamplePeriod)
-                            },
-                            set: { newValue in
-                                selectedSamplePeriod = UInt32(newValue)
-                                // This code will be executed when the user starts dragging
-                            }
-                        ), in: 1...300, step: 1, onEditingChanged: { editingChanged in
-                            if !editingChanged {
-                                // This code will be executed when the user finishes dragging
-                                bluetoothModel.changeSamplePeriod(samplePeriod: UInt32(selectedSamplePeriod))
-                            }
-                        })
-                        .padding()
-                        Text("1") // Display the left end value
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal)
-                        
-                        Text("300") // Display the right end value
-                            .frame(maxWidth: .infinity, alignment: .trailing)
-                            .padding(.horizontal)
-                    }
-                    .padding()
-                    .frame(
-                        minWidth: 0,
-                        maxWidth: .infinity,
-                        alignment: .leading)
-                    .background(Color(white: 0.98))
-                    .cornerRadius(10)
+//                    VStack(alignment: .leading) {
+//                        Text("Sensor Sample Period: \(Int(selectedSamplePeriod))").font(.title3).fontWeight(.bold)
+//                        Slider(value: Binding(
+//                            get: {
+//                                Double(selectedSamplePeriod)
+//                            },
+//                            set: { newValue in
+//                                selectedSamplePeriod = UInt32(newValue)
+//                                // This code will be executed when the user starts dragging
+//                            }
+//                        ), in: 1...300, step: 1, onEditingChanged: { editingChanged in
+//                            if !editingChanged {
+//                                // This code will be executed when the user finishes dragging
+//                                bluetoothModel.changeSamplePeriod(samplePeriod: UInt32(selectedSamplePeriod))
+//                            }
+//                        })
+//                        .padding()
+//                        Text("1") // Display the left end value
+//                            .frame(maxWidth: .infinity, alignment: .leading)
+//                            .padding(.horizontal)
+//                        
+//                        Text("300") // Display the right end value
+//                            .frame(maxWidth: .infinity, alignment: .trailing)
+//                            .padding(.horizontal)
+//                    }
+//                    .padding()
+//                    .frame(
+//                        minWidth: 0,
+//                        maxWidth: .infinity,
+//                        alignment: .leading)
+//                    .background(Color(white: 0.98))
+//                    .cornerRadius(10)
                     
                     VStack(alignment: .leading) {
                         HStack {

@@ -29,6 +29,7 @@ struct MainView: View {
     let customFontTitle = Font.custom("Futura-Bold", size: 25) // Define a custom font
     let customFontText = Font.custom("AvenirNext-Regular", size: 18) // Define a custom font
     let customFontTextBold = Font.custom("AvenirNext-DemiBold", size: 23) // Define a custom font
+    let customFontTextBoldLarge = Font.custom("AvenirNext-DemiBold", size: 40) // Define a custom font
     
     @State private var beeScale: CGFloat = 1.0 // Define beeScale here
     
@@ -105,7 +106,7 @@ struct MainView: View {
                                             HStack{
                                                 Text("Mark #").foregroundColor(Color.white).font(customFontTextBold)
                                                 Text(String(bluetoothModel.systemInfoPacketData?.mark_number ?? 0))
-                                                    .font(customFontTitle)
+                                                    .font(customFontTextBoldLarge)
                                                     .foregroundColor(Color.white)
                                                     .contentTransition(.numericText())
                                             }
@@ -136,8 +137,9 @@ struct MainView: View {
                                     Toggle(isOn: $beepOn) {
                                         Text("Play Beep")
                                             .font(customFontText)
+                                            .fontWeight(.bold)
                                             .frame(maxWidth: .infinity, alignment: .trailing)
-                                    }
+                                    }.tint(Color(red: 117/255, green: 13/255, blue: 55/255, opacity: 0.5))
                                     Spacer()
                                 }
                                 
@@ -145,7 +147,7 @@ struct MainView: View {
                                     Text("Add observation (max 40 char.)")
                                         .foregroundColor(.black)
                                         .font(customFontText)
-//                                        .padding(.horizontal, 8) // Adjust padding as needed
+                                        .padding(.top, 20) // Adjust padding as needed
                                     
                                     TextField("", text: $annotationText)
                                         .padding()
@@ -210,7 +212,7 @@ struct MainView: View {
                                     }
                                     
                                     Text("Camera Capture").font(customFontTextBold).padding()
-                                }.padding()
+                                }.padding(.vertical, 15)
                                     .frame(
                                         maxHeight: .infinity,
                                         alignment: .center
@@ -219,7 +221,7 @@ struct MainView: View {
                                     .cornerRadius(15)
                                 
                                 
-                            }.padding(.vertical, 25.0)
+                            }.padding(.vertical, 20)
                             
                             // statuses dropdown
                             StatusesView()
