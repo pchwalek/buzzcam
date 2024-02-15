@@ -11,10 +11,12 @@ import Combine
 struct SchedulesView: View {
     @EnvironmentObject var bluetoothModel: BluetoothModel
     @State private var isExpanded = false
+    @State private var cancellables: Set<AnyCancellable> = Set()
     @State private var schedules: [ScheduleConfig] = []
     @State private var selectedSchedule: ScheduleConfig?
     @State private var selectedIndex: Int?
     @State private var isPopupPresented = false
+    @State private var enableFreeRunMode = false
     
     
     
@@ -37,6 +39,22 @@ struct SchedulesView: View {
             
             if isExpanded {
                 VStack (alignment: .leading, spacing: 20) {
+                    
+                    HStack {
+                        Text("Free run mode")
+                            .fontWeight(.bold)
+                            .padding(.horizontal)
+                        
+                        Toggle("", isOn: $enableFreeRunMode)
+                            .labelsHidden()
+                            .onChange(of: enableFreeRunMode) {
+                                // Call your function when the toggle is changed
+                                bluetoothModel.enableFreeRunMode(enableFreeRunMode: enableFreeRunMode)
+                            }
+                    }
+                    
+                    Text("Free run mode bypasses any schedules and runs continuously").padding(.bottom, 10)
+                    
                     VStack(alignment: .leading) {
                         Button("Add Schedule") {
                             // Show the pop-up for adding a new schedule
@@ -96,6 +114,17 @@ struct SchedulesView: View {
         .onAppear {
             // Initialize schedules when the view appears
             schedules = bluetoothModel.configPacketData_Schedule?.scheduleConfig ?? []
+            
+            // Add an observer to monitor changes to configPacketData_Audio
+            bluetoothModel.$configPacketData_Audio
+                .sink { configPacketData_Audio in
+                    self.updateFreeRunMode(configPacketData_Audio)
+                }
+                .store(in: &cancellables)
+            
+            // Trigger the initial update
+            self.updateFreeRunMode(bluetoothModel.configPacketData_Audio)
+
         }
         .frame(maxWidth: .infinity)
         .background(Color(white:0.90))
@@ -121,6 +150,20 @@ struct SchedulesView: View {
     private func selectedTimeString(schedule: ScheduleConfig) -> String {
         return "\(schedule.startHour):\(schedule.startMinute) - \(schedule.stopHour):\(schedule.stopMinute)"
     }
+    
+    private func updateFreeRunMode(_ configPacketData_Audio: ConfigPacketData_Audio?) {
+        // Update freeRunMode based on configPacketData_Audio
+//        guard let configData = configPacketData_Audio, enableFreeRunMode != configData.freeRunMode else {
+//            return
+//        }
+//        enableFreeRunMode = configData.freeRunMode
+        enableFreeRunMode = configPacketData_Audio?.freeRunMode ?? false
+    }
+    
+//    private func updateAudioCompressionToggle(_ configPacketData_Audio: ConfigPacketData_Audio?) {
+//        // Update channel2 based on configPacketData_Audio
+//        audioCompressionEnabled = configPacketData_Audio?.audioCompressionEnabled ?? false
+//    }
 }
 
 struct SchedulePopupView: View {

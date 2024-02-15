@@ -20,6 +20,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
     @Published var configPacketData_Sensor: ConfigPacketData_Sensor?
     @Published var configPacketData_Discover: ConfigPacketData_Discover?
     @Published var configPacketData_LowPower: ConfigPacketData_LowPower?
+    @Published var specialFunctionData: SpecialFunctionData?
     
     // Global message packet
     //    @Published var currentMessage: Packet?
@@ -38,6 +39,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
     var markPacket: Packet?
     var systemInfoPacket: Packet?
     var configPacket: Packet?
+    var specialFunction: Packet?
     
     override init() {
         super.init()
@@ -92,6 +94,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
         configPacketData_Sensor?.reset()
         configPacketData_Discover?.reset()
         configPacketData_LowPower?.reset()
+        specialFunctionData?.reset()
         // start scanning again when reset and disconnected
         if centralManager.state == .poweredOn {
             centralManager.scanForPeripherals(withServices: nil, options: nil)
@@ -235,13 +238,14 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
                         audioCompressionEnabled: message.configPacket.audioConfig.audioCompression.enabled,
                         audioCompressionType: message.configPacket.audioConfig.audioCompression.compressionType,
                         audioCompressionFactor: message.configPacket.audioConfig.audioCompression.compressionFactor,
-                        estimatedRecordTime: message.configPacket.audioConfig.estimatedRecordTime
+                        estimatedRecordTime: message.configPacket.audioConfig.estimatedRecordTime,
+                        freeRunMode: message.configPacket.audioConfig.freeRunMode
                     )
                     
                     self.configPacketData_Schedule = ConfigPacketData_Schedule(scheduleConfig: message.configPacket.scheduleConfig)
                     
                     self.configPacketData_Sensor = ConfigPacketData_Sensor(
-                        samplePeriodMs: message.configPacket.sensorConfig.samplePeriodMs,
+//                        samplePeriodMs: message.configPacket.sensorConfig.samplePeriodMs,
                         enableTemperature: message.configPacket.sensorConfig.enableTemperature,
                         enableHumidity: message.configPacket.sensorConfig.enableHumidity,
                         enableGas: message.configPacket.sensorConfig.enableGas)
@@ -252,6 +256,8 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
                     )
                     
                     self.configPacketData_LowPower = ConfigPacketData_LowPower(lowPowerMode: message.configPacket.lowPowerConfig.lowPowerMode)
+                    
+                    self.specialFunctionData = SpecialFunctionData(uwbPacket: message.specialFunction.uwbPacket)
                 }
                 print("Updated configPacketData with CE72 characteristic")
             default:
@@ -333,6 +339,17 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
             do {
                 let configPacketData = try configPacket.serializedData()
                 sendConfigPacketData()
+            } catch {
+                print("Error serializing configPacket: \(error)")
+            }
+        }
+    }
+    
+    func sendSpecialFunction() {
+        if let specialFunction = specialFunction {
+            do {
+                let specialFunctionData = try specialFunction.serializedData()
+                sendSpecialFunctionData()
             } catch {
                 print("Error serializing configPacket: \(error)")
             }
@@ -426,6 +443,36 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
             print("Config packet sent")
         } catch {
             print("Error serializing configPacket: \(error)")
+        }
+    }
+    
+    func sendSpecialFunctionData() {
+        // Ensure that the peripheral is connected
+        guard let peripheral = connectedPeripheral else {
+            print("Peripheral not connected.")
+            return
+        }
+        
+        // Check if the service and characteristic have been discovered
+        if let service = peripheral.services?.first(where: { $0.uuid == serviceUUID }),
+           let characteristic = service.characteristics?.first(where: { $0.uuid == characteristicUUID_CE73 }) {
+            // If discovered, proceed to send data
+            sendSpecialFunctionDataHelper(peripheral: peripheral, characteristic: characteristic)
+        } else {
+            // If not discovered, initiate service discovery
+            peripheral.discoverServices([serviceUUID])
+        }
+    }
+    
+    // Helper method to send system info data when service and characteristic are available
+    func sendSpecialFunctionDataHelper(peripheral: CBPeripheral, characteristic: CBCharacteristic) {
+        do {
+            // Serialize the specialFunction into Data
+            let specialFunctionData = try specialFunction?.serializedData() ?? Data()
+            peripheral.writeValue(specialFunctionData, for: characteristic, type: .withResponse)
+            print("Special function sent")
+        } catch {
+            print("Error serializing specialFunction: \(error)")
         }
     }
     

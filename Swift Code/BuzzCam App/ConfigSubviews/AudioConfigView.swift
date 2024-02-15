@@ -18,10 +18,10 @@ struct AudioConfigView: View {
     
     @State private var audioCompressionEnabled = false
     
-    let sampleFreq: [MicSampleFreq] = [.sampleRate16000, .sampleRate20500, .sampleRate44100, .sampleRate48000, .sampleRate96000]
+    let sampleFreq: [MicSampleFreq] = [.sampleRate8000, .sampleRate11025, .sampleRate16000, .sampleRate22500, .sampleRate24000, .sampleRate32000, .sampleRate44100, .sampleRate48000, .sampleRate96000]
     @State var selectedSampleFreq: MicSampleFreq? = .sampleRate16000
     @State var selectedBitResolution: MicBitResolution? = .bitRes8
-    let compressionType: [CompressionType] = [.opus]
+    let compressionType: [CompressionType] = [.opus, .flac]
     @State var selectedCompressionType: CompressionType? = .opus
     @State var selectedCompressionFactor: Double = 5
     
@@ -127,6 +127,17 @@ struct AudioConfigView: View {
                                     .padding()
                                     .foregroundColor(.white)
                                     .background(bluetoothModel.configPacketData_Audio?.bitResolution == .bitRes16 ? Color.blue : Color.gray)
+                                    .cornerRadius(8)
+                            }
+                            
+                            Button(action: {
+                                // Handle 16-bit button tap
+                                bluetoothModel.setBitResolution(bitResolution: .bitRes24)
+                            }) {
+                                Text("24-bit")
+                                    .padding()
+                                    .foregroundColor(.white)
+                                    .background(bluetoothModel.configPacketData_Audio?.bitResolution == .bitRes24 ? Color.blue : Color.gray)
                                     .cornerRadius(8)
                             }
                         }
@@ -281,7 +292,7 @@ struct FrequencyCell: View {
     
     let sampleFreq: MicSampleFreq
     @Binding var selectedSampleFreq: MicSampleFreq?
-    let sampleFreqInt: [Int] = [16000, 20500, 44100, 48000, 96000]
+    let sampleFreqInt: [Int] = [8000, 11025, 16000, 22500, 24000, 32000, 44100, 48000, 96000]
     
     
     var body: some View {

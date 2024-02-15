@@ -130,7 +130,7 @@ struct SensingConfigView: View {
             print("initialized")
             selectedSamplePeriod = bluetoothModel.configPacketData_Sensor?.samplePeriodMs ?? 0
             
-            // Add an observer to monitor changes to configPacketData_Audio
+            // Add an observer to monitor changes to configPacketData_Sensor
             bluetoothModel.$configPacketData_Sensor
                 .sink { configPacketData_Sensor in
                     self.updateHumiditySensing(configPacketData_Sensor)

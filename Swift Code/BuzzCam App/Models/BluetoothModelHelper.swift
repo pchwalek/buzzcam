@@ -59,20 +59,20 @@ extension BluetoothModel {
     
     // send packet to force a camera capture
     func forceCameraCapture() {
-        // Retrieve the current values of SystemInfoPacket (if they exist)
-        var currentConfigPacket = configPacket ?? Packet()
+        // Retrieve the current values of SpecialFunction (if they exist)
+        var currentSpecialFunction = specialFunction ?? Packet()
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
-        currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
+        currentSpecialFunction.header.systemUid = UInt32(currentTimestamp)
         
-        currentConfigPacket.configPacket.cameraControl.capture = true
+        currentSpecialFunction.specialFunction.cameraControl.capture = true
         
-        configPacket = currentConfigPacket
+        specialFunction = currentSpecialFunction
         
         print("Forced camera capture")
         
-        sendConfigPacket()
+        sendSpecialFunction()
     }
     
     //send packet to enable/disable audio channels
@@ -227,27 +227,49 @@ extension BluetoothModel {
         }
     }
     
-    // send [packet to change sample period
-    func changeSamplePeriod(samplePeriod: UInt32) {
+    //send packet to enable/disable free run mode
+    func enableFreeRunMode(enableFreeRunMode: Bool) {
         // Retrieve the current values of SystemInfoPacket (if they exist)
         var currentConfigPacket = configPacket ?? Packet()
-        
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
         currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
         
         // edit field if changed
-        if (currentConfigPacket.configPacket.sensorConfig.samplePeriodMs != samplePeriod) {
-            currentConfigPacket.configPacket.sensorConfig.samplePeriodMs = samplePeriod
+        if (currentConfigPacket.configPacket.audioConfig.freeRunMode != enableFreeRunMode) {
+            
+            currentConfigPacket.configPacket.audioConfig.freeRunMode = enableFreeRunMode
             
             configPacket = currentConfigPacket
             
-            print("Sent new samplePeriod")
+            print("Sent enableFreeRunMode, ", enableFreeRunMode)
             
             sendConfigPacket()
         }
     }
+    
+//    // send [packet to change sample period
+//    func changeSamplePeriod(samplePeriod: UInt32) {
+//        // Retrieve the current values of SystemInfoPacket (if they exist)
+//        var currentConfigPacket = configPacket ?? Packet()
+//        
+//        
+//        // Set unix time
+//        let currentTimestamp = Date().timeIntervalSince1970
+//        currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
+//        
+//        // edit field if changed
+//        if (currentConfigPacket.configPacket.sensorConfig.samplePeriodMs != samplePeriod) {
+//            currentConfigPacket.configPacket.sensorConfig.samplePeriodMs = samplePeriod
+//            
+//            configPacket = currentConfigPacket
+//            
+//            print("Sent new samplePeriod")
+//            
+//            sendConfigPacket()
+//        }
+//    }
     
     //send packet to enable/disable gas
     func enableGasSensing(enableGas: Bool) {
@@ -319,33 +341,33 @@ extension BluetoothModel {
     
     // send packet to pair with nearby cameras
     func pairWithNearbyCameras() {
-        // Retrieve the current values of SystemInfoPacket (if they exist)
-        var currentConfigPacket = configPacket ?? Packet()
+        // Retrieve the current values of SpecialFunction (if they exist)
+        var currentSpecialFunction = specialFunction ?? Packet()
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
-        currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
+        currentSpecialFunction.header.systemUid = UInt32(currentTimestamp)
         
-        currentConfigPacket.configPacket.cameraControl.pairWithNearbyCameras = true
+        currentSpecialFunction.specialFunction.cameraControl.pairWithNearbyCameras = true
         
         
-        configPacket = currentConfigPacket
+        specialFunction = currentSpecialFunction
         
         print("Sent pairWithNearbyCameras")
         
-        sendConfigPacket()
+        sendSpecialFunction()
     }
     
     // send packet to wakeup cameras
     func wakeupCameras() {
-        // Retrieve the current values of SystemInfoPacket (if they exist)
-        var currentConfigPacket = configPacket ?? Packet()
+        // Retrieve the current values of SpecialFunction (if they exist)
+        var currentConfigPacket = specialFunction ?? Packet()
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
         currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
         
-        currentConfigPacket.configPacket.cameraControl.wakeupCameras = true
+        currentConfigPacket.specialFunction.cameraControl.wakeupCameras = true
         
         configPacket = currentConfigPacket
         
@@ -354,23 +376,23 @@ extension BluetoothModel {
         sendConfigPacket()
     }
     
-    // send packet to force rediscovery
-    func forceRediscovery() {
-        // Retrieve the current values of SystemInfoPacket (if they exist)
-        var currentConfigPacket = configPacket ?? Packet()
-        
-        // Set unix time
-        let currentTimestamp = Date().timeIntervalSince1970
-        currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
-        
-        currentConfigPacket.configPacket.networkState.forceRediscovery = true
-        
-        configPacket = currentConfigPacket
-        
-        print("Sent forceRediscovery")
-        
-        sendConfigPacket()
-    }
+//    // send packet to force rediscovery
+//    func forceRediscovery() {
+//        // Retrieve the current values of SystemInfoPacket (if they exist)
+//        var currentConfigPacket = configPacket ?? Packet()
+//        
+//        // Set unix time
+//        let currentTimestamp = Date().timeIntervalSince1970
+//        currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
+//        
+//        currentConfigPacket.configPacket.networkState.forceRediscovery = true
+//        
+//        configPacket = currentConfigPacket
+//        
+//        print("Sent forceRediscovery")
+//        
+//        sendConfigPacket()
+//    }
     
     // functions for schedule
     
@@ -392,5 +414,107 @@ extension BluetoothModel {
         
         sendConfigPacket()
     }
+    
+    // functions for system control dropdown
+    
+    // send packet to format SD card
+    func formatSDCard() {
+        // Retrieve the current values of SpecialFunction (if they exist)
+        var currentSpecialFunction = specialFunction ?? Packet()
+        
+        // Set unix time
+        let currentTimestamp = Date().timeIntervalSince1970
+        currentSpecialFunction.header.systemUid = UInt32(currentTimestamp)
+        
+        currentSpecialFunction.specialFunction.formatSdcard = true
+        
+        
+        specialFunction = currentSpecialFunction
+        
+        print("Sent formatSDCard")
+        
+        sendSpecialFunction()
+    }
+    
+    // send packet to open thread sync time
+    func openThreadSyncTime() {
+        // Retrieve the current values of SpecialFunction (if they exist)
+        var currentSpecialFunction = specialFunction ?? Packet()
+        
+        // Set unix time
+        let currentTimestamp = Date().timeIntervalSince1970
+        currentSpecialFunction.header.systemUid = UInt32(currentTimestamp)
+        
+        currentSpecialFunction.specialFunction.openthreadSyncTime = true
+        
+        
+        specialFunction = currentSpecialFunction
+        
+        print("Sent openThreadSyncTime")
+        
+        sendSpecialFunction()
+    }
+    
+    // send packet to calibrate magnetometer
+    func magCalibration() {
+        // Retrieve the current values of SpecialFunction (if they exist)
+        var currentSpecialFunction = specialFunction ?? Packet()
+        
+        // Set unix time
+        let currentTimestamp = Date().timeIntervalSince1970
+        currentSpecialFunction.header.systemUid = UInt32(currentTimestamp)
+        
+        currentSpecialFunction.specialFunction.magCalibration = true
+        
+        
+        specialFunction = currentSpecialFunction
+        
+        print("Sent magCalibration")
+        
+        sendSpecialFunction()
+    }
+    
+    // send packet to trigger DFU Mode
+    func triggerDFUMode() {
+//        // Retrieve the current values of SpecialFunction (if they exist)
+//        var currentSpecialFunction = specialFunction ?? Packet()
+//        
+//        // Set unix time
+//        let currentTimestamp = Date().timeIntervalSince1970
+//        currentSpecialFunction.header.systemUid = UInt32(currentTimestamp)
+//        
+//        currentSpecialFunction.specialFunction. = true
+//
+//        
+//        specialFunction = currentSpecialFunction
+//        
+//        print("Sent magCalibration")
+//        
+//        sendSpecialFunction()
+    }
+    
+    //send packet to enable/disable audio channels
+    func enableLowPowerMode(lowPowerModeEnabled: Bool) {
+        // Retrieve the current values of SystemInfoPacket (if they exist)
+        var currentConfigPacket = configPacket ?? Packet()
+        
+        // Set unix time
+        let currentTimestamp = Date().timeIntervalSince1970
+        currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
+        
+        // edit field if changed
+        if (currentConfigPacket.configPacket.lowPowerConfig.lowPowerMode != lowPowerModeEnabled) {
+            
+            currentConfigPacket.configPacket.lowPowerConfig.lowPowerMode = lowPowerModeEnabled
+            
+            configPacket = currentConfigPacket
+                        
+            print("Sent enableLowPowerMode")
+            
+            sendConfigPacket()
+        }
+    }
+    
+
     
 }

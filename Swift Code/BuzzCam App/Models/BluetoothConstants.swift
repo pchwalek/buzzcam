@@ -51,6 +51,7 @@ struct ConfigPacketData_Audio {
     var audioCompressionType: CompressionType
     var audioCompressionFactor: UInt32
     var estimatedRecordTime: Float
+    var freeRunMode: Bool
     
     mutating func reset() {
         channel1 = false
@@ -61,6 +62,7 @@ struct ConfigPacketData_Audio {
         audioCompressionType = CompressionType()
         audioCompressionFactor = 0
         estimatedRecordTime = 0.0
+        freeRunMode = false
     }
 }
 
@@ -88,7 +90,7 @@ struct ConfigPacketData_Sensor {
 
 struct ConfigPacketData_Discover {
     var numberOfDiscoveredDevices: UInt32 = 0
-    var discoveredDeviceUid: [UInt32] = []
+    var discoveredDeviceUid: [DeviceUID] = []
     
     mutating func reset() {
         numberOfDiscoveredDevices = 0
@@ -101,6 +103,15 @@ struct ConfigPacketData_LowPower {
     
     mutating func reset() {
         lowPowerMode = false
+    }
+}
+
+struct SpecialFunctionData {
+    
+    var uwbPacket: UWB_Packet
+    
+    mutating func reset() {
+        uwbPacket = UWB_Packet()
     }
 }
 
