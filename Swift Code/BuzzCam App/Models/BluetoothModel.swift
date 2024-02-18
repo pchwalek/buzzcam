@@ -18,7 +18,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
     @Published var configPacketData_Audio: ConfigPacketData_Audio?
     @Published var configPacketData_Schedule: ConfigPacketData_Schedule?
     @Published var configPacketData_Sensor: ConfigPacketData_Sensor?
-    @Published var configPacketData_Discover: ConfigPacketData_Discover?
+    @Published var configPacketData_NetworkState: ConfigPacketData_NetworkState?
     @Published var configPacketData_LowPower: ConfigPacketData_LowPower?
     @Published var specialFunctionData: SpecialFunctionData?
     
@@ -92,7 +92,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
         configPacketData_Audio?.reset()
         configPacketData_Schedule?.reset()
         configPacketData_Sensor?.reset()
-        configPacketData_Discover?.reset()
+        configPacketData_NetworkState?.reset()
         configPacketData_LowPower?.reset()
         specialFunctionData?.reset()
         // start scanning again when reset and disconnected
@@ -250,9 +250,13 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
                         enableHumidity: message.configPacket.sensorConfig.enableHumidity,
                         enableGas: message.configPacket.sensorConfig.enableGas)
                     
-                    self.configPacketData_Discover = ConfigPacketData_Discover(
+                    self.configPacketData_NetworkState = ConfigPacketData_NetworkState(
                         numberOfDiscoveredDevices: message.configPacket.networkState.numberOfDiscoveredDevices,
-                        discoveredDeviceUid: message.configPacket.networkState.discoveredDeviceUid
+                        discoveredDeviceUid: message.configPacket.networkState.discoveredDeviceUid,
+                        slaveSync: message.configPacket.networkState.slaveSync,
+                        masterNode: message.configPacket.networkState.masterNode,
+                        panID: message.configPacket.networkState.panID,
+                        channel: message.configPacket.networkState.channel
                     )
                     
                     self.configPacketData_LowPower = ConfigPacketData_LowPower(lowPowerMode: message.configPacket.lowPowerConfig.lowPowerMode)

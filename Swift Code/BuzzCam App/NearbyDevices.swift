@@ -53,7 +53,7 @@ struct NearbyDevices: View {
                 VStack {
                     HStack {
                         Text("Number of Nearby Devices: ").font(customFontTextBold)
-                        Text("\(bluetoothModel.configPacketData_Discover?.numberOfDiscoveredDevices ?? 0)").font(customFontText)
+                        Text("\(bluetoothModel.configPacketData_NetworkState?.numberOfDiscoveredDevices ?? 0)").font(customFontText)
                     }
                 }
                 .frame(maxWidth: .infinity)

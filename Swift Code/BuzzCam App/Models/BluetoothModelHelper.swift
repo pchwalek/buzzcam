@@ -515,6 +515,96 @@ extension BluetoothModel {
         }
     }
     
+    // network state toggles
+    
+    //send packet to enable/disable master node
+    func enableMasterNode(masterNodeEnabled: Bool) {
+        // Retrieve the current values of SystemInfoPacket (if they exist)
+        var currentConfigPacket = configPacket ?? Packet()
+        
+        // Set unix time
+        let currentTimestamp = Date().timeIntervalSince1970
+        currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
+        
+        // edit field if changed
+        if (currentConfigPacket.configPacket.networkState.masterNode != masterNodeEnabled) {
+            
+            currentConfigPacket.configPacket.networkState.masterNode = masterNodeEnabled
+            
+            configPacket = currentConfigPacket
+            
+            print("Sent enableMasterNode, ", masterNodeEnabled)
+            
+            sendConfigPacket()
+        }
+    }
+        
+    //send packet to enable/disable slave sync
+    func enableSlaveSync(slaveSyncEnabled: Bool) {
+        // Retrieve the current values of SystemInfoPacket (if they exist)
+        var currentConfigPacket = configPacket ?? Packet()
+        
+        // Set unix time
+        let currentTimestamp = Date().timeIntervalSince1970
+        currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
+        
+        // edit field if changed
+        if (currentConfigPacket.configPacket.networkState.slaveSync != slaveSyncEnabled) {
+            
+            currentConfigPacket.configPacket.networkState.slaveSync = slaveSyncEnabled
+            
+            configPacket = currentConfigPacket
+            
+            print("Sent enableSlaveSync, ", slaveSyncEnabled)
+            
+            sendConfigPacket()
+        }
+    }
+    
+    // send packet with PAN ID
+    func sendPanID(panID: UInt32) {
+        // Retrieve the current values of MarkPacket and SystemInfoPacket (if they exist)
+        var currentConfigPacket = configPacket ?? Packet()
+
+        // Set unix time
+        let currentTimestamp = Date().timeIntervalSince1970
+        currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
+        
+        // edit field if changed
+        if (currentConfigPacket.configPacket.networkState.panID != panID) {
+            
+            currentConfigPacket.configPacket.networkState.panID = panID
+            
+            configPacket = currentConfigPacket
+            
+            print("Sent sendPanID", panID)
+            
+            sendConfigPacket()
+        }
+        
+    }
+    
+        // send packet for new channel
+        func changeChannel(channel: UInt32) {
+            // Retrieve the current values of configPacket (if they exist)
+            var currentConfigPacket = configPacket ?? Packet()
+    
+            // Set unix time
+            let currentTimestamp = Date().timeIntervalSince1970
+            currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
+    
+            // edit field if changed
+            if (currentConfigPacket.configPacket.networkState.channel != channel) {
+                currentConfigPacket.configPacket.networkState.channel = channel
+    
+                configPacket = currentConfigPacket
+    
+                print("Sent new channel, ", channel)
+    
+                sendConfigPacket()
+            }
+        }
+    
 
     
 }

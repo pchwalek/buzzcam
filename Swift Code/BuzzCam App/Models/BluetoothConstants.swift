@@ -88,13 +88,22 @@ struct ConfigPacketData_Sensor {
     }
 }
 
-struct ConfigPacketData_Discover {
+struct ConfigPacketData_NetworkState {
     var numberOfDiscoveredDevices: UInt32 = 0
     var discoveredDeviceUid: [DeviceUID] = []
+    var slaveSync: Bool = false
+    var masterNode: Bool = false
+    var panID: UInt32 = 0
+    var channel: UInt32 = 0
+    
     
     mutating func reset() {
         numberOfDiscoveredDevices = 0
         discoveredDeviceUid = []
+        slaveSync = false
+        masterNode = false
+        panID = 0
+        channel = 11
     }
 }
 
