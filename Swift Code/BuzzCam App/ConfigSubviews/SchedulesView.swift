@@ -62,7 +62,7 @@ struct SchedulesView: View {
                             selectedIndex = nil
                             isPopupPresented.toggle()
                             print("add")
-                        }
+                        }.padding(.bottom, 30)
                         
                         ForEach(schedules.indices, id: \.self) { index in
                             VStack {
@@ -107,7 +107,20 @@ struct SchedulesView: View {
                     }
                     bluetoothModel.sendSchedules(schedules)
                     isPopupPresented = false
-                }
+                },
+                onDelete: {
+                        if let index = selectedIndex {
+                            if index < schedules.count {
+                                schedules.remove(at: index)
+                                bluetoothModel.sendSchedules(schedules)
+                                
+                                // Adjust selected index if it's out of bounds after deletion
+                                if selectedIndex! >= schedules.count {
+                                    selectedIndex = schedules.count - 1
+                                }
+                            }
+                        }
+                    }
             )
             .opacity(isPopupPresented ? 1 : 0) // Optionally, fade out when not presented
             .animation(.easeInOut, value: 1)
@@ -173,14 +186,16 @@ struct SchedulePopupView: View {
     let originalSchedule: ScheduleConfig
     let selectedIndex: Int?
     var onSave: (ScheduleConfig) -> Void
+    var onDelete: (() -> Void)? // Closure for delete action
     
-    init(isPresented: Binding<Bool>, selectedIndex: Int?, schedule: ScheduleConfig? = nil, onSave: @escaping (ScheduleConfig) -> Void) {
-        self._isPresented = isPresented
-        self.originalSchedule = schedule ?? ScheduleConfig()
-        self._editedSchedule = State(initialValue: selectedIndex != nil ? (schedule ?? ScheduleConfig()) : ScheduleConfig())
-        self.selectedIndex = selectedIndex
-        self.onSave = onSave
-    }
+    init(isPresented: Binding<Bool>, selectedIndex: Int?, schedule: ScheduleConfig? = nil, onSave: @escaping (ScheduleConfig) -> Void, onDelete: (() -> Void)? = nil) {
+            self._isPresented = isPresented
+            self.originalSchedule = schedule ?? ScheduleConfig()
+            self._editedSchedule = State(initialValue: selectedIndex != nil ? (schedule ?? ScheduleConfig()) : ScheduleConfig())
+            self.selectedIndex = selectedIndex
+            self.onSave = onSave
+            self.onDelete = onDelete
+        }
     
     var body: some View {
         VStack {
@@ -214,6 +229,15 @@ struct SchedulePopupView: View {
                 TimePicker(selectedHour: $editedSchedule.stopHour, selectedMinute: $editedSchedule.stopMinute)
             }
             
+            
+            Button("Delete") {
+                onDelete?() // Call delete closure if provided
+                isPresented.toggle()
+
+            }
+            .foregroundColor(.red) // Make delete button red
+            .padding()
+            
             Button("Save") {
                 onSave(editedSchedule)
                 isPresented.toggle()
@@ -246,7 +270,7 @@ struct SchedulePopupView: View {
                 print("new schedule")
             }
         }
-        .frame(width: 300, height: 600)
+        .frame(width: 300, height: 700)
         .background(Color.white)
         .cornerRadius(10)
         .overlay(
@@ -255,6 +279,7 @@ struct SchedulePopupView: View {
         )
         .shadow(radius: 5)
         .padding()
+        .padding(.bottom, 80)
     }
     
     private func toggleDay(_ day: DaysOfWeek) {
@@ -270,25 +295,28 @@ struct TimePicker: View {
         HStack {
             Picker("", selection: $selectedHour) {
                 ForEach(0..<24, id: \.self) { hour in
-                    Text("\(hour)")
+                    Text(String(format: "%02d", hour))
                         .tag(UInt32(hour))
+                        .foregroundColor(.black)
                 }
             }
-            .frame(width: 50)
-            .clipped()
+            .pickerStyle(WheelPickerStyle())
+            .frame(width: 80, height: 40)
             
             Text(":")
             
             Picker("", selection: $selectedMinute) {
                 ForEach(0..<60, id: \.self) { minute in
-                    Text("\(minute)")
+                    Text(String(format: "%02d", minute))
                         .tag(UInt32(minute))
+                        .foregroundColor(.black)
                 }
             }
-            .frame(width: 50)
-            .clipped()
+            .pickerStyle(WheelPickerStyle())
+            .frame(width: 80, height: 40)
+
         }
-        .pickerStyle(WheelPickerStyle())
+        .padding()
     }
 }
 
