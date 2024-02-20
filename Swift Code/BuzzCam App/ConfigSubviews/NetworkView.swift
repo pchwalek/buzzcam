@@ -14,6 +14,7 @@ struct NetworkView: View {
     @State private var cancellables: Set<AnyCancellable> = Set()
     @State private var masterNodeEnabled = false
     @State private var slaveSyncEnabled = false
+    @State private var masterChirpEnabled = false
     @State private var selectedChannel: Double = 32
     @State private var panID: String = ""
     
@@ -59,6 +60,19 @@ struct NetworkView: View {
                                 .onChange(of: slaveSyncEnabled) {
                                     // Call your function when the toggle is changed
                                     bluetoothModel.enableSlaveSync(slaveSyncEnabled: slaveSyncEnabled)
+                                }
+                        }
+                        
+                        HStack {
+                            Text("Master chirp")
+                                .fontWeight(.bold)
+                                .padding()
+                            
+                            Toggle("", isOn: $masterChirpEnabled)
+                                .labelsHidden()
+                                .onChange(of: masterChirpEnabled) {
+                                    // Call your function when the toggle is changed
+                                    bluetoothModel.enableMasterChirp(masterChirpEnabled: masterChirpEnabled)
                                 }
                         }
 
@@ -202,7 +216,7 @@ struct NetworkView: View {
             }
         }
         .onAppear {
-            // Add an observer to monitor changes to configPacketData_Sensor
+            // Add an observer to monitor changes to configPacketData
             bluetoothModel.$configPacketData_NetworkState
                 .sink { configPacketData_NetworkState in
                     self.updateMasterNode(configPacketData_NetworkState)
@@ -210,9 +224,16 @@ struct NetworkView: View {
                 }
                 .store(in: &cancellables)
             
+            bluetoothModel.$configPacketData_Audio
+                .sink { configPacketData_Audio in
+                    self.updateMasterChirp(configPacketData_Audio)
+                }
+                .store(in: &cancellables)
+            
             // Trigger the initial update
             self.updateMasterNode(bluetoothModel.configPacketData_NetworkState)
             self.updateSlaveSync(bluetoothModel.configPacketData_NetworkState)
+            self.updateMasterChirp(bluetoothModel.configPacketData_Audio)
             
             if let initialChannel = bluetoothModel.configPacketData_NetworkState?.channel {
                 selectedChannel = Double(initialChannel)
@@ -236,6 +257,14 @@ struct NetworkView: View {
             return
         }
         slaveSyncEnabled = configData.slaveSync
+    }
+    
+    private func updateMasterChirp(_ configPacketData_Audio: ConfigPacketData_Audio?) {
+        // Update masterNode based on configPacketData_NetworkState
+        guard let configData = configPacketData_Audio, masterChirpEnabled != configData.chirpEnable else {
+            return
+        }
+        masterChirpEnabled = configData.chirpEnable
     }
     
 }

@@ -239,7 +239,9 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
                         audioCompressionType: message.configPacket.audioConfig.audioCompression.compressionType,
                         audioCompressionFactor: message.configPacket.audioConfig.audioCompression.compressionFactor,
                         estimatedRecordTime: message.configPacket.audioConfig.estimatedRecordTime,
-                        freeRunMode: message.configPacket.audioConfig.freeRunMode
+                        freeRunMode: message.configPacket.audioConfig.freeRunMode,
+                        chirpEnable: message.configPacket.audioConfig.chirpEnable,
+                        micGain: message.configPacket.audioConfig.micGain
                     )
                     
                     self.configPacketData_Schedule = ConfigPacketData_Schedule(scheduleConfig: message.configPacket.scheduleConfig)

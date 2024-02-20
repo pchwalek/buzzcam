@@ -227,6 +227,27 @@ extension BluetoothModel {
         }
     }
     
+    //send packet to set compression type
+    func changeMicGain(micGain: MicGain) {
+        // Retrieve the current values of SystemInfoPacket (if they exist)
+        var currentConfigPacket = configPacket ?? Packet()
+        
+        // Set unix time
+        let currentTimestamp = Date().timeIntervalSince1970
+        currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
+        
+        // edit field if changed
+        if (currentConfigPacket.configPacket.audioConfig.micGain != micGain) {
+            currentConfigPacket.configPacket.audioConfig.micGain = micGain
+            
+            configPacket = currentConfigPacket
+            
+            print("Sent new micGain", micGain)
+            
+            sendConfigPacket()
+        }
+    }
+    
     //send packet to enable/disable free run mode
     func enableFreeRunMode(enableFreeRunMode: Bool) {
         // Retrieve the current values of SystemInfoPacket (if they exist)
@@ -556,6 +577,28 @@ extension BluetoothModel {
             configPacket = currentConfigPacket
             
             print("Sent enableSlaveSync, ", slaveSyncEnabled)
+            
+            sendConfigPacket()
+        }
+    }
+    
+    //send packet to enable/disable master chirp
+    func enableMasterChirp(masterChirpEnabled: Bool) {
+        // Retrieve the current values of SystemInfoPacket (if they exist)
+        var currentConfigPacket = configPacket ?? Packet()
+        
+        // Set unix time
+        let currentTimestamp = Date().timeIntervalSince1970
+        currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
+        
+        // edit field if changed
+        if (currentConfigPacket.configPacket.audioConfig.chirpEnable != masterChirpEnabled) {
+            
+            currentConfigPacket.configPacket.audioConfig.chirpEnable = masterChirpEnabled
+            
+            configPacket = currentConfigPacket
+            
+            print("Sent enableMasterChirp, ", masterChirpEnabled)
             
             sendConfigPacket()
         }

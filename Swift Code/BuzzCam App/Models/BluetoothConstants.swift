@@ -52,6 +52,8 @@ struct ConfigPacketData_Audio {
     var audioCompressionFactor: UInt32
     var estimatedRecordTime: Float
     var freeRunMode: Bool
+    var chirpEnable: Bool
+    var micGain: MicGain
     
     mutating func reset() {
         channel1 = false
@@ -63,6 +65,8 @@ struct ConfigPacketData_Audio {
         audioCompressionFactor = 0
         estimatedRecordTime = 0.0
         freeRunMode = false
+        chirpEnable = false
+        micGain = MicGain()
     }
 }
 

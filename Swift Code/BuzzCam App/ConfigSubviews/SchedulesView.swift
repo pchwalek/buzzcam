@@ -39,21 +39,22 @@ struct SchedulesView: View {
             
             if isExpanded {
                 VStack (alignment: .leading, spacing: 20) {
-                    
-                    HStack {
-                        Text("Free run mode")
-                            .fontWeight(.bold)
-                            .padding(.horizontal)
+                    VStack (alignment: .leading) {
+                        HStack {
+                            Text("Free run mode")
+                                .fontWeight(.bold)
+                                .padding(.horizontal)
+                            
+                            Toggle("", isOn: $enableFreeRunMode)
+                                .labelsHidden()
+                                .onChange(of: enableFreeRunMode) {
+                                    // Call your function when the toggle is changed
+                                    bluetoothModel.enableFreeRunMode(enableFreeRunMode: enableFreeRunMode)
+                                }
+                        }
                         
-                        Toggle("", isOn: $enableFreeRunMode)
-                            .labelsHidden()
-                            .onChange(of: enableFreeRunMode) {
-                                // Call your function when the toggle is changed
-                                bluetoothModel.enableFreeRunMode(enableFreeRunMode: enableFreeRunMode)
-                            }
+                        Text("Free run mode bypasses any schedules and runs continuously").padding(.bottom, 10).padding(.horizontal)
                     }
-                    
-                    Text("Free run mode bypasses any schedules and runs continuously").padding(.bottom, 10)
                     
                     VStack(alignment: .leading) {
                         Button("Add Schedule") {

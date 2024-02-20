@@ -21,7 +21,26 @@ struct AudioConfigView: View {
     let sampleFreq: [MicSampleFreq] = [.sampleRate8000, .sampleRate11025, .sampleRate16000, .sampleRate22500, .sampleRate24000, .sampleRate32000, .sampleRate44100, .sampleRate48000, .sampleRate96000]
     @State var selectedSampleFreq: MicSampleFreq? = .sampleRate16000
     @State var selectedBitResolution: MicBitResolution? = .bitRes8
+//    @State var selectedMicGain: MicGain? = .gain60Db
+//    @State var tempMicGain = "-15 dB"
+    @State private var selectedMicGain: MicGain? = .gain60Db // Set default value
+    @State private var tempMicGain = "-15 dB" // Set default selection
+
     let compressionType: [CompressionType] = [.opus, .flac]
+    let micGains: [MicGain] = [
+        .gainNeg15Db, .gainNeg12Db, .gainNeg9Db,
+        .gainNeg6Db, .gainNeg3Db, .gain0Db, .gain3Db,
+        .gain6Db, .gain9Db, .gain12Db, .gain15Db,
+        .gain18Db, .gain21Db, .gain24Db, .gain27Db,
+        .gain30Db, .gain33Db, .gain36Db, .gain39Db,
+        .gain42Db, .gain45Db, .gain48Db, .gain51Db,
+        .gain54Db, .gain57Db, .gain60Db
+    ]
+    var micGainLabels: [String] = [
+            "-15 dB", "-12 dB", "-9 dB", "-6 dB", "-3 dB", "0 dB", "3 dB", "6 dB", "9 dB",
+            "12 dB", "15 dB", "18 dB", "21 dB", "24 dB", "27 dB", "30 dB", "33 dB", "36 dB",
+            "39 dB", "42 dB", "45 dB", "48 dB", "51 dB", "54 dB", "57 dB", "60 dB"
+        ]
     @State var selectedCompressionType: CompressionType? = .opus
     @State var selectedCompressionFactor: Double = 5
     
@@ -147,6 +166,51 @@ struct AudioConfigView: View {
                     .background(Color(white: 0.98))
                     .cornerRadius(10)
                     
+//                    ScrollView(.horizontal, showsIndicators: false) {
+//                                HStack {
+//                                    ForEach(micGains, id: \.self) { gain in
+//                                        Text(self.micGainLabels[gain.rawValue])
+//                                            .padding()
+//                                            .background(self.selectedMicGain == gain ? Color.blue : Color.clear)
+//                                            .clipShape(RoundedRectangle(cornerRadius: 10))
+//                                            .onTapGesture {
+//                                                bluetoothModel.changeMicGain(micGain: selectedMicGain ?? .gain60Db)
+//                                                self.selectedMicGain = gain
+//                                            }
+//                                    }
+//                                }
+//                            }
+//                    .padding()
+//                    .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+//                    .background(Color(white: 0.98))
+//                    .cornerRadius(10)
+                    
+                    VStack (alignment: .leading) { // this is a bit weird
+                        Text("Microphone Gain")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        
+                        Picker("Select Mic Gain", selection: $tempMicGain) {
+                            ForEach(micGainLabels, id: \.self) { gainLabel in
+                                Text(gainLabel)
+                                    .tag(gainLabel)
+                            }
+                        }
+                        .onChange(of: tempMicGain) { newValue in
+                            if let index = micGainLabels.firstIndex(of: newValue) {
+                                selectedMicGain = micGains[index]
+                                bluetoothModel.changeMicGain(micGain: selectedMicGain ?? MicGain.gain60Db)
+                            }
+                        }
+                        .pickerStyle(.menu) // Style the picker as a dropdown menu
+                        .background(Color(white: 0.90))
+                        
+                        
+                    }.padding()
+                        .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+                        .background(Color(white: 0.98))
+                        .cornerRadius(10)
+                    
                     VStack(alignment: .leading) {
                         Text("Audio compression")
                             .font(.title2)
@@ -239,10 +303,12 @@ struct AudioConfigView: View {
             // Trigger the initial update
             self.updateChannel2(bluetoothModel.configPacketData_Audio)
             
-            //                selectedSampleFreq = bluetoothModel.configPacketData_Audio?.sampleFreq
+            selectedSampleFreq = bluetoothModel.configPacketData_Audio?.sampleFreq
             
             // Set the initial value of selectedSampleFreq based on the stored value in bluetoothModel
             selectedCompressionType = bluetoothModel.configPacketData_Audio?.audioCompressionType
+            
+            selectedMicGain = bluetoothModel.configPacketData_Audio?.micGain
             
             if let initialFactor = bluetoothModel.configPacketData_Audio?.audioCompressionFactor {
                 selectedCompressionFactor = Double(initialFactor)
