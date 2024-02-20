@@ -27,6 +27,7 @@
 		21C0A2232AF0E50100BA2ABC /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = 21C0A2222AF0E50100BA2ABC /* SwiftProtobuf */; };
 		21C0A2252AF0E50500BA2ABC /* protoc-gen-swift in Frameworks */ = {isa = PBXBuildFile; productRef = 21C0A2242AF0E50500BA2ABC /* protoc-gen-swift */; };
 		21C0A2272AF0E50A00BA2ABC /* SwiftProtobufPluginLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = 21C0A2262AF0E50A00BA2ABC /* SwiftProtobufPluginLibrary */; };
+		21C17DC72B854EC200A65338 /* RangingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C17DC62B854EC200A65338 /* RangingView.swift */; };
 		21C907BD2B7EB6A5007B33A1 /* SystemControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C907BC2B7EB6A5007B33A1 /* SystemControlView.swift */; };
 		21DAA5D52ADF221F00E70BF2 /* BuzzCam_AppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21DAA5D42ADF221F00E70BF2 /* BuzzCam_AppApp.swift */; };
 		21DAA5D72ADF221F00E70BF2 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21DAA5D62ADF221F00E70BF2 /* ContentView.swift */; };
@@ -73,6 +74,7 @@
 		21C0A20F2AE7137100BA2ABC /* ConfigView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigView.swift; sourceTree = "<group>"; };
 		21C0A2182AE71EE800BA2ABC /* BluetoothModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothModel.swift; sourceTree = "<group>"; };
 		21C0A21A2AEC4E1100BA2ABC /* BluetoothConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothConstants.swift; sourceTree = "<group>"; };
+		21C17DC62B854EC200A65338 /* RangingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RangingView.swift; sourceTree = "<group>"; };
 		21C907BC2B7EB6A5007B33A1 /* SystemControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemControlView.swift; sourceTree = "<group>"; };
 		21DAA5D12ADF221F00E70BF2 /* BuzzCam App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "BuzzCam App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		21DAA5D42ADF221F00E70BF2 /* BuzzCam_AppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuzzCam_AppApp.swift; sourceTree = "<group>"; };
@@ -211,6 +213,7 @@
 				21DAA5FF2AE0746B00E70BF2 /* MainView.swift */,
 				21C0A2052AE3152800BA2ABC /* StatusesView.swift */,
 				21C0A2072AE320E000BA2ABC /* SensorReadingView.swift */,
+				21C17DC62B854EC200A65338 /* RangingView.swift */,
 				21C0A2092AE320FE00BA2ABC /* NearbyDevices.swift */,
 				21DAA5D82ADF222000E70BF2 /* Assets.xcassets */,
 				21DAA5DA2ADF222000E70BF2 /* BuzzCam_App.entitlements */,
@@ -403,6 +406,7 @@
 				21C0A2082AE320E000BA2ABC /* SensorReadingView.swift in Sources */,
 				216B6DC92B757CF8005D5538 /* LoadingParticle.swift in Sources */,
 				21F495EA2B2783DA008E3808 /* CameraConfigView.swift in Sources */,
+				21C17DC72B854EC200A65338 /* RangingView.swift in Sources */,
 				21152BC92B2790920078ADD4 /* NetworkView.swift in Sources */,
 				216B6DC62B757C49005D5538 /* StarryNightView.swift in Sources */,
 				21152BCD2B29039F0078ADD4 /* testview.swift in Sources */,

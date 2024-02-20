@@ -627,27 +627,44 @@ extension BluetoothModel {
         
     }
     
-        // send packet for new channel
-        func changeChannel(channel: UInt32) {
-            // Retrieve the current values of configPacket (if they exist)
-            var currentConfigPacket = configPacket ?? Packet()
-    
-            // Set unix time
-            let currentTimestamp = Date().timeIntervalSince1970
-            currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
-    
-            // edit field if changed
-            if (currentConfigPacket.configPacket.networkState.channel != channel) {
-                currentConfigPacket.configPacket.networkState.channel = channel
-    
-                configPacket = currentConfigPacket
-    
-                print("Sent new channel, ", channel)
-    
-                sendConfigPacket()
-            }
-        }
-    
+    // send packet for new channel
+    func changeChannel(channel: UInt32) {
+        // Retrieve the current values of configPacket (if they exist)
+        var currentConfigPacket = configPacket ?? Packet()
 
+        // Set unix time
+        let currentTimestamp = Date().timeIntervalSince1970
+        currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
+
+        // edit field if changed
+        if (currentConfigPacket.configPacket.networkState.channel != channel) {
+            currentConfigPacket.configPacket.networkState.channel = channel
+
+            configPacket = currentConfigPacket
+
+            print("Sent new channel, ", channel)
+
+            sendConfigPacket()
+        }
+    }
+    
+    // send packet to start ranging
+    func startRanging() {
+        // Retrieve the current values of SpecialFunction (if they exist)
+        var currentSpecialFunction = specialFunction ?? Packet()
+        
+        // Set unix time
+        let currentTimestamp = Date().timeIntervalSince1970
+        currentSpecialFunction.header.systemUid = UInt32(currentTimestamp)
+        
+        currentSpecialFunction.specialFunction.uwbPacket.startRanging = true
+        
+        
+        specialFunction = currentSpecialFunction
+        
+        print("Sent startRanging")
+        
+        sendSpecialFunction()
+    }
     
 }

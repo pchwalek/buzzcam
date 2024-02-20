@@ -201,7 +201,7 @@ struct MainView: View {
                                             .frame(width: 100, height: 100)
                                             .rotationEffect(.degrees(45))
                                             .offset(x: 35, y: -35)
-                                            .shadow(color: .white, radius: 3, x: 0, y: 2)
+//                                            .shadow(color: .white, radius: 3, x: 0, y: 2)
                                             .scaleEffect(beeScale)
                                             .onAppear {
                                                 withAnimation(Animation.easeInOut(duration: 1.0).repeatForever()) {
@@ -229,8 +229,12 @@ struct MainView: View {
                             // sensor readings dropdown
                             SensorReadingView()
                             Spacer()
+                            // ranging dropdown
+                            RangingView()
+                            Spacer()
                             // nearby devices dropdown
                             NearbyDevices()
+                            
                             
 //                            Image("BuzzCam Logo 1").resizable()
 //                                .frame(width: 100, height: 100)
