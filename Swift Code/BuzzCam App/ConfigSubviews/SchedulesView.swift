@@ -279,7 +279,7 @@ struct SchedulePopupView: View {
         )
         .shadow(radius: 5)
         .padding()
-        .padding(.bottom, 80)
+        .padding(.bottom, isPresented ? 80 : 0)
     }
     
     private func toggleDay(_ day: DaysOfWeek) {
