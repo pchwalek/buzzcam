@@ -110,33 +110,33 @@ struct NetworkView: View {
                     
                     VStack(alignment: .leading) {
                         Text("PanID: ").fontWeight(.bold)
-                        
-                        TextField("", text: $panID)
-                            .padding()
-                            .background(
-                                RoundedRectangle(cornerRadius: 5)
-                                    .fill(Color.white)
-                            )
-                            .overlay(
-                                        RoundedRectangle(cornerRadius: 5)
-                                            .stroke(Color.black, lineWidth: 1) // Border around the text input
-                                    )
-                            .keyboardType(.numberPad) // Set keyboard type to number pad
-                            .overlay(
-                                        HStack {
-                                            Spacer()
-                                            Button("Done") {
-                                                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                                                bluetoothModel.sendPanID(panID: UInt32(panID) ?? 0)
-                                            }
-                                            .padding()
-                                            .buttonStyle(BorderlessButtonStyle())
-                                            .background(Color.gray)
-                                            .cornerRadius(8)
+                        HStack {
+                            Text("0x")
+                            TextField("", text: $panID)
+                                .padding()
+                                .background(
+                                    RoundedRectangle(cornerRadius: 5)
+                                        .fill(Color.white)
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 5)
+                                        .stroke(Color.black, lineWidth: 1) // Border around the text input
+                                )
+                                .overlay(
+                                    HStack {
+                                        Spacer()
+                                        Button("Done") {
+                                            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                                            bluetoothModel.sendPanID(panID: UInt32(panID, radix: 16) ?? 0)
                                         }
-                                    )
-                            .foregroundColor(.black)
-
+                                        .padding()
+                                        .buttonStyle(BorderlessButtonStyle())
+                                        .background(Color.gray)
+                                        .cornerRadius(8)
+                                    }
+                                )
+                                .foregroundColor(.black)
+                        }
                     }.padding().frame(
                         minWidth: 0,
                         maxWidth: .infinity,
@@ -199,7 +199,7 @@ struct NetworkView: View {
                             }
                             .padding()
                         } else {
-                            Text("ConfigPacketData_NetworkState is nil.")
+                            Text("NetworkState nil")
                                 .padding()
                         }
                     }
@@ -234,6 +234,8 @@ struct NetworkView: View {
             self.updateMasterNode(bluetoothModel.configPacketData_NetworkState)
             self.updateSlaveSync(bluetoothModel.configPacketData_NetworkState)
             self.updateMasterChirp(bluetoothModel.configPacketData_Audio)
+            
+            self.panID = "\(bluetoothModel.configPacketData_NetworkState?.panID ?? 0)"
             
             if let initialChannel = bluetoothModel.configPacketData_NetworkState?.channel {
                 selectedChannel = Double(initialChannel)

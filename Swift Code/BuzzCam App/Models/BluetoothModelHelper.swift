@@ -22,7 +22,7 @@ extension BluetoothModel {
 
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
-        currentMarkPacket.header.epoch = UInt64(currentTimestamp)
+        currentMarkPacket.header.epoch = UInt64(currentTimestamp) * 1000
         
         // Set annotationText if it's not empty
         if !annotationText.isEmpty {
@@ -48,7 +48,7 @@ extension BluetoothModel {
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
-        currentConfigPacket.header.epoch = UInt64(currentTimestamp)
+        currentConfigPacket.header.epoch = UInt64(currentTimestamp) * 1000
         
         if (currentConfigPacket.configPacket.enableRecording != deviceEnabled) {
             currentConfigPacket.configPacket.enableRecording = deviceEnabled
@@ -66,7 +66,7 @@ extension BluetoothModel {
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
-        currentSpecialFunction.header.epoch = UInt64(currentTimestamp)
+        currentSpecialFunction.header.epoch = UInt64(currentTimestamp) * 1000
         
         currentSpecialFunction.specialFunction.cameraControl.capture = true
         
@@ -84,7 +84,7 @@ extension BluetoothModel {
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
-        currentConfigPacket.header.epoch = UInt64(currentTimestamp)
+        currentConfigPacket.header.epoch = UInt64(currentTimestamp) * 1000
         
         if (currentConfigPacket.configPacket.audioConfig.channel1 != channel1) {
             // edit field if changed
@@ -106,7 +106,7 @@ extension BluetoothModel {
 
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
-        currentConfigPacket.header.epoch = UInt64(currentTimestamp)
+        currentConfigPacket.header.epoch = UInt64(currentTimestamp) * 1000
         // also add epoch
         
         // edit field if changed
@@ -131,7 +131,7 @@ extension BluetoothModel {
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
-        currentConfigPacket.header.epoch = UInt64(currentTimestamp)
+        currentConfigPacket.header.epoch = UInt64(currentTimestamp) * 1000
         
         // edit field if changed
         if (currentConfigPacket.configPacket.audioConfig.sampleFreq != sampleFreq) {
@@ -151,7 +151,7 @@ extension BluetoothModel {
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
-        currentConfigPacket.header.epoch = UInt64(currentTimestamp)
+        currentConfigPacket.header.epoch = UInt64(currentTimestamp) * 1000
         
         // edit field if changed
         if(currentConfigPacket.configPacket.audioConfig.bitResolution != bitResolution) {
@@ -172,7 +172,7 @@ extension BluetoothModel {
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
-        currentConfigPacket.header.epoch = UInt64(currentTimestamp)
+        currentConfigPacket.header.epoch = UInt64(currentTimestamp) * 1000
         
         // edit field if changed
         if (currentConfigPacket.configPacket.audioConfig.audioCompression.enabled != audioCompressionEnabled) {
@@ -194,7 +194,7 @@ extension BluetoothModel {
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
-        currentConfigPacket.header.epoch = UInt64(currentTimestamp)
+        currentConfigPacket.header.epoch = UInt64(currentTimestamp) * 1000
         
         // edit field if changed
         if (currentConfigPacket.configPacket.audioConfig.audioCompression.compressionType != compressionType) {
@@ -215,7 +215,7 @@ extension BluetoothModel {
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
-        currentConfigPacket.header.epoch = UInt64(currentTimestamp)
+        currentConfigPacket.header.epoch = UInt64(currentTimestamp) * 1000
         
         // edit field if changed
         if (currentConfigPacket.configPacket.audioConfig.audioCompression.compressionFactor != compressionFactor) {
@@ -236,7 +236,7 @@ extension BluetoothModel {
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
-        currentConfigPacket.header.epoch = UInt64(currentTimestamp)
+        currentConfigPacket.header.epoch = UInt64(currentTimestamp) * 1000
         
         // edit field if changed
         if (currentConfigPacket.configPacket.audioConfig.micGain != micGain) {
@@ -257,7 +257,7 @@ extension BluetoothModel {
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
-        currentConfigPacket.header.epoch = UInt64(currentTimestamp)
+        currentConfigPacket.header.epoch = UInt64(currentTimestamp) * 1000
         
         // edit field if changed
         if (currentConfigPacket.configPacket.audioConfig.freeRunMode != enableFreeRunMode) {
@@ -301,7 +301,7 @@ extension BluetoothModel {
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
-        currentConfigPacket.header.epoch = UInt64(currentTimestamp)
+        currentConfigPacket.header.epoch = UInt64(currentTimestamp) * 1000
         
         // edit field if changed
         if (currentConfigPacket.configPacket.sensorConfig.enableGas != enableGas) {
@@ -323,7 +323,7 @@ extension BluetoothModel {
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
-        currentConfigPacket.header.epoch = UInt64(currentTimestamp)
+        currentConfigPacket.header.epoch = UInt64(currentTimestamp) * 1000
         
         // edit field if changed
         if (currentConfigPacket.configPacket.sensorConfig.enableTemperature != enableTemperature) {
@@ -345,7 +345,7 @@ extension BluetoothModel {
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
-        currentConfigPacket.header.epoch = UInt64(currentTimestamp)
+        currentConfigPacket.header.epoch = UInt64(currentTimestamp) * 1000
         
         // edit field if changed
         if (currentConfigPacket.configPacket.sensorConfig.enableHumidity != enableHumidity) {
@@ -369,7 +369,7 @@ extension BluetoothModel {
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
-        currentSpecialFunction.header.epoch = UInt64(currentTimestamp)
+        currentSpecialFunction.header.epoch = UInt64(currentTimestamp) * 1000
         
         currentSpecialFunction.specialFunction.cameraControl.pairWithNearbyCameras = true
         
@@ -388,7 +388,7 @@ extension BluetoothModel {
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
-        currentConfigPacket.header.epoch = UInt64(currentTimestamp)
+        currentConfigPacket.header.epoch = UInt64(currentTimestamp) * 1000
         
         currentConfigPacket.specialFunction.cameraControl.wakeupCameras = true
         
@@ -426,7 +426,7 @@ extension BluetoothModel {
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
-        currentConfigPacket.header.epoch = UInt64(currentTimestamp)
+        currentConfigPacket.header.epoch = UInt64(currentTimestamp) * 1000
         
         currentConfigPacket.configPacket.scheduleConfig = schedules
         
@@ -447,7 +447,7 @@ extension BluetoothModel {
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
-        currentSpecialFunction.header.epoch = UInt64(currentTimestamp)
+        currentSpecialFunction.header.epoch = UInt64(currentTimestamp) * 1000
         
         currentSpecialFunction.specialFunction.formatSdcard = true
         
@@ -466,7 +466,7 @@ extension BluetoothModel {
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
-        currentSpecialFunction.header.epoch = UInt64(currentTimestamp)
+        currentSpecialFunction.header.epoch = UInt64(currentTimestamp) * 1000
         
         currentSpecialFunction.specialFunction.openthreadSyncTime = true
         
@@ -485,7 +485,7 @@ extension BluetoothModel {
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
-        currentSpecialFunction.header.epoch = UInt64(currentTimestamp)
+        currentSpecialFunction.header.epoch = UInt64(currentTimestamp) * 1000
         
         currentSpecialFunction.specialFunction.magCalibration = true
         
@@ -499,21 +499,21 @@ extension BluetoothModel {
     
     // send packet to trigger DFU Mode
     func triggerDFUMode() {
-//        // Retrieve the current values of SpecialFunction (if they exist)
-//        var currentSpecialFunction = specialFunction ?? Packet()
-//        
-//        // Set unix time
-//        let currentTimestamp = Date().timeIntervalSince1970
-//        currentSpecialFunction.header.systemUid = UInt32(currentTimestamp)
-//        
-//        currentSpecialFunction.specialFunction. = true
-//
-//        
-//        specialFunction = currentSpecialFunction
-//        
-//        print("Sent magCalibration")
-//        
-//        sendSpecialFunction()
+        // Retrieve the current values of SpecialFunction (if they exist)
+        var currentSpecialFunction = specialFunction ?? Packet()
+        
+        // Set unix time
+        let currentTimestamp = Date().timeIntervalSince1970
+        currentSpecialFunction.header.epoch = UInt64(currentTimestamp) * 1000
+        
+        currentSpecialFunction.specialFunction.dfuMode = true
+
+        
+        specialFunction = currentSpecialFunction
+        
+        print("Sent triggerDFUMode")
+        
+        sendSpecialFunction()
     }
     
     //send packet to enable/disable audio channels
@@ -523,7 +523,7 @@ extension BluetoothModel {
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
-        currentConfigPacket.header.epoch = UInt64(currentTimestamp)
+        currentConfigPacket.header.epoch = UInt64(currentTimestamp) * 1000
         
         // edit field if changed
         if (currentConfigPacket.configPacket.lowPowerConfig.lowPowerMode != lowPowerModeEnabled) {
@@ -547,7 +547,7 @@ extension BluetoothModel {
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
-        currentConfigPacket.header.epoch = UInt64(currentTimestamp)
+        currentConfigPacket.header.epoch = UInt64(currentTimestamp) * 1000
         
         // edit field if changed
         if (currentConfigPacket.configPacket.networkState.masterNode != masterNodeEnabled) {
@@ -569,7 +569,7 @@ extension BluetoothModel {
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
-        currentConfigPacket.header.epoch = UInt64(currentTimestamp)
+        currentConfigPacket.header.epoch = UInt64(currentTimestamp) * 1000
         
         // edit field if changed
         if (currentConfigPacket.configPacket.networkState.slaveSync != slaveSyncEnabled) {
@@ -591,7 +591,7 @@ extension BluetoothModel {
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
-        currentConfigPacket.header.epoch = UInt64(currentTimestamp)
+        currentConfigPacket.header.epoch = UInt64(currentTimestamp) * 1000
         
         // edit field if changed
         if (currentConfigPacket.configPacket.audioConfig.chirpEnable != masterChirpEnabled) {
@@ -613,7 +613,7 @@ extension BluetoothModel {
 
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
-        currentConfigPacket.header.epoch = UInt64(currentTimestamp)
+        currentConfigPacket.header.epoch = UInt64(currentTimestamp) * 1000
         
         // edit field if changed
         if (currentConfigPacket.configPacket.networkState.panID != panID) {
@@ -636,7 +636,7 @@ extension BluetoothModel {
 
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
-        currentConfigPacket.header.epoch = UInt64(currentTimestamp)
+        currentConfigPacket.header.epoch = UInt64(currentTimestamp) * 1000
 
         // edit field if changed
         if (currentConfigPacket.configPacket.networkState.channel != channel) {
@@ -657,7 +657,7 @@ extension BluetoothModel {
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
-        currentSpecialFunction.header.epoch = UInt64(currentTimestamp)
+        currentSpecialFunction.header.epoch = UInt64(currentTimestamp) * 1000
         
         currentSpecialFunction.specialFunction.uwbPacket.startRanging = true
         

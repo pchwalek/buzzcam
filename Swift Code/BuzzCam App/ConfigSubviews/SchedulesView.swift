@@ -116,7 +116,7 @@ struct SchedulesView: View {
                                 
                                 // Adjust selected index if it's out of bounds after deletion
                                 if selectedIndex! >= schedules.count {
-                                    selectedIndex = schedules.count - 1
+                                    selectedIndex = nil
                                 }
                             }
                         }

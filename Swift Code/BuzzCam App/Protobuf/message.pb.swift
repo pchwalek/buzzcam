@@ -1025,12 +1025,12 @@ public struct SpecialFunction {
     set {payload = .timestamp(newValue)}
   }
 
-  public var specialFunction8: Bool {
+  public var dfuMode: Bool {
     get {
-      if case .specialFunction8(let v)? = payload {return v}
+      if case .dfuMode(let v)? = payload {return v}
       return false
     }
-    set {payload = .specialFunction8(newValue)}
+    set {payload = .dfuMode(newValue)}
   }
 
   public var specialFunction9: Bool {
@@ -1051,7 +1051,7 @@ public struct SpecialFunction {
     case magCalibration(Bool)
     case slaveReqConfig(Bool)
     case timestamp(Bool)
-    case specialFunction8(Bool)
+    case dfuMode(Bool)
     case specialFunction9(Bool)
 
   #if !swift(>=4.1)
@@ -1088,8 +1088,8 @@ public struct SpecialFunction {
         guard case .timestamp(let l) = lhs, case .timestamp(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
-      case (.specialFunction8, .specialFunction8): return {
-        guard case .specialFunction8(let l) = lhs, case .specialFunction8(let r) = rhs else { preconditionFailure() }
+      case (.dfuMode, .dfuMode): return {
+        guard case .dfuMode(let l) = lhs, case .dfuMode(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       case (.specialFunction9, .specialFunction9): return {
@@ -2545,7 +2545,7 @@ extension SpecialFunction: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     5: .standard(proto: "mag_calibration"),
     6: .standard(proto: "slave_req_config"),
     7: .same(proto: "timestamp"),
-    8: .standard(proto: "special_function_8"),
+    8: .standard(proto: "dfu_mode"),
     9: .standard(proto: "special_function_9"),
   ]
 
@@ -2626,7 +2626,7 @@ extension SpecialFunction: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
         try decoder.decodeSingularBoolField(value: &v)
         if let v = v {
           if self.payload != nil {try decoder.handleConflictingOneOf()}
-          self.payload = .specialFunction8(v)
+          self.payload = .dfuMode(v)
         }
       }()
       case 9: try {
@@ -2676,8 +2676,8 @@ extension SpecialFunction: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
       guard case .timestamp(let v)? = self.payload else { preconditionFailure() }
       try visitor.visitSingularBoolField(value: v, fieldNumber: 7)
     }()
-    case .specialFunction8?: try {
-      guard case .specialFunction8(let v)? = self.payload else { preconditionFailure() }
+    case .dfuMode?: try {
+      guard case .dfuMode(let v)? = self.payload else { preconditionFailure() }
       try visitor.visitSingularBoolField(value: v, fieldNumber: 8)
     }()
     case .specialFunction9?: try {
