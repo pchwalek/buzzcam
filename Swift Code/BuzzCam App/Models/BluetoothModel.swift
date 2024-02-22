@@ -30,7 +30,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
     var isUserInitiatedDisconnect = false
     
     // Service and characteristic UUIDs here
-    private let serviceUUID = CBUUID(string: "CE70")
+    private let serviceUUID = CBUUID(string: "CE80")
     private let characteristicUUID_CE71 = CBUUID(string: "CE71")
     private let characteristicUUID_CE72 = CBUUID(string: "CE72")
     private let characteristicUUID_CE73 = CBUUID(string: "CE73")
@@ -56,7 +56,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
     }
     
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi: NSNumber) {
-        if let peripheralName = peripheral.name, (peripheralName.contains("BuzzCam") ||  peripheralName.contains("STM")){
+        if let peripheralName = peripheral.name, (peripheralName.contains("BuzzCam") ||  peripheralName.contains("STM") || peripheralName.contains("Buzz") || peripheralName.contains("BUZZ")){
             if !filteredPeripherals.contains(peripheral) {
                 filteredPeripherals.append(peripheral)
                 print("Discovered Peripheral: \(peripheral.name ?? "Unknown") with Identifier: \(peripheral.identifier)")
@@ -122,7 +122,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
     }
     
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
-        guard service.uuid == CBUUID(string: "CE70") else {
+        guard service.uuid == CBUUID(string: "CE80") else {
             return
         }
         
@@ -371,7 +371,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
         
         // Check if the service and characteristic have been discovered
         if let service = peripheral.services?.first(where: { $0.uuid == serviceUUID }),
-           let characteristic = service.characteristics?.first(where: { $0.uuid == characteristicUUID_CE73 }) {
+           let characteristic = service.characteristics?.first(where: { $0.uuid == characteristicUUID_CE72 }) {
             // If discovered, proceed to send data
             sendMarkPacketDataHelper(peripheral: peripheral, characteristic: characteristic)
         } else {
@@ -401,7 +401,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
         
         // Check if the service and characteristic have been discovered
         if let service = peripheral.services?.first(where: { $0.uuid == serviceUUID }),
-           let characteristic = service.characteristics?.first(where: { $0.uuid == characteristicUUID_CE73 }) {
+           let characteristic = service.characteristics?.first(where: { $0.uuid == characteristicUUID_CE72 }) {
             // If discovered, proceed to send data
             sendSystemInfoPacketDataHelper(peripheral: peripheral, characteristic: characteristic)
         } else {
@@ -431,7 +431,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
         
         // Check if the service and characteristic have been discovered
         if let service = peripheral.services?.first(where: { $0.uuid == serviceUUID }),
-           let characteristic = service.characteristics?.first(where: { $0.uuid == characteristicUUID_CE73 }) {
+           let characteristic = service.characteristics?.first(where: { $0.uuid == characteristicUUID_CE72 }) {
             // If discovered, proceed to send data
             sendConfigPacketDataHelper(peripheral: peripheral, characteristic: characteristic)
         } else {
@@ -461,7 +461,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
         
         // Check if the service and characteristic have been discovered
         if let service = peripheral.services?.first(where: { $0.uuid == serviceUUID }),
-           let characteristic = service.characteristics?.first(where: { $0.uuid == characteristicUUID_CE73 }) {
+           let characteristic = service.characteristics?.first(where: { $0.uuid == characteristicUUID_CE72 }) {
             // If discovered, proceed to send data
             sendSpecialFunctionDataHelper(peripheral: peripheral, characteristic: characteristic)
         } else {

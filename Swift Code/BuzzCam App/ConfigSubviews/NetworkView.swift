@@ -85,7 +85,7 @@ struct NetworkView: View {
                         .cornerRadius(10)
                     
                     VStack(alignment: .leading) {
-                        Text("Compression Factor: \(Int(selectedChannel))").fontWeight(.bold)
+                        Text("Change channel: \(Int(selectedChannel))").fontWeight(.bold)
                         Slider(value: Binding(
                             get: {
                                 selectedChannel
