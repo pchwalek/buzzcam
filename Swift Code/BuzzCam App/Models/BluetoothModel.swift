@@ -199,17 +199,28 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
     
     func decodeAndPrintMessage(from characteristic: CBCharacteristic) {
         guard let data = characteristic.value else {
-            print("Characteristic value is nil. Cannot decode and print.")
+            print("Characteristic vadecodeAndPrintMessagelue is nil. Cannot decode and print.")
             return
         }
         
         do {
+            print("data,", data)
+            let str = String(data: data, encoding: String.Encoding.ascii)!
+            let data2 = Data(str.utf8)
+            let hexString = data2.map{ String(format:"%02x", $0) }.joined()
+            print(hexString)
+            print("length, ", hexString.count)
             let message = try Packet(serializedData: data)
-            
+            print("passes message")
             // Use a switch statement to handle different characteristics
             switch characteristic.uuid {
             case characteristicUUID_CE71:
                 // Update systemInfoPacketData only when the characteristic is CE71
+                
+                if let sdCardDetected = message.systemInfoPacket.hasSdcardState ? message.systemInfoPacket.sdcardState.detected : self.systemInfoPacketData?.sd_detected {
+                    // Use sdCardDetected here
+                }
+                
                 DispatchQueue.main.async {
                     self.systemInfoPacketData = SystemInfoPacketData(
                         index: message.systemInfoPacket.simpleSensorReading.index,
@@ -217,7 +228,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
                         humidity: message.systemInfoPacket.simpleSensorReading.humidity,
                         co2: message.systemInfoPacket.simpleSensorReading.co2,
                         light_level: message.systemInfoPacket.simpleSensorReading.lightLevel,
-                        sd_detected: message.systemInfoPacket.sdcardState.detected,
+                        sd_detected: message.systemInfoPacket.hasSdcardState ? message.systemInfoPacket.sdcardState.detected : self.systemInfoPacketData?.sd_detected ?? false,
                         space_remaining: message.systemInfoPacket.sdcardState.spaceRemaining,
                         estimated_recording_time: message.systemInfoPacket.sdcardState.estimatedRemainingRecordingTime,
                         battery_charging: message.systemInfoPacket.batteryState.charging,
@@ -294,11 +305,15 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
         print("in didUpdateValue")
         
         switch characteristic.uuid {
-        case characteristicUUID_CE71, characteristicUUID_CE72:
-            decodeAndPrintMessage(from: characteristic)
-        default:
-            // Handle other characteristics if needed
-            break
+            case characteristicUUID_CE71:
+                print("this is CE71")
+                decodeAndPrintMessage(from: characteristic)
+            case characteristicUUID_CE72:
+                print("this is CE72")
+                decodeAndPrintMessage(from: characteristic)
+            default:
+                // Handle other characteristics if needed
+                break
         }
     }
     
@@ -385,7 +400,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
         do {
             // Serialize the markPacket into Data
             let markPacketData = try markPacket?.serializedData() ?? Data()
-            peripheral.writeValue(markPacketData, for: characteristic, type: .withoutResponse)
+            peripheral.writeValue(markPacketData, for: characteristic, type: .withResponse)
             print("Mark packet sent")
         } catch {
             print("Error sending MarkPacket: \(error)")

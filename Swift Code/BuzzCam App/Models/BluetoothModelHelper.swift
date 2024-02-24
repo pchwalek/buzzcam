@@ -37,8 +37,10 @@ extension BluetoothModel {
         
         print("sent markPacket")
 
-        sendSystemInfoPacket()
+//        sendSystemInfoPacket()
         sendMarkPacket()
+        
+        markPacket?.markPacket.clearAnnotation() //clear annotation and reset hasAnnotation
     }
     
     // send packet when device is disabled/enabled
@@ -48,6 +50,7 @@ extension BluetoothModel {
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
+        print("currentTimestamp",UInt64(currentTimestamp))
         currentConfigPacket.header.epoch = UInt64(currentTimestamp) * 1000
         
         if (currentConfigPacket.configPacket.enableRecording != deviceEnabled) {
@@ -56,13 +59,15 @@ extension BluetoothModel {
         
         configPacket = currentConfigPacket
         
+        print("currentTimestamp",currentConfigPacket.header.epoch)
+        
         sendConfigPacket()
     }
     
     // send packet to force a camera capture
     func forceCameraCapture() {
         // Retrieve the current values of SpecialFunction (if they exist)
-        var currentSpecialFunction = specialFunction ?? Packet()
+        var currentSpecialFunction = Packet()
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
@@ -365,7 +370,7 @@ extension BluetoothModel {
     // send packet to pair with nearby cameras
     func pairWithNearbyCameras() {
         // Retrieve the current values of SpecialFunction (if they exist)
-        var currentSpecialFunction = specialFunction ?? Packet()
+        var currentSpecialFunction = Packet()
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
@@ -443,7 +448,7 @@ extension BluetoothModel {
     // send packet to format SD card
     func formatSDCard() {
         // Retrieve the current values of SpecialFunction (if they exist)
-        var currentSpecialFunction = specialFunction ?? Packet()
+        var currentSpecialFunction = Packet()
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
@@ -462,7 +467,7 @@ extension BluetoothModel {
     // send packet to open thread sync time
     func openThreadSyncTime() {
         // Retrieve the current values of SpecialFunction (if they exist)
-        var currentSpecialFunction = specialFunction ?? Packet()
+        var currentSpecialFunction = Packet()
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
@@ -481,7 +486,7 @@ extension BluetoothModel {
     // send packet to calibrate magnetometer
     func magCalibration() {
         // Retrieve the current values of SpecialFunction (if they exist)
-        var currentSpecialFunction = specialFunction ?? Packet()
+        var currentSpecialFunction = Packet()
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
@@ -500,7 +505,7 @@ extension BluetoothModel {
     // send packet to trigger DFU Mode
     func triggerDFUMode() {
         // Retrieve the current values of SpecialFunction (if they exist)
-        var currentSpecialFunction = specialFunction ?? Packet()
+        var currentSpecialFunction = Packet()
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
@@ -653,7 +658,7 @@ extension BluetoothModel {
     // send packet to start ranging
     func startRanging() {
         // Retrieve the current values of SpecialFunction (if they exist)
-        var currentSpecialFunction = specialFunction ?? Packet()
+        var currentSpecialFunction = Packet()
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970

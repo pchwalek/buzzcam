@@ -235,7 +235,9 @@ struct NetworkView: View {
             self.updateSlaveSync(bluetoothModel.configPacketData_NetworkState)
             self.updateMasterChirp(bluetoothModel.configPacketData_Audio)
             
-            self.panID = "\(bluetoothModel.configPacketData_NetworkState?.panID ?? 0)"
+            let readPanID = (bluetoothModel.configPacketData_NetworkState?.panID ?? 0)
+            
+            self.panID = String(format:"%02X", readPanID)
             
             if let initialChannel = bluetoothModel.configPacketData_NetworkState?.channel {
                 selectedChannel = Double(initialChannel)

@@ -14,7 +14,7 @@ struct SystemInfoPacketData {
     var humidity: Float
     var co2: Float
     var light_level: Float
-    var sd_detected: Bool
+    var sd_detected: Bool = false
     var space_remaining: UInt64
     var estimated_recording_time: UInt64
     var battery_charging: Bool
