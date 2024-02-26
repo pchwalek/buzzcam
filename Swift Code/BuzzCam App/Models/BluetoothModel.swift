@@ -21,6 +21,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
     @Published var configPacketData_NetworkState: ConfigPacketData_NetworkState?
     @Published var configPacketData_LowPower: ConfigPacketData_LowPower?
     @Published var specialFunctionData: SpecialFunctionData?
+    @Published var configPacketData: ConfigPacketData?
     
     // Global message packet
     //    @Published var currentMessage: Packet?
@@ -95,6 +96,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
         configPacketData_NetworkState?.reset()
         configPacketData_LowPower?.reset()
         specialFunctionData?.reset()
+        configPacketData?.reset()
         // start scanning again when reset and disconnected
         if centralManager.state == .poweredOn {
             centralManager.scanForPeripherals(withServices: nil, options: nil)
@@ -204,12 +206,12 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
         }
         
         do {
-            print("data,", data)
-            let str = String(data: data, encoding: String.Encoding.ascii)!
-            let data2 = Data(str.utf8)
-            let hexString = data2.map{ String(format:"%02x", $0) }.joined()
-            print(hexString)
-            print("length, ", hexString.count)
+//            print("data,", data)
+//            let str = String(data: data, encoding: String.Encoding.ascii)!
+//            let data2 = Data(str.utf8)
+//            let hexString = data2.map{ String(format:"%02x", $0) }.joined()
+//            print(hexString)
+//            print("length, ", hexString.count)
             let message = try Packet(serializedData: data)
             print("passes message")
             // Use a switch statement to handle different characteristics
@@ -223,58 +225,93 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
                 
                 DispatchQueue.main.async {
                     self.systemInfoPacketData = SystemInfoPacketData(
-                        index: message.systemInfoPacket.simpleSensorReading.index,
-                        temperature: message.systemInfoPacket.simpleSensorReading.temperature,
-                        humidity: message.systemInfoPacket.simpleSensorReading.humidity,
-                        co2: message.systemInfoPacket.simpleSensorReading.co2,
-                        light_level: message.systemInfoPacket.simpleSensorReading.lightLevel,
+                        index: message.systemInfoPacket.hasSimpleSensorReading ? message.systemInfoPacket.simpleSensorReading.index :
+                            self.systemInfoPacketData?.index ?? 0,
+                        
+                        temperature: message.systemInfoPacket.hasSimpleSensorReading ? message.systemInfoPacket.simpleSensorReading.temperature :
+                            self.systemInfoPacketData?.temperature ?? 0,
+                        
+                        humidity: message.systemInfoPacket.hasSimpleSensorReading ? message.systemInfoPacket.simpleSensorReading.humidity :
+                            self.systemInfoPacketData?.humidity ?? 0,
+                        
+                        co2: message.systemInfoPacket.hasSimpleSensorReading ? message.systemInfoPacket.simpleSensorReading.co2 :
+                            self.systemInfoPacketData?.co2 ?? 0,
+                        
+                        light_level: message.systemInfoPacket.hasSimpleSensorReading ? message.systemInfoPacket.simpleSensorReading.lightLevel :
+                            self.systemInfoPacketData?.light_level ?? 0,
+                        
                         sd_detected: message.systemInfoPacket.hasSdcardState ? message.systemInfoPacket.sdcardState.detected : self.systemInfoPacketData?.sd_detected ?? false,
-                        space_remaining: message.systemInfoPacket.sdcardState.spaceRemaining,
-                        estimated_recording_time: message.systemInfoPacket.sdcardState.estimatedRemainingRecordingTime,
-                        battery_charging: message.systemInfoPacket.batteryState.charging,
-                        battery_voltage: message.systemInfoPacket.batteryState.voltage,
+                        
+                        space_remaining: message.systemInfoPacket.hasSdcardState ? message.systemInfoPacket.sdcardState.spaceRemaining :
+                            self.systemInfoPacketData?.space_remaining ?? 0,
+                        
+                        estimated_recording_time: message.systemInfoPacket.hasSdcardState ? message.systemInfoPacket.sdcardState.estimatedRemainingRecordingTime : self.systemInfoPacketData?.estimated_recording_time ?? 0,
+                        
+                        battery_charging: message.systemInfoPacket.hasBatteryState ? message.systemInfoPacket.batteryState.charging :
+                            self.systemInfoPacketData?.battery_charging ?? false,
+                        
+                        battery_voltage: message.systemInfoPacket.hasBatteryState ? message.systemInfoPacket.batteryState.voltage :
+                            self.systemInfoPacketData?.battery_voltage ?? 0,
+                        
                         device_recording: message.systemInfoPacket.deviceRecording,
-                        mark_number: message.systemInfoPacket.markState.markNumber
+                        
+                        mark_number: message.systemInfoPacket.hasMarkState ? message.systemInfoPacket.markState.markNumber :
+                            self.systemInfoPacketData?.mark_number ?? 0
                     )
                 }
                 print("Updated systemInfoPacketData with CE71 characteristic")
             case characteristicUUID_CE72:
                 // Update configPacketData only when the characteristic is CE72
+                // check if hasAudioConfig
+                
                 DispatchQueue.main.async {
-                    self.configPacketData_Audio = ConfigPacketData_Audio(
-                        channel1: message.configPacket.audioConfig.channel1,
-                        channel2: message.configPacket.audioConfig.channel2,
-                        sampleFreq: message.configPacket.audioConfig.sampleFreq,
-                        bitResolution: message.configPacket.audioConfig.bitResolution,
-                        audioCompressionEnabled: message.configPacket.audioConfig.audioCompression.enabled,
-                        audioCompressionType: message.configPacket.audioConfig.audioCompression.compressionType,
-                        audioCompressionFactor: message.configPacket.audioConfig.audioCompression.compressionFactor,
-                        estimatedRecordTime: message.configPacket.audioConfig.estimatedRecordTime,
-                        freeRunMode: message.configPacket.audioConfig.freeRunMode,
-                        chirpEnable: message.configPacket.audioConfig.chirpEnable,
-                        micGain: message.configPacket.audioConfig.micGain
-                    )
-                    
+                    if message.configPacket.hasAudioConfig {
+                        self.configPacketData_Audio = ConfigPacketData_Audio(
+                            channel1: message.configPacket.audioConfig.channel1,
+                            channel2: message.configPacket.audioConfig.channel2,
+                            sampleFreq: message.configPacket.audioConfig.sampleFreq,
+                            bitResolution: message.configPacket.audioConfig.bitResolution,
+                            audioCompressionEnabled: message.configPacket.audioConfig.hasAudioCompression ? message.configPacket.audioConfig.audioCompression.enabled :
+                                self.configPacketData_Audio?.audioCompressionEnabled ?? false,
+                            audioCompressionType: message.configPacket.audioConfig.hasAudioCompression ? message.configPacket.audioConfig.audioCompression.compressionType :
+                                self.configPacketData_Audio?.audioCompressionType ?? .opus,
+                            audioCompressionFactor: message.configPacket.audioConfig.hasAudioCompression ? message.configPacket.audioConfig.audioCompression.compressionFactor :
+                                self.configPacketData_Audio?.audioCompressionFactor ?? 0,
+                            estimatedRecordTime: message.configPacket.audioConfig.estimatedRecordTime,
+                            freeRunMode: message.configPacket.audioConfig.freeRunMode,
+                            chirpEnable: message.configPacket.audioConfig.chirpEnable,
+                            micGain: message.configPacket.audioConfig.micGain
+                        )
+                    }
                     self.configPacketData_Schedule = ConfigPacketData_Schedule(scheduleConfig: message.configPacket.scheduleConfig)
                     
-                    self.configPacketData_Sensor = ConfigPacketData_Sensor(
-//                        samplePeriodMs: message.configPacket.sensorConfig.samplePeriodMs,
-                        enableTemperature: message.configPacket.sensorConfig.enableTemperature,
-                        enableHumidity: message.configPacket.sensorConfig.enableHumidity,
-                        enableGas: message.configPacket.sensorConfig.enableGas)
+                    if message.configPacket.hasSensorConfig {
+                        self.configPacketData_Sensor = ConfigPacketData_Sensor(
+                            //                        samplePeriodMs: message.configPacket.sensorConfig.samplePeriodMs,
+                            enableTemperature: message.configPacket.sensorConfig.enableTemperature,
+                            enableHumidity: message.configPacket.sensorConfig.enableHumidity,
+                            enableGas: message.configPacket.sensorConfig.enableGas)
+                    }
                     
-                    self.configPacketData_NetworkState = ConfigPacketData_NetworkState(
-                        numberOfDiscoveredDevices: message.configPacket.networkState.numberOfDiscoveredDevices,
-                        discoveredDeviceUid: message.configPacket.networkState.discoveredDeviceUid,
-                        slaveSync: message.configPacket.networkState.slaveSync,
-                        masterNode: message.configPacket.networkState.masterNode,
-                        panID: message.configPacket.networkState.panID,
-                        channel: message.configPacket.networkState.channel
-                    )
+                    if message.configPacket.hasNetworkState {
+                        self.configPacketData_NetworkState = ConfigPacketData_NetworkState(
+                            numberOfDiscoveredDevices: message.configPacket.networkState.numberOfDiscoveredDevices,
+                            discoveredDeviceUid: message.configPacket.networkState.discoveredDeviceUid,
+                            slaveSync: message.configPacket.networkState.slaveSync,
+                            masterNode: message.configPacket.networkState.masterNode,
+                            panID: message.configPacket.networkState.panID,
+                            channel: message.configPacket.networkState.channel
+                        )
+                    }
                     
-                    self.configPacketData_LowPower = ConfigPacketData_LowPower(lowPowerMode: message.configPacket.lowPowerConfig.lowPowerMode)
+                    if message.configPacket.hasLowPowerConfig {
+                        self.configPacketData_LowPower = ConfigPacketData_LowPower(lowPowerMode: message.configPacket.lowPowerConfig.lowPowerMode)
+                    }
                     
                     self.specialFunctionData = SpecialFunctionData(uwbPacket: message.specialFunction.uwbPacket)
+                    
+                    self.configPacketData = ConfigPacketData(enableRecording: message.configPacket.enableRecording)
+                    print("configPacket enableRecording:", message.configPacket.enableRecording)
                 }
                 print("Updated configPacketData with CE72 characteristic")
             default:

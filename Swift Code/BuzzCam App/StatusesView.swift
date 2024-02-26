@@ -61,15 +61,15 @@ struct StatusesView: View {
                             
                             Toggle("",isOn: $deviceEnabled).labelsHidden().onAppear {
                                 // Add an observer to monitor changes to systemInfoPacketData
-                                bluetoothModel.$systemInfoPacketData
-                                    .sink { systemInfoPacketData in
+                                bluetoothModel.$configPacketData
+                                    .sink { configPacketData in
                                         // Update deviceEnabled when systemInfoPacketData changes
-                                        self.updateDeviceEnabledOn(systemInfoPacketData)
+                                        self.updateDeviceEnabledOn(configPacketData)
                                     }
                                     .store(in: &cancellables) // Store the cancellable to avoid memory leaks
                                 
                                 // Trigger the initial update
-                                self.updateDeviceEnabledOn(bluetoothModel.systemInfoPacketData)
+                                self.updateDeviceEnabledOn(bluetoothModel.configPacketData)
                             }.onChange(of: deviceEnabled) {
                                 // Call your function when the toggle is changed
                                 bluetoothModel.deviceEnabledUpdates(deviceEnabled: deviceEnabled)
@@ -133,9 +133,9 @@ struct StatusesView: View {
         .frame(maxWidth: .infinity)
         .background(Color(white:0.90))
     }
-    private func updateDeviceEnabledOn(_ systemInfoPacketData: SystemInfoPacketData?) {
+    private func updateDeviceEnabledOn(_ configPacketData: ConfigPacketData?) {
         // Update deviceEnabled based on systemInfoPacketData
-        deviceEnabled = systemInfoPacketData?.device_recording ?? false
+        deviceEnabled = configPacketData?.enableRecording ?? false
     }
 }
 

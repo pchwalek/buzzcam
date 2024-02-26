@@ -18,7 +18,7 @@ extension BluetoothModel {
     // send packets when mark is updated
     func markUpdates(annotationText: String, beep: Bool) {
         // Retrieve the current values of MarkPacket and SystemInfoPacket (if they exist)
-        var currentMarkPacket = markPacket ?? Packet()
+        var currentMarkPacket = Packet()
 
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
@@ -46,11 +46,10 @@ extension BluetoothModel {
     // send packet when device is disabled/enabled
     func deviceEnabledUpdates(deviceEnabled: Bool) {
         // Retrieve the current values of SystemInfoPacket (if they exist)
-        var currentConfigPacket = configPacket ?? Packet()
+        var currentConfigPacket = Packet()
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
-        print("currentTimestamp",UInt64(currentTimestamp))
         currentConfigPacket.header.epoch = UInt64(currentTimestamp) * 1000
         
         if (currentConfigPacket.configPacket.enableRecording != deviceEnabled) {
@@ -85,7 +84,7 @@ extension BluetoothModel {
     //send packet to enable/disable audio channels
     func enableAudioChannel1(channel1: Bool) {
         // Retrieve the current values of SystemInfoPacket (if they exist)
-        var currentConfigPacket = configPacket ?? Packet()
+        var currentConfigPacket = Packet()
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
@@ -107,7 +106,7 @@ extension BluetoothModel {
     //send packet to enable/disable audio channels
     func enableAudioChannel2(channel2: Bool) {
         // Retrieve the current values of SystemInfoPacket (if they exist)
-        var currentConfigPacket = configPacket ?? Packet()
+        var currentConfigPacket = Packet()
 
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
@@ -132,7 +131,7 @@ extension BluetoothModel {
     //send packet to set sample freq
     func changeSampleFreq(sampleFreq: MicSampleFreq) {
         // Retrieve the current values of SystemInfoPacket (if they exist)
-        var currentConfigPacket = configPacket ?? Packet()
+        var currentConfigPacket = Packet()
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
@@ -152,7 +151,7 @@ extension BluetoothModel {
     
     func setBitResolution(bitResolution: MicBitResolution) {
         // Retrieve the current values of SystemInfoPacket (if they exist)
-        var currentConfigPacket = configPacket ?? Packet()
+        var currentConfigPacket = Packet()
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
@@ -173,7 +172,7 @@ extension BluetoothModel {
     //send packet to enable/disable audio channels
     func enableAudioCompression(audioCompressionEnabled: Bool) {
         // Retrieve the current values of SystemInfoPacket (if they exist)
-        var currentConfigPacket = configPacket ?? Packet()
+        var currentConfigPacket = Packet()
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
@@ -195,7 +194,7 @@ extension BluetoothModel {
     //send packet to set compression type
     func changeCompressionType(compressionType: CompressionType) {
         // Retrieve the current values of SystemInfoPacket (if they exist)
-        var currentConfigPacket = configPacket ?? Packet()
+        var currentConfigPacket = Packet()
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
@@ -216,7 +215,7 @@ extension BluetoothModel {
     // send packet to change compression factor
     func changeCompressionFactor(compressionFactor: UInt32) {
         // Retrieve the current values of SystemInfoPacket (if they exist)
-        var currentConfigPacket = configPacket ?? Packet()
+        var currentConfigPacket = Packet()
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
@@ -237,7 +236,7 @@ extension BluetoothModel {
     //send packet to set compression type
     func changeMicGain(micGain: MicGain) {
         // Retrieve the current values of SystemInfoPacket (if they exist)
-        var currentConfigPacket = configPacket ?? Packet()
+        var currentConfigPacket = Packet()
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
@@ -258,7 +257,7 @@ extension BluetoothModel {
     //send packet to enable/disable free run mode
     func enableFreeRunMode(enableFreeRunMode: Bool) {
         // Retrieve the current values of SystemInfoPacket (if they exist)
-        var currentConfigPacket = configPacket ?? Packet()
+        var currentConfigPacket = Packet()
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
@@ -302,7 +301,7 @@ extension BluetoothModel {
     //send packet to enable/disable gas
     func enableGasSensing(enableGas: Bool) {
         // Retrieve the current values of SystemInfoPacket (if they exist)
-        var currentConfigPacket = configPacket ?? Packet()
+        var currentConfigPacket = Packet()
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
@@ -324,7 +323,7 @@ extension BluetoothModel {
     //send packet to enable/disable temperature
     func enableTemperatureSensing(enableTemperature: Bool) {
         // Retrieve the current values of SystemInfoPacket (if they exist)
-        var currentConfigPacket = configPacket ?? Packet()
+        var currentConfigPacket = Packet()
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
@@ -346,7 +345,7 @@ extension BluetoothModel {
     //send packet to enable/disable humidity
     func enableHumiditySensing(enableHumidity: Bool) {
         // Retrieve the current values of SystemInfoPacket (if they exist)
-        var currentConfigPacket = configPacket ?? Packet()
+        var currentConfigPacket = Packet()
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
@@ -389,7 +388,7 @@ extension BluetoothModel {
     // send packet to wakeup cameras
     func wakeupCameras() {
         // Retrieve the current values of SpecialFunction (if they exist)
-        var currentConfigPacket = specialFunction ?? Packet()
+        var currentConfigPacket = Packet()
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
@@ -427,7 +426,7 @@ extension BluetoothModel {
     // send packet with schedules
     func sendSchedules(_ schedules: [ScheduleConfig]) {
         // Retrieve the current values of SystemInfoPacket (if they exist)
-        var currentConfigPacket = configPacket ?? Packet()
+        var currentConfigPacket = Packet()
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
@@ -524,7 +523,7 @@ extension BluetoothModel {
     //send packet to enable/disable audio channels
     func enableLowPowerMode(lowPowerModeEnabled: Bool) {
         // Retrieve the current values of SystemInfoPacket (if they exist)
-        var currentConfigPacket = configPacket ?? Packet()
+        var currentConfigPacket = Packet()
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
@@ -548,7 +547,7 @@ extension BluetoothModel {
     //send packet to enable/disable master node
     func enableMasterNode(masterNodeEnabled: Bool) {
         // Retrieve the current values of SystemInfoPacket (if they exist)
-        var currentConfigPacket = configPacket ?? Packet()
+        var currentConfigPacket = Packet()
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
@@ -570,7 +569,7 @@ extension BluetoothModel {
     //send packet to enable/disable slave sync
     func enableSlaveSync(slaveSyncEnabled: Bool) {
         // Retrieve the current values of SystemInfoPacket (if they exist)
-        var currentConfigPacket = configPacket ?? Packet()
+        var currentConfigPacket = Packet()
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
@@ -592,7 +591,7 @@ extension BluetoothModel {
     //send packet to enable/disable master chirp
     func enableMasterChirp(masterChirpEnabled: Bool) {
         // Retrieve the current values of SystemInfoPacket (if they exist)
-        var currentConfigPacket = configPacket ?? Packet()
+        var currentConfigPacket = Packet()
         
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
@@ -614,7 +613,7 @@ extension BluetoothModel {
     // send packet with PAN ID
     func sendPanID(panID: UInt32) {
         // Retrieve the current values of MarkPacket and SystemInfoPacket (if they exist)
-        var currentConfigPacket = configPacket ?? Packet()
+        var currentConfigPacket = Packet()
 
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970
@@ -637,7 +636,7 @@ extension BluetoothModel {
     // send packet for new channel
     func changeChannel(channel: UInt32) {
         // Retrieve the current values of configPacket (if they exist)
-        var currentConfigPacket = configPacket ?? Packet()
+        var currentConfigPacket = Packet()
 
         // Set unix time
         let currentTimestamp = Date().timeIntervalSince1970

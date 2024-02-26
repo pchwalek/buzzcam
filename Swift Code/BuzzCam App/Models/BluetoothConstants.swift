@@ -128,4 +128,12 @@ struct SpecialFunctionData {
     }
 }
 
+struct ConfigPacketData {
+    var enableRecording: Bool = false
+    
+    mutating func reset() {
+        enableRecording = false
+    }
+}
+
 
