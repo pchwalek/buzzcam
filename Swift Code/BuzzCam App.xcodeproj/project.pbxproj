@@ -212,8 +212,8 @@
 				21C0A20B2AE7104800BA2ABC /* DiscoverView.swift */,
 				21DAA5FF2AE0746B00E70BF2 /* MainView.swift */,
 				21C0A2052AE3152800BA2ABC /* StatusesView.swift */,
-				21C0A2072AE320E000BA2ABC /* SensorReadingView.swift */,
 				21C17DC62B854EC200A65338 /* RangingView.swift */,
+				21C0A2072AE320E000BA2ABC /* SensorReadingView.swift */,
 				21C0A2092AE320FE00BA2ABC /* NearbyDevices.swift */,
 				21DAA5D82ADF222000E70BF2 /* Assets.xcassets */,
 				21DAA5DA2ADF222000E70BF2 /* BuzzCam_App.entitlements */,
@@ -564,6 +564,7 @@
 		21DAA5F72ADF222000E70BF2 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "BuzzCam App/BuzzCam_App.entitlements";
@@ -596,6 +597,7 @@
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -605,6 +607,7 @@
 		21DAA5F82ADF222000E70BF2 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "BuzzCam App/BuzzCam_App.entitlements";
@@ -637,6 +640,7 @@
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

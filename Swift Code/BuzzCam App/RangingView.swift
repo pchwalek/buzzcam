@@ -115,7 +115,9 @@ struct RangingView: View {
                                     Text("...")
                                 } else {
                                     List(bluetoothModel.specialFunctionData?.uwbPacket.ranges ?? [], id: \.self) { range in
-                                        Text("\(range.systemUid)")
+//                                        Text("\(range.systemUid)") // print hex, 8 digits
+                                        let hexUID = String(format: "%08X", range.systemUid)
+                                        Text(hexUID)
                                     }
                                 }
                             }

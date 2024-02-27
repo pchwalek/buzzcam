@@ -44,7 +44,7 @@ struct MainView: View {
                             // upper box
                             VStack(alignment: .center){
                                 HStack {
-                                    Text(String(bluetoothModel.connectedPeripheral?.name ?? "BuzzCam"))
+                                    Text(String(bluetoothModel.connectedPeripheral?.name ?? "BuzzCam").split(separator: "_")[1]) // split by underscore
                                         .font(customFontTitle)
                                         .foregroundColor(Color.white)
                                         .shadow(color: .black, radius: 3, x: 0, y: 2)
@@ -156,6 +156,11 @@ struct MainView: View {
                                                 .fill(Color.white.opacity(0.8))
                                         )
                                         .foregroundColor(.black)
+                                        .onChange(of: annotationText) {
+                                                    if annotationText.count > 40 {
+                                                        annotationText = String(annotationText.prefix(40))
+                                                    }
+                                                }
                                 }
 //                                    .padding(.horizontal, 8) // Adjust padding as needed
 //                                    .overlay(
@@ -242,7 +247,9 @@ struct MainView: View {
                         }.background(Color(red: 36/255, green: 18/255, blue: 21/255))
                     } else {
                         // Placeholder view while the peripheral name is not available, waiting for it to load
-                        Text("Loading...")
+                        Spacer()
+                        Text("Loading...").font(customFontText).foregroundColor(.white)
+                        Spacer()
                     }
                 })
             }

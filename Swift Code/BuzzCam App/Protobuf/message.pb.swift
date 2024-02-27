@@ -921,6 +921,22 @@ public struct ConfigPacket {
   fileprivate var _storage = _StorageClass.defaultInstance
 }
 
+public struct PeerAddress {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// Encoded as u16.
+  public var panID: UInt32 = 0
+
+  /// 2 or 8 bytes (short / extended).
+  public var address: Data = Data()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
 public struct UWB_Range {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -937,15 +953,58 @@ public struct UWB_Range {
 
   public var systemUid: UInt32 = 0
 
-  public var uwbAddr: UInt32 = 0
+  public var uwbAddr: PeerAddress {
+    get {return _uwbAddr ?? PeerAddress()}
+    set {_uwbAddr = newValue}
+  }
+  /// Returns true if `uwbAddr` has been explicitly set.
+  public var hasUwbAddr: Bool {return self._uwbAddr != nil}
+  /// Clears the value of `uwbAddr`. Subsequent reads from it will return its default value.
+  public mutating func clearUwbAddr() {self._uwbAddr = nil}
 
   public var range: Float = 0
+
+  public var stdDev: Float = 0
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
   fileprivate var _openthreadUid: DeviceUID? = nil
+  fileprivate var _uwbAddr: PeerAddress? = nil
+}
+
+public struct UWB_Info {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var openthreadUid: DeviceUID {
+    get {return _openthreadUid ?? DeviceUID()}
+    set {_openthreadUid = newValue}
+  }
+  /// Returns true if `openthreadUid` has been explicitly set.
+  public var hasOpenthreadUid: Bool {return self._openthreadUid != nil}
+  /// Clears the value of `openthreadUid`. Subsequent reads from it will return its default value.
+  public mutating func clearOpenthreadUid() {self._openthreadUid = nil}
+
+  public var systemUid: UInt32 = 0
+
+  public var uwbAddr: PeerAddress {
+    get {return _uwbAddr ?? PeerAddress()}
+    set {_uwbAddr = newValue}
+  }
+  /// Returns true if `uwbAddr` has been explicitly set.
+  public var hasUwbAddr: Bool {return self._uwbAddr != nil}
+  /// Clears the value of `uwbAddr`. Subsequent reads from it will return its default value.
+  public mutating func clearUwbAddr() {self._uwbAddr = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _openthreadUid: DeviceUID? = nil
+  fileprivate var _uwbAddr: PeerAddress? = nil
 }
 
 public struct UWB_Packet {
@@ -954,6 +1013,8 @@ public struct UWB_Packet {
   // methods supported on all messages.
 
   public var startRanging: Bool = false
+
+  public var turnOnUwb: Bool = false
 
   public var ranges: [UWB_Range] = []
 
@@ -1017,10 +1078,10 @@ public struct SpecialFunction {
     set {payload = .slaveReqConfig(newValue)}
   }
 
-  public var timestamp: Bool {
+  public var timestamp: UInt32 {
     get {
       if case .timestamp(let v)? = payload {return v}
-      return false
+      return 0
     }
     set {payload = .timestamp(newValue)}
   }
@@ -1033,12 +1094,12 @@ public struct SpecialFunction {
     set {payload = .dfuMode(newValue)}
   }
 
-  public var specialFunction9: Bool {
+  public var uwbInfo: UWB_Info {
     get {
-      if case .specialFunction9(let v)? = payload {return v}
-      return false
+      if case .uwbInfo(let v)? = payload {return v}
+      return UWB_Info()
     }
-    set {payload = .specialFunction9(newValue)}
+    set {payload = .uwbInfo(newValue)}
   }
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -1050,9 +1111,9 @@ public struct SpecialFunction {
     case openthreadSyncTime(Bool)
     case magCalibration(Bool)
     case slaveReqConfig(Bool)
-    case timestamp(Bool)
+    case timestamp(UInt32)
     case dfuMode(Bool)
-    case specialFunction9(Bool)
+    case uwbInfo(UWB_Info)
 
   #if !swift(>=4.1)
     public static func ==(lhs: SpecialFunction.OneOf_Payload, rhs: SpecialFunction.OneOf_Payload) -> Bool {
@@ -1092,8 +1153,8 @@ public struct SpecialFunction {
         guard case .dfuMode(let l) = lhs, case .dfuMode(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
-      case (.specialFunction9, .specialFunction9): return {
-        guard case .specialFunction9(let l) = lhs, case .specialFunction9(let r) = rhs else { preconditionFailure() }
+      case (.uwbInfo, .uwbInfo): return {
+        guard case .uwbInfo(let l) = lhs, case .uwbInfo(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -1221,7 +1282,9 @@ extension CameraControl: @unchecked Sendable {}
 extension DeviceUID: @unchecked Sendable {}
 extension NetworkState: @unchecked Sendable {}
 extension ConfigPacket: @unchecked Sendable {}
+extension PeerAddress: @unchecked Sendable {}
 extension UWB_Range: @unchecked Sendable {}
+extension UWB_Info: @unchecked Sendable {}
 extension UWB_Packet: @unchecked Sendable {}
 extension SpecialFunction: @unchecked Sendable {}
 extension SpecialFunction.OneOf_Payload: @unchecked Sendable {}
@@ -2443,6 +2506,44 @@ extension ConfigPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
   }
 }
 
+extension PeerAddress: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = "PeerAddress"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "pan_id"),
+    2: .same(proto: "address"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.panID) }()
+      case 2: try { try decoder.decodeSingularBytesField(value: &self.address) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.panID != 0 {
+      try visitor.visitSingularUInt32Field(value: self.panID, fieldNumber: 1)
+    }
+    if !self.address.isEmpty {
+      try visitor.visitSingularBytesField(value: self.address, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: PeerAddress, rhs: PeerAddress) -> Bool {
+    if lhs.panID != rhs.panID {return false}
+    if lhs.address != rhs.address {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension UWB_Range: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = "UWB_Range"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
@@ -2450,6 +2551,7 @@ extension UWB_Range: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     2: .standard(proto: "system_UID"),
     3: .standard(proto: "UWB_addr"),
     4: .same(proto: "range"),
+    5: .same(proto: "stdDev"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2460,8 +2562,9 @@ extension UWB_Range: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularMessageField(value: &self._openthreadUid) }()
       case 2: try { try decoder.decodeSingularUInt32Field(value: &self.systemUid) }()
-      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.uwbAddr) }()
+      case 3: try { try decoder.decodeSingularMessageField(value: &self._uwbAddr) }()
       case 4: try { try decoder.decodeSingularFloatField(value: &self.range) }()
+      case 5: try { try decoder.decodeSingularFloatField(value: &self.stdDev) }()
       default: break
       }
     }
@@ -2478,11 +2581,14 @@ extension UWB_Range: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     if self.systemUid != 0 {
       try visitor.visitSingularUInt32Field(value: self.systemUid, fieldNumber: 2)
     }
-    if self.uwbAddr != 0 {
-      try visitor.visitSingularUInt32Field(value: self.uwbAddr, fieldNumber: 3)
-    }
+    try { if let v = self._uwbAddr {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    } }()
     if self.range != 0 {
       try visitor.visitSingularFloatField(value: self.range, fieldNumber: 4)
+    }
+    if self.stdDev != 0 {
+      try visitor.visitSingularFloatField(value: self.stdDev, fieldNumber: 5)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -2490,8 +2596,57 @@ extension UWB_Range: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
   public static func ==(lhs: UWB_Range, rhs: UWB_Range) -> Bool {
     if lhs._openthreadUid != rhs._openthreadUid {return false}
     if lhs.systemUid != rhs.systemUid {return false}
-    if lhs.uwbAddr != rhs.uwbAddr {return false}
+    if lhs._uwbAddr != rhs._uwbAddr {return false}
     if lhs.range != rhs.range {return false}
+    if lhs.stdDev != rhs.stdDev {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension UWB_Info: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = "UWB_Info"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "openthread_UID"),
+    2: .standard(proto: "system_UID"),
+    3: .standard(proto: "UWB_addr"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._openthreadUid) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.systemUid) }()
+      case 3: try { try decoder.decodeSingularMessageField(value: &self._uwbAddr) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._openthreadUid {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    if self.systemUid != 0 {
+      try visitor.visitSingularUInt32Field(value: self.systemUid, fieldNumber: 2)
+    }
+    try { if let v = self._uwbAddr {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: UWB_Info, rhs: UWB_Info) -> Bool {
+    if lhs._openthreadUid != rhs._openthreadUid {return false}
+    if lhs.systemUid != rhs.systemUid {return false}
+    if lhs._uwbAddr != rhs._uwbAddr {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2501,7 +2656,8 @@ extension UWB_Packet: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
   public static let protoMessageName: String = "UWB_Packet"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "startRanging"),
-    2: .same(proto: "ranges"),
+    2: .same(proto: "turnOnUWB"),
+    3: .same(proto: "ranges"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2511,7 +2667,8 @@ extension UWB_Packet: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularBoolField(value: &self.startRanging) }()
-      case 2: try { try decoder.decodeRepeatedMessageField(value: &self.ranges) }()
+      case 2: try { try decoder.decodeSingularBoolField(value: &self.turnOnUwb) }()
+      case 3: try { try decoder.decodeRepeatedMessageField(value: &self.ranges) }()
       default: break
       }
     }
@@ -2521,14 +2678,18 @@ extension UWB_Packet: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     if self.startRanging != false {
       try visitor.visitSingularBoolField(value: self.startRanging, fieldNumber: 1)
     }
+    if self.turnOnUwb != false {
+      try visitor.visitSingularBoolField(value: self.turnOnUwb, fieldNumber: 2)
+    }
     if !self.ranges.isEmpty {
-      try visitor.visitRepeatedMessageField(value: self.ranges, fieldNumber: 2)
+      try visitor.visitRepeatedMessageField(value: self.ranges, fieldNumber: 3)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: UWB_Packet, rhs: UWB_Packet) -> Bool {
     if lhs.startRanging != rhs.startRanging {return false}
+    if lhs.turnOnUwb != rhs.turnOnUwb {return false}
     if lhs.ranges != rhs.ranges {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
@@ -2546,7 +2707,7 @@ extension SpecialFunction: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     6: .standard(proto: "slave_req_config"),
     7: .same(proto: "timestamp"),
     8: .standard(proto: "dfu_mode"),
-    9: .standard(proto: "special_function_9"),
+    9: .standard(proto: "uwb_info"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2614,8 +2775,8 @@ extension SpecialFunction: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
         }
       }()
       case 7: try {
-        var v: Bool?
-        try decoder.decodeSingularBoolField(value: &v)
+        var v: UInt32?
+        try decoder.decodeSingularUInt32Field(value: &v)
         if let v = v {
           if self.payload != nil {try decoder.handleConflictingOneOf()}
           self.payload = .timestamp(v)
@@ -2630,11 +2791,16 @@ extension SpecialFunction: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
         }
       }()
       case 9: try {
-        var v: Bool?
-        try decoder.decodeSingularBoolField(value: &v)
+        var v: UWB_Info?
+        var hadOneofValue = false
+        if let current = self.payload {
+          hadOneofValue = true
+          if case .uwbInfo(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
         if let v = v {
-          if self.payload != nil {try decoder.handleConflictingOneOf()}
-          self.payload = .specialFunction9(v)
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payload = .uwbInfo(v)
         }
       }()
       default: break
@@ -2674,15 +2840,15 @@ extension SpecialFunction: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     }()
     case .timestamp?: try {
       guard case .timestamp(let v)? = self.payload else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 7)
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 7)
     }()
     case .dfuMode?: try {
       guard case .dfuMode(let v)? = self.payload else { preconditionFailure() }
       try visitor.visitSingularBoolField(value: v, fieldNumber: 8)
     }()
-    case .specialFunction9?: try {
-      guard case .specialFunction9(let v)? = self.payload else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 9)
+    case .uwbInfo?: try {
+      guard case .uwbInfo(let v)? = self.payload else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
     }()
     case nil: break
     }

@@ -237,7 +237,7 @@ struct NetworkView: View {
             
             let readPanID = (bluetoothModel.configPacketData_NetworkState?.panID ?? 0)
             
-            self.panID = String(format:"%02X", readPanID)
+            self.panID = String(format:"%04X", readPanID)
             
             if let initialChannel = bluetoothModel.configPacketData_NetworkState?.channel {
                 selectedChannel = Double(initialChannel)
