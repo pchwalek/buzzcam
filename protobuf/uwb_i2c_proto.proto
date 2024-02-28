@@ -1,0 +1,130 @@
+syntax = "proto3";
+
+package beecam.uwb.i2c;
+
+// Unit.
+message Unit {}
+
+// 802.15.4 address.
+message PeerAddress {
+    // Encoded as u16.
+    uint32 pan_id = 1;
+
+    // 2 or 8 bytes (short / extended).
+    bytes address = 2;
+}
+
+message DeviceInfo {
+    UWBInfo uwb = 1;
+
+    // Information about the bluetooth stack. May be left unpopulated if the bluetooth stack
+    // is not running.
+    BluetoothInfo bluetooth = 2;
+
+    FirmwareBuildInfo build_info = 3;
+
+    message UWBInfo {
+        // Current UWB peer address.
+        PeerAddress address = 1;
+    }
+
+    message BluetoothInfo {
+        // MAC address.
+        bytes mac = 1;
+    }
+
+    message FirmwareBuildInfo {
+        // Git hash firmware was built at.
+        string git_revision = 1;
+
+        // Build timestamp as epoch seconds.
+        string build_timestamp = 2;
+
+        // Compiler version string.
+        string compiler_version = 3;
+    }
+}
+
+// Messages from BeeCam to DWM3001C (master -> slave).
+message Uplink {
+    // Raw bytes supplied by sender to correlate a response to this request.
+    // Returned verbatim in the responding downlink message.
+    bytes correlation_data = 1;
+
+    oneof command {
+        // Request status of the UWB node.
+        Unit request_status = 2;
+
+        // Reset MCU.
+        Unit reset = 3;
+
+        // Initiate TWR point-to-point with the node at the specified address.
+        PeerAddress twr_ptp = 4;
+
+        // Get device info.
+        Unit get_device_info = 5;
+    }
+}
+
+// Messages from DWM3001C to BeeCam (slave -> master).
+message Downlink {
+    // Raw bytes supplied in the initiating request.
+    bytes correlation_data = 1;
+
+    oneof response {
+        // Requested action failed.
+        Error error = 2;
+
+        // System status.
+        Status status = 3;
+
+        // Successful point-to-point TWR result.
+        PTPResult twr_ptp_result = 4;
+
+        // Information about hardware and firmware.
+        DeviceInfo info = 5;
+    }
+
+    message Error {
+        enum ErrorCode {
+            // Unspecified error: something went wrong that doesn't fit into existing categories.
+            UNKNOWN = 0;
+
+            // Request timed out.
+            //
+            // For ranging requests, this most likely means that the receiving node is unavailable
+            // or out of range.
+            TIMEOUT = 1;
+
+            // Data encoding or decoding failed.
+            SERDE = 2;
+        }
+
+        // Notes on the circumstances of the error.
+        string context = 1;
+        ErrorCode code = 2;
+    }
+
+    // Status of the DWM3001C system.
+    message Status {
+        bool ready = 1;
+    }
+
+    // Point-to-point TWR result.
+    message PTPResult {
+        // Calculated range in millimeters.
+        uint32 range_mm = 1;
+
+        // Address of the peer we ranged to.
+        PeerAddress peer_address = 2;
+
+        // Raw tx timestamp as recorded by UWB chip.
+        uint64 raw_tx_timestamp = 3;
+
+        // Raw rx timestamp as recorded by UWB chip. The clock may have rolled over since
+        uint64 raw_rx_timestamp = 4;
+
+        // Raw DX_TIME used by peer node.
+        uint64 raw_dx_time = 5;
+    }
+}

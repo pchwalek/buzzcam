@@ -103,8 +103,8 @@ class MyCallback: public BLECharacteristicCallbacks {
 				Serial.println("received an info packet!");
 				memcpy(&message_system_info,&message_rx,sizeof(packet_t));
 				pb_encode(&stream_out, PACKET_FIELDS, &message_system_info);
-        Serial.print("Beep state: ");
-        Serial.println(message_system_info.payload.system_info_packet.mark_state.beep_enabled);
+//        Serial.print("Beep state: ");
+//        Serial.println(message_system_info.payload.system_info_packet.mark_state.beep_enabled);
 				pCharacteristicSysInfo->setValue(buffer, stream_out.bytes_written);
         pCharacteristicSysInfo->notify();
 				break;
@@ -202,7 +202,7 @@ void setup() {
 	message_system_info.payload.system_info_packet.number_discovered_devices = 0;
 	message_system_info.payload.system_info_packet.has_mark_state = true;
 	message_system_info.payload.system_info_packet.mark_state.mark_number = 0;
-	message_system_info.payload.system_info_packet.mark_state.beep_enabled = false;
+//	message_system_info.payload.system_info_packet.mark_state.beep_enabled = false;
 	message_system_info.payload.system_info_packet.mark_state.timestamp_unix = 1232422;
 	message_system_info.payload.system_info_packet.has_sdcard_state = true;
 	message_system_info.payload.system_info_packet.sdcard_state.detected = 1;
@@ -242,7 +242,7 @@ void setup() {
   message_config.payload.config_packet.audio_config.estimated_record_time = 10302491;
   
   message_config.payload.config_packet.has_sensor_config = true;
-  message_config.payload.config_packet.sensor_config.sample_period_ms = 5000;
+//  message_config.payload.config_packet.sensor_config.sample_period_ms = 5000;
   message_config.payload.config_packet.sensor_config.enable_temperature = true;
   message_config.payload.config_packet.sensor_config.enable_humidity = true;
   message_config.payload.config_packet.sensor_config.enable_gas = true;

@@ -229,17 +229,34 @@ message ConfigPacket{
     bool enable_recording = 6;
 }
 
+message PeerAddress {
+    // Encoded as u16.
+    uint32 pan_id = 1;
+
+    // 2 or 8 bytes (short / extended).
+    bytes address = 2;
+}
+
 message UWB_Range{
     DeviceUID openthread_UID = 1;
     uint32 system_UID = 2;
-    uint32 UWB_addr = 3;
+    PeerAddress UWB_addr = 3;
     float range = 4;
+    float stdDev = 5;
+}
+
+message UWB_Info{
+    DeviceUID openthread_UID = 1;
+    uint32 system_UID = 2;
+    PeerAddress UWB_addr = 3;
 }
 
 message UWB_Packet{
     bool startRanging = 1;
-    repeated UWB_Range ranges = 2;
+    bool turnOnUWB = 2;
+    repeated UWB_Range ranges = 3;
 }
+
 
 message SpecialFunction{
     oneof payload{
@@ -249,11 +266,13 @@ message SpecialFunction{
         bool openthread_sync_time = 4;
         bool mag_calibration = 5;
         bool slave_req_config = 6;
-        bool timestamp = 7;
-        bool special_function_8 = 8;
-        bool special_function_9 = 9;
+        uint32 timestamp = 7;
+        bool dfu_mode = 8;
+        UWB_Info uwb_info = 9;
     }
 }
+
+
 
 message Packet {
     PacketHeader header = 1;

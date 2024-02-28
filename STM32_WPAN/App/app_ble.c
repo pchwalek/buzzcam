@@ -361,9 +361,9 @@ static void AdvUpdateProcess(void *argument);
 static void Adv_Update(void);
 
 /* USER CODE BEGIN PFP */
-char a_LocalName[20];
-char a_buzzCamName[20];
-char a_camName[20];
+char a_LocalName[21] = {0};
+char a_buzzCamName[20] = {0};
+char a_camName[20] = {0};
 /* USER CODE END PFP */
 
 /* External variables --------------------------------------------------------*/
@@ -801,7 +801,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
           }
           BleApplicationContext.BleApplicationContext_legacy.connectionHandle = p_connection_complete_event->Connection_Handle;
           /* USER CODE BEGIN HCI_EVT_LE_CONN_COMPLETE */
-
+//          Adv_Request(APP_BLE_FAST_ADV);
           /* USER CODE END HCI_EVT_LE_CONN_COMPLETE */
           break; /* HCI_LE_CONNECTION_COMPLETE_SUBEVT_CODE */
         }
@@ -1005,27 +1005,61 @@ void APP_BLE_Init_Dyn_1( void )
 //	     }
 //	   };
 
-		SHCI_C2_Ble_Init_Cmd_Packet_t ble_init_cmd_packet = { { { 0, 0, 0 } }, /**< Header unused */
-		{ 0, /** pBleBufferAddress not used */
-		0, /** BleBufferSize not used */
-		CFG_BLE_NUM_GATT_ATTRIBUTES,
-		CFG_BLE_NUM_GATT_SERVICES,
-		CFG_BLE_ATT_VALUE_ARRAY_SIZE,
-		CFG_BLE_NUM_LINK,
-		CFG_BLE_DATA_LENGTH_EXTENSION,
-		CFG_BLE_PREPARE_WRITE_LIST_SIZE,
-		CFG_BLE_MBLOCK_COUNT,
-		CFG_BLE_MAX_ATT_MTU,
-		CFG_BLE_SLAVE_SCA,
-		CFG_BLE_MASTER_SCA,
-		CFG_BLE_LSE_SOURCE,
-		CFG_BLE_MAX_CONN_EVENT_LENGTH,
-		CFG_BLE_HSE_STARTUP_TIME,
-		CFG_BLE_VITERBI_MODE,
-		CFG_BLE_OPTIONS, 0,
-		CFG_BLE_MAX_COC_INITIATOR_NBR,
-		CFG_BLE_MIN_TX_POWER,
-		CFG_BLE_MAX_TX_POWER } };
+//		SHCI_C2_Ble_Init_Cmd_Packet_t ble_init_cmd_packet = { { { 0, 0, 0 } }, /**< Header unused */
+//		{ 0, /** pBleBufferAddress not used */
+//		0, /** BleBufferSize not used */
+//		CFG_BLE_NUM_GATT_ATTRIBUTES,
+//		CFG_BLE_NUM_GATT_SERVICES,
+//		CFG_BLE_ATT_VALUE_ARRAY_SIZE,
+//		CFG_BLE_NUM_LINK,
+//		CFG_BLE_DATA_LENGTH_EXTENSION,
+//		CFG_BLE_PREPARE_WRITE_LIST_SIZE,
+//		CFG_BLE_MBLOCK_COUNT,
+//		CFG_BLE_MAX_ATT_MTU,
+//		CFG_BLE_SLAVE_SCA,
+//		CFG_BLE_MASTER_SCA,
+//		CFG_BLE_LSE_SOURCE,
+//		CFG_BLE_MAX_CONN_EVENT_LENGTH,
+//		CFG_BLE_HSE_STARTUP_TIME,
+//		CFG_BLE_VITERBI_MODE,
+//		CFG_BLE_OPTIONS, 0,
+//		CFG_BLE_MAX_COC_INITIATOR_NBR,
+//		CFG_BLE_MIN_TX_POWER,
+//		CFG_BLE_MAX_TX_POWER } };
+
+	  SHCI_C2_Ble_Init_Cmd_Packet_t ble_init_cmd_packet =
+	  {
+	    {{0,0,0}},                          /**< Header unused */
+	    {0,                                 /** pBleBufferAddress not used */
+	     0,                                  /** BleBufferSize not used */
+	     CFG_BLE_NUM_GATT_ATTRIBUTES,
+	     CFG_BLE_NUM_GATT_SERVICES,
+	     CFG_BLE_ATT_VALUE_ARRAY_SIZE,
+	     CFG_BLE_NUM_LINK,
+	     CFG_BLE_DATA_LENGTH_EXTENSION,
+	     CFG_BLE_PREPARE_WRITE_LIST_SIZE,
+	     CFG_BLE_MBLOCK_COUNT,
+	     CFG_BLE_MAX_ATT_MTU,
+	     CFG_BLE_PERIPHERAL_SCA,
+	     CFG_BLE_CENTRAL_SCA,
+	     CFG_BLE_LS_SOURCE,
+	     CFG_BLE_MAX_CONN_EVENT_LENGTH,
+	     CFG_BLE_HSE_STARTUP_TIME,
+	     CFG_BLE_VITERBI_MODE,
+	     CFG_BLE_OPTIONS,
+	     0,
+	     CFG_BLE_MAX_COC_INITIATOR_NBR,
+	     CFG_BLE_MIN_TX_POWER,
+	     CFG_BLE_MAX_TX_POWER,
+	     CFG_BLE_RX_MODEL_CONFIG,
+	     CFG_BLE_MAX_ADV_SET_NBR,
+	     CFG_BLE_MAX_ADV_DATA_LEN,
+	     CFG_BLE_TX_PATH_COMPENS,
+	     CFG_BLE_RX_PATH_COMPENS,
+	     CFG_BLE_CORE_VERSION,
+	     CFG_BLE_OPTIONS_EXT
+	    }
+	  };
 
 
 	  a_ManufDataCameraWakeup[0] = sizeof(a_ManufDataCameraWakeup) - 1;
@@ -1491,7 +1525,7 @@ static void Ble_Hci_Gap_Gatt_Init(void)
 
   if (role > 0)
   {
-    const char *name = "BUZZC";
+//    const char *name = "IZZY";
     ret = aci_gap_init(role,
                        0,
                        APPBLE_GAP_DEVICE_NAME_LENGTH,
@@ -1508,7 +1542,7 @@ static void Ble_Hci_Gap_Gatt_Init(void)
       APP_DBG_MSG("  Success: aci_gap_init command\n");
     }
 
-    ret = aci_gatt_update_char_value(gap_service_handle, gap_dev_name_char_handle, 0, strlen(name), (uint8_t *) name);
+    ret = aci_gatt_update_char_value(gap_service_handle, gap_dev_name_char_handle, 0, 16, (uint8_t *) &local_name_buzzcam[1]);
     if (ret != BLE_STATUS_SUCCESS)
     {
       BLE_DBG_SVCCTL_MSG("  Fail   : aci_gatt_update_char_value - Device Name\n");
@@ -1643,7 +1677,7 @@ void Adv_Request(APP_BLE_ConnStatus_t NewStatus)
    */
   HW_TS_Stop(BleApplicationContext.Advertising_mgr_timer_Id);
 
-  if ((NewStatus == APP_BLE_LP_ADV)
+  if (( (NewStatus == APP_BLE_LP_ADV || NewStatus == APP_BLE_CAM_LP_ADV))
       && ((BleApplicationContext.Device_Connection_Status == APP_BLE_FAST_ADV)
           || (BleApplicationContext.Device_Connection_Status == APP_BLE_LP_ADV)))
   {
@@ -1659,7 +1693,11 @@ void Adv_Request(APP_BLE_ConnStatus_t NewStatus)
     }
   }
 
-  BleApplicationContext.Device_Connection_Status = NewStatus;
+  if(NewStatus != APP_BLE_CAM_LP_ADV){
+	  BleApplicationContext.Device_Connection_Status = NewStatus;
+  }else if(NewStatus == APP_BLE_LP_ADV){
+	  BleApplicationContext.Device_Connection_Status = APP_BLE_LP_ADV;
+  }
   /* Start Fast or Low Power Advertising */
   ret = aci_gap_set_discoverable(ADV_IND,
                                  Min_Inter,
@@ -1674,18 +1712,42 @@ void Adv_Request(APP_BLE_ConnStatus_t NewStatus)
                                  0);
   if (ret != BLE_STATUS_SUCCESS)
   {
-    APP_DBG_MSG("==>> aci_gap_set_discoverable - fail, result: 0x%x \n", ret);
-  }
-  else
-  {
-    APP_DBG_MSG("==>> aci_gap_set_discoverable - Success\n");
+    Error_Handler();
   }
 
   /* Update Advertising data */
   ret = aci_gap_update_adv_data(sizeof(a_ManufData), (uint8_t*) a_ManufData);
   HW_TS_Start(BleApplicationContext.Advertising_mgr_timer_Id, INITIAL_ADV_TIMEOUT);
 
+  if(NewStatus == APP_BLE_CAM_LP_ADV){
+	  aci_gap_delete_ad_type(AD_TYPE_16_BIT_SERV_UUID);
+		aci_gap_delete_ad_type(AD_TYPE_16_BIT_SERV_UUID_CMPLT_LIST);
+		aci_gap_delete_ad_type(AD_TYPE_32_BIT_SERV_UUID);
+		aci_gap_delete_ad_type(AD_TYPE_32_BIT_SERV_UUID_CMPLT_LIST);
+		aci_gap_delete_ad_type(AD_TYPE_128_BIT_SERV_UUID);
+		aci_gap_delete_ad_type(AD_TYPE_128_BIT_SERV_UUID_CMPLT_LIST);
+		aci_gap_delete_ad_type(AD_TYPE_SHORTENED_LOCAL_NAME);
+		aci_gap_delete_ad_type(AD_TYPE_COMPLETE_LOCAL_NAME);
+		aci_gap_delete_ad_type(AD_TYPE_TX_POWER_LEVEL);
+		aci_gap_delete_ad_type(AD_TYPE_CLASS_OF_DEVICE);
+		aci_gap_delete_ad_type(AD_TYPE_SEC_MGR_TK_VALUE);
+		aci_gap_delete_ad_type(AD_TYPE_SEC_MGR_OOB_FLAGS);
+		aci_gap_delete_ad_type(AD_TYPE_PERIPHERAL_CONN_INTERVAL);
+		aci_gap_delete_ad_type(AD_TYPE_SERV_SOLICIT_16_BIT_UUID_LIST);
+		aci_gap_delete_ad_type(AD_TYPE_SERV_SOLICIT_128_BIT_UUID_LIST);
+		aci_gap_delete_ad_type(AD_TYPE_SERVICE_DATA);
+		aci_gap_delete_ad_type(AD_TYPE_APPEARANCE);
+		aci_gap_delete_ad_type(AD_TYPE_ADVERTISING_INTERVAL);
+		aci_gap_delete_ad_type(AD_TYPE_LE_ROLE);
+		aci_gap_delete_ad_type(AD_TYPE_SERV_SOLICIT_32_BIT_UUID_LIST);
+	  aci_gap_delete_ad_type(AD_TYPE_URI);
 
+		ret = aci_gap_update_adv_data(sizeof(a_ManufDataCameraWakeup), (uint8_t*) a_ManufDataCameraWakeup);
+
+  }else{
+	  ret = aci_gap_update_adv_data(sizeof(a_ManufData), (uint8_t*) a_ManufData);
+
+  }
 //  if (ret != BLE_STATUS_SUCCESS)
 //  {
 //    if (NewStatus == APP_BLE_FAST_ADV)
@@ -1807,7 +1869,7 @@ static void AdvUpdateProcess(void *argument)
     	ot_StatusNot(ot_TL_CmdBusy);
     	ot_StatusNot(ot_TL_CmdAvailable);
 
-    	osDelay(5000);
+//    	osDelay(5000);
 
 //    	  LL_C1_IPCC_EnableTransmitChannel( IPCC, HW_IPCC_SYSTEM_CMD_RSP_CHANNEL );
 //    	  HW_IPCC_BLE_Init();

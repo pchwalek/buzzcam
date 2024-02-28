@@ -143,6 +143,8 @@ void BME_Task(void *argument) {
 //	sensor_packet_t *packet = NULL;
 	volatile uint32_t flags = 0;
 
+	uint8_t errorCounter = 0;
+
 	osThreadFlagsClear(TERMINATE_THREAD_BIT);
 //	bool status;
 

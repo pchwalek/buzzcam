@@ -36,8 +36,10 @@
 /**
  * Define Tx Power
  */
-#define CFG_TX_POWER                      (0x18) /* -0.15dBm */
+//#define CFG_TX_POWER                      (0x18) /* -0.15dBm */
 
+//#define CFG_TX_POWER                      (0x1F)
+#define CFG_TX_POWER						(0x1F) //max
 /**
  * Define Advertising parameters
  */
@@ -398,7 +400,7 @@
 
 #define CFG_BLE_MIN_TX_POWER            (0)
 
-#define CFG_BLE_MAX_TX_POWER            (0)
+#define CFG_BLE_MAX_TX_POWER            (20)
 
 /**
  * BLE Rx model configuration flags to be configured with:
@@ -740,7 +742,7 @@ typedef enum
 #define CFG_THREAD_MSG_M0_TO_M4_PROCESS_CB_SIZE     (0)
 #define CFG_THREAD_MSG_M0_TO_M4_PROCESS_STACK_MEM   (0)
 #define CFG_THREAD_MSG_M0_TO_M4_PROCESS_PRIORITY    osPriorityBelowNormal
-#define CFG_THREAD_MSG_M0_TO_M4_PROCESS_STACK_SIZE  (128 * 8)
+#define CFG_THREAD_MSG_M0_TO_M4_PROCESS_STACK_SIZE  (128 * 16)
 
 #define CFG_THREAD_CLI_PROCESS_NAME        "THREAD_CLI_PROCESS"
 #define CFG_THREAD_CLI_PROCESS_ATTR_BITS   (0)

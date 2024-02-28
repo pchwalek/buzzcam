@@ -131,6 +131,9 @@ static void APP_THREAD_FreeRTOSSendCLIToM0Task(void *argument);
 #endif /* (CFG_FULL_LOW_POWER == 0) */
 
 /* USER CODE BEGIN PFP */
+void createConfigThread(void *pvParameter1, uint32_t ulParameter2);
+//void vProcessInterface( void *pvParameter1, uint32_t ulParameter2 );
+
 static void APP_THREAD_SendCoapMsg(void);
 static void APP_THREAD_SendCoapMulticastRequest(uint8_t command);
 static void APP_THREAD_CoapRequestHandler(void                * pContext,
@@ -220,12 +223,19 @@ static uint32_t DebugTxCoapCpt = 0;
 static uint8_t PayloadWrite[30]= {0};
 static uint8_t PayloadRead[30]= {0};
 
+
+
 static volatile uint8_t waitingForAck = 0;
 
 extern volatile uint8_t g_ot_notification_allowed;
 
 uwb_packet_t uwb_table = {0};
 
+uwb_info_t connectedNodeInfo[MAX_CONN_COUNT] = {0};
+uwb_ranges_t rangesUWB[MAX_UWB_RANGES];
+
+void addInfotoTableUWB(uwb_info_t* new_info);
+void updateRangeTableUWB(uint32_t system_ID_1, uint32_t system_ID_2, float range, float std_dev);
 /* USER CODE END PV */
 
 /* Functions Definition ------------------------------------------------------*/
@@ -357,32 +367,33 @@ static void APP_THREAD_DeviceConfig(void)
   error = otSetStateChangedCallback(NULL, APP_THREAD_StateNotif, NULL);
   if (error != OT_ERROR_NONE)
   {
-    APP_THREAD_Error(ERR_THREAD_SET_STATE_CB,error);
+	  Error_Handler();
   }
   error = otLinkSetChannel(NULL, configPacket.payload.config_packet.network_state.channel);
   if (error != OT_ERROR_NONE)
   {
-    APP_THREAD_Error(ERR_THREAD_SET_CHANNEL,error);
+	  Error_Handler();
   }
   error = otLinkSetPanId(NULL, configPacket.payload.config_packet.network_state.pan_id);
   if (error != OT_ERROR_NONE)
   {
-    APP_THREAD_Error(ERR_THREAD_SET_PANID,error);
+	  Error_Handler();
   }
   error = otThreadSetNetworkKey(NULL, &networkKey);
   if (error != OT_ERROR_NONE)
   {
-    APP_THREAD_Error(ERR_THREAD_SET_NETWORK_KEY,error);
+	Error_Handler();
   }
+  otThreadSetChildTimeout(NULL, 15);
   error = otIp6SetEnabled(NULL, true);
   if (error != OT_ERROR_NONE)
   {
-    APP_THREAD_Error(ERR_THREAD_IPV6_ENABLE,error);
+	  Error_Handler();
   }
   error = otThreadSetEnabled(NULL, true);
   if (error != OT_ERROR_NONE)
   {
-    APP_THREAD_Error(ERR_THREAD_START,error);
+	  Error_Handler();
   }
 
   /* USER CODE BEGIN DEVICECONFIG */
@@ -439,18 +450,31 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
       break;
     case OT_DEVICE_ROLE_CHILD:
       /* USER CODE BEGIN OT_DEVICE_ROLE_CHILD */
-
+    	/* request info from onboard UWB node */
+//    	if(local_uwbInfo.has_uwb){
+//    		sendUWB_InfoToNodes((peer_address_t*) &local_uwbInfo.uwb.address);
+//    	}else{
+//    		osThreadFlagsSet(uwbMessageTaskId, UWB_GET_INFO);
+//    	}
       /* USER CODE END OT_DEVICE_ROLE_CHILD */
       break;
     case OT_DEVICE_ROLE_ROUTER :
       /* USER CODE BEGIN OT_DEVICE_ROLE_ROUTER */
-
-      /* USER CODE END OT_DEVICE_ROLE_ROUTER */
+    	/* request info from onboard UWB node */
+//    	if(local_uwbInfo.has_uwb){
+//    		sendUWB_InfoToNodes((peer_address_t*) &local_uwbInfo.uwb.address);
+//    	}else{
+//    		osThreadFlagsSet(uwbMessageTaskId, UWB_GET_INFO);
+//    	}      /* USER CODE END OT_DEVICE_ROLE_ROUTER */
       break;
     case OT_DEVICE_ROLE_LEADER :
       /* USER CODE BEGIN OT_DEVICE_ROLE_LEADER */
-
-      /* USER CODE END OT_DEVICE_ROLE_LEADER */
+    	/* request info from onboard UWB node */
+//    	if(local_uwbInfo.has_uwb){
+//    		sendUWB_InfoToNodes((peer_address_t*) &local_uwbInfo.uwb.address);
+//    	}else{
+//    		osThreadFlagsSet(uwbMessageTaskId, UWB_GET_INFO);
+//    	}      /* USER CODE END OT_DEVICE_ROLE_LEADER */
       break;
     default:
       /* USER CODE BEGIN DEFAULT */
@@ -1277,7 +1301,7 @@ static void APP_THREAD_CoapConfigHandler(void                * pContext,
 //      break;
 //    }
 
-    if (otCoapMessageGetCode(pMessage) != OT_COAP_CODE_PUT)
+    if (otCoapMessageGetCode(pMessage) == OT_COAP_CODE_PUT)
     {
 
 	  uint16_t receivedBytes;
@@ -1304,6 +1328,10 @@ static void APP_THREAD_CoapConfigHandler(void                * pContext,
 				case PACKET_CONFIG_PACKET_TAG:
 					/* only update config if in slave mode */
 					if(configPacket.payload.config_packet.network_state.slave_sync){
+//						osThreadState_t state = osThreadGetState(configThreadId);
+//						if( (state != osThreadReady) || (state != osThreadRunning) || (state != osThreadInactive) || (state != osThreadBlocked) ){
+//							xTimerPendFunctionCallFromISR(createConfigThread, &rxPacket.payload.config_packet, NULL, pdFALSE);
+//						}
 						osThreadState_t state = osThreadGetState(configThreadId);
 						if( (state != osThreadReady) || (state != osThreadRunning) || (state != osThreadInactive) || (state != osThreadBlocked) ){
 							configThreadId = osThreadNew(updateSystemConfig, &rxPacket.payload.config_packet, &configTask_attributes);
@@ -1311,11 +1339,15 @@ static void APP_THREAD_CoapConfigHandler(void                * pContext,
 					}
 
 					/* failure conditon: if another master node is broadcasting, demote yourself to slave_node */
-					if( (rxPacket.payload.config_packet.network_state.master_node == 1) &&
-							(configPacket.payload.config_packet.network_state.master_node == 0)){
+					else if( (rxPacket.payload.config_packet.network_state.master_node == 1) &&
+							(configPacket.payload.config_packet.network_state.master_node == 1)){
 						configPacket.payload.config_packet.network_state.slave_sync = 1;
 						configPacket.payload.config_packet.network_state.master_node = 0;
 
+//						osThreadState_t state = osThreadGetState(configThreadId);
+//						if( (state != osThreadReady) || (state != osThreadRunning) || (state != osThreadInactive) || (state != osThreadBlocked) ){
+//							xTimerPendFunctionCallFromISR(createConfigThread, &rxPacket.payload.config_packet, NULL, pdFALSE);
+//						}
 						osThreadState_t state = osThreadGetState(configThreadId);
 						if( (state != osThreadReady) || (state != osThreadRunning) || (state != osThreadInactive) || (state != osThreadBlocked) ){
 							configThreadId = osThreadNew(updateSystemConfig, &rxPacket.payload.config_packet, &configTask_attributes);
@@ -1341,14 +1373,26 @@ static void APP_THREAD_CoapConfigHandler(void                * pContext,
 							if(rxPacket.payload.special_function.payload.uwb_packet.start_ranging){
 								//todo: turn on UWB if not already on
 							}
-							if(rxPacket.payload.special_function.payload.uwb_packet.ranges_count == 1){
+							if(rxPacket.payload.special_function.payload.uwb_packet.turn_on_uwb){
+								//todo: turn on UWB if not already on
+							}
+							if(rxPacket.payload.special_function.payload.uwb_packet.ranges_count > 0){
 								// update UWB entry
-								updateTable(rxPacket.payload.special_function.payload.uwb_packet.ranges[0]);
+								for(int i = 0; i++; i < rxPacket.payload.special_function.payload.uwb_packet.ranges_count){
+									updateRangeTableUWB(rxPacket.header.system_uid,
+											rxPacket.payload.special_function.payload.uwb_packet.ranges[i].system_uid,
+											rxPacket.payload.special_function.payload.uwb_packet.ranges[i].range,
+											rxPacket.payload.special_function.payload.uwb_packet.ranges[i].std_dev);
+								}
+
+//								updateTable(rxPacket.payload.special_function.payload.uwb_packet.ranges[0]);
 							}
 							break;
 						case SPECIAL_FUNCTION_OPENTHREAD_SYNC_TIME_TAG:
-							if(rxPacket.header.epoch < 1707859083){
-								updateRTC_MS(rxPacket.header.epoch);
+							if(configPacket.payload.config_packet.network_state.slave_sync){
+								if(rxPacket.header.epoch < 1707859083){
+									updateRTC_MS(rxPacket.header.epoch);
+								}
 							}
 							break;
 						case SPECIAL_FUNCTION_MAG_CALIBRATION_TAG:
@@ -1358,6 +1402,11 @@ static void APP_THREAD_CoapConfigHandler(void                * pContext,
 							if(configPacket.payload.config_packet.network_state.master_node){
 								sendConfig(pMessageInfo->mPeerAddr);
 							}
+							break;
+						case SPECIAL_FUNCTION_UWB_INFO_TAG:
+							//todo grab info
+							addInfotoTableUWB(&rxPacket.payload.special_function.payload.uwb_info);
+
 							break;
 						default: break;
 					}
@@ -1388,7 +1437,10 @@ static void APP_THREAD_CoapConfigHandler(void                * pContext,
     }
 
   } while (false);
+
 }
+
+
 
 
 void updateTable(uwb_range_t newEntry){
@@ -1406,6 +1458,38 @@ void updateTable(uwb_range_t newEntry){
 			return;
 		}
 	}
+}
+
+
+void updateRangeTableUWB(uint32_t system_ID_1, uint32_t system_ID_2, float range, float std_dev){
+	for(int i = 0; i<MAX_UWB_RANGES; i++){
+		if((rangesUWB[i].system_uid_1 == system_ID_1) && (rangesUWB[i].system_uid_2 == system_ID_2)){
+			rangesUWB[i].range = range;
+			rangesUWB[i].std_dev = std_dev;
+			return;
+		}else if((rangesUWB[i].system_uid_1 == system_ID_1) && (rangesUWB[i].system_uid_2 == system_ID_2)){
+			rangesUWB[i].range = range;
+			rangesUWB[i].std_dev = std_dev;
+			return;
+		}else if(((rangesUWB[i].system_uid_1 == 0) && (rangesUWB[i].system_uid_2 == 0))){
+			rangesUWB[i].system_uid_1 = system_ID_1;
+			rangesUWB[i].system_uid_2 = system_ID_2;
+			rangesUWB[i].range = range;
+			rangesUWB[i].std_dev = std_dev;
+			return;
+		}
+	}
+}
+
+uint32_t totalConnectedNodes(uwb_info_t* nodeInfo){
+	int i = 0;
+	for(i = 0; i<MAX_UWB_RANGES; i++){
+		if(nodeInfo[i].system_uid == 0){
+			return (i);
+		}
+	}
+
+	return MAX_UWB_RANGES;
 }
 
 /**
@@ -1541,6 +1625,7 @@ static void APP_THREAD_CoapSendRequest(otCoapResource* aCoapRessource,
 }
 
 void sendConfigToNodes(bool record_enable){
+	portENTER_CRITICAL();
 	/* Create a stream that will write to our buffer. */
 	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
 	/* Now we are ready to encode the message! */
@@ -1549,7 +1634,67 @@ void sendConfigToNodes(bool record_enable){
 	status = pb_encode(&stream, PACKET_FIELDS, &configPacket);
 
 	configPacket.payload.config_packet.enable_recording = prevState;
+	portEXIT_CRITICAL();
 
+	//todo: cant stop ISR's for bottom command so would be good to issue a high priority thread call for below
+	  APP_THREAD_CoapSendRequest(&OT_ConfigRessource,
+	      OT_COAP_TYPE_NON_CONFIRMABLE,
+	      OT_COAP_CODE_PUT,
+	      MULICAST_FTD_MED,
+	      NULL,
+		  buffer,
+		  stream.bytes_written,
+	      NULL,
+	      NULL);
+
+}
+
+void sendTimeToNodes(void){
+	portENTER_CRITICAL();
+	/* Create a stream that will write to our buffer. */
+	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+	/* Now we are ready to encode the message! */
+	configPacket.which_payload = PACKET_SPECIAL_FUNCTION_TAG;
+	configPacket.payload.special_function.which_payload = SPECIAL_FUNCTION_TIMESTAMP_TAG;
+	configPacket.payload.special_function.payload.timestamp = true;
+    configPacket.header.epoch = getEpoch();
+	configPacket.header.ms_from_start = HAL_GetTick();
+	status = pb_encode(&stream, PACKET_FIELDS, &configPacket);
+
+	configPacket.which_payload = PACKET_CONFIG_PACKET_TAG;
+	portEXIT_CRITICAL();
+
+	//todo: cant stop ISR's for bottom command so would be good to issue a high priority thread call for below
+	  APP_THREAD_CoapSendRequest(&OT_ConfigRessource,
+	      OT_COAP_TYPE_NON_CONFIRMABLE,
+	      OT_COAP_CODE_PUT,
+	      MULICAST_FTD_MED,
+	      NULL,
+		  buffer,
+		  stream.bytes_written,
+	      NULL,
+	      NULL);
+
+}
+
+void sendUWB_InfoToNodes(peer_address_t* peer_addr){
+//	portENTER_CRITICAL();
+	/* Create a stream that will write to our buffer. */
+	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+	/* Now we are ready to encode the message! */
+	memset(&txPacket,NULL,sizeof(txPacket));
+	txPacket.which_payload = PACKET_SPECIAL_FUNCTION_TAG;
+	txPacket.has_header = true;
+	txPacket.header.system_uid = LL_FLASH_GetUDN();
+	txPacket.payload.special_function.which_payload = SPECIAL_FUNCTION_UWB_INFO_TAG;
+	txPacket.payload.special_function.payload.uwb_info.has_uwb_addr = true;
+	memcpy(&txPacket.payload.special_function.payload.uwb_info.uwb_addr, peer_addr, sizeof(peer_address_t));
+	txPacket.payload.special_function.payload.uwb_info.system_uid = txPacket.header.system_uid;
+
+	status = pb_encode(&stream, PACKET_FIELDS, &txPacket);
+//	portEXIT_CRITICAL();
+
+	//todo: cant stop ISR's for bottom command so would be good to issue a high priority thread call for below
 	  APP_THREAD_CoapSendRequest(&OT_ConfigRessource,
 	      OT_COAP_TYPE_NON_CONFIRMABLE,
 	      OT_COAP_CODE_PUT,
@@ -1563,11 +1708,14 @@ void sendConfigToNodes(bool record_enable){
 }
 
 void sendConfig(otIp6Address addr){
+	portENTER_CRITICAL();
 	/* Create a stream that will write to our buffer. */
 	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
 	/* Now we are ready to encode the message! */
 	status = pb_encode(&stream, PACKET_FIELDS, &configPacket);
+	portEXIT_CRITICAL();
 
+	//todo: cant stop ISR's for bottom command so would be good to issue a high priority thread call for below
 	  APP_THREAD_CoapSendRequest(&OT_ConfigRessource,
 	      OT_COAP_TYPE_NON_CONFIRMABLE,
 	      OT_COAP_CODE_PUT,
@@ -1602,6 +1750,40 @@ void alertMaster(void){
 	      NULL,
 	      NULL);
 
+}
+
+///* The callback function that will execute in the context of the daemon task.
+//Note callback functions must all use this same prototype. */
+//void vProcessInterface( void *pvParameter1, uint32_t ulParameter2 )
+//{
+//BaseType_t xInterfaceToService;
+//
+//    /* The interface that requires servicing is passed in the second
+//    parameter.  The first parameter is not used in this case. */
+//    xInterfaceToService = ( BaseType_t ) &ulParameter2(pvParameter1);
+//
+//    /* ...Perform the processing here... */
+//}
+
+//void createConfigThread(void *pvParameter1, uint32_t ulParameter2){
+//	config_packet_t config;
+//	memcpy(&config, pvParameter1, sizeof(config_packet_t));
+//	osThreadState_t state = osThreadGetState(configThreadId);
+//	if( (state != osThreadReady) || (state != osThreadRunning) || (state != osThreadInactive) || (state != osThreadBlocked) ){
+//		configThreadId = osThreadNew(updateSystemConfig, &config, &configTask_attributes);
+//	}
+//}
+
+void addInfotoTableUWB(uwb_info_t* new_info){
+	for(int i = 0; i<MAX_CONN_COUNT; i++){
+		if(connectedNodeInfo[i].system_uid == new_info->system_uid){
+			memcpy(&connectedNodeInfo[i], new_info, sizeof(uwb_info_t));
+			break;
+		}else if(connectedNodeInfo[i].system_uid == 0){
+			memcpy(&connectedNodeInfo[i], new_info, sizeof(uwb_info_t));
+			break;
+		}
+	}
 }
 /* USER CODE END FD_WRAP_FUNCTIONS */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

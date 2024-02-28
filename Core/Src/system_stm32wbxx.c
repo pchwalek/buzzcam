@@ -207,6 +207,10 @@ const uint32_t SmpsPrescalerTable[4UL][6UL] = {{1UL, 3UL, 2UL, 2UL, 1UL, 2UL}, \
   * @{
   */
 
+#define BOOTLOADER_STACK_POINTER       0x20030000
+// Define our function pointer
+void (*SysMemBootJump)(void);
+
 /**
   * @brief  Setup the microcontroller system.
   * @param  None
@@ -214,6 +218,22 @@ const uint32_t SmpsPrescalerTable[4UL][6UL] = {{1UL, 3UL, 2UL, 2UL, 1UL, 2UL}, \
   */
 void SystemInit(void)
 {
+  if ( *((unsigned long *)0x2000020c) == 0xDEADBEEF ) {
+	   *((unsigned long *)0x2000020c) =  0xCAFEFEED; // Reset our trigger
+
+		__enable_irq();
+		HAL_RCC_DeInit();
+		HAL_DeInit();
+		SysTick->CTRL = SysTick->LOAD = SysTick->VAL = 0;
+		__HAL_SYSCFG_REMAPMEMORY_SYSTEMFLASH();
+
+	   const uint32_t p = (*((uint32_t *) 0x1FFF0000));
+	  __set_MSP(p);
+	  SysMemBootJump = (void (*)(void)) (*((uint32_t *) 0x1FFF0004)); // Point the PC to the System Memory reset vector (+4)
+	  SysMemBootJump();
+	  while (1);
+  }
+
 #if defined(USER_VECT_TAB_ADDRESS)
   /* Configure the Vector Table location add offset address ------------------*/
   SCB->VTOR = VECT_TAB_BASE_ADDRESS | VECT_TAB_OFFSET;

@@ -39,7 +39,7 @@ PB_BIND(DISCOVERED_DEVICES_DEVICE, discovered_devices_device_t, AUTO)
 PB_BIND(BATTERY_STATE, battery_state_t, AUTO)
 
 
-PB_BIND(SYSTEM_INFO_PACKET, system_info_packet_t, AUTO)
+PB_BIND(SYSTEM_INFO_PACKET, system_info_packet_t, 2)
 
 
 PB_BIND(AUDIO_COMPRESSION, audio_compression_t, AUTO)
@@ -57,16 +57,26 @@ PB_BIND(LOW_POWER_CONFIG, low_power_config_t, AUTO)
 PB_BIND(CAMERA_CONTROL, camera_control_t, AUTO)
 
 
+PB_BIND(DEVICE_UID, device_uid_t, AUTO)
+
+
 PB_BIND(NETWORK_STATE, network_state_t, AUTO)
 
 
-PB_BIND(CONFIG_PACKET, config_packet_t, AUTO)
+PB_BIND(CONFIG_PACKET, config_packet_t, 2)
 
 
-PB_BIND(SPECIAL_FUNCTION, special_function_t, AUTO)
+PB_BIND(UWB_RANGE, uwb_range_t, AUTO)
 
 
-PB_BIND(PACKET, packet_t, AUTO)
+PB_BIND(UWB_PACKET, uwb_packet_t, 2)
+
+
+PB_BIND(SPECIAL_FUNCTION, special_function_t, 2)
+
+
+PB_BIND(PACKET, packet_t, 2)
+
 
 
 

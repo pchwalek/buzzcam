@@ -1,0 +1,9 @@
+beecam.uwb.i2c.PeerAddress.address                              max_size:8
+beecam.uwb.i2c.PeerAddress.pan_id                               int_size:IS_16
+beecam.uwb.i2c.DeviceInfo.BluetoothInfo.mac                     max_size:6 fixed_length:true
+beecam.uwb.i2c.DeviceInfo.FirmwareBuildInfo.git_revision        max_length:40
+beecam.uwb.i2c.DeviceInfo.FirmwareBuildInfo.build_timestamp     max_length:40
+beecam.uwb.i2c.DeviceInfo.FirmwareBuildInfo.compiler_version    max_length:32
+beecam.uwb.i2c.Uplink.correlation_data                          max_size:64
+beecam.uwb.i2c.Downlink.correlation_data                        max_size:64
+beecam.uwb.i2c.Downlink.Error.context                           max_size:64

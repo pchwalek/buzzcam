@@ -86,6 +86,17 @@ const osThreadAttr_t batteryMonitorTask_attributes = { .name = "batteryMonTask",
 		.stack_size = 512 * 6, .priority = (osPriority_t) osPriorityBelowNormal,
 		.tz_module = 0, .reserved = 0 };
 
+const osThreadAttr_t triggerMarkTask_attributes = { .name = "tiggerMarkTask", .attr_bits =
+		osThreadDetached, .cb_mem = NULL, .cb_size = 0, .stack_mem = NULL,
+		.stack_size = 512 * 6, .priority = (osPriority_t) osPriorityBelowNormal,
+		.tz_module = 0, .reserved = 0 };
+
+const osThreadAttr_t uwbMessageTask_attributes = { .name = "uwbMessageTask", .attr_bits =
+		osThreadDetached, .cb_mem = NULL, .cb_size = 0, .stack_mem = NULL,
+		.stack_size = 512 * 4, .priority = (osPriority_t) osPriorityBelowNormal,
+		.tz_module = 0, .reserved = 0 };
+
+
 const osThreadAttr_t chirpTask_attributes = { .name = "chirpTask",
 		.attr_bits = osThreadDetached, .cb_mem = NULL, .cb_size = 0,
 		.stack_mem = NULL, .stack_size = 256*3, .priority =
@@ -100,6 +111,9 @@ const osMutexAttr_t messageI2C1_Lock_attributes = { .name = "messageI2C1_Lock" }
 const osSemaphoreAttr_t messageSPI1_Lock_attributes = { .name = "messageSPI1_Lock" };
 
 osSemaphoreId_t messageSPI1_LockBinarySemId;
+osMessageQueueId_t markPacketQueueId;
+osTimerId_t mainTaskUpdateId;
+osTimerId_t sendSlavesTimestampId;
 /* USER CODE END Variables */
 
 /* Private function prototypes -----------------------------------------------*/

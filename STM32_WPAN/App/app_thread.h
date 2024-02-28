@@ -143,15 +143,24 @@ typedef enum
   /* USER CODE END ERROR_APPLI_ENUM */
     ERR_THREAD_CHECK_WIRELESS
     } ErrAppliIdEnum_t;
+
+    typedef struct uwb_ranges {
+        uint32_t system_uid_1;
+        uint32_t system_uid_2;
+        float range;
+        float std_dev;
+    } uwb_ranges_t;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-
+#define MAX_CONN_COUNT		20
+#define MAX_UWB_RANGES		100
 /* USER CODE END EC */
 
 /* External variables --------------------------------------------------------*/
 /* USER CODE BEGIN EV */
+extern uwb_ranges_t rangesUWB[MAX_UWB_RANGES];
 /* USER CODE END EV */
 
 /* Exported macros ------------------------------------------------------------*/
@@ -167,14 +176,20 @@ void APP_THREAD_ProcessMsgM0ToM4(void);
 void APP_THREAD_Init_UART_CLI(void);
 void APP_THREAD_TL_THREAD_INIT(void);
 /* USER CODE BEGIN EF */
+extern uwb_info_t connectedNodeInfo[MAX_CONN_COUNT];
+uint32_t totalConnectedNodes(uwb_info_t* nodeInfo);
+void updateRangeTableUWB(uint32_t system_ID_1, uint32_t system_ID_2, float range, float std_dev);
+
 void APP_THREAD_Init_Dyn_1(void);
 void APP_THREAD_Init_Dyn_2(void);
 void APP_THREAD_Stop(void);
 void APP_THREAD_CleanCallbacks(void);
 void sendConfigToNodes(bool record_enable);
 void alertMaster(void);
+void sendTimeToNodes(void);
 extern uwb_packet_t uwb_table;
 
+void sendUWB_InfoToNodes(peer_address_t* peer_addr);
 /* USER CODE END EF */
 
 #ifdef __cplusplus

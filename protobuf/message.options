@@ -5,3 +5,5 @@ ConfigPacket.schedule_config	     max_count:10;
 DeviceUID.addr                       max_size:10;
 NetworkState.discovered_device_UID	     max_count:10;	
 UWB_Packet.ranges                  max_count:20;
+PeerAddress.address                max_size:8;
+PeerAddress.pan_id					int_size:IS_16

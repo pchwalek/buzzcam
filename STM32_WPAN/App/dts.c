@@ -176,6 +176,9 @@ static SVCCTL_EvtAckStatus_t DTS_Event_Handler(void *Event) {
 					(aci_att_exchange_mtu_resp_event_rp0*) blue_evt->data;
 			APP_DBG_MSG("MTU_size = %d \n",exchange_mtu_resp->Server_RX_MTU );
 			Att_Mtu_Exchanged = exchange_mtu_resp->Server_RX_MTU;
+
+
+
 #ifdef NUCLEO_LED_ACTIVE
      	 BSP_LED_On(LED_GREEN);
 #endif
@@ -185,7 +188,7 @@ static SVCCTL_EvtAckStatus_t DTS_Event_Handler(void *Event) {
 			attribute_modified =
 					(aci_gatt_attribute_modified_event_rp0*) blue_evt->data;
 			if (attribute_modified->Attr_Handle
-					== (aDataTransferContext.DataTransferRxCharHdle + 1)) {
+					== (aDataTransferContext.DataTransferSvcHdle + 5)) {
 				/* received update */
 				volatile uint8_t status;
 
@@ -197,7 +200,7 @@ static SVCCTL_EvtAckStatus_t DTS_Event_Handler(void *Event) {
 
 				osThreadState_t state;
 				if(status){
-					if(rxPacket.header.epoch < 1707866274000){
+					if(rxPacket.header.epoch > 1707866274){
 						updateRTC_MS(rxPacket.header.epoch);
 					}
 
@@ -206,18 +209,19 @@ static SVCCTL_EvtAckStatus_t DTS_Event_Handler(void *Event) {
 					case PACKET_MARK_PACKET_TAG:
 						state = osThreadGetState(markThreadId);
 						if( (state != osThreadReady) || (state != osThreadRunning) || (state != osThreadInactive) || (state != osThreadBlocked) ){
-							markThreadId = osThreadNew(triggerMark, &rxPacket.payload.mark_packet, &markTask_attributes);
+							osMessageQueuePut (markPacketQueueId, &rxPacket.payload.mark_packet, 0, 0);
 						}
 						break;
 					case PACKET_SYSTEM_INFO_PACKET_TAG:
-											break;
+						/* external systems shouldn't update system info */
+						break;
 					case PACKET_CONFIG_PACKET_TAG:
-						// start thread that interrupts systems, updates parameters, and restarts system
+						/* start thread that interrupts systems, updates parameters, and restarts system */
 						state = osThreadGetState(configThreadId);
 						if( (state != osThreadReady) || (state != osThreadRunning) || (state != osThreadInactive) || (state != osThreadBlocked) ){
 							configThreadId = osThreadNew(updateSystemConfig, &rxPacket.payload.config_packet, &configTask_attributes);
 						}
-											break;
+						break;
 					case PACKET_SPECIAL_FUNCTION_TAG:
 						switch(rxPacket.payload.special_function.which_payload){
 						case SPECIAL_FUNCTION_FORMAT_SDCARD_TAG:
@@ -228,22 +232,27 @@ static SVCCTL_EvtAckStatus_t DTS_Event_Handler(void *Event) {
 						case SPECIAL_FUNCTION_CAMERA_CONTROL_TAG:
 							if(rxPacket.payload.special_function.payload.camera_control.capture){
 								//todo: trigger any connected cameras
+								DTS_CamCtrl(SHUTTER);
 							}
 							else if(rxPacket.payload.special_function.payload.camera_control.pair_with_nearby_cameras){
 								//todo: put device in pairing mode for any nearby cameras
+								activateCameraMode();
 							}
 							else if(rxPacket.payload.special_function.payload.camera_control.wakeup_cameras){
 								//todo: wakeup any sleeping cameras
+								DTS_CamCtrl(WAKEUP_CAMERAS);
 							}
 							break;
 						case SPECIAL_FUNCTION_UWB_PACKET_TAG:
 							if(rxPacket.payload.special_function.payload.uwb_packet.start_ranging){
-								//todo: tell UWB module to start ranging with current UWB UID table
+								//todo: change this to UWB_START_RANGING and also populate "rangingAddr"
+								osThreadFlagsSet(uwbMessageTaskId, UWB_START_RANGING);
 							}
 							break;
 						case SPECIAL_FUNCTION_OPENTHREAD_SYNC_TIME_TAG:
 							if(rxPacket.payload.special_function.payload.openthread_sync_time){
 								//todo: implement function to sync time from this node with all other nodes via OT
+								sendConfigToNodes();
 							}
 							break;
 						case SPECIAL_FUNCTION_MAG_CALIBRATION_TAG:
@@ -253,6 +262,13 @@ static SVCCTL_EvtAckStatus_t DTS_Event_Handler(void *Event) {
 							}
 							break;
 						case SPECIAL_FUNCTION_SLAVE_REQ_CONFIG_TAG:
+							//todo
+							break;
+						case SPECIAL_FUNCTION_TIMESTAMP_TAG:
+							//todo
+							break;
+						case SPECIAL_FUNCTION_DFU_MODE_TAG:
+							enterDFUMode();
 							break;
 						default: break;
 						}
@@ -649,7 +665,7 @@ void DTS_STM_Init(void) {
 
 	hciCmdResult = aci_gatt_add_char(aDataTransferContext.DataTransferSvcHdle,
 	DT_UUID_LENGTH, (Char_UUID_t*) DT_REQ_CHAR_CONFIG_UUID, DATA_TRANSFER_NOTIFICATION_LEN_MAX, /* DATA_TRANSFER_NOTIFICATION_LEN_MAX, */
-	CHAR_PROP_NOTIFY | CHAR_PROP_READ,
+	CHAR_PROP_NOTIFY | CHAR_PROP_READ | CHAR_PROP_WRITE | CHAR_PROP_WRITE_WITHOUT_RESP,
 	ATTR_PERMISSION_NONE,
 	GATT_NOTIFY_ATTRIBUTE_WRITE, //GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP, /* gattEvtMask */
 			10, /* encryKeySize */
@@ -847,13 +863,16 @@ tBleStatus DTS_STM_UpdateChar(uint16_t UUID, uint8_t *pPayload) {
 	switch (UUID) {
 	case BUZZCAM_INFO_CHAR_UUID:
 		result = BLE_UpdateSystemInfo((DTS_STM_Payload_t*) pPayload);
+		break;
 	case BUZZCAM_CONFIG_CHAR_UUID:
 		result = BLE_UpdateConfig((DTS_STM_Payload_t*) pPayload);
+		break;
 	default:
 		break;
 	}
 	return result;
 }/* end DTS_STM_UpdateChar() */
+
 
 tBleStatus DTS_CamCtrl(cameraFn camera_control) {
 	tBleStatus result = BLE_STATUS_INVALID_PARAMS;
@@ -912,6 +931,7 @@ void wakeupConnectedCameras(void){
 //	ret = aci_gap_update_adv_data(sizeof(a_ManufDataCameraWakeup), (uint8_t*) a_ManufDataCameraWakeup);
 //	a_ManufDataCameraWakeup[0] = 9;
 
+//	osThreadFlagsSet(AdvUpdateProcessId, 1);
 	Adv_Request(APP_BLE_CAM_LP_ADV);
 
 	///* used for Insta360 RS 1-inch */

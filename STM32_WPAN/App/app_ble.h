@@ -76,7 +76,7 @@ extern uint8_t a_ManufDataCameraWakeup[28];
 extern uint8_t a_ManufData[14];
 extern char a_buzzCamName[20];
 extern char a_camName[20];
-extern char a_LocalName[20];
+extern char a_LocalName[21];
 /* USER CODE END EV */
 
 /* Exported macro ------------------------------------------------------------*/

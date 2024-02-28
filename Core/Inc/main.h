@@ -36,6 +36,7 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "message.pb.h"
+#include "uwb_i2c_proto.pb.h"
 #include "cmsis_os2.h"
 
 #include "projdefs.h"
@@ -69,12 +70,13 @@ void Error_Handler(void);
 
 void SystemClock_Config(void);
 
-void triggerMark(void *argument);
+void triggerMarkTask(void *argument);
 void mainSystemTask(void *argument);
 //void micTask(void *argument);
 void acousticSamplingTask(void *argument);
 void updateSystemConfig(void *argument);
 void sampleTask(void *argument);
+void alertMainTask(void *argument);
 
 typedef struct {
 	uint32_t ChunkID;       /* 0 */
@@ -170,6 +172,10 @@ extern SPI_HandleTypeDef hspi1;
 #define SD_DETECT_2_GPIO_Port GPIOE
 
 /* USER CODE BEGIN Private defines */
+#define MASTER_NODE 1
+#define UWB_ALERT_Pin GPIO_PIN_4
+#define UWB_ALERT_GPIO_Port GPIOC
+
 //#define TESTING_ACTIVE	1
 
 //#define FLAC__HAS_OGG 0
@@ -195,6 +201,10 @@ extern SPI_HandleTypeDef hspi1;
 #define UWB_UPDATE_RANGE      0x00000080
 #define MAG_CAL_EVENT		  0x00000100
 
+#define UWB_MESSAGE_ALERT	  0x00000001
+#define UWB_START_RANGING	  0x00000002
+#define UWB_GET_INFO		  0x00000004
+
 #define IS_CONFIG_EVENT(X)				(((X & CONFIG_UPDATED_EVENT) == CONFIG_UPDATED_EVENT) ? (1) : (0))
 #define IS_OPENTHREAD_EVENT(X)			(((X & OPENTHREAD_EVENT) == OPENTHREAD_EVENT) ? (1) : (0))
 #define IS_CAMERA_EVENT(X)				(((X & CAMERA_EVENT) == CAMERA_EVENT) ? (1) : (0))
@@ -215,10 +225,15 @@ extern size_t message_length;
 extern bool status;
 
 extern packet_t rxPacket;
+extern packet_t txPacket;
 
 extern osMutexId_t messageI2C1_LockHandle;
 //extern osMutexId_t messageSPI1_LockHandle;
 extern osSemaphoreId_t messageSPI1_LockBinarySemId;
+extern osMessageQueueId_t markPacketQueueId;
+
+extern osTimerId_t mainTaskUpdateId;
+extern osTimerId_t sendSlavesTimestampId;
 
 extern osThreadId_t markThreadId;
 extern osThreadId_t configThreadId;
@@ -228,6 +243,8 @@ extern osThreadId_t sampleThreadId;
 extern osThreadId_t bmeTaskHandle;
 extern osThreadId_t chirpTaskHandle;
 extern osThreadId_t batteryMonitorTaskId;
+extern osThreadId_t triggerMarkTaskId;
+extern osThreadId_t uwbMessageTaskId;
 
 extern osTimerId_t periodicBatteryMonitorTimer_id;
 
@@ -241,7 +258,12 @@ extern const osMutexAttr_t messageI2C1_Lock_attributes;
 extern const osSemaphoreAttr_t messageSPI1_Lock_attributes;
 extern const osThreadAttr_t bmeTask_attributes;
 extern const osThreadAttr_t batteryMonitorTask_attributes;
+extern const osThreadAttr_t triggerMarkTask_attributes;
 extern const osThreadAttr_t chirpTask_attributes;
+extern const osThreadAttr_t uwbMessageTask_attributes;
+
+extern beecam_uwb_i2c_peer_address_t rangingAddr;
+extern beecam_uwb_i2c_device_info_t local_uwbInfo;
 
 extern volatile uint8_t coapSetup;
 

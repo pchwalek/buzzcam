@@ -66,7 +66,13 @@ PB_BIND(NETWORK_STATE, network_state_t, AUTO)
 PB_BIND(CONFIG_PACKET, config_packet_t, 2)
 
 
+PB_BIND(PEER_ADDRESS, peer_address_t, AUTO)
+
+
 PB_BIND(UWB_RANGE, uwb_range_t, AUTO)
+
+
+PB_BIND(UWB_INFO, uwb_info_t, AUTO)
 
 
 PB_BIND(UWB_PACKET, uwb_packet_t, 2)
