@@ -142,6 +142,7 @@ RTC_AlarmTypeDef sAlarm = {0};
 osThreadId_t batteryMonitorTaskId;
 osThreadId_t triggerMarkTaskId;
 osThreadId_t uwbMessageTaskId;
+osThreadId_t ledSequencerId;
 
 osThreadId_t chirpTaskHandle;
 const osThreadAttr_t defaultTask_attributes = { .name = "defaultTask",
@@ -287,6 +288,8 @@ const char* getCompressionName(compression_type comp_type);
 const uint32_t getSampleFreq(mic_sample_freq sample_freq);
 
 void sendSlavesTimestamp(void *argument);
+
+void ledSequencer(void *argument);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -449,6 +452,9 @@ int main(void)
 
 	//	osSemaphoreWait(messageSPI1_LockBinarySemId, osWaitForever);
 
+	txMsg_LockBinarySemId = osSemaphoreNew(1, 1, &txMsg_Lock_attributes);
+	rxMsg_LockBinarySemId = osSemaphoreNew(1, 1, &rxMsg_Lock_attributes);
+
 	/* USER CODE END RTOS_MUTEX */
 
 	/* USER CODE BEGIN RTOS_SEMAPHORES */
@@ -463,6 +469,10 @@ int main(void)
 
 
 	markPacketQueueId = osMessageQueueNew (2, sizeof(mark_packet_t), NULL);
+	ledSeqQueueId = osMessageQueueNew (4, sizeof(colorConfig), NULL);
+//	txMsgQueueId = osMessageQueueNew (4, sizeof(packet_t *), NULL);
+//	rxMsgQueueId = osMessageQueueNew (4, sizeof(packet_t *), NULL);
+
 	/* USER CODE END RTOS_QUEUES */
 
 	/* Create the thread(s) */
@@ -1599,12 +1609,12 @@ void acousticSamplingTask(void *argument){
 		chirpTaskHandle = osThreadNew(chirpTask, NULL, &chirpTask_attributes);
 	}
 
-	if(configPacket.payload.config_packet.audio_config.free_run_mode){
+//	if(configPacket.payload.config_packet.audio_config.free_run_mode){
 		startRecord(0, folder_name); // run forever
-	}else{
+//	}else{
 		// start data collection
-		startRecord(15, folder_name);
-	}
+//		startRecord(15, folder_name);
+//	}
 }
 
 
@@ -2941,18 +2951,31 @@ void grabInertialSample(float *pitch, float *roll, float *heading){
 	osSemaphoreRelease(messageI2C1_LockHandle);
 	osDelay(1000);
 
+	uint8_t errorCnt = 0;
+	rxData = 0;
 	osSemaphoreAcquire(messageI2C1_LockHandle, osWaitForever);
-	status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) STATUS_REG_A, 1,&rxData, 1, 100);
+	do{
+		if(rxData != 0){
+			errorCnt++;
+			osDelay(10);
+			if(errorCnt == 10){
+				Error_Handler();
+			}
+		}
+		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) STATUS_REG_A, 1,&rxData, 1, 100);
+
+	}while( (rxData & 0x08) != 0x08);
 	osSemaphoreRelease(messageI2C1_LockHandle);
 	if( (rxData & 0x08) == 0x08){
 		// new data available
+		osSemaphoreAcquire(messageI2C1_LockHandle, osWaitForever);
 		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_X_L_A, 1,&accData[0], 1, 100);
 		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_X_H_A, 1,&accData[1], 1, 100);
 		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_Y_L_A, 1,&accData[2], 1, 100);
 		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_Y_H_A, 1,&accData[3], 1, 100);
 		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_Z_L_A, 1,&accData[4], 1, 100);
 		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_Z_H_A, 1,&accData[5], 1, 100);
-
+		osSemaphoreRelease(messageI2C1_LockHandle);
 		osDelay(100);
 		//	  status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_X_L_A, 1,accData, 6, 100);
 
@@ -3253,6 +3276,8 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 
 	uint8_t *buffer = NULL;
 
+	colorConfig color;
+
 	/* all the possible frequencies below */
 
 	// assuming stereo recording
@@ -3365,7 +3390,11 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 				// Wait for a notification
 				flag = osThreadFlagsWait(0x0001U | TERMINATE_EVENT, osFlagsWaitAny, osWaitForever);
 
-				toggledBlue();
+				color.blue_val = 40;
+//				color.green_val = 100;
+//				color.red_val = 100;
+				color.duration = 40;
+				osMessageQueuePut(ledSeqQueueId, &color, 0, 0);
 
 				if(SAI_HALF_CALLBACK){
 					SAI_HALF_CALLBACK = 0;
@@ -3894,6 +3923,12 @@ void mainSystemTask(void *argument){
 		//		}
 	}
 
+//	if(osOK != osMessageQueuePut(txMsgQueueId, &txPacket,0, 0)){
+//		Error_Handler();
+//	}
+//	if(osOK != osMessageQueuePut(rxMsgQueueId, &rxPacket,0, 0)){
+//		Error_Handler();
+//	}
 	/* read current config from SD card */
 
 	/* initiate system */
@@ -3908,6 +3943,7 @@ void mainSystemTask(void *argument){
 	batteryMonitorTaskId = osThreadNew(batteryMonitorTask, NULL, &batteryMonitorTask_attributes);
 	triggerMarkTaskId = osThreadNew(triggerMarkTask, NULL, &triggerMarkTask_attributes);
 	uwbMessageTaskId = osThreadNew(uwbMessageTask, NULL, &uwbMessageTask_attributes);
+	ledSequencerId = osThreadNew(ledSequencer, NULL, &ledSequencerTask_attributes);
 
 	/* request info from onboard UWB node */
 	osThreadFlagsSet(uwbMessageTaskId, UWB_GET_INFO);
@@ -3936,7 +3972,8 @@ void mainSystemTask(void *argument){
 
 		if(configPacket.payload.config_packet.enable_recording){
 			/* start immediately if a slave device or no schedule is given */
-			if(configPacket.payload.config_packet.schedule_config_count == 0){
+			if( (configPacket.payload.config_packet.schedule_config_count == 0) ||
+					(configPacket.payload.config_packet.audio_config.free_run_mode)){
 				micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
 
 			}
@@ -4194,9 +4231,28 @@ void sendSlavesTimestamp(void *argument){
 	sendTimeToNodes();
 }
 
+void ledSequencer(void *argument){
+	colorConfig color;
+	while(1){
+		osMessageQueueGet(ledSeqQueueId, &color, 0, osWaitForever);
+		setLED_Red(color.red_val);
+		setLED_Green(color.green_val);
+		setLED_Blue(color.blue_val);
+		osDelay(color.duration);
+		setLED_Red(0);
+		setLED_Green(0);
+		setLED_Blue(0);
+	}
+}
+
+
+
 void updateSystemConfig(void *argument){
-	config_packet_t new_config;
-	memcpy((uint8_t*) &new_config,(uint8_t*)argument,sizeof(config_packet_t));
+	configChange configMsg;
+	config_packet_t* new_config;
+	memcpy((uint8_t*) &configMsg,(uint8_t*)argument,sizeof(configChange));
+
+	new_config = &configMsg.config;
 
 	/* (1) update config */
 	configPacket.has_header = true;
@@ -4204,18 +4260,18 @@ void updateSystemConfig(void *argument){
 	configPacket.header.system_uid = LL_FLASH_GetUDN();
 	configPacket.header.ms_from_start = HAL_GetTick();
 
-	configPacket.payload.config_packet.enable_recording = new_config.enable_recording;
+	configPacket.payload.config_packet.enable_recording = new_config->enable_recording;
 
-	if(new_config.has_audio_config){
+	if(new_config->has_audio_config){
 		memcpy((uint8_t*)&configPacket.payload.config_packet.audio_config,
-				(uint8_t*)&new_config.audio_config,
-				sizeof(new_config.audio_config));
+				(uint8_t*)&new_config->audio_config,
+				sizeof(new_config->audio_config));
 	}
 
-	if(new_config.has_low_power_config){
+	if(new_config->has_low_power_config){
 		memcpy((uint8_t*)&configPacket.payload.config_packet.low_power_config,
-				(uint8_t*)&new_config.low_power_config,
-				sizeof(new_config.low_power_config));
+				(uint8_t*)&new_config->low_power_config,
+				sizeof(new_config->low_power_config));
 
 		if( configPacket.payload.config_packet.low_power_config.low_power_mode){
 			/* enable low power mode settings */
@@ -4224,35 +4280,37 @@ void updateSystemConfig(void *argument){
 		}
 	}
 
-	if(new_config.has_network_state){
-		configPacket.payload.config_packet.network_state.channel = new_config.network_state.channel;
-		configPacket.payload.config_packet.network_state.pan_id = new_config.network_state.pan_id;
+	if(new_config->has_network_state){
+		configPacket.payload.config_packet.network_state.channel = new_config->network_state.channel;
+		configPacket.payload.config_packet.network_state.pan_id = new_config->network_state.pan_id;
 
-		if(new_config.network_state.master_node == 1){
+		if((new_config->network_state.master_node == 1) && (configMsg.fromMaster != 1)){
 			configPacket.payload.config_packet.network_state.master_node = 1;
 			configPacket.payload.config_packet.network_state.slave_sync = 0;
+		}else if(configMsg.fromMaster == 1){
+			configPacket.payload.config_packet.enable_recording = new_config->enable_recording;
 		}else{
-			configPacket.payload.config_packet.network_state.slave_sync = new_config.network_state.slave_sync;
+			configPacket.payload.config_packet.network_state.slave_sync = new_config->network_state.slave_sync;
 			configPacket.payload.config_packet.enable_recording = false;
 		}
 
 
 		memcpy((uint8_t*)&configPacket.payload.config_packet.network_state,
-				(uint8_t*)&new_config.network_state,
-				sizeof(new_config.network_state));
+				(uint8_t*)&new_config->network_state,
+				sizeof(new_config->network_state));
 	}
 
-	if(new_config.has_sensor_config){
+	if(new_config->has_sensor_config){
 		memcpy((uint8_t*)&configPacket.payload.config_packet.sensor_config,
-				(uint8_t*)&new_config.sensor_config,
-				sizeof(new_config.sensor_config));
+				(uint8_t*)&new_config->sensor_config,
+				sizeof(new_config->sensor_config));
 	}
 
-	if(new_config.schedule_config_count != 0){
+	if(new_config->schedule_config_count != 0){
 		memcpy((uint8_t*)&configPacket.payload.config_packet.schedule_config,
-				(uint8_t*)&new_config.schedule_config,
-				sizeof(new_config.schedule_config));
-		configPacket.payload.config_packet.schedule_config_count = new_config.schedule_config_count;
+				(uint8_t*)&new_config->schedule_config,
+				sizeof(new_config->schedule_config));
+		configPacket.payload.config_packet.schedule_config_count = new_config->schedule_config_count;
 	}
 
 
@@ -4325,6 +4383,7 @@ void triggerMarkTask(void *argument){
 
 	while(1){
 		queueStatus = osMessageQueueGet (markPacketQueueId, &new_mark, 0, 500);
+
 
 		if(queueStatus == osOK){
 			infoPacket.payload.system_info_packet.mark_state.mark_number++;

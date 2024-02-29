@@ -190,6 +190,7 @@ void sendTimeToNodes(void);
 extern uwb_packet_t uwb_table;
 
 void sendUWB_InfoToNodes(peer_address_t* peer_addr);
+void sendUWB_InfoToNode(peer_address_t* peer_addr, otIp6Address addr);
 /* USER CODE END EF */
 
 #ifdef __cplusplus

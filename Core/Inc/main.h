@@ -100,6 +100,18 @@ typedef struct {
   int16_t mag_cal_vals[3];
 } MagCal;
 
+typedef struct{
+	uint16_t blue_val;
+	uint16_t green_val;
+	uint16_t red_val;
+	uint16_t duration;
+} colorConfig;
+
+typedef struct{
+	config_packet_t config;
+	uint8_t fromMaster;
+} configChange;
+
 extern I2C_HandleTypeDef hi2c1;
 extern RTC_HandleTypeDef hrtc;
 extern SPI_HandleTypeDef hspi1;
@@ -172,7 +184,7 @@ extern SPI_HandleTypeDef hspi1;
 #define SD_DETECT_2_GPIO_Port GPIOE
 
 /* USER CODE BEGIN Private defines */
-#define MASTER_NODE 1
+//#define MASTER_NODE 1
 #define UWB_ALERT_Pin GPIO_PIN_4
 #define UWB_ALERT_GPIO_Port GPIOC
 
@@ -230,7 +242,12 @@ extern packet_t txPacket;
 extern osMutexId_t messageI2C1_LockHandle;
 //extern osMutexId_t messageSPI1_LockHandle;
 extern osSemaphoreId_t messageSPI1_LockBinarySemId;
+extern osSemaphoreId_t txMsg_LockBinarySemId;
+extern osSemaphoreId_t rxMsg_LockBinarySemId;
 extern osMessageQueueId_t markPacketQueueId;
+extern osMessageQueueId_t ledSeqQueueId;
+extern osMessageQueueId_t txMsgQueueId;
+extern osMessageQueueId_t rxMsgQueueId;
 
 extern osTimerId_t mainTaskUpdateId;
 extern osTimerId_t sendSlavesTimestampId;
@@ -245,6 +262,7 @@ extern osThreadId_t chirpTaskHandle;
 extern osThreadId_t batteryMonitorTaskId;
 extern osThreadId_t triggerMarkTaskId;
 extern osThreadId_t uwbMessageTaskId;
+extern osThreadId_t ledSequencerId;
 
 extern osTimerId_t periodicBatteryMonitorTimer_id;
 
@@ -256,11 +274,14 @@ extern const osThreadAttr_t sampleTask_attributes;
 extern const osThreadAttr_t micTask_attributes;
 extern const osMutexAttr_t messageI2C1_Lock_attributes;
 extern const osSemaphoreAttr_t messageSPI1_Lock_attributes;
+extern const osSemaphoreAttr_t txMsg_Lock_attributes;
+extern const osSemaphoreAttr_t rxMsg_Lock_attributes;
 extern const osThreadAttr_t bmeTask_attributes;
 extern const osThreadAttr_t batteryMonitorTask_attributes;
 extern const osThreadAttr_t triggerMarkTask_attributes;
 extern const osThreadAttr_t chirpTask_attributes;
 extern const osThreadAttr_t uwbMessageTask_attributes;
+extern const osThreadAttr_t ledSequencerTask_attributes;
 
 extern beecam_uwb_i2c_peer_address_t rangingAddr;
 extern beecam_uwb_i2c_device_info_t local_uwbInfo;

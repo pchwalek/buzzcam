@@ -96,6 +96,10 @@ const osThreadAttr_t uwbMessageTask_attributes = { .name = "uwbMessageTask", .at
 		.stack_size = 512 * 4, .priority = (osPriority_t) osPriorityBelowNormal,
 		.tz_module = 0, .reserved = 0 };
 
+const osThreadAttr_t ledSequencerTask_attributes = { .name = "ledSeqTask", .attr_bits =
+		osThreadDetached, .cb_mem = NULL, .cb_size = 0, .stack_mem = NULL,
+		.stack_size = 512 * 2, .priority = (osPriority_t) osPriorityBelowNormal,
+		.tz_module = 0, .reserved = 0 };
 
 const osThreadAttr_t chirpTask_attributes = { .name = "chirpTask",
 		.attr_bits = osThreadDetached, .cb_mem = NULL, .cb_size = 0,
@@ -109,9 +113,16 @@ const osMutexAttr_t messageI2C1_Lock_attributes = { .name = "messageI2C1_Lock" }
 //const osMutexAttr_t messageSPI1_Lock_attributes = { .name = "messageSPI1_Lock" };
 
 const osSemaphoreAttr_t messageSPI1_Lock_attributes = { .name = "messageSPI1_Lock" };
+const osSemaphoreAttr_t txMsg_Lock_attributes = { .name = "txMsg_Lock" };
+const osSemaphoreAttr_t rxMsg_Lock_attributes = { .name = "rxMsg_Lock" };
 
 osSemaphoreId_t messageSPI1_LockBinarySemId;
+osSemaphoreId_t txMsg_LockBinarySemId;
+osSemaphoreId_t rxMsg_LockBinarySemId;
 osMessageQueueId_t markPacketQueueId;
+osMessageQueueId_t ledSeqQueueId;
+osMessageQueueId_t txMsgQueueId;
+osMessageQueueId_t rxMsgQueueId;
 osTimerId_t mainTaskUpdateId;
 osTimerId_t sendSlavesTimestampId;
 /* USER CODE END Variables */

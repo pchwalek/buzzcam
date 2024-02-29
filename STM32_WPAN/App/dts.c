@@ -122,6 +122,8 @@ static SVCCTL_EvtAckStatus_t DTS_Event_Handler(void *pckt);
 static DataTransferSvcContext_t aDataTransferContext;
 extern uint16_t Att_Mtu_Exchanged;
 
+static configChange configMsg;
+
 #ifdef PROTOBUF_RX
 //light_control_packet_t receivedColor;
 //static union ColorComplex receivedColor;
@@ -219,7 +221,11 @@ static SVCCTL_EvtAckStatus_t DTS_Event_Handler(void *Event) {
 						/* start thread that interrupts systems, updates parameters, and restarts system */
 						state = osThreadGetState(configThreadId);
 						if( (state != osThreadReady) || (state != osThreadRunning) || (state != osThreadInactive) || (state != osThreadBlocked) ){
-							configThreadId = osThreadNew(updateSystemConfig, &rxPacket.payload.config_packet, &configTask_attributes);
+							memcpy(&configMsg.config, &rxPacket.payload.config_packet, sizeof(config_packet_t));
+							configMsg.fromMaster = 0;
+							configThreadId = osThreadNew(updateSystemConfig,
+									&configMsg,
+									&configTask_attributes);
 						}
 						break;
 					case PACKET_SPECIAL_FUNCTION_TAG:
