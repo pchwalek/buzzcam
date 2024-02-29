@@ -6,7 +6,7 @@ import SwiftProtobuf
 
 
 class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate {
-    private var centralManager: CBCentralManager!
+    @Published var centralManager: CBCentralManager!
     @Published var peripherals: [CBPeripheral] = [] // for testing purposes only
     @Published var filteredPeripherals: [CBPeripheral] = []
     @Published var connectedPeripheral: CBPeripheral?
@@ -42,6 +42,9 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
     var configPacket: Packet?
     var specialFunction: Packet?
     
+    var updateTimer: Timer?
+
+    
     override init() {
         super.init()
         centralManager = CBCentralManager(delegate: self, queue: nil)
@@ -57,15 +60,34 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
     }
     
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi: NSNumber) {
-        if let peripheralName = peripheral.name, (peripheralName.contains("BuzzCam") ||  peripheralName.contains("STM") || peripheralName.contains("Buzz") || peripheralName.contains("BUZZ")){
-            if !filteredPeripherals.contains(peripheral) {
-                filteredPeripherals.append(peripheral)
-                print("Discovered Peripheral: \(peripheral.name ?? "Unknown") with Identifier: \(peripheral.identifier)")
+        if let peripheralName = peripheral.name, (peripheralName.contains("BuzzCam") || peripheralName.contains("STM") || peripheralName.contains("Buzz") || peripheralName.contains("BUZZ")) {
+                // Check if the peripheral is not already in the list
+                if !filteredPeripherals.contains(peripheral) {
+                    filteredPeripherals.append(peripheral)
+                    print("Discovered Peripheral: \(peripheralName) with Identifier: \(peripheral.identifier)")
+                }
             }
-        }
-        if !peripherals.contains(peripheral) { // for testing purposes
-            peripherals.append(peripheral)
-        }
+
+            if !peripherals.contains(peripheral) { // for testing purposes
+                peripherals.append(peripheral)
+            }
+
+            // Invalidate previous timer if exists
+            updateTimer?.invalidate()
+
+            // Schedule a new timer to update the list after a delay
+            updateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { _ in
+                // Remove peripherals that are no longer discoverable
+                self.filteredPeripherals = self.filteredPeripherals.filter { discoveredPeripheral in
+                    // Check if the peripheral advertisement data contains the service UUID or name
+                    if let advertisementName = advertisementData[CBAdvertisementDataLocalNameKey] as? String {
+                        let isDiscoverable = (advertisementName.contains("BuzzCam") || advertisementName.contains("STM") || advertisementName.contains("Buzz") || advertisementName.contains("BUZZ"))
+                        print("Peripheral \(advertisementName) - Discoverable: \(isDiscoverable)")
+                        return isDiscoverable
+                    }
+                    return false
+                }
+            }
     }
     
     func connectToPeripheral(_ peripheral: CBPeripheral) {
@@ -256,7 +278,11 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
                         device_recording: message.systemInfoPacket.deviceRecording,
                         
                         mark_number: message.systemInfoPacket.hasMarkState ? message.systemInfoPacket.markState.markNumber :
-                            self.systemInfoPacketData?.mark_number ?? 0
+                            self.systemInfoPacketData?.mark_number ?? 0,
+                        
+                        discovered_devices: message.systemInfoPacket.discoveredDevices
+                        
+//                        number_discovered_devices: message.systemInfoPacket.hasDiscoveredDevices ? message.systemInfoPacket.numberDiscoveredDevices : self.systemInfoPacketData?.number_discovered_devices ?? 0
                     )
                 }
                 print("Updated systemInfoPacketData with CE71 characteristic")
@@ -354,18 +380,25 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
         }
     }
     
+//    func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
+//        //      // Attempt to reconnect after a delay if not already in progress
+//        // Attempt automatic reconnection only if it's not a user-initiated disconnect
+//        //        if !isUserInitiatedDisconnect {
+//        //            if !isReconnecting {
+//        //                isReconnecting = true
+//        //                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+//        //                    central.connect(peripheral, options: nil)
+//        //                }
+//        //            }
+//        //        }
+//    }
+    
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
-        //      // Attempt to reconnect after a delay if not already in progress
-        // Attempt automatic reconnection only if it's not a user-initiated disconnect
-        //        if !isUserInitiatedDisconnect {
-        //            if !isReconnecting {
-        //                isReconnecting = true
-        //                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-        //                    central.connect(peripheral, options: nil)
-        //                }
-        //            }
-        //        }
+        // Remove the disconnected peripheral from the list of filtered peripherals
+        filteredPeripherals.removeAll { $0.identifier == peripheral.identifier }
+        print("Disconnected Peripheral: \(peripheral.name ?? "Unknown") with Identifier: \(peripheral.identifier)")
     }
+    
     
     
     // PACKET BEHAVIOR
@@ -535,4 +568,3 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
     }
     
 }
-

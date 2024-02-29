@@ -21,6 +21,8 @@ struct DiscoverView: View {
     @Binding var connected: Bool
     @State private var isAnimated = false
     
+    let scanInterval: TimeInterval = 10 // Adjust the interval as needed
+    
     let customFontTitle = Font.custom("Futura-Bold", size: 30) // Define a custom font
     let customFontText = Font.custom("AvenirNext-Regular", size: 18) // Define a custom font
     let customFontTextBold = Font.custom("AvenirNext-Bold", size: 18) // Define a custom font
@@ -121,9 +123,28 @@ struct DiscoverView: View {
             withAnimation(.easeInOut(duration: 0.5)) {
                 self.isAnimated = true
             }
+            // Start scanning for peripherals periodically
+//            startScanning()
         }
     }
+    
+    // Method to start scanning for peripherals periodically
+//    func startScanning() {
+//        print("in startScanning")
+//        DispatchQueue.main.asyncAfter(deadline: .now() + scanInterval) { [self] in
+//            // Access the CBCentralManager instance from bluetoothModel
+//            if let centralManager = bluetoothModel.centralManager {
+//                centralManager.scanForPeripherals(withServices: nil, options: nil)
+//            } else {
+//                print("Central manager not initialized.")
+//            }
+//            // Trigger scanning again after scanInterval
+//            startScanning()
+//        }
+//    }
 }
+
+
 
 //extension AnyTransition {
 //    static var fanInOut: AnyTransition {

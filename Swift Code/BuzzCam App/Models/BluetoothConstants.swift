@@ -21,6 +21,8 @@ struct SystemInfoPacketData {
     var battery_voltage: Float
     var device_recording: Bool
     var mark_number: UInt32
+    var discovered_devices: [Device]
+//    var number_discovered_devices: UInt32
 //    var beep_enabled: Bool
     
     mutating func reset() {
@@ -37,6 +39,8 @@ struct SystemInfoPacketData {
         battery_voltage = 0.0
         device_recording = false
         mark_number = 0
+        discovered_devices = []
+//        number_discovered_devices = 0
 //        beep_enabled = false
     }
 }

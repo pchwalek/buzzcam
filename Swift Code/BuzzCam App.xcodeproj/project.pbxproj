@@ -142,8 +142,8 @@
 		21A5600C2B19429B00292A6A /* ConfigSubviews */ = {
 			isa = PBXGroup;
 			children = (
-				21A5600D2B1942AF00292A6A /* AudioConfigView.swift */,
 				21F495E72B212DDF008E3808 /* SensingConfigView.swift */,
+				21A5600D2B1942AF00292A6A /* AudioConfigView.swift */,
 				21F495E92B2783DA008E3808 /* CameraConfigView.swift */,
 				21152BC82B2790920078ADD4 /* NetworkView.swift */,
 				21152BCA2B29002E0078ADD4 /* SchedulesView.swift */,

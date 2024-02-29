@@ -50,14 +50,45 @@ struct NearbyDevices: View {
                 }
             }
             if isExpanded {
+                
                 VStack {
                     HStack {
                         Text("Number of Nearby Devices: ").font(customFontTextBold)
-                        Text("\(bluetoothModel.configPacketData_NetworkState?.numberOfDiscoveredDevices ?? 0)").font(customFontText)
-                    }
+                        // \(bluetoothModel.systemInfoPacketData?.number_discovered_devices ?? 0)
+                        Text("").font(customFontText) // use length of discovered_devices
+                    }.padding(.top, 20)
+                    
+                    VStack {
+                        if let systemInfoPacketData = bluetoothModel.systemInfoPacketData {
+                            VStack{
+                                Text("Discovered Devices:")
+                                    .font(customFontTextBold)
+                                    .foregroundColor(.black)
+                                    .padding(.bottom)
+
+                                if !systemInfoPacketData.discovered_devices.isEmpty {
+                                    ForEach(systemInfoPacketData.discovered_devices, id: \.self) { device in
+                                        HStack {
+                                            Image(systemName: "circle.fill")
+                                                .foregroundColor(.black)
+                                                .font(.system(size: 10))
+                                            Text("\(device.uid)").font(customFontText)
+                                        }
+                                    }
+                                } else {
+                                    Text("No devices discovered.").font(customFontText)
+                                }
+                            }
+                        } else {
+                            Text("NetworkState nil")
+                                .padding()
+                        }
                 }
                 .frame(maxWidth: .infinity)
-                .padding(30)                
+                .padding(30)  
+                
+                
+                }
             }
         }
         .frame(maxWidth: .infinity)

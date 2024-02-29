@@ -177,20 +177,20 @@ struct NetworkView: View {
                     
                     
                     VStack(alignment: .leading) {
-                        if let configPacketData = bluetoothModel.configPacketData_NetworkState {
+                        if let systemInfoPacketData = bluetoothModel.systemInfoPacketData {
                             VStack(alignment: .leading, spacing: 10) {
                                 Text("Discovered Devices:")
                                     .fontWeight(.bold)
                                     .foregroundColor(.black)
                                     .padding(.bottom)
 
-                                if !configPacketData.discoveredDeviceUid.isEmpty {
-                                    ForEach(configPacketData.discoveredDeviceUid, id: \.self) { uid in
+                                if !systemInfoPacketData.discovered_devices.isEmpty {
+                                    ForEach(systemInfoPacketData.discovered_devices, id: \.self) { device in
                                         HStack {
                                             Image(systemName: "circle.fill")
                                                 .foregroundColor(.black)
                                                 .font(.system(size: 10))
-                                            Text("\(uid.addr)")
+                                            Text("\(device.uid)")
                                         }
                                     }
                                 } else {

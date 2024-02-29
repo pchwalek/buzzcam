@@ -236,9 +236,9 @@ struct MainView: View {
                             Spacer()
                             // ranging dropdown
                             RangingView()
-                            Spacer()
+//                            Spacer()
                             // nearby devices dropdown
-                            NearbyDevices()
+//                            NearbyDevices()
                             
                             
 //                            Image("BuzzCam Logo 1").resizable()
@@ -247,9 +247,14 @@ struct MainView: View {
                         }.background(Color(red: 36/255, green: 18/255, blue: 21/255))
                     } else {
                         // Placeholder view while the peripheral name is not available, waiting for it to load
-                        Spacer()
-                        Text("Loading...").font(customFontText).foregroundColor(.white)
-                        Spacer()
+                        VStack {
+                            Spacer()
+                            Text("Loading...").font(customFontTextBold).foregroundColor(.white)
+                            Spacer()
+                        }.padding(.top,300).frame(
+                            maxHeight: .infinity,
+                            alignment: .center
+                        ) // This ensures the VStack fills the screen
                     }
                 })
             }

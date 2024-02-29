@@ -27,7 +27,7 @@ struct RangingView: View {
         VStack (alignment: .leading) {
             HStack {
                 Spacer()
-                Text("Ranging")
+                Text("Ranging & Nearby Devices")
                     .font(customFontTitle)
                     .foregroundColor(Color.white)
                     .shadow(color: .black, radius: 5, x: 0, y: 2)
@@ -41,7 +41,7 @@ struct RangingView: View {
             }.frame(maxWidth: .infinity)
                 .background(
                     GeometryReader { proxy in
-                            Image("flowers 2") // Replace "your_image_name" with the name of your image asset
+                            Image("flowers 3") // Replace "your_image_name" with the name of your image asset
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
                                 .frame(width: proxy.size.width, height: proxy.size.height)
@@ -59,10 +59,15 @@ struct RangingView: View {
             if isExpanded {
                 VStack (alignment: .leading, spacing: 20) {
                     VStack(alignment: .leading) {
-                        
                         Text("Ranging List")
                             .font(customFontTextBold)
                             .fontWeight(.bold)
+                        
+                        HStack {
+                            Text("Number of Nearby Devices: ").font(customFontText)
+                            // \(bluetoothModel.systemInfoPacketData?.number_discovered_devices ?? 0)
+                            Text("\(bluetoothModel.systemInfoPacketData?.discovered_devices.count ?? 0)").font(customFontText)
+                        }.padding(.top, 10)
                         
                         HStack {
                             Text("Click to start ranging and generate a new list")
@@ -90,36 +95,65 @@ struct RangingView: View {
 //                                    }
 //                                }
                         HStack {
-                            VStack {
-                                Text("Range Values")
-                                    .font(customFontText)
-                                    .fontWeight(.bold)
-                                
-                                if bluetoothModel.specialFunctionData?.uwbPacket.ranges.isEmpty ?? true {
-                                    Text("...")
-                                } else {
-                                    List(bluetoothModel.specialFunctionData?.uwbPacket.ranges ?? [], id: \.self) { range in
-                                        Text("\(range.range)")
-                                    }
-                                }
-                            }
                             
-                            Spacer()
+                            
+                            
 
                             VStack {
                                 Text("System UIDs")
                                     .font(customFontText)
                                     .fontWeight(.bold)
                                 
-                                if bluetoothModel.specialFunctionData?.uwbPacket.ranges.isEmpty ?? true {
-                                    Text("...")
-                                } else {
-                                    List(bluetoothModel.specialFunctionData?.uwbPacket.ranges ?? [], id: \.self) { range in
-//                                        Text("\(range.systemUid)") // print hex, 8 digits
-                                        let hexUID = String(format: "%08X", range.systemUid)
-                                        Text(hexUID)
+                                if let systemInfoPacketData = bluetoothModel.systemInfoPacketData {
+                                    VStack{
+                                        if !systemInfoPacketData.discovered_devices.isEmpty {
+                                            ForEach(systemInfoPacketData.discovered_devices, id: \.self) { device in
+                                                let hexUID = String(format: "%08X", device.uid)
+                                                Text(hexUID).font(customFontText)
+                                            }
+                                        } else {
+                                            Text("...").font(customFontText)
+                                        }
                                     }
                                 }
+                                
+//                                if bluetoothModel.systemInfoPacketData?.discovered_devices.isEmpty ?? true {
+//                                    Text("...")
+//                                } else {
+//                                    List(bluetoothModel.systemInfoPacketData?.discovered_devices ?? [], id: \.self) { device in
+////                                        Text("\(range.systemUid)") // print hex, 8 digits
+//                                        let hexUID = String(format: "%08X", device.uid)
+//                                        Text(hexUID)
+//                                    }
+//                                }
+                            }
+                            
+                            Spacer()
+                            
+                            VStack {
+                                Text("Range Values")
+                                    .font(customFontText)
+                                    .fontWeight(.bold)
+                                
+                                if let systemInfoPacketData = bluetoothModel.systemInfoPacketData {
+                                    VStack{
+                                        if !systemInfoPacketData.discovered_devices.isEmpty {
+                                            ForEach(systemInfoPacketData.discovered_devices, id: \.self) { device in
+                                                Text("\(device.range)").font(customFontText)
+                                            }
+                                        } else {
+                                            Text("...").font(customFontText)
+                                        }
+                                    }
+                                }
+                                
+//                                if bluetoothModel.systemInfoPacketData?.discovered_devices.isEmpty ?? true {
+//                                    Text("...")
+//                                } else {
+//                                    List(bluetoothModel.systemInfoPacketData?.discovered_devices ?? [], id: \.self) { device in
+//                                        Text("\(device.range)")
+//                                    }
+//                                }
                             }
                         }
                         
@@ -139,6 +173,7 @@ struct RangingView: View {
         }
         .frame(maxWidth: .infinity)
         .background(Color(white:0.90))
+        .padding(.bottom, 40)
     }
 }
 
