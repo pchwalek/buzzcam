@@ -63,6 +63,23 @@ message Uplink {
 
         // Get device info.
         Unit get_device_info = 5;
+
+        // Run repeated point-to-point TWRs.
+        MultiPTP multi_ptp = 6;
+
+        // Set twr delay parameter (in picoseconds).
+        uint64 set_delay_ps = 7;
+    }
+
+    message MultiPTP {
+        // Peer to send request to.
+        PeerAddress peer = 1;
+
+        // Numer of requests to send.
+        uint32 n = 2;
+
+        // Send all individual ranging results rather than a single distribution.
+        bool full_result = 3;
     }
 }
 
@@ -83,6 +100,15 @@ message Downlink {
 
         // Information about hardware and firmware.
         DeviceInfo info = 5;
+
+        // Normal distribution of the ranging attempts (mm units).
+        NormalDistribution multi_ptp_normal = 6;
+
+        // Normal distribution of the ranging attempts (mm units).
+        FullMultiPTPResult multi_ptp_full = 7;
+
+        // Generic success message, currently associated with set_delay_ps.
+        Unit success = 8;
     }
 
     message Error {
@@ -112,8 +138,10 @@ message Downlink {
 
     // Point-to-point TWR result.
     message PTPResult {
+        reserved 5, 1;
+
         // Calculated range in millimeters.
-        uint32 range_mm = 1;
+        int32 range_mm = 7;
 
         // Address of the peer we ranged to.
         PeerAddress peer_address = 2;
@@ -121,10 +149,37 @@ message Downlink {
         // Raw tx timestamp as recorded by UWB chip.
         uint64 raw_tx_timestamp = 3;
 
-        // Raw rx timestamp as recorded by UWB chip. The clock may have rolled over since
+        // Raw rx timestamp as recorded by UWB chip. The clock may have rolled over since the tx
+        // packet was transmitted, and the size of the timestamp values is 40 bits.
         uint64 raw_rx_timestamp = 4;
 
-        // Raw DX_TIME used by peer node.
-        uint64 raw_dx_time = 5;
+        // Assumed delay.
+        uint64 delay = 6;
+    }
+
+    message NormalDistribution {
+        float mean = 1;
+        float stddev = 2;
+
+        // Number of samples used to produce this distribution.
+        uint32 n_samples = 3;
+
+        // Assumed delay to produce this distribution.
+        uint64 delay = 4;
+    }
+
+    // Multi-PTP result.
+    message FullMultiPTPResult {
+        // All sampled ranges in mm.
+        repeated int32 ranges_mm = 1;
+
+        // All sampled ranges dt samples.
+        repeated uint64 ranges_dt = 4;
+
+        // Address of the peer we ranged to.
+        PeerAddress peer_address = 2;
+
+        // Normal distribution derived from the distance range samples.
+        NormalDistribution normal_result = 3;
     }
 }

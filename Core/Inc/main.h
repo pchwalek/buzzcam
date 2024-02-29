@@ -184,7 +184,7 @@ extern SPI_HandleTypeDef hspi1;
 #define SD_DETECT_2_GPIO_Port GPIOE
 
 /* USER CODE BEGIN Private defines */
-//#define MASTER_NODE 1
+#define MASTER_NODE 1
 #define UWB_ALERT_Pin GPIO_PIN_4
 #define UWB_ALERT_GPIO_Port GPIOC
 

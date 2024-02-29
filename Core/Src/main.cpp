@@ -1797,6 +1797,35 @@ void uwbMessageTask(void* argument){
 							}
 						}
 						break;
+					case BEECAM_UWB_I2C_DOWNLINK_MULTI_PTP_NORMAL_TAG:
+//						updateRangeTableUWB(rxPacket.header.system_uid,
+//								connectedNodeInfo[rangesRemaining].system_uid,
+//								uwb_i2c_downlink_packet.response.twr_ptp_result.range_mm,
+//								0);
+						//todo: save multi_pt_data
+						if(rangesRemaining > 0){
+							rangesRemaining--;
+							infoPacket.payload.system_info_packet.discovered_devices.device[rangesRemaining].uid = connectedNodeInfo[rangesRemaining].system_uid;
+							infoPacket.payload.system_info_packet.discovered_devices.device[rangesRemaining].range = uwb_i2c_downlink_packet.response.multi_ptp_normal.mean;
+							if(rangesRemaining != 0) flags |= UWB_START_RANGING;
+							else{
+								/* Create a stream that will write to our buffer. */
+								pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+								/* Now we are ready to encode the message! */
+								uint8_t status = pb_encode(&stream, PACKET_FIELDS, &infoPacket);
+								PackedPayload.pPayload = (uint8_t*) buffer;
+								PackedPayload.Length = stream.bytes_written;
+							    if(status) DTS_STM_UpdateChar(BUZZCAM_INFO_CHAR_UUID,(uint8_t*) &PackedPayload);
+							}
+						}else{
+							infoPacket.payload.system_info_packet.has_discovered_devices = true;
+
+						}
+						break;
+					case BEECAM_UWB_I2C_DOWNLINK_MULTI_PTP_FULL_TAG:
+						break;
+					case BEECAM_UWB_I2C_DOWNLINK_SUCCESS_TAG:
+						break;
 					default:
 						break;
 				}
@@ -1811,15 +1840,26 @@ void uwbMessageTask(void* argument){
 				if(rangesRemaining == 0){
 					/* calculate number of connected nodes */
 					rangesRemaining = totalConnectedNodes((uwb_info_t*) &connectedNodeInfo);
+					infoPacket.payload.system_info_packet.has_discovered_devices = true;
+					infoPacket.payload.system_info_packet.discovered_devices.number_of_devices = rangesRemaining;
+					infoPacket.payload.system_info_packet.discovered_devices.device_count = rangesRemaining;
 					if(rangesRemaining == 0) return; // no ranges to do
 				}
 
 				/* request status since unknown if UWB is activated */
-				uwb_i2c_uplink_packet.which_command = BEECAM_UWB_I2C_UPLINK_TWR_PTP_TAG;
-				memcpy(&uwb_i2c_uplink_packet.command.twr_ptp, &connectedNodeInfo[rangesRemaining-1].uwb_addr, sizeof(uwb_i2c_uplink_packet.command.twr_ptp));
+//				uwb_i2c_uplink_packet.which_command = BEECAM_UWB_I2C_UPLINK_TWR_PTP_TAG;
+//				memcpy(&uwb_i2c_uplink_packet.command.twr_ptp, &connectedNodeInfo[rangesRemaining-1].uwb_addr, sizeof(uwb_i2c_uplink_packet.command.twr_ptp));
+//				pb_ostream_t stream = pb_ostream_from_buffer(uwb_buffer, sizeof(uwb_buffer));
+//				status = pb_encode(&stream, BEECAM_UWB_I2C_UPLINK_FIELDS, &uwb_i2c_uplink_packet);
+//				sendDataToUWB(uwb_buffer, stream.bytes_written);
+
+				uwb_i2c_uplink_packet.which_command = BEECAM_UWB_I2C_UPLINK_MULTI_PTP_TAG;
+				uwb_i2c_uplink_packet.command.multi_ptp.full_result=false;
+				uwb_i2c_uplink_packet.command.multi_ptp.has_peer=true;
+				uwb_i2c_uplink_packet.command.multi_ptp.n=256;
+				memcpy(&uwb_i2c_uplink_packet.command.multi_ptp.peer, &connectedNodeInfo[rangesRemaining-1].uwb_addr, sizeof(uwb_i2c_uplink_packet.command.twr_ptp));
 				pb_ostream_t stream = pb_ostream_from_buffer(uwb_buffer, sizeof(uwb_buffer));
 				status = pb_encode(&stream, BEECAM_UWB_I2C_UPLINK_FIELDS, &uwb_i2c_uplink_packet);
-//				hal_status = HAL_I2C_Mem_Write(&hi2c1, UWB_I2C_ADDR, UWB_I2C_GENERAL_MEM_ADDR, 1, uwb_buffer, stream.bytes_written, 100);
 				sendDataToUWB(uwb_buffer, stream.bytes_written);
 			}else{
 				uwb_ranging_requested = 1;

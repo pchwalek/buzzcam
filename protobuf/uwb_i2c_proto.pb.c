@@ -27,7 +27,10 @@ PB_BIND(BEECAM_UWB_I2C_DEVICE_INFO_FIRMWARE_BUILD_INFO, beecam_uwb_i2c_device_in
 PB_BIND(BEECAM_UWB_I2C_UPLINK, beecam_uwb_i2c_uplink_t, AUTO)
 
 
-PB_BIND(BEECAM_UWB_I2C_DOWNLINK, beecam_uwb_i2c_downlink_t, AUTO)
+PB_BIND(BEECAM_UWB_I2C_UPLINK_MULTI_PTP, beecam_uwb_i2c_uplink_multi_ptp_t, AUTO)
+
+
+PB_BIND(BEECAM_UWB_I2C_DOWNLINK, beecam_uwb_i2c_downlink_t, 2)
 
 
 PB_BIND(BEECAM_UWB_I2C_DOWNLINK_ERROR, beecam_uwb_i2c_downlink_error_t, AUTO)
@@ -37,6 +40,12 @@ PB_BIND(BEECAM_UWB_I2C_DOWNLINK_STATUS, beecam_uwb_i2c_downlink_status_t, AUTO)
 
 
 PB_BIND(BEECAM_UWB_I2C_DOWNLINK_PTP_RESULT, beecam_uwb_i2c_downlink_ptp_result_t, AUTO)
+
+
+PB_BIND(BEECAM_UWB_I2C_DOWNLINK_NORMAL_DISTRIBUTION, beecam_uwb_i2c_downlink_normal_distribution_t, AUTO)
+
+
+PB_BIND(BEECAM_UWB_I2C_DOWNLINK_FULL_MULTI_PTP_RESULT, beecam_uwb_i2c_downlink_full_multi_ptp_result_t, 2)
 
 
 

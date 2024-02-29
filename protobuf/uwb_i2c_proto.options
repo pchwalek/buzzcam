@@ -7,3 +7,5 @@ beecam.uwb.i2c.DeviceInfo.FirmwareBuildInfo.compiler_version    max_length:32
 beecam.uwb.i2c.Uplink.correlation_data                          max_size:64
 beecam.uwb.i2c.Downlink.correlation_data                        max_size:64
 beecam.uwb.i2c.Downlink.Error.context                           max_size:64
+beecam.uwb.i2c.Downlink.FullMultiPTPResult.ranges_mm            max_count:128
+beecam.uwb.i2c.Downlink.FullMultiPTPResult.ranges_dt            max_count:128
