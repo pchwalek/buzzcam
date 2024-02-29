@@ -198,6 +198,9 @@ static osThreadId_t OsTaskCliId;            /* Task used to manage CLI comamnd  
 #endif /* (CFG_FULL_LOW_POWER == 0) */
 
 /* USER CODE BEGIN PV */
+static uint32_t prev_master_epoch = 0;
+static uint32_t prev_master_uid = 0;
+
 static otCoapResource OT_ConfigRessource = { C_CONFIG_RESSOURCE,
 		APP_THREAD_CoapConfigHandler, "config", NULL };
 static otCoapResource OT_Ressource = { C_RESSOURCE,
@@ -229,7 +232,7 @@ uwb_packet_t uwb_table = { 0 };
 uwb_info_t connectedNodeInfo[MAX_CONN_COUNT] = { 0 };
 uwb_ranges_t rangesUWB[MAX_UWB_RANGES];
 
-void addInfotoTableUWB(uwb_info_t *new_info);
+uint8_t addInfotoTableUWB(uwb_info_t *new_info);
 void updateRangeTableUWB(uint32_t system_ID_1, uint32_t system_ID_2,
 		float range, float std_dev);
 /* USER CODE END PV */
@@ -427,49 +430,50 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext) {
 		switch (otThreadGetDeviceRole(NULL)) {
 		case OT_DEVICE_ROLE_DISABLED:
 			/* USER CODE BEGIN OT_DEVICE_ROLE_DISABLED */
-
+			prev_master_uid = 0;
+			local_uwbInfo.has_uwb = 0;
 			/* USER CODE END OT_DEVICE_ROLE_DISABLED */
 			break;
 		case OT_DEVICE_ROLE_DETACHED:
 			/* USER CODE BEGIN OT_DEVICE_ROLE_DETACHED */
-
+			prev_master_uid = 0;
+			local_uwbInfo.has_uwb = 0;
 			/* USER CODE END OT_DEVICE_ROLE_DETACHED */
 			break;
 		case OT_DEVICE_ROLE_CHILD:
 			/* USER CODE BEGIN OT_DEVICE_ROLE_CHILD */
 			/* request info from onboard UWB node */
-			if(local_uwbInfo.has_uwb){
-				sendUWB_InfoToNodes((peer_address_t*) &local_uwbInfo.uwb.address);
-			}else{
+			if(local_uwbInfo.has_uwb == 0){
 				osThreadFlagsSet(uwbMessageTaskId, UWB_GET_INFO);
 			}
-			if(configPacket.payload.config_packet.network_state.master_node == 0){
-				alertMaster();
+			if((configPacket.payload.config_packet.network_state.master_node == 0) &&
+					(configPacket.payload.config_packet.network_state.slave_sync == 1)){
+				if(prev_master_uid == 0) alertMaster(); // if never received a packet from master
 			}
 			/* USER CODE END OT_DEVICE_ROLE_CHILD */
 			break;
 		case OT_DEVICE_ROLE_ROUTER:
 			/* USER CODE BEGIN OT_DEVICE_ROLE_ROUTER */
 			/* request info from onboard UWB node */
-			if(local_uwbInfo.has_uwb){
-				sendUWB_InfoToNodes((peer_address_t*) &local_uwbInfo.uwb.address);
-			}else{
+			if(local_uwbInfo.has_uwb == 0){
 				osThreadFlagsSet(uwbMessageTaskId, UWB_GET_INFO);
 			}
-			if(configPacket.payload.config_packet.network_state.master_node == 0){
-				alertMaster();
+			if((configPacket.payload.config_packet.network_state.master_node == 0) &&
+					(configPacket.payload.config_packet.network_state.slave_sync == 1)){
+				if(prev_master_uid == 0) alertMaster(); // if never received a packet from master
 			}
 			break;
 		case OT_DEVICE_ROLE_LEADER:
 			/* USER CODE BEGIN OT_DEVICE_ROLE_LEADER */
 			/* request info from onboard UWB node */
-			if(local_uwbInfo.has_uwb){
-				sendUWB_InfoToNodes((peer_address_t*) &local_uwbInfo.uwb.address);
-			}else{
+			if(local_uwbInfo.has_uwb == 0){
 				osThreadFlagsSet(uwbMessageTaskId, UWB_GET_INFO);
 			}
-			if(configPacket.payload.config_packet.network_state.master_node == 0){
-				alertMaster();
+			if((configPacket.payload.config_packet.network_state.master_node == 0) &&
+					(configPacket.payload.config_packet.network_state.slave_sync == 1)){
+				if(prev_master_uid == 0) alertMaster(); // if never received a packet from master
+			}else{
+
 			}
 
 			break;
@@ -1240,6 +1244,7 @@ static void APP_THREAD_CoapRequestHandler(void *pContext, otMessage *pMessage,
 	} while (false);
 }
 
+
 static void APP_THREAD_CoapConfigHandler(void *pContext, otMessage *pMessage,
 		const otMessageInfo *pMessageInfo) {
 	do {
@@ -1272,12 +1277,34 @@ static void APP_THREAD_CoapConfigHandler(void *pContext, otMessage *pMessage,
 				case PACKET_SYSTEM_INFO_PACKET_TAG:
 					break;
 				case PACKET_CONFIG_PACKET_TAG:
-					/* only update config if in slave mode */
-					if (configPacket.payload.config_packet.network_state.slave_sync) {
+					/* only update config if in slave mode and coming from master*/
+					if (configPacket.payload.config_packet.network_state.slave_sync &&
+						(rxPacket.payload.config_packet.network_state.master_node == 1)) {
 
-						sendUWB_InfoToNode(
-								(peer_address_t*) &local_uwbInfo.uwb.address,
-								pMessageInfo->mPeerAddr);
+						/* we require a header from the master */
+						if(!rxPacket.has_header) break;
+
+						/* check if we already received this packet before */
+						if( (prev_master_epoch == rxPacket.header.epoch) &&
+								(prev_master_uid == rxPacket.header.system_uid) &&
+								(configPacket.payload.config_packet.enable_recording == rxPacket.payload.config_packet.enable_recording)){
+							break;
+						}
+
+						/* if never received a config before, likely this is a fresh slave so send UWB info */
+						if(prev_master_uid == 0) sendUWB_InfoToNode((peer_address_t*) &local_uwbInfo.uwb.address, pMessageInfo->mPeerAddr);
+
+						prev_master_epoch = rxPacket.header.epoch;
+						prev_master_uid = rxPacket.header.system_uid;
+
+						/* update internal timestamp if a valid timestamp received */
+						if(rxPacket.header.epoch > 1707866274000){
+							updateRTC_MS(rxPacket.header.epoch);
+						}
+
+//						sendUWB_InfoToNode(
+//								(peer_address_t*) &local_uwbInfo.uwb.address,
+//								pMessageInfo->mPeerAddr);
 
 						//						osThreadState_t state = osThreadGetState(configThreadId);
 						//						if( (state != osThreadReady) || (state != osThreadRunning) || (state != osThreadInactive) || (state != osThreadBlocked) ){
@@ -1374,9 +1401,14 @@ static void APP_THREAD_CoapConfigHandler(void *pContext, otMessage *pMessage,
 					case SPECIAL_FUNCTION_MAG_CALIBRATION_TAG:
 						break;
 					case SPECIAL_FUNCTION_SLAVE_REQ_CONFIG_TAG:
-						// if a master node, unicast config to a slave device
+						/* if a master node, unicast config and UWB information to a slave device */
 						if (configPacket.payload.config_packet.network_state.master_node) {
 							sendConfig(pMessageInfo->mPeerAddr);
+							sendUWB_InfoToNode((peer_address_t*) &local_uwbInfo.uwb.address, pMessageInfo->mPeerAddr);
+						}
+						/* if slave device, unicast just uwb information */
+						else{
+							sendUWB_InfoToNode((peer_address_t*) &local_uwbInfo.uwb.address, pMessageInfo->mPeerAddr);
 						}
 						break;
 					case SPECIAL_FUNCTION_TIMESTAMP_TAG:
@@ -1387,9 +1419,11 @@ static void APP_THREAD_CoapConfigHandler(void *pContext, otMessage *pMessage,
 						osMessageQueuePut(ledSeqQueueId, &color, 0, 0);
 						break;
 					case SPECIAL_FUNCTION_UWB_INFO_TAG:
-						//todo grab info
-						addInfotoTableUWB(
-								&rxPacket.payload.special_function.payload.uwb_info);
+
+						if(NEW_ENTRY == addInfotoTableUWB(
+								&rxPacket.payload.special_function.payload.uwb_info)){
+							sendUWB_InfoToNode((peer_address_t*) &local_uwbInfo.uwb.address, pMessageInfo->mPeerAddr);
+						}
 
 						break;
 					default:
@@ -1769,16 +1803,19 @@ void alertMaster(void) {
 //	}
 //}
 
-void addInfotoTableUWB(uwb_info_t *new_info) {
+
+/* returns 1 if new entry */
+uint8_t addInfotoTableUWB(uwb_info_t *new_info) {
 	for (int i = 0; i < MAX_CONN_COUNT; i++) {
 		if (connectedNodeInfo[i].system_uid == new_info->system_uid) {
 			memcpy(&connectedNodeInfo[i], new_info, sizeof(uwb_info_t));
-			break;
+			return UPDATE_EXISTING_ENTRY;
 		} else if (connectedNodeInfo[i].system_uid == 0) {
 			memcpy(&connectedNodeInfo[i], new_info, sizeof(uwb_info_t));
-			break;
+			return NEW_ENTRY;
 		}
 	}
+	return MAX_UWB_DEV_REACHED;
 }
 /* USER CODE END FD_WRAP_FUNCTIONS */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

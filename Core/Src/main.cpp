@@ -3985,8 +3985,6 @@ void mainSystemTask(void *argument){
 	uwbMessageTaskId = osThreadNew(uwbMessageTask, NULL, &uwbMessageTask_attributes);
 	ledSequencerId = osThreadNew(ledSequencer, NULL, &ledSequencerTask_attributes);
 
-	/* request info from onboard UWB node */
-	osThreadFlagsSet(uwbMessageTaskId, UWB_GET_INFO);
 
 	if(configPacket.payload.config_packet.sensor_config.enable_gas ||
 			configPacket.payload.config_packet.sensor_config.enable_humidity ||
@@ -3999,16 +3997,16 @@ void mainSystemTask(void *argument){
 
 	//	osDelay(10000);
 
-	if(configPacket.payload.config_packet.network_state.master_node){
+	if(configPacket.payload.config_packet.network_state.master_node ||
+			(configPacket.payload.config_packet.network_state.slave_sync == 0)){
 		while(coapSetup != 1){
 			osDelay(100);
 		}
 
-		sendConfigToNodes(false);
-
 		if(configPacket.payload.config_packet.network_state.master_node){
-						if(osTimerStart (sendSlavesTimestampId, 30000) != osOK) Error_Handler();
-					}
+			sendConfigToNodes(false);
+			if(osTimerStart (sendSlavesTimestampId, 30000) != osOK) Error_Handler();
+		}
 
 		if(configPacket.payload.config_packet.enable_recording){
 			/* start immediately if a slave device or no schedule is given */
@@ -4026,11 +4024,12 @@ void mainSystemTask(void *argument){
 				if(scheduleRun) micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
 			}
 		}
-	}else{
+	}else if(configPacket.payload.config_packet.network_state.slave_sync==1){
 		//todo: check Openthread network if a master exists, what desired configuration is, and if we should be running
 		/* broadcast that we are a new slave and need config */
-		alertMaster();
-
+//		alertMaster();
+		/* this is done when slave thread state changes */
+		configPacket.payload.config_packet.enable_recording = 0;
 	}
 
 	while(1){
@@ -4078,10 +4077,6 @@ void mainSystemTask(void *argument){
 		if(configPacket.payload.config_packet.enable_recording){
 			while(coapSetup != 1){
 				osDelay(100);
-			}
-
-			if(configPacket.payload.config_packet.network_state.master_node){
-				if(osTimerStart (sendSlavesTimestampId, 30000) != osOK) Error_Handler();
 			}
 
 			/* start immediately if a slave device or no schedule is given */
@@ -4324,20 +4319,29 @@ void updateSystemConfig(void *argument){
 		configPacket.payload.config_packet.network_state.channel = new_config->network_state.channel;
 		configPacket.payload.config_packet.network_state.pan_id = new_config->network_state.pan_id;
 
-		if((new_config->network_state.master_node == 1) && (configMsg.fromMaster != 1)){
-			configPacket.payload.config_packet.network_state.master_node = 1;
-			configPacket.payload.config_packet.network_state.slave_sync = 0;
-		}else if(configMsg.fromMaster == 1){
+//		if((new_config->network_state.master_node == 1) && (configMsg.fromMaster != 1)){
+//			configPacket.payload.config_packet.network_state.master_node = 1;
+//			configPacket.payload.config_packet.network_state.slave_sync = 0;
+//
+//		}
+		if(configMsg.fromMaster == 1){
+			/* if a master node is transmitting, we need to demote since only 1 master allowed */
+			if((new_config->network_state.master_node == 1) &&
+					(configPacket.payload.config_packet.network_state.master_node == 1)){
+				configPacket.payload.config_packet.network_state.master_node = 0;
+				configPacket.payload.config_packet.network_state.slave_sync = 1;
+			}
 			configPacket.payload.config_packet.enable_recording = new_config->enable_recording;
 		}else{
+			/* updated from phone */
+			configPacket.payload.config_packet.network_state.master_node = new_config->network_state.master_node;
 			configPacket.payload.config_packet.network_state.slave_sync = new_config->network_state.slave_sync;
 			configPacket.payload.config_packet.enable_recording = false;
 		}
 
-
-		memcpy((uint8_t*)&configPacket.payload.config_packet.network_state,
-				(uint8_t*)&new_config->network_state,
-				sizeof(new_config->network_state));
+//		memcpy((uint8_t*)&configPacket.payload.config_packet.network_state,
+//				(uint8_t*)&new_config->network_state,
+//				sizeof(new_config->network_state));
 	}
 
 	if(new_config->has_sensor_config){
@@ -4353,7 +4357,7 @@ void updateSystemConfig(void *argument){
 		configPacket.payload.config_packet.schedule_config_count = new_config->schedule_config_count;
 	}
 
-
+	if((configPacket.payload.config_packet.network_state.master_node == 1)) sendConfigToNodes(false);
 
 	/* (2) alert master thread that new config exists */
 	osTimerStop(mainTaskUpdateId);

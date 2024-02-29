@@ -156,6 +156,10 @@ typedef enum
 /* USER CODE BEGIN EC */
 #define MAX_CONN_COUNT		20
 #define MAX_UWB_RANGES		100
+
+#define UPDATE_EXISTING_ENTRY 		0
+#define NEW_ENTRY 					1
+#define MAX_UWB_DEV_REACHED			2
 /* USER CODE END EC */
 
 /* External variables --------------------------------------------------------*/
