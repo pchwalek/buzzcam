@@ -316,6 +316,7 @@ struct TimePicker: View {
             .frame(width: 80, height: 40)
 
         }
+        .environment(\.colorScheme, .light)
         .padding()
     }
 }
