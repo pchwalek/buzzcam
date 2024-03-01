@@ -54,13 +54,13 @@ extension BluetoothModel {
         
         if (currentConfigPacket.configPacket.enableRecording != deviceEnabled) {
             currentConfigPacket.configPacket.enableRecording = deviceEnabled
+            
+            configPacket = currentConfigPacket
+            
+            print("currentTimestamp",currentConfigPacket.header.epoch)
+            
+            sendConfigPacket()
         }
-        
-        configPacket = currentConfigPacket
-        
-        print("currentTimestamp",currentConfigPacket.header.epoch)
-        
-        sendConfigPacket()
     }
     
     // send packet to force a camera capture

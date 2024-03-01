@@ -139,7 +139,7 @@ struct RangingView: View {
                                     VStack{
                                         if !systemInfoPacketData.discovered_devices.isEmpty {
                                             ForEach(systemInfoPacketData.discovered_devices, id: \.self) { device in
-                                                Text("\(device.range)").font(customFontText)
+                                                Text("\(Int(device.range))").font(customFontText)
                                             }
                                         } else {
                                             Text("...").font(customFontText)

@@ -935,7 +935,7 @@ public struct UWB_Range {
   /// Clears the value of `uwbAddr`. Subsequent reads from it will return its default value.
   public mutating func clearUwbAddr() {self._uwbAddr = nil}
 
-  public var range: Float = 0
+  public var range: UInt32 = 0
 
   public var stdDev: Float = 0
 
@@ -2450,7 +2450,7 @@ extension UWB_Range: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
       case 1: try { try decoder.decodeSingularMessageField(value: &self._openthreadUid) }()
       case 2: try { try decoder.decodeSingularUInt32Field(value: &self.systemUid) }()
       case 3: try { try decoder.decodeSingularMessageField(value: &self._uwbAddr) }()
-      case 4: try { try decoder.decodeSingularFloatField(value: &self.range) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self.range) }()
       case 5: try { try decoder.decodeSingularFloatField(value: &self.stdDev) }()
       default: break
       }
@@ -2472,7 +2472,7 @@ extension UWB_Range: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
       try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
     } }()
     if self.range != 0 {
-      try visitor.visitSingularFloatField(value: self.range, fieldNumber: 4)
+      try visitor.visitSingularUInt32Field(value: self.range, fieldNumber: 4)
     }
     if self.stdDev != 0 {
       try visitor.visitSingularFloatField(value: self.stdDev, fieldNumber: 5)
