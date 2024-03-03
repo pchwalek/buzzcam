@@ -223,9 +223,10 @@ static SVCCTL_EvtAckStatus_t DTS_Event_Handler(void *Event) {
 						if( (state != osThreadReady) || (state != osThreadRunning) || (state != osThreadInactive) || (state != osThreadBlocked) ){
 							memcpy(&configMsg.config, &rxPacket.payload.config_packet, sizeof(config_packet_t));
 							configMsg.fromMaster = 0;
-							configThreadId = osThreadNew(updateSystemConfig,
-									&configMsg,
-									&configTask_attributes);
+							osMessageQueuePut(configChangeQueueId, &configMsg, 0, 100);
+//							configThreadId = osThreadNew(updateSystemConfig,
+//									&configMsg,
+//									&configTask_attributes);
 						}
 						break;
 					case PACKET_SPECIAL_FUNCTION_TAG:

@@ -145,18 +145,6 @@ typedef struct mark_packet {
     bool beep_enabled;
 } mark_packet_t;
 
-typedef struct discovered_devices_device {
-    uint32_t uid;
-    float range;
-} discovered_devices_device_t;
-
-typedef struct discovered_devices {
-    uint32_t number_of_devices;
-    /* repeated Device device = 2 [(nanopb).max_count = 20]; */
-    pb_size_t device_count;
-    discovered_devices_device_t device[20];
-} discovered_devices_t;
-
 typedef struct battery_state {
     bool charging;
     float voltage;
@@ -164,8 +152,12 @@ typedef struct battery_state {
     float percentage;
 } battery_state_t;
 
+typedef struct device {
+    uint32_t uid;
+    float range;
+} device_t;
+
 typedef struct system_info_packet {
-    uint32_t number_discovered_devices;
     bool has_simple_sensor_reading;
     simple_sensor_reading_t simple_sensor_reading;
     bool device_recording;
@@ -175,8 +167,8 @@ typedef struct system_info_packet {
     mark_state_t mark_state;
     bool has_battery_state;
     battery_state_t battery_state;
-    bool has_discovered_devices;
-    discovered_devices_t discovered_devices;
+    pb_size_t discovered_devices_count;
+    device_t discovered_devices[20];
 } system_info_packet_t;
 
 typedef struct audio_compression {
@@ -264,7 +256,7 @@ typedef struct uwb_range {
     uint32_t system_uid;
     bool has_uwb_addr;
     peer_address_t uwb_addr;
-    float range;
+    uint32_t range;
     float std_dev;
 } uwb_range_t;
 
@@ -353,7 +345,6 @@ extern "C" {
 
 
 
-
 #define audio_compression_t_compression_type_ENUMTYPE compression_type_t
 
 #define audio_config_t_sample_freq_ENUMTYPE mic_sample_freq_t
@@ -382,10 +373,9 @@ extern "C" {
 #define SD_CARD_STATE_INIT_DEFAULT               {0, 0, 0}
 #define MARK_STATE_INIT_DEFAULT                  {0, 0}
 #define MARK_PACKET_INIT_DEFAULT                 {false, "", 0}
-#define DISCOVERED_DEVICES_INIT_DEFAULT          {0, 0, {DISCOVERED_DEVICES_DEVICE_INIT_DEFAULT, DISCOVERED_DEVICES_DEVICE_INIT_DEFAULT, DISCOVERED_DEVICES_DEVICE_INIT_DEFAULT, DISCOVERED_DEVICES_DEVICE_INIT_DEFAULT, DISCOVERED_DEVICES_DEVICE_INIT_DEFAULT, DISCOVERED_DEVICES_DEVICE_INIT_DEFAULT, DISCOVERED_DEVICES_DEVICE_INIT_DEFAULT, DISCOVERED_DEVICES_DEVICE_INIT_DEFAULT, DISCOVERED_DEVICES_DEVICE_INIT_DEFAULT, DISCOVERED_DEVICES_DEVICE_INIT_DEFAULT, DISCOVERED_DEVICES_DEVICE_INIT_DEFAULT, DISCOVERED_DEVICES_DEVICE_INIT_DEFAULT, DISCOVERED_DEVICES_DEVICE_INIT_DEFAULT, DISCOVERED_DEVICES_DEVICE_INIT_DEFAULT, DISCOVERED_DEVICES_DEVICE_INIT_DEFAULT, DISCOVERED_DEVICES_DEVICE_INIT_DEFAULT, DISCOVERED_DEVICES_DEVICE_INIT_DEFAULT, DISCOVERED_DEVICES_DEVICE_INIT_DEFAULT, DISCOVERED_DEVICES_DEVICE_INIT_DEFAULT, DISCOVERED_DEVICES_DEVICE_INIT_DEFAULT}}
-#define DISCOVERED_DEVICES_DEVICE_INIT_DEFAULT   {0, 0}
 #define BATTERY_STATE_INIT_DEFAULT               {0, 0, false, 0}
-#define SYSTEM_INFO_PACKET_INIT_DEFAULT          {0, false, SIMPLE_SENSOR_READING_INIT_DEFAULT, 0, false, SD_CARD_STATE_INIT_DEFAULT, false, MARK_STATE_INIT_DEFAULT, false, BATTERY_STATE_INIT_DEFAULT, false, DISCOVERED_DEVICES_INIT_DEFAULT}
+#define DEVICE_INIT_DEFAULT                      {0, 0}
+#define SYSTEM_INFO_PACKET_INIT_DEFAULT          {false, SIMPLE_SENSOR_READING_INIT_DEFAULT, 0, false, SD_CARD_STATE_INIT_DEFAULT, false, MARK_STATE_INIT_DEFAULT, false, BATTERY_STATE_INIT_DEFAULT, 0, {DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT}}
 #define AUDIO_COMPRESSION_INIT_DEFAULT           {0, _COMPRESSION_TYPE_MIN, 0}
 #define AUDIO_CONFIG_INIT_DEFAULT                {0, 0, _MIC_SAMPLE_FREQ_MIN, _MIC_GAIN_MIN, _MIC_BIT_RESOLUTION_MIN, false, AUDIO_COMPRESSION_INIT_DEFAULT, 0, 0, 0}
 #define SCHEDULE_CONFIG_INIT_DEFAULT             {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
@@ -408,10 +398,9 @@ extern "C" {
 #define SD_CARD_STATE_INIT_ZERO                  {0, 0, 0}
 #define MARK_STATE_INIT_ZERO                     {0, 0}
 #define MARK_PACKET_INIT_ZERO                    {false, "", 0}
-#define DISCOVERED_DEVICES_INIT_ZERO             {0, 0, {DISCOVERED_DEVICES_DEVICE_INIT_ZERO, DISCOVERED_DEVICES_DEVICE_INIT_ZERO, DISCOVERED_DEVICES_DEVICE_INIT_ZERO, DISCOVERED_DEVICES_DEVICE_INIT_ZERO, DISCOVERED_DEVICES_DEVICE_INIT_ZERO, DISCOVERED_DEVICES_DEVICE_INIT_ZERO, DISCOVERED_DEVICES_DEVICE_INIT_ZERO, DISCOVERED_DEVICES_DEVICE_INIT_ZERO, DISCOVERED_DEVICES_DEVICE_INIT_ZERO, DISCOVERED_DEVICES_DEVICE_INIT_ZERO, DISCOVERED_DEVICES_DEVICE_INIT_ZERO, DISCOVERED_DEVICES_DEVICE_INIT_ZERO, DISCOVERED_DEVICES_DEVICE_INIT_ZERO, DISCOVERED_DEVICES_DEVICE_INIT_ZERO, DISCOVERED_DEVICES_DEVICE_INIT_ZERO, DISCOVERED_DEVICES_DEVICE_INIT_ZERO, DISCOVERED_DEVICES_DEVICE_INIT_ZERO, DISCOVERED_DEVICES_DEVICE_INIT_ZERO, DISCOVERED_DEVICES_DEVICE_INIT_ZERO, DISCOVERED_DEVICES_DEVICE_INIT_ZERO}}
-#define DISCOVERED_DEVICES_DEVICE_INIT_ZERO      {0, 0}
 #define BATTERY_STATE_INIT_ZERO                  {0, 0, false, 0}
-#define SYSTEM_INFO_PACKET_INIT_ZERO             {0, false, SIMPLE_SENSOR_READING_INIT_ZERO, 0, false, SD_CARD_STATE_INIT_ZERO, false, MARK_STATE_INIT_ZERO, false, BATTERY_STATE_INIT_ZERO, false, DISCOVERED_DEVICES_INIT_ZERO}
+#define DEVICE_INIT_ZERO                         {0, 0}
+#define SYSTEM_INFO_PACKET_INIT_ZERO             {false, SIMPLE_SENSOR_READING_INIT_ZERO, 0, false, SD_CARD_STATE_INIT_ZERO, false, MARK_STATE_INIT_ZERO, false, BATTERY_STATE_INIT_ZERO, 0, {DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO}}
 #define AUDIO_COMPRESSION_INIT_ZERO              {0, _COMPRESSION_TYPE_MIN, 0}
 #define AUDIO_CONFIG_INIT_ZERO                   {0, 0, _MIC_SAMPLE_FREQ_MIN, _MIC_GAIN_MIN, _MIC_BIT_RESOLUTION_MIN, false, AUDIO_COMPRESSION_INIT_ZERO, 0, 0, 0}
 #define SCHEDULE_CONFIG_INIT_ZERO                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
@@ -457,20 +446,17 @@ extern "C" {
 #define MARK_STATE_TIMESTAMP_UNIX_TAG            2
 #define MARK_PACKET_ANNOTATION_TAG               1
 #define MARK_PACKET_BEEP_ENABLED_TAG             2
-#define DISCOVERED_DEVICES_DEVICE_UID_TAG        1
-#define DISCOVERED_DEVICES_DEVICE_RANGE_TAG      2
-#define DISCOVERED_DEVICES_NUMBER_OF_DEVICES_TAG 1
-#define DISCOVERED_DEVICES_DEVICE_TAG            2
 #define BATTERY_STATE_CHARGING_TAG               1
 #define BATTERY_STATE_VOLTAGE_TAG                2
 #define BATTERY_STATE_PERCENTAGE_TAG             3
-#define SYSTEM_INFO_PACKET_NUMBER_DISCOVERED_DEVICES_TAG 1
-#define SYSTEM_INFO_PACKET_SIMPLE_SENSOR_READING_TAG 2
-#define SYSTEM_INFO_PACKET_DEVICE_RECORDING_TAG  3
-#define SYSTEM_INFO_PACKET_SDCARD_STATE_TAG      4
-#define SYSTEM_INFO_PACKET_MARK_STATE_TAG        5
-#define SYSTEM_INFO_PACKET_BATTERY_STATE_TAG     6
-#define SYSTEM_INFO_PACKET_DISCOVERED_DEVICES_TAG 7
+#define DEVICE_UID_TAG                           1
+#define DEVICE_RANGE_TAG                         2
+#define SYSTEM_INFO_PACKET_SIMPLE_SENSOR_READING_TAG 1
+#define SYSTEM_INFO_PACKET_DEVICE_RECORDING_TAG  2
+#define SYSTEM_INFO_PACKET_SDCARD_STATE_TAG      3
+#define SYSTEM_INFO_PACKET_MARK_STATE_TAG        4
+#define SYSTEM_INFO_PACKET_BATTERY_STATE_TAG     5
+#define SYSTEM_INFO_PACKET_DISCOVERED_DEVICES_TAG 6
 #define AUDIO_COMPRESSION_ENABLED_TAG            1
 #define AUDIO_COMPRESSION_COMPRESSION_TYPE_TAG   2
 #define AUDIO_COMPRESSION_COMPRESSION_FACTOR_TAG 3
@@ -602,19 +588,6 @@ X(a, STATIC,   SINGULAR, BOOL,     beep_enabled,      2)
 #define MARK_PACKET_CALLBACK NULL
 #define MARK_PACKET_DEFAULT NULL
 
-#define DISCOVERED_DEVICES_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, UINT32,   number_of_devices,   1) \
-X(a, STATIC,   REPEATED, MESSAGE,  device,            2)
-#define DISCOVERED_DEVICES_CALLBACK NULL
-#define DISCOVERED_DEVICES_DEFAULT NULL
-#define discovered_devices_t_device_MSGTYPE discovered_devices_device_t
-
-#define DISCOVERED_DEVICES_DEVICE_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, UINT32,   uid,               1) \
-X(a, STATIC,   SINGULAR, FLOAT,    range,             2)
-#define DISCOVERED_DEVICES_DEVICE_CALLBACK NULL
-#define DISCOVERED_DEVICES_DEVICE_DEFAULT NULL
-
 #define BATTERY_STATE_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, BOOL,     charging,          1) \
 X(a, STATIC,   SINGULAR, FLOAT,    voltage,           2) \
@@ -622,21 +595,26 @@ X(a, STATIC,   OPTIONAL, FLOAT,    percentage,        3)
 #define BATTERY_STATE_CALLBACK NULL
 #define BATTERY_STATE_DEFAULT NULL
 
+#define DEVICE_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, UINT32,   uid,               1) \
+X(a, STATIC,   SINGULAR, FLOAT,    range,             2)
+#define DEVICE_CALLBACK NULL
+#define DEVICE_DEFAULT NULL
+
 #define SYSTEM_INFO_PACKET_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, UINT32,   number_discovered_devices,   1) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  simple_sensor_reading,   2) \
-X(a, STATIC,   SINGULAR, BOOL,     device_recording,   3) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  sdcard_state,      4) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  mark_state,        5) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  battery_state,     6) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  discovered_devices,   7)
+X(a, STATIC,   OPTIONAL, MESSAGE,  simple_sensor_reading,   1) \
+X(a, STATIC,   SINGULAR, BOOL,     device_recording,   2) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  sdcard_state,      3) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  mark_state,        4) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  battery_state,     5) \
+X(a, STATIC,   REPEATED, MESSAGE,  discovered_devices,   6)
 #define SYSTEM_INFO_PACKET_CALLBACK NULL
 #define SYSTEM_INFO_PACKET_DEFAULT NULL
 #define system_info_packet_t_simple_sensor_reading_MSGTYPE simple_sensor_reading_t
 #define system_info_packet_t_sdcard_state_MSGTYPE sd_card_state_t
 #define system_info_packet_t_mark_state_MSGTYPE mark_state_t
 #define system_info_packet_t_battery_state_MSGTYPE battery_state_t
-#define system_info_packet_t_discovered_devices_MSGTYPE discovered_devices_t
+#define system_info_packet_t_discovered_devices_MSGTYPE device_t
 
 #define AUDIO_COMPRESSION_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, BOOL,     enabled,           1) \
@@ -727,7 +705,7 @@ X(a, STATIC,   SINGULAR, BYTES,    address,           2)
 X(a, STATIC,   OPTIONAL, MESSAGE,  openthread_uid,    1) \
 X(a, STATIC,   SINGULAR, UINT32,   system_uid,        2) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  uwb_addr,          3) \
-X(a, STATIC,   SINGULAR, FLOAT,    range,             4) \
+X(a, STATIC,   SINGULAR, UINT32,   range,             4) \
 X(a, STATIC,   SINGULAR, FLOAT,    std_dev,           5)
 #define UWB_RANGE_CALLBACK NULL
 #define UWB_RANGE_DEFAULT NULL
@@ -789,9 +767,8 @@ extern const pb_msgdesc_t sensor_config_t_msg;
 extern const pb_msgdesc_t sd_card_state_t_msg;
 extern const pb_msgdesc_t mark_state_t_msg;
 extern const pb_msgdesc_t mark_packet_t_msg;
-extern const pb_msgdesc_t discovered_devices_t_msg;
-extern const pb_msgdesc_t discovered_devices_device_t_msg;
 extern const pb_msgdesc_t battery_state_t_msg;
+extern const pb_msgdesc_t device_t_msg;
 extern const pb_msgdesc_t system_info_packet_t_msg;
 extern const pb_msgdesc_t audio_compression_t_msg;
 extern const pb_msgdesc_t audio_config_t_msg;
@@ -817,9 +794,8 @@ extern const pb_msgdesc_t packet_t_msg;
 #define SD_CARD_STATE_FIELDS &sd_card_state_t_msg
 #define MARK_STATE_FIELDS &mark_state_t_msg
 #define MARK_PACKET_FIELDS &mark_packet_t_msg
-#define DISCOVERED_DEVICES_FIELDS &discovered_devices_t_msg
-#define DISCOVERED_DEVICES_DEVICE_FIELDS &discovered_devices_device_t_msg
 #define BATTERY_STATE_FIELDS &battery_state_t_msg
+#define DEVICE_FIELDS &device_t_msg
 #define SYSTEM_INFO_PACKET_FIELDS &system_info_packet_t_msg
 #define AUDIO_COMPRESSION_FIELDS &audio_compression_t_msg
 #define AUDIO_CONFIG_FIELDS &audio_config_t_msg
@@ -843,26 +819,25 @@ extern const pb_msgdesc_t packet_t_msg;
 #define BATTERY_STATE_SIZE                       12
 #define CAMERA_CONTROL_SIZE                      6
 #define CONFIG_PACKET_SIZE                       602
+#define DEVICE_SIZE                              11
 #define DEVICE_UID_SIZE                          11
-#define DISCOVERED_DEVICES_DEVICE_SIZE           11
-#define DISCOVERED_DEVICES_SIZE                  266
 #define LOW_POWER_CONFIG_SIZE                    2
 #define MARK_PACKET_SIZE                         53
 #define MARK_STATE_SIZE                          17
 #define NETWORK_STATE_SIZE                       152
 #define PACKET_HEADER_SIZE                       23
-#define PACKET_SIZE                              975
+#define PACKET_SIZE                              995
 #define PEER_ADDRESS_SIZE                        14
 #define SCHEDULE_CONFIG_SIZE                     38
 #define SD_CARD_STATE_SIZE                       24
 #define SENSOR_CONFIG_SIZE                       6
 #define SENSOR_READING_PAYLOAD_SIZE              41
 #define SIMPLE_SENSOR_READING_SIZE               32
-#define SPECIAL_FUNCTION_SIZE                    947
-#define SYSTEM_INFO_PACKET_SIZE                  370
+#define SPECIAL_FUNCTION_SIZE                    967
+#define SYSTEM_INFO_PACKET_SIZE                  355
 #define UWB_INFO_SIZE                            35
-#define UWB_PACKET_SIZE                          944
-#define UWB_RANGE_SIZE                           45
+#define UWB_PACKET_SIZE                          964
+#define UWB_RANGE_SIZE                           46
 
 #ifdef __cplusplus
 } /* extern "C" */

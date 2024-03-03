@@ -1302,6 +1302,7 @@ static void APP_THREAD_CoapConfigHandler(void *pContext, otMessage *pMessage,
 							updateRTC_MS(rxPacket.header.epoch);
 						}
 
+
 //						sendUWB_InfoToNode(
 //								(peer_address_t*) &local_uwbInfo.uwb.address,
 //								pMessageInfo->mPeerAddr);
@@ -1317,10 +1318,15 @@ static void APP_THREAD_CoapConfigHandler(void *pContext, otMessage *pMessage,
 								|| (state != osThreadInactive)
 								|| (state != osThreadBlocked)) {
 							memcpy(&configMsg.config, &rxPacket.payload.config_packet, sizeof(config_packet_t));
+
+							/* do not want to overwrite network config */
+//							memcpy(&configMsg.config.network_state,&configPacket.payload.config_packet.network_state,sizeof(configMsg.config.network_state));
+
 							configMsg.fromMaster = 1;
-							configThreadId = osThreadNew(updateSystemConfig,
-									&configMsg,
-									&configTask_attributes);
+							osMessageQueuePut(configChangeQueueId, &configMsg, 0, 100);
+//							configThreadId = osThreadNew(updateSystemConfig,
+//									&configMsg,
+//									&configTask_attributes);
 						}
 					}
 
@@ -1346,9 +1352,10 @@ static void APP_THREAD_CoapConfigHandler(void *pContext, otMessage *pMessage,
 								|| (state != osThreadBlocked)) {
 							memcpy(&configMsg.config, &rxPacket.payload.config_packet, sizeof(config_packet_t));
 							configMsg.fromMaster = 1;
-							configThreadId = osThreadNew(updateSystemConfig,
-									&configMsg,
-									&configTask_attributes);
+							osMessageQueuePut(configChangeQueueId, &configMsg, 0, 100);
+//							configThreadId = osThreadNew(updateSystemConfig,
+//									&configMsg,
+//									&configTask_attributes);
 						}
 					}
 					break;
@@ -1422,6 +1429,12 @@ static void APP_THREAD_CoapConfigHandler(void *pContext, otMessage *pMessage,
 
 						if(NEW_ENTRY == addInfotoTableUWB(
 								&rxPacket.payload.special_function.payload.uwb_info)){
+							sendUWB_InfoToNode((peer_address_t*) &local_uwbInfo.uwb.address, pMessageInfo->mPeerAddr);
+						}
+
+						/* if message was a broadcast, the broadcasting node was just turned on */
+						else if((pMessageInfo->mSockAddr.mFields.m8[0] == 0xff) &&
+								(pMessageInfo->mSockAddr.mFields.m8[1] <= 0x03)){
 							sendUWB_InfoToNode((peer_address_t*) &local_uwbInfo.uwb.address, pMessageInfo->mPeerAddr);
 						}
 
@@ -1805,6 +1818,30 @@ void alertMaster(void) {
 
 
 /* returns 1 if new entry */
+#include "dts.h"
+#include "app_ble.h"
+static DTS_STM_Payload_t PackedPayload;
+static void updateTableInInfoPacketUWB(){
+	int i = 0;
+	for (i = 0; i < MAX_CONN_COUNT; i++) {
+		if (connectedNodeInfo[i].system_uid == 0) {
+			break;
+		}else{
+			infoPacket.payload.system_info_packet.discovered_devices[i].uid = connectedNodeInfo[i].system_uid;
+			infoPacket.payload.system_info_packet.discovered_devices[i].range = 0;
+		}
+	}
+	infoPacket.payload.system_info_packet.discovered_devices_count = i;
+
+	/* Create a stream that will write to our buffer. */
+	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+	/* Now we are ready to encode the message! */
+	uint8_t status = pb_encode(&stream, PACKET_FIELDS, &infoPacket);
+	PackedPayload.pPayload = (uint8_t*) buffer;
+	PackedPayload.Length = stream.bytes_written;
+    if(status) DTS_STM_UpdateChar(BUZZCAM_INFO_CHAR_UUID,(uint8_t*) &PackedPayload);
+}
+
 uint8_t addInfotoTableUWB(uwb_info_t *new_info) {
 	for (int i = 0; i < MAX_CONN_COUNT; i++) {
 		if (connectedNodeInfo[i].system_uid == new_info->system_uid) {
@@ -1812,6 +1849,7 @@ uint8_t addInfotoTableUWB(uwb_info_t *new_info) {
 			return UPDATE_EXISTING_ENTRY;
 		} else if (connectedNodeInfo[i].system_uid == 0) {
 			memcpy(&connectedNodeInfo[i], new_info, sizeof(uwb_info_t));
+			updateTableInInfoPacketUWB();
 			return NEW_ENTRY;
 		}
 	}

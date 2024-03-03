@@ -30,13 +30,10 @@ PB_BIND(MARK_STATE, mark_state_t, AUTO)
 PB_BIND(MARK_PACKET, mark_packet_t, AUTO)
 
 
-PB_BIND(DISCOVERED_DEVICES, discovered_devices_t, AUTO)
-
-
-PB_BIND(DISCOVERED_DEVICES_DEVICE, discovered_devices_device_t, AUTO)
-
-
 PB_BIND(BATTERY_STATE, battery_state_t, AUTO)
+
+
+PB_BIND(DEVICE, device_t, AUTO)
 
 
 PB_BIND(SYSTEM_INFO_PACKET, system_info_packet_t, 2)

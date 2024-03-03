@@ -87,30 +87,26 @@ message MarkPacket{
     bool beep_enabled = 2;
 }
 
-message DiscoveredDevices{
-    uint32 number_of_devices = 1;
-    message Device{
-        uint32 UID = 1;
-        float range = 2;
-    }
-    //repeated Device device = 2 [(nanopb).max_count = 20];
-    repeated Device device = 2;
-}
-
 message BatteryState{
     bool charging = 1;
     float voltage = 2;
     optional float percentage = 3;
 }
 
+message Device{
+    uint32 UID = 1;
+    float range = 2;
+}
+
 message SystemInfoPacket{
-    uint32 number_discovered_devices = 1;
-    SimpleSensorReading simple_sensor_reading = 2;
-    bool device_recording = 3;
-    SDCardState sdcard_state = 4;
-    MarkState mark_state = 5;
-    BatteryState battery_state = 6;
-    optional DiscoveredDevices discovered_devices = 7;
+    SimpleSensorReading simple_sensor_reading = 1;
+    bool device_recording = 2;
+    SDCardState sdcard_state = 3;
+    MarkState mark_state = 4;
+    BatteryState battery_state = 5;
+    repeated Device discoveredDevices = 6;
+	
+   // optional DiscoveredDevices discovered_devices = 6;
 }
 
 enum MicSampleFreq {
@@ -241,7 +237,7 @@ message UWB_Range{
     DeviceUID openthread_UID = 1;
     uint32 system_UID = 2;
     PeerAddress UWB_addr = 3;
-    float range = 4;
+    uint32 range = 4;
     float stdDev = 5;
 }
 

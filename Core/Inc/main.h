@@ -184,7 +184,7 @@ extern SPI_HandleTypeDef hspi1;
 #define SD_DETECT_2_GPIO_Port GPIOE
 
 /* USER CODE BEGIN Private defines */
-#define MASTER_NODE 1
+//#define MASTER_NODE 1
 #define UWB_ALERT_Pin GPIO_PIN_4
 #define UWB_ALERT_GPIO_Port GPIOC
 
@@ -246,6 +246,7 @@ extern osSemaphoreId_t txMsg_LockBinarySemId;
 extern osSemaphoreId_t rxMsg_LockBinarySemId;
 extern osMessageQueueId_t markPacketQueueId;
 extern osMessageQueueId_t ledSeqQueueId;
+extern osMessageQueueId_t configChangeQueueId;
 extern osMessageQueueId_t txMsgQueueId;
 extern osMessageQueueId_t rxMsgQueueId;
 

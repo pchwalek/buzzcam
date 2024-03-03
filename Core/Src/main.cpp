@@ -425,10 +425,10 @@ int main(void)
 	HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_SET);
 
-	//   readSystemStateToFRAM();
-	//   if(infoPacket.header.system_uid != LL_FLASH_GetUDN()){
-	//	   writeDefaultConfig();
-	//   }
+//   readSystemStateToFRAM();
+//   if(infoPacket.header.system_uid != LL_FLASH_GetUDN()){
+//	   writeDefaultConfig();
+//   }
 	writeDefaultConfig();
 
 
@@ -472,6 +472,8 @@ int main(void)
 	ledSeqQueueId = osMessageQueueNew (4, sizeof(colorConfig), NULL);
 //	txMsgQueueId = osMessageQueueNew (4, sizeof(packet_t *), NULL);
 //	rxMsgQueueId = osMessageQueueNew (4, sizeof(packet_t *), NULL);
+
+	configChangeQueueId = osMessageQueueNew (4, sizeof(configChange), NULL);
 
 	/* USER CODE END RTOS_QUEUES */
 
@@ -1805,8 +1807,8 @@ void uwbMessageTask(void* argument){
 						//todo: save multi_pt_data
 						if(rangesRemaining > 0){
 							rangesRemaining--;
-							infoPacket.payload.system_info_packet.discovered_devices.device[rangesRemaining].uid = connectedNodeInfo[rangesRemaining].system_uid;
-							infoPacket.payload.system_info_packet.discovered_devices.device[rangesRemaining].range = uwb_i2c_downlink_packet.response.multi_ptp_normal.mean;
+							infoPacket.payload.system_info_packet.discovered_devices[rangesRemaining].uid = connectedNodeInfo[rangesRemaining].system_uid;
+							infoPacket.payload.system_info_packet.discovered_devices[rangesRemaining].range = uwb_i2c_downlink_packet.response.multi_ptp_normal.mean;
 							if(rangesRemaining != 0) flags |= UWB_START_RANGING;
 							else{
 								/* Create a stream that will write to our buffer. */
@@ -1817,9 +1819,6 @@ void uwbMessageTask(void* argument){
 								PackedPayload.Length = stream.bytes_written;
 							    if(status) DTS_STM_UpdateChar(BUZZCAM_INFO_CHAR_UUID,(uint8_t*) &PackedPayload);
 							}
-						}else{
-							infoPacket.payload.system_info_packet.has_discovered_devices = true;
-
 						}
 						break;
 					case BEECAM_UWB_I2C_DOWNLINK_MULTI_PTP_FULL_TAG:
@@ -1840,9 +1839,7 @@ void uwbMessageTask(void* argument){
 				if(rangesRemaining == 0){
 					/* calculate number of connected nodes */
 					rangesRemaining = totalConnectedNodes((uwb_info_t*) &connectedNodeInfo);
-					infoPacket.payload.system_info_packet.has_discovered_devices = true;
-					infoPacket.payload.system_info_packet.discovered_devices.number_of_devices = rangesRemaining;
-					infoPacket.payload.system_info_packet.discovered_devices.device_count = rangesRemaining;
+					infoPacket.payload.system_info_packet.discovered_devices_count = rangesRemaining;
 					if(rangesRemaining == 0) return; // no ranges to do
 				}
 
@@ -1932,7 +1929,7 @@ static void writeDefaultConfig(void){
 	configPacket.payload.config_packet.network_state.number_of_discovered_devices=configPacket.payload.config_packet.network_state.discovered_device_uid_count;
 	//	configPacket.payload.config_packet.network_state.discovered_device_uid[0].addr;
 	//	configPacket.payload.config_packet.network_state.force_rediscovery=false;
-	configPacket.payload.config_packet.network_state.channel = 23;
+	configPacket.payload.config_packet.network_state.channel = 20;
 	configPacket.payload.config_packet.network_state.pan_id = 0x1234;
 
 #ifdef MASTER_NODE
@@ -1978,33 +1975,17 @@ static void writeDefaultConfig(void){
 	infoPacket.payload.system_info_packet.battery_state.percentage=50.0;
 	infoPacket.payload.system_info_packet.battery_state.voltage=3.75;
 
-	infoPacket.payload.system_info_packet.has_discovered_devices = true;
-	infoPacket.payload.system_info_packet.discovered_devices.device_count=12;
-	infoPacket.payload.system_info_packet.discovered_devices.number_of_devices=infoPacket.payload.system_info_packet.discovered_devices.device_count;
-	infoPacket.payload.system_info_packet.discovered_devices.device[0].uid = 0xDEADBEEF;
-	infoPacket.payload.system_info_packet.discovered_devices.device[1].uid = 0xDEADBEAF;
-	infoPacket.payload.system_info_packet.discovered_devices.device[2].uid = 0xDEADBEBF;
-	infoPacket.payload.system_info_packet.discovered_devices.device[3].uid = 0xDEADBECF;
-	infoPacket.payload.system_info_packet.discovered_devices.device[4].uid = 0xDEADBEDF;
-	infoPacket.payload.system_info_packet.discovered_devices.device[5].uid = 0xDEADBEEF;
-	infoPacket.payload.system_info_packet.discovered_devices.device[6].uid = 0xDEADBEFF;
-	infoPacket.payload.system_info_packet.discovered_devices.device[7].uid = 0xDEADBAEF;
-	infoPacket.payload.system_info_packet.discovered_devices.device[8].uid = 0xDEADBBEF;
-	infoPacket.payload.system_info_packet.discovered_devices.device[9].uid = 0xDEADBCEF;
-	infoPacket.payload.system_info_packet.discovered_devices.device[10].uid = 0xDEADBDEF;
-	infoPacket.payload.system_info_packet.discovered_devices.device[11].uid = 0xDEADBFEF;
-	infoPacket.payload.system_info_packet.discovered_devices.device[0].range = 1.0;
-	infoPacket.payload.system_info_packet.discovered_devices.device[1].range = 2;
-	infoPacket.payload.system_info_packet.discovered_devices.device[2].range = 3;
-	infoPacket.payload.system_info_packet.discovered_devices.device[3].range = 4;
-	infoPacket.payload.system_info_packet.discovered_devices.device[4].range = 5;
-	infoPacket.payload.system_info_packet.discovered_devices.device[5].range = 6;
-	infoPacket.payload.system_info_packet.discovered_devices.device[6].range = 7;
-	infoPacket.payload.system_info_packet.discovered_devices.device[7].range = 8;
-	infoPacket.payload.system_info_packet.discovered_devices.device[8].range = 9.12;
-	infoPacket.payload.system_info_packet.discovered_devices.device[9].range = 10.2321;
-	infoPacket.payload.system_info_packet.discovered_devices.device[10].range =11.2;
-	infoPacket.payload.system_info_packet.discovered_devices.device[11].range = 12.1;
+	infoPacket.payload.system_info_packet.discovered_devices_count = 4;
+	infoPacket.payload.system_info_packet.discovered_devices[0].uid = 0xDEADBEEF;
+	infoPacket.payload.system_info_packet.discovered_devices[1].uid = 0xDEADBEAF;
+	infoPacket.payload.system_info_packet.discovered_devices[2].uid = 0xDEADBEBF;
+	infoPacket.payload.system_info_packet.discovered_devices[3].uid = 0xDEADBECF;
+	infoPacket.payload.system_info_packet.discovered_devices[4].uid = 0xDEADBEDF;
+	infoPacket.payload.system_info_packet.discovered_devices[0].range = 1.0;
+	infoPacket.payload.system_info_packet.discovered_devices[1].range = 2;
+	infoPacket.payload.system_info_packet.discovered_devices[2].range = 3;
+	infoPacket.payload.system_info_packet.discovered_devices[3].range = 4;
+	infoPacket.payload.system_info_packet.discovered_devices[4].range = 5;
 
 	infoPacket.payload.system_info_packet.has_mark_state = true;
 	//  infoPacket.payload.system_info_packet.mark_state.beep_enabled=false;
@@ -3985,6 +3966,10 @@ void mainSystemTask(void *argument){
 	uwbMessageTaskId = osThreadNew(uwbMessageTask, NULL, &uwbMessageTask_attributes);
 	ledSequencerId = osThreadNew(ledSequencer, NULL, &ledSequencerTask_attributes);
 
+	configThreadId = osThreadNew(updateSystemConfig,
+										NULL,
+										&configTask_attributes);
+
 
 	if(configPacket.payload.config_packet.sensor_config.enable_gas ||
 			configPacket.payload.config_packet.sensor_config.enable_humidity ||
@@ -4074,7 +4059,8 @@ void mainSystemTask(void *argument){
 			performMagCalibration(2000);
 		}
 
-		if(configPacket.payload.config_packet.enable_recording){
+		/* if recording is enabled but not a slave node */
+		if(configPacket.payload.config_packet.enable_recording && !configPacket.payload.config_packet.network_state.slave_sync){
 			while(coapSetup != 1){
 				osDelay(100);
 			}
@@ -4084,8 +4070,7 @@ void mainSystemTask(void *argument){
 				micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
 			}
 			/* or if a schedule is given, start next alarm or start right away if within schedule */
-			else if(configPacket.payload.config_packet.enable_recording &&
-					(configPacket.payload.config_packet.schedule_config_count > 0)){
+			else{
 				/* start alarm based on schedule */
 				scheduleRun = setAlarm(configPacket.payload.config_packet.schedule_config,
 						configPacket.payload.config_packet.schedule_config_count);
@@ -4260,6 +4245,7 @@ void mainSystemTask(void *argument){
 
 void alertMainTask(void *argument){
 	osThreadFlagsSet(mainSystemThreadId, CONFIG_UPDATED_EVENT);
+	if((configPacket.payload.config_packet.network_state.master_node == 1)) sendConfigToNodes(false);
 }
 
 void sendSlavesTimestamp(void *argument){
@@ -4285,94 +4271,121 @@ void ledSequencer(void *argument){
 void updateSystemConfig(void *argument){
 	configChange configMsg;
 	config_packet_t* new_config;
-	memcpy((uint8_t*) &configMsg,(uint8_t*)argument,sizeof(configChange));
+//	memcpy((uint8_t*) &configMsg,(uint8_t*)argument,sizeof(configChange));
 
-	new_config = &configMsg.config;
+	while(1){
+		osMessageQueueGet(configChangeQueueId, &configMsg, 0, osWaitForever);
 
-	/* (1) update config */
-	configPacket.has_header = true;
-	configPacket.header.epoch = getEpoch();
-	configPacket.header.system_uid = LL_FLASH_GetUDN();
-	configPacket.header.ms_from_start = HAL_GetTick();
+		new_config = &configMsg.config;
 
-	configPacket.payload.config_packet.enable_recording = new_config->enable_recording;
+		/* (1) update config */
+		configPacket.has_header = true;
+		configPacket.header.epoch = getEpoch();
+		configPacket.header.system_uid = LL_FLASH_GetUDN();
+		configPacket.header.ms_from_start = HAL_GetTick();
 
-	if(new_config->has_audio_config){
-		memcpy((uint8_t*)&configPacket.payload.config_packet.audio_config,
-				(uint8_t*)&new_config->audio_config,
-				sizeof(new_config->audio_config));
-	}
+		configPacket.payload.config_packet.enable_recording = new_config->enable_recording;
 
-	if(new_config->has_low_power_config){
-		memcpy((uint8_t*)&configPacket.payload.config_packet.low_power_config,
-				(uint8_t*)&new_config->low_power_config,
-				sizeof(new_config->low_power_config));
-
-		if( configPacket.payload.config_packet.low_power_config.low_power_mode){
-			/* enable low power mode settings */
-		}else{
-			/* disable low power mode settings */
-		}
-	}
-
-	if(new_config->has_network_state){
-		configPacket.payload.config_packet.network_state.channel = new_config->network_state.channel;
-		configPacket.payload.config_packet.network_state.pan_id = new_config->network_state.pan_id;
-
-//		if((new_config->network_state.master_node == 1) && (configMsg.fromMaster != 1)){
-//			configPacket.payload.config_packet.network_state.master_node = 1;
-//			configPacket.payload.config_packet.network_state.slave_sync = 0;
-//
-//		}
-		if(configMsg.fromMaster == 1){
-			/* if a master node is transmitting, we need to demote since only 1 master allowed */
-			if((new_config->network_state.master_node == 1) &&
-					(configPacket.payload.config_packet.network_state.master_node == 1)){
-				configPacket.payload.config_packet.network_state.master_node = 0;
-				configPacket.payload.config_packet.network_state.slave_sync = 1;
+		if(configMsg.fromMaster != 1){
+			if(new_config->has_audio_config){
+				memcpy((uint8_t*)&configPacket.payload.config_packet.audio_config,
+						(uint8_t*)&new_config->audio_config,
+						sizeof(new_config->audio_config));
 			}
-			configPacket.payload.config_packet.enable_recording = new_config->enable_recording;
-		}else{
-			/* updated from phone */
-			configPacket.payload.config_packet.network_state.master_node = new_config->network_state.master_node;
-			configPacket.payload.config_packet.network_state.slave_sync = new_config->network_state.slave_sync;
-			configPacket.payload.config_packet.enable_recording = false;
+
+			if(new_config->has_low_power_config){
+				memcpy((uint8_t*)&configPacket.payload.config_packet.low_power_config,
+						(uint8_t*)&new_config->low_power_config,
+						sizeof(new_config->low_power_config));
+
+				if( configPacket.payload.config_packet.low_power_config.low_power_mode){
+					/* enable low power mode settings */
+				}else{
+					/* disable low power mode settings */
+				}
+			}
 		}
 
-//		memcpy((uint8_t*)&configPacket.payload.config_packet.network_state,
-//				(uint8_t*)&new_config->network_state,
-//				sizeof(new_config->network_state));
+	//	if(new_config->has_network_state){
+	//		if(configPacket.payload.config_packet.network_state.channel == 0){
+	//			while(1);
+	//		}
+	//	}
+
+		if(new_config->has_network_state){
+	//		if((new_config->network_state.master_node == 1) && (configMsg.fromMaster != 1)){
+	//			configPacket.payload.config_packet.network_state.master_node = 1;
+	//			configPacket.payload.config_packet.network_state.slave_sync = 0;
+	//
+	//		}
+			if(configMsg.fromMaster == 1){
+				/* if a master node is transmitting, we need to demote since only 1 master allowed */
+				if((new_config->network_state.master_node == 1) &&
+						(configPacket.payload.config_packet.network_state.master_node == 1)){
+					configPacket.payload.config_packet.network_state.master_node = 0;
+					configPacket.payload.config_packet.network_state.slave_sync = 1;
+				}
+				configPacket.payload.config_packet.enable_recording = new_config->enable_recording;
+			}else{
+				/* updated from phone */
+				configPacket.payload.config_packet.network_state.channel = new_config->network_state.channel;
+				configPacket.payload.config_packet.network_state.pan_id = new_config->network_state.pan_id;
+
+				if((new_config->network_state.master_node == 1) &&
+						(new_config->network_state.slave_sync == 1)){
+					if(configPacket.payload.config_packet.network_state.master_node){
+						configPacket.payload.config_packet.network_state.master_node = 0;
+						configPacket.payload.config_packet.network_state.slave_sync = 1;
+					}else{
+						configPacket.payload.config_packet.network_state.slave_sync = 0;
+						configPacket.payload.config_packet.network_state.master_node = 1;
+					}
+	//				configPacket.payload.config_packet.network_state.master_node = 1;
+	//				configPacket.payload.config_packet.network_state.slave_sync = 0;
+				}else{
+					configPacket.payload.config_packet.network_state.master_node = new_config->network_state.master_node;
+					configPacket.payload.config_packet.network_state.slave_sync = new_config->network_state.slave_sync;
+				}
+				configPacket.payload.config_packet.enable_recording = new_config->enable_recording;
+	//			configPacket.payload.config_packet.enable_recording = false;
+			}
+
+	//		memcpy((uint8_t*)&configPacket.payload.config_packet.network_state,
+	//				(uint8_t*)&new_config->network_state,
+	//				sizeof(new_config->network_state));
+		}
+
+		if(configMsg.fromMaster != 1){
+			if(new_config->has_sensor_config){
+				memcpy((uint8_t*)&configPacket.payload.config_packet.sensor_config,
+						(uint8_t*)&new_config->sensor_config,
+						sizeof(new_config->sensor_config));
+			}
+
+			if(new_config->schedule_config_count != 0){
+				memcpy((uint8_t*)&configPacket.payload.config_packet.schedule_config,
+						(uint8_t*)&new_config->schedule_config,
+						sizeof(new_config->schedule_config));
+				configPacket.payload.config_packet.schedule_config_count = new_config->schedule_config_count;
+			}
+		}
+
+
+		/* (2) alert master thread that new config exists */
+		osTimerStop(mainTaskUpdateId);
+		if(osTimerStart (mainTaskUpdateId, 5000) != osOK) Error_Handler();
+
+		/* (3) update config characteristic */
+		tBleStatus ret;
+		/* Create a stream that will write to our buffer. */
+		pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+		/* Now we are ready to encode the message! */
+		status = pb_encode(&stream, PACKET_FIELDS, &configPacket);
+		PackedPayload.pPayload = (uint8_t*) buffer;
+		PackedPayload.Length = stream.bytes_written;
+		if(status) ret = DTS_STM_UpdateChar(BUZZCAM_CONFIG_CHAR_UUID, (uint8_t*)&PackedPayload);
+
 	}
-
-	if(new_config->has_sensor_config){
-		memcpy((uint8_t*)&configPacket.payload.config_packet.sensor_config,
-				(uint8_t*)&new_config->sensor_config,
-				sizeof(new_config->sensor_config));
-	}
-
-	if(new_config->schedule_config_count != 0){
-		memcpy((uint8_t*)&configPacket.payload.config_packet.schedule_config,
-				(uint8_t*)&new_config->schedule_config,
-				sizeof(new_config->schedule_config));
-		configPacket.payload.config_packet.schedule_config_count = new_config->schedule_config_count;
-	}
-
-	if((configPacket.payload.config_packet.network_state.master_node == 1)) sendConfigToNodes(false);
-
-	/* (2) alert master thread that new config exists */
-	osTimerStop(mainTaskUpdateId);
-	if(osTimerStart (mainTaskUpdateId, 5000) != osOK) Error_Handler();
-
-	/* (3) update config characteristic */
-	tBleStatus ret;
-	/* Create a stream that will write to our buffer. */
-	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-	/* Now we are ready to encode the message! */
-	status = pb_encode(&stream, PACKET_FIELDS, &configPacket);
-	PackedPayload.pPayload = (uint8_t*) buffer;
-	PackedPayload.Length = stream.bytes_written;
-	if(status) ret = DTS_STM_UpdateChar(BUZZCAM_CONFIG_CHAR_UUID, (uint8_t*)&PackedPayload);
-
 	vTaskDelete(NULL);
 }
 

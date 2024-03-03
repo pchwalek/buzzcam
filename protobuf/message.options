@@ -1,5 +1,5 @@
 MarkPacket.annotation                max_size:50;
-DiscoveredDevices.device	     max_count:20;
+SystemInfoPacket.discoveredDevices	     max_count:20;
 NetworkState.discovered_device_UID   max_count:20;	
 ConfigPacket.schedule_config	     max_count:10;	
 DeviceUID.addr                       max_size:10;

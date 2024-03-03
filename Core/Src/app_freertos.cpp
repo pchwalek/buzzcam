@@ -53,7 +53,7 @@ osThreadId_t markThreadId;
 
 const osThreadAttr_t configTask_attributes = { .name = "configTask", .attr_bits =
 		osThreadDetached, .cb_mem = NULL, .cb_size = 0, .stack_mem = NULL,
-		.stack_size = 256*12, .priority = (osPriority_t) osPriorityBelowNormal,
+		.stack_size = 512*5, .priority = (osPriority_t) osPriorityBelowNormal,
 		.tz_module = 0, .reserved = 0 };
 osThreadId_t configThreadId;
 
@@ -83,12 +83,12 @@ const osThreadAttr_t bmeTask_attributes = { .name = "bmeTask", .attr_bits =
 
 const osThreadAttr_t batteryMonitorTask_attributes = { .name = "batteryMonTask", .attr_bits =
 		osThreadDetached, .cb_mem = NULL, .cb_size = 0, .stack_mem = NULL,
-		.stack_size = 512 * 6, .priority = (osPriority_t) osPriorityBelowNormal,
+		.stack_size = 512 * 5, .priority = (osPriority_t) osPriorityBelowNormal,
 		.tz_module = 0, .reserved = 0 };
 
 const osThreadAttr_t triggerMarkTask_attributes = { .name = "tiggerMarkTask", .attr_bits =
 		osThreadDetached, .cb_mem = NULL, .cb_size = 0, .stack_mem = NULL,
-		.stack_size = 512 * 6, .priority = (osPriority_t) osPriorityBelowNormal,
+		.stack_size = 512 * 5, .priority = (osPriority_t) osPriorityAboveNormal,
 		.tz_module = 0, .reserved = 0 };
 
 const osThreadAttr_t uwbMessageTask_attributes = { .name = "uwbMessageTask", .attr_bits =
@@ -121,6 +121,7 @@ osSemaphoreId_t txMsg_LockBinarySemId;
 osSemaphoreId_t rxMsg_LockBinarySemId;
 osMessageQueueId_t markPacketQueueId;
 osMessageQueueId_t ledSeqQueueId;
+osMessageQueueId_t configChangeQueueId;
 osMessageQueueId_t txMsgQueueId;
 osMessageQueueId_t rxMsgQueueId;
 osTimerId_t mainTaskUpdateId;
