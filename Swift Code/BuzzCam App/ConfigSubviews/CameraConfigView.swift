@@ -35,7 +35,8 @@ struct CameraConfigView: View {
                                 Text("Pair with Nearby Cameras")
                                     .padding()
                                     .foregroundColor(.black)
-                                
+                                Spacer()
+
                                 Button(action: {
                                     // Call the associated function when the button is pressed
                                     bluetoothModel.pairWithNearbyCameras()
@@ -44,7 +45,7 @@ struct CameraConfigView: View {
                                         .foregroundColor(.black)
                                 }
                                 .buttonStyle(BorderlessButtonStyle())
-                                .background(Color.gray)
+                                .background(Color(white: 0.8))
                                 .cornerRadius(8)
                             }
                             .padding(.bottom, 10)
@@ -53,7 +54,8 @@ struct CameraConfigView: View {
                                 Text("Force Camera Capture")
                                     .padding()
                                     .foregroundColor(.black)
-                                
+                                Spacer()
+
                                 Button(action: {
                                     // Call the associated function when the button is pressed
                                     bluetoothModel.forceCameraCapture()
@@ -62,7 +64,7 @@ struct CameraConfigView: View {
                                         .foregroundColor(.black)
                                 }
                                 .buttonStyle(BorderlessButtonStyle())
-                                .background(Color.gray)
+                                .background(Color(white: 0.8))
                                 .cornerRadius(8)
                             }
                             .padding(.bottom, 10)
@@ -72,7 +74,7 @@ struct CameraConfigView: View {
                                 Text("Wakeup Cameras")
                                     .padding()
                                     .foregroundColor(.black)
-                                
+                                Spacer()
                                 Button(action: {
                                     // Call the associated function when the button is pressed
                                     bluetoothModel.wakeupCameras()
@@ -81,7 +83,7 @@ struct CameraConfigView: View {
                                         .foregroundColor(.black)
                                 }
                                 .buttonStyle(BorderlessButtonStyle())
-                                .background(Color.gray)
+                                .background(Color(white: 0.8))
                                 .cornerRadius(8)
                             }
                         }

@@ -45,6 +45,8 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
     var updateTimer: Timer?
     
     var isConnected: Bool = false
+    
+    var updatedConfigPacket = false
 
     
     override init() {
@@ -126,6 +128,8 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
         if centralManager.state == .poweredOn {
             centralManager.scanForPeripherals(withServices: nil, options: nil)
         }
+        
+        updatedConfigPacket = false
         
     }
     
@@ -344,9 +348,10 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
                     
                     self.configPacketData = ConfigPacketData(enableRecording: message.configPacket.enableRecording,
                                                              enableLed: message.configPacket.enableLed)
-                    print("configPacket enableRecording:", message.configPacket.enableRecording)
+                    print("configPacket enableLed:", message.configPacket.enableLed)
                 }
                 print("Updated configPacketData with CE72 characteristic")
+                updatedConfigPacket = true
             default:
                 // Handle other characteristics if needed
                 break

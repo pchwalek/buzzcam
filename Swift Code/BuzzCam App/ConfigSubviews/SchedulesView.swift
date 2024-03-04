@@ -63,7 +63,7 @@ struct SchedulesView: View {
                             isPopupPresented.toggle()
                             print("add")
                         }.padding()
-                            .background(Color(white: 0.7))
+                            .background(Color(white: 0.8))
                             .cornerRadius(5)
                             
                             
@@ -80,7 +80,7 @@ struct SchedulesView: View {
                                         print("index: \(index)")
                                         isPopupPresented.toggle()
                                         print("edit")
-                                    }
+                                    }.foregroundColor(.blue)
                                 }
                                 Text("Days: \(selectedDaysString(schedule: schedules[index]))")
                                 Text("Time: \(selectedTimeString(schedule: schedules[index]))")

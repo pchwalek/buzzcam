@@ -46,6 +46,7 @@ struct SystemControlView: View {
                             
                             HStack {
                                 Text("Enabled led").fontWeight(.bold)
+                                
                                 Toggle("",isOn: $ledEnabled).labelsHidden()
                                     .onChange(of: ledEnabled) {
                                         // Call your function when the toggle is changed
@@ -57,7 +58,8 @@ struct SystemControlView: View {
                                 Text("Reset config")
                                     .padding()
                                     .foregroundColor(.black)
-                                
+                                Spacer()
+
                                 Button(action: {
                                     // Call the associated function when the button is pressed
                                     bluetoothModel.resetConfig()
@@ -66,7 +68,7 @@ struct SystemControlView: View {
                                         .foregroundColor(.black)
                                 }
                                 .buttonStyle(BorderlessButtonStyle())
-                                .background(Color.gray)
+                                .background(Color(white: 0.8))
                                 .cornerRadius(8)
                             }
                             .padding(.bottom, 10)
@@ -75,7 +77,8 @@ struct SystemControlView: View {
                                 Text("Format SD card")
                                     .padding()
                                     .foregroundColor(.black)
-                                
+                                Spacer()
+
                                 Button(action: {
                                     // Call the associated function when the button is pressed
                                     bluetoothModel.pairWithNearbyCameras()
@@ -84,7 +87,7 @@ struct SystemControlView: View {
                                         .foregroundColor(.black)
                                 }
                                 .buttonStyle(BorderlessButtonStyle())
-                                .background(Color.gray)
+                                .background(Color(white: 0.8))
                                 .cornerRadius(8)
                             }
                             .padding(.bottom, 10)
@@ -93,7 +96,8 @@ struct SystemControlView: View {
                                 Text("Open thread sync time")
                                     .padding()
                                     .foregroundColor(.black)
-                                
+                                Spacer()
+
                                 Button(action: {
                                     // Call the associated function when the button is pressed
                                     bluetoothModel.openThreadSyncTime()
@@ -102,7 +106,7 @@ struct SystemControlView: View {
                                         .foregroundColor(.black)
                                 }
                                 .buttonStyle(BorderlessButtonStyle())
-                                .background(Color.gray)
+                                .background(Color(white: 0.8))
                                 .cornerRadius(8)
                             }
                             .padding(.bottom, 10)
@@ -111,7 +115,8 @@ struct SystemControlView: View {
                                 Text("Magnetometer calibration")
                                     .padding()
                                     .foregroundColor(.black)
-                                
+                                Spacer()
+
                                 Button(action: {
                                     // Call the associated function when the button is pressed
                                     bluetoothModel.magCalibration()
@@ -120,7 +125,7 @@ struct SystemControlView: View {
                                         .foregroundColor(.black)
                                 }
                                 .buttonStyle(BorderlessButtonStyle())
-                                .background(Color.gray)
+                                .background(Color(white: 0.8))
                                 .cornerRadius(8)
                             }
                             .padding(.bottom, 10)
@@ -129,7 +134,8 @@ struct SystemControlView: View {
                                 Text("Trigger DFU Mode")
                                     .padding()
                                     .foregroundColor(.black)
-                                
+                                Spacer()
+
                                 Button(action: {
                                     // Call the associated function when the button is pressed
                                     bluetoothModel.triggerDFUMode()
@@ -138,7 +144,7 @@ struct SystemControlView: View {
                                         .foregroundColor(.black)
                                 }
                                 .buttonStyle(BorderlessButtonStyle())
-                                .background(Color.gray)
+                                .background(Color(white: 0.8))
                                 .cornerRadius(8)
                             }
                             .padding(.bottom, 10)

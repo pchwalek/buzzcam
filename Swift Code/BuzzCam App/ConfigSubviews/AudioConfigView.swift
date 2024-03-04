@@ -265,8 +265,8 @@ struct AudioConfigView: View {
                                     }
                                 })
                                 .padding()
-                                Text("Estimated recording time: " + String(bluetoothModel.configPacketData_Audio?.estimatedRecordTime ?? 0)).fontWeight(.bold)
-                                    .font(.body)
+                                Text("Estimated recording time: ").fontWeight(.bold)
+                                Text(String(bluetoothModel.configPacketData_Audio?.estimatedRecordTime ?? 0))
                             }
                         }
                         .padding()

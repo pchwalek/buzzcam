@@ -38,7 +38,7 @@ struct MainView: View {
             ScrollView(showsIndicators: false) {
                 ScrollViewReader(content: { proxy in
                     // show loading screen if info not available yet
-                    if (bluetoothModel.connectedPeripheral?.name) != nil {
+                    if ((bluetoothModel.connectedPeripheral?.name) != nil) {
                         
                         VStack {
                             // upper box
