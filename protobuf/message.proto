@@ -95,7 +95,7 @@ message BatteryState{
 
 message Device{
     uint32 UID = 1;
-    float range = 2;
+    uint32 range = 2;
 }
 
 message SystemInfoPacket{
@@ -223,6 +223,7 @@ message ConfigPacket{
     LowPowerConfig low_power_config = 4;
     NetworkState network_state = 5;
     bool enable_recording = 6;
+    bool enable_led = 7;
 }
 
 message PeerAddress {
@@ -265,6 +266,7 @@ message SpecialFunction{
         uint32 timestamp = 7;
         bool dfu_mode = 8;
         UWB_Info uwb_info = 9;
+	bool reset_config = 10;
     }
 }
 

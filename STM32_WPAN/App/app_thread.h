@@ -150,6 +150,11 @@ typedef enum
         float range;
         float std_dev;
     } uwb_ranges_t;
+
+    typedef struct {
+    	uint64_t master_epoch;
+    	uint64_t slave_epoch;
+    } timestampSync_t;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/

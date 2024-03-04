@@ -154,7 +154,7 @@ typedef struct battery_state {
 
 typedef struct device {
     uint32_t uid;
-    float range;
+    uint32_t range;
 } device_t;
 
 typedef struct system_info_packet {
@@ -240,6 +240,7 @@ typedef struct config_packet {
     bool has_network_state;
     network_state_t network_state;
     bool enable_recording;
+    bool enable_led;
 } config_packet_t;
 
 typedef PB_BYTES_ARRAY_T(8) peer_address_address_t;
@@ -287,6 +288,7 @@ typedef struct special_function {
         uint32_t timestamp;
         bool dfu_mode;
         uwb_info_t uwb_info;
+        bool reset_config;
     } payload;
 } special_function_t;
 
@@ -383,7 +385,7 @@ extern "C" {
 #define CAMERA_CONTROL_INIT_DEFAULT              {0, 0, 0}
 #define DEVICE_UID_INIT_DEFAULT                  {""}
 #define NETWORK_STATE_INIT_DEFAULT               {0, 0, {DEVICE_UID_INIT_DEFAULT, DEVICE_UID_INIT_DEFAULT, DEVICE_UID_INIT_DEFAULT, DEVICE_UID_INIT_DEFAULT, DEVICE_UID_INIT_DEFAULT, DEVICE_UID_INIT_DEFAULT, DEVICE_UID_INIT_DEFAULT, DEVICE_UID_INIT_DEFAULT, DEVICE_UID_INIT_DEFAULT, DEVICE_UID_INIT_DEFAULT}, 0, 0, 0, 0}
-#define CONFIG_PACKET_INIT_DEFAULT               {false, AUDIO_CONFIG_INIT_DEFAULT, 0, {SCHEDULE_CONFIG_INIT_DEFAULT, SCHEDULE_CONFIG_INIT_DEFAULT, SCHEDULE_CONFIG_INIT_DEFAULT, SCHEDULE_CONFIG_INIT_DEFAULT, SCHEDULE_CONFIG_INIT_DEFAULT, SCHEDULE_CONFIG_INIT_DEFAULT, SCHEDULE_CONFIG_INIT_DEFAULT, SCHEDULE_CONFIG_INIT_DEFAULT, SCHEDULE_CONFIG_INIT_DEFAULT, SCHEDULE_CONFIG_INIT_DEFAULT}, false, SENSOR_CONFIG_INIT_DEFAULT, false, LOW_POWER_CONFIG_INIT_DEFAULT, false, NETWORK_STATE_INIT_DEFAULT, 0}
+#define CONFIG_PACKET_INIT_DEFAULT               {false, AUDIO_CONFIG_INIT_DEFAULT, 0, {SCHEDULE_CONFIG_INIT_DEFAULT, SCHEDULE_CONFIG_INIT_DEFAULT, SCHEDULE_CONFIG_INIT_DEFAULT, SCHEDULE_CONFIG_INIT_DEFAULT, SCHEDULE_CONFIG_INIT_DEFAULT, SCHEDULE_CONFIG_INIT_DEFAULT, SCHEDULE_CONFIG_INIT_DEFAULT, SCHEDULE_CONFIG_INIT_DEFAULT, SCHEDULE_CONFIG_INIT_DEFAULT, SCHEDULE_CONFIG_INIT_DEFAULT}, false, SENSOR_CONFIG_INIT_DEFAULT, false, LOW_POWER_CONFIG_INIT_DEFAULT, false, NETWORK_STATE_INIT_DEFAULT, 0, 0}
 #define PEER_ADDRESS_INIT_DEFAULT                {0, {0, {0}}}
 #define UWB_RANGE_INIT_DEFAULT                   {false, DEVICE_UID_INIT_DEFAULT, 0, false, PEER_ADDRESS_INIT_DEFAULT, 0, 0}
 #define UWB_INFO_INIT_DEFAULT                    {false, DEVICE_UID_INIT_DEFAULT, 0, false, PEER_ADDRESS_INIT_DEFAULT}
@@ -408,7 +410,7 @@ extern "C" {
 #define CAMERA_CONTROL_INIT_ZERO                 {0, 0, 0}
 #define DEVICE_UID_INIT_ZERO                     {""}
 #define NETWORK_STATE_INIT_ZERO                  {0, 0, {DEVICE_UID_INIT_ZERO, DEVICE_UID_INIT_ZERO, DEVICE_UID_INIT_ZERO, DEVICE_UID_INIT_ZERO, DEVICE_UID_INIT_ZERO, DEVICE_UID_INIT_ZERO, DEVICE_UID_INIT_ZERO, DEVICE_UID_INIT_ZERO, DEVICE_UID_INIT_ZERO, DEVICE_UID_INIT_ZERO}, 0, 0, 0, 0}
-#define CONFIG_PACKET_INIT_ZERO                  {false, AUDIO_CONFIG_INIT_ZERO, 0, {SCHEDULE_CONFIG_INIT_ZERO, SCHEDULE_CONFIG_INIT_ZERO, SCHEDULE_CONFIG_INIT_ZERO, SCHEDULE_CONFIG_INIT_ZERO, SCHEDULE_CONFIG_INIT_ZERO, SCHEDULE_CONFIG_INIT_ZERO, SCHEDULE_CONFIG_INIT_ZERO, SCHEDULE_CONFIG_INIT_ZERO, SCHEDULE_CONFIG_INIT_ZERO, SCHEDULE_CONFIG_INIT_ZERO}, false, SENSOR_CONFIG_INIT_ZERO, false, LOW_POWER_CONFIG_INIT_ZERO, false, NETWORK_STATE_INIT_ZERO, 0}
+#define CONFIG_PACKET_INIT_ZERO                  {false, AUDIO_CONFIG_INIT_ZERO, 0, {SCHEDULE_CONFIG_INIT_ZERO, SCHEDULE_CONFIG_INIT_ZERO, SCHEDULE_CONFIG_INIT_ZERO, SCHEDULE_CONFIG_INIT_ZERO, SCHEDULE_CONFIG_INIT_ZERO, SCHEDULE_CONFIG_INIT_ZERO, SCHEDULE_CONFIG_INIT_ZERO, SCHEDULE_CONFIG_INIT_ZERO, SCHEDULE_CONFIG_INIT_ZERO, SCHEDULE_CONFIG_INIT_ZERO}, false, SENSOR_CONFIG_INIT_ZERO, false, LOW_POWER_CONFIG_INIT_ZERO, false, NETWORK_STATE_INIT_ZERO, 0, 0}
 #define PEER_ADDRESS_INIT_ZERO                   {0, {0, {0}}}
 #define UWB_RANGE_INIT_ZERO                      {false, DEVICE_UID_INIT_ZERO, 0, false, PEER_ADDRESS_INIT_ZERO, 0, 0}
 #define UWB_INFO_INIT_ZERO                       {false, DEVICE_UID_INIT_ZERO, 0, false, PEER_ADDRESS_INIT_ZERO}
@@ -497,6 +499,7 @@ extern "C" {
 #define CONFIG_PACKET_LOW_POWER_CONFIG_TAG       4
 #define CONFIG_PACKET_NETWORK_STATE_TAG          5
 #define CONFIG_PACKET_ENABLE_RECORDING_TAG       6
+#define CONFIG_PACKET_ENABLE_LED_TAG             7
 #define PEER_ADDRESS_PAN_ID_TAG                  1
 #define PEER_ADDRESS_ADDRESS_TAG                 2
 #define UWB_RANGE_OPENTHREAD_UID_TAG             1
@@ -519,6 +522,7 @@ extern "C" {
 #define SPECIAL_FUNCTION_TIMESTAMP_TAG           7
 #define SPECIAL_FUNCTION_DFU_MODE_TAG            8
 #define SPECIAL_FUNCTION_UWB_INFO_TAG            9
+#define SPECIAL_FUNCTION_RESET_CONFIG_TAG        10
 #define PACKET_HEADER_TAG                        1
 #define PACKET_SYSTEM_INFO_PACKET_TAG            2
 #define PACKET_MARK_PACKET_TAG                   3
@@ -597,7 +601,7 @@ X(a, STATIC,   OPTIONAL, FLOAT,    percentage,        3)
 
 #define DEVICE_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UINT32,   uid,               1) \
-X(a, STATIC,   SINGULAR, FLOAT,    range,             2)
+X(a, STATIC,   SINGULAR, UINT32,   range,             2)
 #define DEVICE_CALLBACK NULL
 #define DEVICE_DEFAULT NULL
 
@@ -686,7 +690,8 @@ X(a, STATIC,   REPEATED, MESSAGE,  schedule_config,   2) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  sensor_config,     3) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  low_power_config,   4) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  network_state,     5) \
-X(a, STATIC,   SINGULAR, BOOL,     enable_recording,   6)
+X(a, STATIC,   SINGULAR, BOOL,     enable_recording,   6) \
+X(a, STATIC,   SINGULAR, BOOL,     enable_led,        7)
 #define CONFIG_PACKET_CALLBACK NULL
 #define CONFIG_PACKET_DEFAULT NULL
 #define config_packet_t_audio_config_MSGTYPE audio_config_t
@@ -738,7 +743,8 @@ X(a, STATIC,   ONEOF,    BOOL,     (payload,mag_calibration,payload.mag_calibrat
 X(a, STATIC,   ONEOF,    BOOL,     (payload,slave_req_config,payload.slave_req_config),   6) \
 X(a, STATIC,   ONEOF,    UINT32,   (payload,timestamp,payload.timestamp),   7) \
 X(a, STATIC,   ONEOF,    BOOL,     (payload,dfu_mode,payload.dfu_mode),   8) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (payload,uwb_info,payload.uwb_info),   9)
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,uwb_info,payload.uwb_info),   9) \
+X(a, STATIC,   ONEOF,    BOOL,     (payload,reset_config,payload.reset_config),  10)
 #define SPECIAL_FUNCTION_CALLBACK NULL
 #define SPECIAL_FUNCTION_DEFAULT NULL
 #define special_function_t_payload_camera_control_MSGTYPE camera_control_t
@@ -818,8 +824,8 @@ extern const pb_msgdesc_t packet_t_msg;
 #define AUDIO_CONFIG_SIZE                        31
 #define BATTERY_STATE_SIZE                       12
 #define CAMERA_CONTROL_SIZE                      6
-#define CONFIG_PACKET_SIZE                       602
-#define DEVICE_SIZE                              11
+#define CONFIG_PACKET_SIZE                       604
+#define DEVICE_SIZE                              12
 #define DEVICE_UID_SIZE                          11
 #define LOW_POWER_CONFIG_SIZE                    2
 #define MARK_PACKET_SIZE                         53
@@ -834,7 +840,7 @@ extern const pb_msgdesc_t packet_t_msg;
 #define SENSOR_READING_PAYLOAD_SIZE              41
 #define SIMPLE_SENSOR_READING_SIZE               32
 #define SPECIAL_FUNCTION_SIZE                    967
-#define SYSTEM_INFO_PACKET_SIZE                  355
+#define SYSTEM_INFO_PACKET_SIZE                  375
 #define UWB_INFO_SIZE                            35
 #define UWB_PACKET_SIZE                          964
 #define UWB_RANGE_SIZE                           46

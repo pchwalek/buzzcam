@@ -259,7 +259,7 @@ static SVCCTL_EvtAckStatus_t DTS_Event_Handler(void *Event) {
 						case SPECIAL_FUNCTION_OPENTHREAD_SYNC_TIME_TAG:
 							if(rxPacket.payload.special_function.payload.openthread_sync_time){
 								//todo: implement function to sync time from this node with all other nodes via OT
-								sendConfigToNodes();
+//								sendConfigToNodes();
 							}
 							break;
 						case SPECIAL_FUNCTION_MAG_CALIBRATION_TAG:
@@ -276,6 +276,9 @@ static SVCCTL_EvtAckStatus_t DTS_Event_Handler(void *Event) {
 							break;
 						case SPECIAL_FUNCTION_DFU_MODE_TAG:
 							enterDFUMode();
+							break;
+						case SPECIAL_FUNCTION_RESET_CONFIG_TAG:
+							writeDefaultConfig();
 							break;
 						default: break;
 						}

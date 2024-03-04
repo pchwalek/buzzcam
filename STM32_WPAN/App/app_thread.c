@@ -223,6 +223,9 @@ static uint32_t DebugTxCoapCpt = 0;
 static uint8_t PayloadWrite[30] = { 0 };
 static uint8_t PayloadRead[30] = { 0 };
 
+
+timestampSync_t  timestampSync;
+
 static volatile uint8_t waitingForAck = 0;
 
 extern volatile uint8_t g_ot_notification_allowed;
@@ -417,6 +420,7 @@ static void APP_THREAD_DeviceConfig(void) {
  *
  * @retval None
  */
+volatile uint8_t gettingUWB_Info = 0;
 static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext) {
 	/* Prevent unused argument(s) compilation warning */
 	UNUSED(pContext);
@@ -444,7 +448,10 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext) {
 			/* USER CODE BEGIN OT_DEVICE_ROLE_CHILD */
 			/* request info from onboard UWB node */
 			if(local_uwbInfo.has_uwb == 0){
-				osThreadFlagsSet(uwbMessageTaskId, UWB_GET_INFO);
+				if(!gettingUWB_Info){
+					osThreadFlagsSet(uwbMessageTaskId, UWB_GET_INFO);
+					gettingUWB_Info = 1;
+				}
 			}
 			if((configPacket.payload.config_packet.network_state.master_node == 0) &&
 					(configPacket.payload.config_packet.network_state.slave_sync == 1)){
@@ -456,7 +463,10 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext) {
 			/* USER CODE BEGIN OT_DEVICE_ROLE_ROUTER */
 			/* request info from onboard UWB node */
 			if(local_uwbInfo.has_uwb == 0){
-				osThreadFlagsSet(uwbMessageTaskId, UWB_GET_INFO);
+				if(!gettingUWB_Info){
+					osThreadFlagsSet(uwbMessageTaskId, UWB_GET_INFO);
+					gettingUWB_Info = 1;
+				}
 			}
 			if((configPacket.payload.config_packet.network_state.master_node == 0) &&
 					(configPacket.payload.config_packet.network_state.slave_sync == 1)){
@@ -467,7 +477,10 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext) {
 			/* USER CODE BEGIN OT_DEVICE_ROLE_LEADER */
 			/* request info from onboard UWB node */
 			if(local_uwbInfo.has_uwb == 0){
-				osThreadFlagsSet(uwbMessageTaskId, UWB_GET_INFO);
+				if(!gettingUWB_Info){
+					osThreadFlagsSet(uwbMessageTaskId, UWB_GET_INFO);
+					gettingUWB_Info = 1;
+				}
 			}
 			if((configPacket.payload.config_packet.network_state.master_node == 0) &&
 					(configPacket.payload.config_packet.network_state.slave_sync == 1)){
@@ -1419,6 +1432,10 @@ static void APP_THREAD_CoapConfigHandler(void *pContext, otMessage *pMessage,
 						}
 						break;
 					case SPECIAL_FUNCTION_TIMESTAMP_TAG:
+						timestampSync.slave_epoch = getEpoch();
+						timestampSync.master_epoch = rxPacket.header.epoch;
+						osMessageQueuePut(timeSyncQueueId, &timestampSync, 0, 0);
+
 						color.blue_val = 100;
 						color.green_val = 100;
 						color.red_val = 100;
@@ -1625,16 +1642,16 @@ static void APP_THREAD_CoapSendRequest(otCoapResource *aCoapRessource,
 }
 
 void sendConfigToNodes(bool record_enable) {
-	portENTER_CRITICAL();
+	osSemaphoreAcquire(txMsg_LockBinarySemId, osWaitForever);
 	/* Create a stream that will write to our buffer. */
 	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+	configPacket.header.epoch = getEpoch();
 	/* Now we are ready to encode the message! */
 	bool prevState = configPacket.payload.config_packet.enable_recording;
 	configPacket.payload.config_packet.enable_recording = record_enable;
 	status = pb_encode(&stream, PACKET_FIELDS, &configPacket);
 
 	configPacket.payload.config_packet.enable_recording = prevState;
-	portEXIT_CRITICAL();
 
 	//todo: cant stop ISR's for bottom command so would be good to issue a high priority thread call for below
 	APP_THREAD_CoapSendRequest(&OT_ConfigRessource,
@@ -1643,7 +1660,7 @@ void sendConfigToNodes(bool record_enable) {
 			NULL, buffer, stream.bytes_written,
 			NULL,
 			NULL);
-
+	osSemaphoreRelease(txMsg_LockBinarySemId);
 }
 
 void sendTimeToNodes(void) {
@@ -1678,6 +1695,10 @@ void sendTimeToNodes(void) {
 	color.duration = 500;
 	osMessageQueuePut(ledSeqQueueId, &color, 0, 0);
 
+	timestampSync.slave_epoch = txPacket.header.epoch;
+	timestampSync.master_epoch = txPacket.header.epoch;
+	osMessageQueuePut(timeSyncQueueId, &timestampSync, 0, 0);
+
 	osSemaphoreRelease(txMsg_LockBinarySemId);
 
 }
@@ -1693,6 +1714,7 @@ void sendUWB_InfoToNode(peer_address_t *peer_addr, otIp6Address addr) {
 	txPacket.which_payload = PACKET_SPECIAL_FUNCTION_TAG;
 	txPacket.has_header = true;
 	txPacket.header.system_uid = LL_FLASH_GetUDN();
+	txPacket.header.epoch = getEpoch();
 	txPacket.payload.special_function.which_payload =
 			SPECIAL_FUNCTION_UWB_INFO_TAG;
 	txPacket.payload.special_function.payload.uwb_info.has_uwb_addr = true;
@@ -1728,6 +1750,7 @@ void sendUWB_InfoToNodes(peer_address_t *peer_addr) {
 	txPacket.which_payload = PACKET_SPECIAL_FUNCTION_TAG;
 	txPacket.has_header = true;
 	txPacket.header.system_uid = LL_FLASH_GetUDN();
+	txPacket.header.epoch = getEpoch();
 	txPacket.payload.special_function.which_payload =
 			SPECIAL_FUNCTION_UWB_INFO_TAG;
 	txPacket.payload.special_function.payload.uwb_info.has_uwb_addr = true;
@@ -1752,12 +1775,13 @@ void sendUWB_InfoToNodes(peer_address_t *peer_addr) {
 }
 
 void sendConfig(otIp6Address addr) {
-	portENTER_CRITICAL();
+	osSemaphoreAcquire(txMsg_LockBinarySemId, osWaitForever);
 	/* Create a stream that will write to our buffer. */
 	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+	txPacket.header.epoch = getEpoch();
 	/* Now we are ready to encode the message! */
 	status = pb_encode(&stream, PACKET_FIELDS, &configPacket);
-	portEXIT_CRITICAL();
+//	portEXIT_CRITICAL();
 
 	//todo: cant stop ISR's for bottom command so would be good to issue a high priority thread call for below
 	APP_THREAD_CoapSendRequest(&OT_ConfigRessource,
@@ -1765,7 +1789,7 @@ void sendConfig(otIp6Address addr) {
 			NULL, &addr, buffer, stream.bytes_written,
 			NULL,
 			NULL);
-
+	osSemaphoreRelease(txMsg_LockBinarySemId);
 }
 
 void alertMaster(void) {
@@ -1833,6 +1857,7 @@ static void updateTableInInfoPacketUWB(){
 	}
 	infoPacket.payload.system_info_packet.discovered_devices_count = i;
 
+	osSemaphoreAcquire(txMsg_LockBinarySemId, osWaitForever);
 	/* Create a stream that will write to our buffer. */
 	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
 	/* Now we are ready to encode the message! */
@@ -1840,6 +1865,7 @@ static void updateTableInInfoPacketUWB(){
 	PackedPayload.pPayload = (uint8_t*) buffer;
 	PackedPayload.Length = stream.bytes_written;
     if(status) DTS_STM_UpdateChar(BUZZCAM_INFO_CHAR_UUID,(uint8_t*) &PackedPayload);
+    osSemaphoreRelease(txMsg_LockBinarySemId);
 }
 
 uint8_t addInfotoTableUWB(uwb_info_t *new_info) {

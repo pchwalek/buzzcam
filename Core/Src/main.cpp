@@ -69,7 +69,7 @@
 #define MAX_INTENSITY 1000
 
 //#define AUDIO_BUFFER_LEN		(38000)
-#define AUDIO_BUFFER_LEN		(32000)
+#define AUDIO_BUFFER_LEN		(30000)
 //#define AUDIO_BUFFER_LEN		(1000)
 #define AUDIO_BUFFER_HALF_LEN	(AUDIO_BUFFER_LEN >> 1)
 
@@ -140,6 +140,7 @@ osThreadId_t defaultTaskHandle;
 RTC_AlarmTypeDef sAlarm = {0};
 
 osThreadId_t batteryMonitorTaskId;
+osThreadId_t timestampSyncTaskId;
 osThreadId_t triggerMarkTaskId;
 osThreadId_t uwbMessageTaskId;
 osThreadId_t ledSequencerId;
@@ -183,6 +184,7 @@ volatile uint8_t SAI_HALF_CALLBACK = 0;
 volatile uint8_t SAI_FULL_CALLBACK = 0;
 
 FIL batteryFile;
+FIL timeSyncFile;
 osTimerId_t periodicBatteryMonitorTimer_id;
 
 packet_t rxPacket = PACKET_INIT_ZERO;
@@ -222,11 +224,12 @@ void StartDefaultTask(void *argument);
 
 /* USER CODE BEGIN PFP */
 void chirp(void);
+void chirp_timestamp(void);
 void MX_USB_Device_Init(void);
 
-static void writeDefaultConfig(void);
 void writeSystemStateToFRAM(void);
 void writeSystemInfoToFRAM(void);
+void writeSystemConfigToFRAM(void);
 void readSystemStateToFRAM(void);
 
 void EnableExtADC(bool state);
@@ -323,6 +326,8 @@ void toneSweep(uint8_t reverse);
 static void save_config(char* folder_name);
 
 void batteryMonitorTask(void *argument);
+
+void timestampSyncTask(void *argument);
 
 void triggerBatteryMonitorSample(void *argument);
 
@@ -425,11 +430,11 @@ int main(void)
 	HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_SET);
 
-//   readSystemStateToFRAM();
-//   if(infoPacket.header.system_uid != LL_FLASH_GetUDN()){
-//	   writeDefaultConfig();
-//   }
-	writeDefaultConfig();
+   readSystemStateToFRAM();
+   if(infoPacket.header.system_uid != LL_FLASH_GetUDN()){
+	   writeDefaultConfig();
+   }
+//	writeDefaultConfig();
 
 
 	/* USER CODE END 2 */
@@ -474,6 +479,7 @@ int main(void)
 //	rxMsgQueueId = osMessageQueueNew (4, sizeof(packet_t *), NULL);
 
 	configChangeQueueId = osMessageQueueNew (4, sizeof(configChange), NULL);
+	timeSyncQueueId = osMessageQueueNew(2, sizeof(timestampSync_t), NULL);
 
 	/* USER CODE END RTOS_QUEUES */
 
@@ -1626,10 +1632,10 @@ void batteryMonitorTask(void *argument){
 	uint32_t flag = 0;
 	uint8_t battChgFlag = 0;
 	float battVltg;
-	static char str[32];
+	static char str[60];
 	FRESULT res;
 
-	double timestamp = 0;
+//	double timestamp = 0;
 
 	// add header
 	if(check_file_exists(file_name) == FR_NO_FILE){
@@ -1651,6 +1657,9 @@ void batteryMonitorTask(void *argument){
 
 	while(1){
 		flag = osThreadFlagsWait(UPDATE_EVENT | TERMINATE_EVENT, osFlagsWaitAny, osWaitForever);
+
+
+
 		if((flag & UPDATE_EVENT) == UPDATE_EVENT){
 
 			do{
@@ -1670,7 +1679,7 @@ void batteryMonitorTask(void *argument){
 			HAL_GPIO_WritePin(EN_BATT_MON_GPIO_Port, EN_BATT_MON_Pin, GPIO_PIN_SET);
 			osDelay(100); // give time for voltage to settle
 
-			timestamp = getEpoch();
+//			timestamp = getEpoch();
 			HAL_ADC_Start_IT(&hadc1);
 
 			flag = osThreadFlagsWait(COMPLETE_EVENT, osFlagsWaitAny, osWaitForever);
@@ -1680,7 +1689,7 @@ void batteryMonitorTask(void *argument){
 
 			HAL_GPIO_WritePin(EN_BATT_MON_GPIO_Port, EN_BATT_MON_Pin, GPIO_PIN_RESET);
 
-			snprintf(str, sizeof(str), "%.0f,%.3f,%u\n", timestamp, battVltg, battChgFlag);
+			snprintf(str, sizeof(str), "llu,%.3f,%u\n", getEpoch(), battVltg, battChgFlag);
 			f_write(&batteryFile, str, strlen(str), NULL);
 			memset(str, '\0', sizeof(str));
 
@@ -1695,6 +1704,63 @@ void batteryMonitorTask(void *argument){
 		if((flag & TERMINATE_EVENT) == TERMINATE_EVENT){
 			vTaskDelete(NULL);
 		}
+
+	}
+
+}
+
+void timestampSyncTask(void *argument){
+	const char file_name[20] = "timestamp_sync.csv";
+	uint32_t flag = 0;
+	uint8_t battChgFlag = 0;
+
+	static char str[60];
+	volatile FRESULT res;
+
+	uint32_t idx = 0;
+	timestampSync_t timestampSyncMsg;
+
+
+	// add header
+	if(check_file_exists(file_name) == FR_NO_FILE){
+		if(f_open(&timeSyncFile, file_name, FA_CREATE_NEW | FA_WRITE) == FR_OK){
+			strcpy(str, "index, master time (ms), slave time (ms)\n");
+			f_write(&timeSyncFile, str, strlen(str), NULL);
+			// Flush the cached data to the SD card
+			f_sync(&timeSyncFile);
+			// Close the file
+			f_close(&timeSyncFile);
+
+			memset(str, '\0', sizeof(str));
+		}
+	}
+
+
+	while(1){
+		osMessageQueueGet(timeSyncQueueId, &timestampSyncMsg, 0, osWaitForever);
+
+		do{
+			res = f_open(&timeSyncFile, file_name, FA_OPEN_APPEND | FA_WRITE | FA_READ);
+			if((res != FR_TIMEOUT) && (res != FR_OK) && (res != FR_TOO_MANY_OPEN_FILES)){
+				Error_Handler();
+			}
+		}while( ((res == FR_TIMEOUT) || (osDelay(10) == osOK)) &&
+				(res != FR_OK) );
+
+
+		snprintf(str, sizeof(str), "%u,%llu,%llu\n", idx,
+				timestampSyncMsg.master_epoch,
+				timestampSyncMsg.slave_epoch);
+		f_write(&timeSyncFile, str, strlen(str), NULL);
+		memset(str, '\0', sizeof(str));
+
+		// Close the file
+		res = f_close(&timeSyncFile);
+		if(res != FR_OK){
+			Error_Handler();
+		}
+
+
 
 	}
 
@@ -1891,10 +1957,10 @@ void uwbMessageTask(void* argument){
 
 
 
-static void writeDefaultConfig(void){
+void writeDefaultConfig(void){
 
 	configPacket.has_header = true;
-	configPacket.header.epoch = 1111;
+	configPacket.header.epoch = 0;
 	configPacket.header.system_uid = LL_FLASH_GetUDN();
 	configPacket.header.ms_from_start = HAL_GetTick();
 
@@ -1936,7 +2002,7 @@ static void writeDefaultConfig(void){
 	configPacket.payload.config_packet.network_state.slave_sync = false;
 	configPacket.payload.config_packet.network_state.master_node = true;
 #else
-	configPacket.payload.config_packet.network_state.slave_sync = true;
+	configPacket.payload.config_packet.network_state.slave_sync = false;
 	configPacket.payload.config_packet.network_state.master_node = false;
 #endif
 
@@ -1964,7 +2030,7 @@ static void writeDefaultConfig(void){
 	//	configPacket.payload.config_packet.schedule_config[1].stop_minute = 47;
 
 	infoPacket.has_header = true;
-	infoPacket.header.epoch = 1111;
+	infoPacket.header.epoch = 0;
 	infoPacket.header.system_uid = LL_FLASH_GetUDN();
 	infoPacket.header.ms_from_start = HAL_GetTick();
 
@@ -1972,10 +2038,10 @@ static void writeDefaultConfig(void){
 	infoPacket.payload.system_info_packet.has_battery_state = true;
 	infoPacket.payload.system_info_packet.battery_state.charging=false;
 	infoPacket.payload.system_info_packet.battery_state.has_percentage=true;
-	infoPacket.payload.system_info_packet.battery_state.percentage=50.0;
-	infoPacket.payload.system_info_packet.battery_state.voltage=3.75;
+	infoPacket.payload.system_info_packet.battery_state.percentage=0;
+	infoPacket.payload.system_info_packet.battery_state.voltage=0;
 
-	infoPacket.payload.system_info_packet.discovered_devices_count = 4;
+	infoPacket.payload.system_info_packet.discovered_devices_count = 0;
 	infoPacket.payload.system_info_packet.discovered_devices[0].uid = 0xDEADBEEF;
 	infoPacket.payload.system_info_packet.discovered_devices[1].uid = 0xDEADBEAF;
 	infoPacket.payload.system_info_packet.discovered_devices[2].uid = 0xDEADBEBF;
@@ -1989,8 +2055,8 @@ static void writeDefaultConfig(void){
 
 	infoPacket.payload.system_info_packet.has_mark_state = true;
 	//  infoPacket.payload.system_info_packet.mark_state.beep_enabled=false;
-	infoPacket.payload.system_info_packet.mark_state.mark_number=123;
-	infoPacket.payload.system_info_packet.mark_state.timestamp_unix=123;
+	infoPacket.payload.system_info_packet.mark_state.mark_number=0;
+	infoPacket.payload.system_info_packet.mark_state.timestamp_unix=0;
 
 	infoPacket.payload.system_info_packet.has_sdcard_state = true;
 	infoPacket.payload.system_info_packet.sdcard_state.detected=true;
@@ -1998,14 +2064,34 @@ static void writeDefaultConfig(void){
 	infoPacket.payload.system_info_packet.sdcard_state.space_remaining=1234;
 
 	infoPacket.payload.system_info_packet.has_simple_sensor_reading = true;
-	infoPacket.payload.system_info_packet.simple_sensor_reading.co2=458.0;
-	infoPacket.payload.system_info_packet.simple_sensor_reading.humidity=40.0;
-	infoPacket.payload.system_info_packet.simple_sensor_reading.index=123;
-	infoPacket.payload.system_info_packet.simple_sensor_reading.light_level=100.0;
-	infoPacket.payload.system_info_packet.simple_sensor_reading.temperature=76;
-	infoPacket.payload.system_info_packet.simple_sensor_reading.timestamp_unix=1234;
+	infoPacket.payload.system_info_packet.simple_sensor_reading.co2=0.0;
+	infoPacket.payload.system_info_packet.simple_sensor_reading.humidity=0.0;
+	infoPacket.payload.system_info_packet.simple_sensor_reading.index=0;
+	infoPacket.payload.system_info_packet.simple_sensor_reading.light_level=0.0;
+	infoPacket.payload.system_info_packet.simple_sensor_reading.temperature=0;
+	infoPacket.payload.system_info_packet.simple_sensor_reading.timestamp_unix=0;
 
 	writeSystemStateToFRAM();
+
+	if(coapSetup){
+		/* update characteristics */
+		tBleStatus ret;
+		/* Create a stream that will write to our buffer. */
+		pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+		/* Now we are ready to encode the message! */
+		status = pb_encode(&stream, PACKET_FIELDS, &configPacket);
+		PackedPayload.pPayload = (uint8_t*) buffer;
+		PackedPayload.Length = stream.bytes_written;
+		if(status) ret = DTS_STM_UpdateChar(BUZZCAM_CONFIG_CHAR_UUID, (uint8_t*)&PackedPayload);
+
+		/* Create a stream that will write to our buffer. */
+		stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+		/* Now we are ready to encode the message! */
+		status = pb_encode(&stream, PACKET_FIELDS, &infoPacket);
+		PackedPayload.pPayload = (uint8_t*) buffer;
+		PackedPayload.Length = stream.bytes_written;
+		if(status) ret = DTS_STM_UpdateChar(BUZZCAM_INFO_CHAR_UUID, (uint8_t*)&PackedPayload);
+	}
 
 }
 
@@ -2039,7 +2125,7 @@ static void save_config(char* folder_name){
 	FIL configFile;
 
 	char str[50];
-	FRESULT res = f_open(&configFile, file_name, FA_CREATE_NEW | FA_WRITE);
+	FRESULT res = f_open(&configFile, file_name, FA_CREATE_ALWAYS | FA_WRITE | FA_OPEN_APPEND);
 	if(res == FR_OK){
 
 		snprintf(str, sizeof(str), "uid,%u\n", LL_FLASH_GetUDN());
@@ -2619,7 +2705,7 @@ void chirpTask(void *argument){
 	}
 
 	//	osTimerStart(periodicTimerHandle,300000);
-	osTimerStart(periodicTimerHandle,60000); // 1hz
+	osTimerStart(periodicTimerHandle,5*60000); // 5 minutes
 	osThreadFlagsSet(chirpTaskHandle, CHIRP_EVENT);
 
 	uint32_t flags;
@@ -2629,19 +2715,9 @@ void chirpTask(void *argument){
 
 		if((flags | CHIRP_EVENT) == CHIRP_EVENT){
 			if((counter % 15) == 0){
-				//				tone(7000,600);
-				//				osDelay(300);
-				//				tone(7000,300);
-				//				osDelay(300);
-				//				tone(7000,600);
-				toneSweep(1);
-				toneSweep(0);
-				toneSweep(1);
-				toneSweep(0);
-				toneSweep(1);
-				toneSweep(0);
+				chirp_timestamp();
 			}else if((counter % 5) == 0){
-				tone(7000,1000);
+				tone(4200,1000);
 			}
 			counter++;
 		}
@@ -2657,6 +2733,20 @@ void chirp(void){
 	tone(4400,100);
 	tone(5600,100);
 	tone(4400,100);
+
+}
+
+void chirp_timestamp(void){
+
+	tone(4600,50);
+	tone(5000,50);
+	tone(5400,50);
+	tone(7000,50);
+	tone(14000,50);
+	tone(7000,50);
+	tone(5400,50);
+	tone(5000,50);
+	tone(4600,50);
 
 }
 
@@ -3297,7 +3387,10 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 
 	uint8_t *buffer = NULL;
 
-	colorConfig color;
+	colorConfig color = {0,0,0,0};
+	color.blue_val = 70;
+	color.duration = 100;
+
 
 	/* all the possible frequencies below */
 
@@ -3316,7 +3409,7 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 	buffer_half_size = greatest_divisor(hsai_BlockA1.Init.AudioFrequency, AUDIO_BUFFER_HALF_LEN);
 	buffer_size = buffer_half_size * 2;
 
-	uint16_t update_file_header_period_s = 15;
+	uint16_t update_file_header_period_s = 30;
 	uint16_t half_buffers_per_period = update_file_header_period_s *
 			(hsai_BlockA1.Init.AudioFrequency / buffer_half_size);
 
@@ -3411,11 +3504,7 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 				// Wait for a notification
 				flag = osThreadFlagsWait(0x0001U | TERMINATE_EVENT, osFlagsWaitAny, osWaitForever);
 
-				color.blue_val = 40;
-//				color.green_val = 100;
-//				color.red_val = 100;
-				color.duration = 40;
-				osMessageQueuePut(ledSeqQueueId, &color, 0, 0);
+				if( (sampleCntr % 20) == 0) osMessageQueuePut(ledSeqQueueId, &color, 0, 0);
 
 				if(SAI_HALF_CALLBACK){
 					SAI_HALF_CALLBACK = 0;
@@ -3459,6 +3548,12 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 
 				if((flag & TERMINATE_EVENT) == TERMINATE_EVENT){
 					if(configPacket.payload.config_packet.network_state.master_node) sendConfigToNodes(false);
+
+					color.blue_val = 0;
+					color.red_val = 100;
+					color.green_val = 0;
+					color.duration = 2000;
+					osMessageQueuePut(ledSeqQueueId, &color, 0, 0);
 					f_close(&WavFile);
 					HAL_SAI_DMAStop(&hsai_BlockA1);
 					vTaskDelete( NULL );
@@ -3466,6 +3561,7 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 			}
 
 			sampleCntr = 0;
+
 
 			if(!configPacket.payload.config_packet.audio_config.audio_compression.enabled){
 				WavUpdateHeaderSize(totalBytesWrittenToFile);
@@ -3544,14 +3640,20 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 
 		HAL_SAI_DMAStop(&hsai_BlockA1);
 
-		for(int i = 0; i < 10; i++){
-			setLED_Green(1000);
-			setLED_Red(1000);
-			osDelay(100);
-			setLED_Green(0);
-			setLED_Red(0);
-			osDelay(100);
-		}
+		color.blue_val = 0;
+		color.red_val = 100;
+		color.green_val = 0;
+		color.duration = 2000;
+		osMessageQueuePut(ledSeqQueueId, &color, 0, 0);
+
+//		for(int i = 0; i < 10; i++){
+//			setLED_Green(1000);
+//			setLED_Red(1000);
+//			osDelay(100);
+//			setLED_Green(0);
+//			setLED_Red(0);
+//			osDelay(100);
+//		}
 
 		vTaskDelete( NULL );
 
@@ -3589,6 +3691,11 @@ void writeSystemStateToFRAM(void){
 
 void writeSystemInfoToFRAM(void){
 	HAL_StatusTypeDef status = HAL_I2C_Mem_Write(&hi2c3, FRAM_INFO_WORD_ADDR, FRAM_INFO_BYTE_ADDR, 1, (uint8_t*) &infoPacket, sizeof(infoPacket), 1000);
+	if(status != HAL_OK) Error_Handler();
+}
+
+void writeSystemConfigToFRAM(void){
+	HAL_StatusTypeDef status = HAL_I2C_Mem_Write(&hi2c3, FRAM_CONFIG_WORD_ADDR, FRAM_CONFIG_BYTE_ADDR, 1, (uint8_t*) &configPacket, sizeof(configPacket), 1000);
 	if(status != HAL_OK) Error_Handler();
 }
 
@@ -3931,6 +4038,9 @@ void mainSystemTask(void *argument){
 	//	toneSweep(1);
 	//	toneSweep(0);
 
+//	chirp_timestamp();
+//	while(1);
+
 	FRESULT res;
 	uint8_t scheduleRun = 0;
 
@@ -3965,6 +4075,8 @@ void mainSystemTask(void *argument){
 	triggerMarkTaskId = osThreadNew(triggerMarkTask, NULL, &triggerMarkTask_attributes);
 	uwbMessageTaskId = osThreadNew(uwbMessageTask, NULL, &uwbMessageTask_attributes);
 	ledSequencerId = osThreadNew(ledSequencer, NULL, &ledSequencerTask_attributes);
+	timestampSyncTaskId = osThreadNew(timestampSyncTask, NULL, &timestampTask_attributes);
+
 
 	configThreadId = osThreadNew(updateSystemConfig,
 										NULL,
@@ -3989,7 +4101,7 @@ void mainSystemTask(void *argument){
 		}
 
 		if(configPacket.payload.config_packet.network_state.master_node){
-			sendConfigToNodes(false);
+//			sendConfigToNodes(false);
 			if(osTimerStart (sendSlavesTimestampId, 30000) != osOK) Error_Handler();
 		}
 
@@ -4060,13 +4172,22 @@ void mainSystemTask(void *argument){
 		}
 
 		/* if recording is enabled but not a slave node */
-		if(configPacket.payload.config_packet.enable_recording && !configPacket.payload.config_packet.network_state.slave_sync){
+		if(configPacket.payload.config_packet.enable_recording){
 			while(coapSetup != 1){
 				osDelay(100);
 			}
 
+			if(configPacket.payload.config_packet.network_state.master_node){
+	//			sendConfigToNodes(false);
+				if(osTimerStart (sendSlavesTimestampId, 30000) != osOK) Error_Handler();
+			}
+
+			if(configPacket.payload.config_packet.network_state.slave_sync){
+				micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
+			}
+
 			/* start immediately if a slave device or no schedule is given */
-			if(configPacket.payload.config_packet.schedule_config_count == 0){
+			else if(configPacket.payload.config_packet.schedule_config_count == 0){
 				micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
 			}
 			/* or if a schedule is given, start next alarm or start right away if within schedule */
@@ -4245,7 +4366,8 @@ void mainSystemTask(void *argument){
 
 void alertMainTask(void *argument){
 	osThreadFlagsSet(mainSystemThreadId, CONFIG_UPDATED_EVENT);
-	if((configPacket.payload.config_packet.network_state.master_node == 1)) sendConfigToNodes(false);
+	writeSystemConfigToFRAM();
+//	if((configPacket.payload.config_packet.network_state.master_node == 1)) sendConfigToNodes(false);
 }
 
 void sendSlavesTimestamp(void *argument){
@@ -4254,15 +4376,29 @@ void sendSlavesTimestamp(void *argument){
 
 void ledSequencer(void *argument){
 	colorConfig color;
+	osStatus_t status = osOK;
+
+	color.duration = 0;
+
 	while(1){
-		osMessageQueueGet(ledSeqQueueId, &color, 0, osWaitForever);
-		setLED_Red(color.red_val);
-		setLED_Green(color.green_val);
-		setLED_Blue(color.blue_val);
-		osDelay(color.duration);
-		setLED_Red(0);
-		setLED_Green(0);
-		setLED_Blue(0);
+		if(color.duration == 0){
+			status = osMessageQueueGet(ledSeqQueueId, &color, 0, osWaitForever);
+		}else{
+			status = osMessageQueueGet(ledSeqQueueId, &color, 0, color.duration);
+		}
+
+		if(osErrorTimeout == status){
+			setLED_Red(0);
+			setLED_Green(0);
+			setLED_Blue(0);
+			color.duration = 0;
+		}
+
+		if(osOK == status){
+			setLED_Red(color.red_val);
+			setLED_Green(color.green_val);
+			setLED_Blue(color.blue_val);
+		}
 	}
 }
 

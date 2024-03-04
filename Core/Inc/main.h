@@ -67,6 +67,7 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
+void writeDefaultConfig(void);
 
 void SystemClock_Config(void);
 
@@ -185,6 +186,7 @@ extern SPI_HandleTypeDef hspi1;
 
 /* USER CODE BEGIN Private defines */
 //#define MASTER_NODE 1
+
 #define UWB_ALERT_Pin GPIO_PIN_4
 #define UWB_ALERT_GPIO_Port GPIOC
 
@@ -247,6 +249,7 @@ extern osSemaphoreId_t rxMsg_LockBinarySemId;
 extern osMessageQueueId_t markPacketQueueId;
 extern osMessageQueueId_t ledSeqQueueId;
 extern osMessageQueueId_t configChangeQueueId;
+extern osMessageQueueId_t timeSyncQueueId;
 extern osMessageQueueId_t txMsgQueueId;
 extern osMessageQueueId_t rxMsgQueueId;
 
@@ -261,6 +264,7 @@ extern osThreadId_t sampleThreadId;
 extern osThreadId_t bmeTaskHandle;
 extern osThreadId_t chirpTaskHandle;
 extern osThreadId_t batteryMonitorTaskId;
+extern osThreadId_t timestampSyncTaskId;
 extern osThreadId_t triggerMarkTaskId;
 extern osThreadId_t uwbMessageTaskId;
 extern osThreadId_t ledSequencerId;
@@ -279,6 +283,7 @@ extern const osSemaphoreAttr_t txMsg_Lock_attributes;
 extern const osSemaphoreAttr_t rxMsg_Lock_attributes;
 extern const osThreadAttr_t bmeTask_attributes;
 extern const osThreadAttr_t batteryMonitorTask_attributes;
+extern const osThreadAttr_t timestampTask_attributes;
 extern const osThreadAttr_t triggerMarkTask_attributes;
 extern const osThreadAttr_t chirpTask_attributes;
 extern const osThreadAttr_t uwbMessageTask_attributes;
