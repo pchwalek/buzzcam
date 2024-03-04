@@ -62,7 +62,12 @@ struct SchedulesView: View {
                             selectedIndex = nil
                             isPopupPresented.toggle()
                             print("add")
-                        }.padding(.bottom, 30)
+                        }.padding()
+                            .background(Color(white: 0.7))
+                            .cornerRadius(5)
+                            
+                            
+                            
                         
                         ForEach(schedules.indices, id: \.self) { index in
                             VStack {
@@ -162,8 +167,11 @@ struct SchedulesView: View {
     }
     
     private func selectedTimeString(schedule: ScheduleConfig) -> String {
-        return "\(schedule.startHour):\(schedule.startMinute) - \(schedule.stopHour):\(schedule.stopMinute)"
+        return String(format: "%02d:%02d - %02d:%02d",
+                      schedule.startHour, schedule.startMinute,
+                      schedule.stopHour, schedule.stopMinute)
     }
+
     
     private func updateFreeRunMode(_ configPacketData_Audio: ConfigPacketData_Audio?) {
         // Update freeRunMode based on configPacketData_Audio

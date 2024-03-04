@@ -20,7 +20,7 @@ struct ContentView: View {
         NavigationView {
             Group {
                 if showMainContent {
-                    if connected { // if connected, show main view
+                    if bluetoothModel.isConnected { // if connected, show main view
                         ZStack(alignment: .bottom) {
                             // Show corresponding view based on selected tab
                             switch selectedTab {

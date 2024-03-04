@@ -190,7 +190,8 @@ struct NetworkView: View {
                                             Image(systemName: "circle.fill")
                                                 .foregroundColor(.black)
                                                 .font(.system(size: 10))
-                                            Text("\(device.uid)")
+                                            let hexUID = String(format: "%08X", device.uid)
+                                            Text(hexUID)
                                         }
                                     }
                                 } else {

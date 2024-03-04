@@ -127,7 +127,7 @@ struct SensingConfigView: View {
             }
         }.onAppear {
             // Set the initial value of selectedSampleFreq based on the stored value in bluetoothModel
-            print("initialized")
+            print("initialized sensingconfigview")
             selectedSamplePeriod = bluetoothModel.configPacketData_Sensor?.samplePeriodMs ?? 0
             
             // Add an observer to monitor changes to configPacketData_Sensor

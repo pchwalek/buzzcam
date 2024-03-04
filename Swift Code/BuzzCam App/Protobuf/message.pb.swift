@@ -627,7 +627,7 @@ public struct Device {
 
   public var uid: UInt32 = 0
 
-  public var range: Float = 0
+  public var range: UInt32 = 0
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -887,6 +887,11 @@ public struct ConfigPacket {
     set {_uniqueStorage()._enableRecording = newValue}
   }
 
+  public var enableLed: Bool {
+    get {return _storage._enableLed}
+    set {_uniqueStorage()._enableLed = newValue}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -1075,6 +1080,14 @@ public struct SpecialFunction {
     set {payload = .uwbInfo(newValue)}
   }
 
+  public var resetConfig: Bool {
+    get {
+      if case .resetConfig(let v)? = payload {return v}
+      return false
+    }
+    set {payload = .resetConfig(newValue)}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public enum OneOf_Payload: Equatable {
@@ -1087,6 +1100,7 @@ public struct SpecialFunction {
     case timestamp(UInt32)
     case dfuMode(Bool)
     case uwbInfo(UWB_Info)
+    case resetConfig(Bool)
 
   #if !swift(>=4.1)
     public static func ==(lhs: SpecialFunction.OneOf_Payload, rhs: SpecialFunction.OneOf_Payload) -> Bool {
@@ -1128,6 +1142,10 @@ public struct SpecialFunction {
       }()
       case (.uwbInfo, .uwbInfo): return {
         guard case .uwbInfo(let l) = lhs, case .uwbInfo(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.resetConfig, .resetConfig): return {
+        guard case .resetConfig(let l) = lhs, case .resetConfig(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -1805,7 +1823,7 @@ extension Device: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularUInt32Field(value: &self.uid) }()
-      case 2: try { try decoder.decodeSingularFloatField(value: &self.range) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.range) }()
       default: break
       }
     }
@@ -1816,7 +1834,7 @@ extension Device: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
       try visitor.visitSingularUInt32Field(value: self.uid, fieldNumber: 1)
     }
     if self.range != 0 {
-      try visitor.visitSingularFloatField(value: self.range, fieldNumber: 2)
+      try visitor.visitSingularUInt32Field(value: self.range, fieldNumber: 2)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -2294,6 +2312,7 @@ extension ConfigPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     4: .standard(proto: "low_power_config"),
     5: .standard(proto: "network_state"),
     6: .standard(proto: "enable_recording"),
+    7: .standard(proto: "enable_led"),
   ]
 
   fileprivate class _StorageClass {
@@ -2303,6 +2322,7 @@ extension ConfigPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     var _lowPowerConfig: LowPowerConfig? = nil
     var _networkState: NetworkState? = nil
     var _enableRecording: Bool = false
+    var _enableLed: Bool = false
 
     static let defaultInstance = _StorageClass()
 
@@ -2315,6 +2335,7 @@ extension ConfigPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       _lowPowerConfig = source._lowPowerConfig
       _networkState = source._networkState
       _enableRecording = source._enableRecording
+      _enableLed = source._enableLed
     }
   }
 
@@ -2339,6 +2360,7 @@ extension ConfigPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         case 4: try { try decoder.decodeSingularMessageField(value: &_storage._lowPowerConfig) }()
         case 5: try { try decoder.decodeSingularMessageField(value: &_storage._networkState) }()
         case 6: try { try decoder.decodeSingularBoolField(value: &_storage._enableRecording) }()
+        case 7: try { try decoder.decodeSingularBoolField(value: &_storage._enableLed) }()
         default: break
         }
       }
@@ -2369,6 +2391,9 @@ extension ConfigPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       if _storage._enableRecording != false {
         try visitor.visitSingularBoolField(value: _storage._enableRecording, fieldNumber: 6)
       }
+      if _storage._enableLed != false {
+        try visitor.visitSingularBoolField(value: _storage._enableLed, fieldNumber: 7)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -2384,6 +2409,7 @@ extension ConfigPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         if _storage._lowPowerConfig != rhs_storage._lowPowerConfig {return false}
         if _storage._networkState != rhs_storage._networkState {return false}
         if _storage._enableRecording != rhs_storage._enableRecording {return false}
+        if _storage._enableLed != rhs_storage._enableLed {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -2595,6 +2621,7 @@ extension SpecialFunction: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     7: .same(proto: "timestamp"),
     8: .standard(proto: "dfu_mode"),
     9: .standard(proto: "uwb_info"),
+    10: .standard(proto: "reset_config"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2690,6 +2717,14 @@ extension SpecialFunction: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
           self.payload = .uwbInfo(v)
         }
       }()
+      case 10: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.payload != nil {try decoder.handleConflictingOneOf()}
+          self.payload = .resetConfig(v)
+        }
+      }()
       default: break
       }
     }
@@ -2736,6 +2771,10 @@ extension SpecialFunction: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     case .uwbInfo?: try {
       guard case .uwbInfo(let v)? = self.payload else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
+    }()
+    case .resetConfig?: try {
+      guard case .resetConfig(let v)? = self.payload else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 10)
     }()
     case nil: break
     }

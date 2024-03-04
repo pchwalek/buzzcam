@@ -59,18 +59,7 @@ struct StatusesView: View {
                             Text("Device enabled").font(customFontTextBold)
                                 .fontWeight(.bold).padding(.horizontal)
                             
-                            Toggle("",isOn: $deviceEnabled).labelsHidden().onAppear {
-                                // Add an observer to monitor changes to systemInfoPacketData
-                                bluetoothModel.$configPacketData
-                                    .sink { configPacketData in
-                                        // Update deviceEnabled when systemInfoPacketData changes
-                                        self.updateDeviceEnabledOn(configPacketData)
-                                    }
-                                    .store(in: &cancellables) // Store the cancellable to avoid memory leaks
-                                
-                                // Trigger the initial update
-                                self.updateDeviceEnabledOn(bluetoothModel.configPacketData)
-                            }.onChange(of: deviceEnabled) {
+                            Toggle("",isOn: $deviceEnabled).labelsHidden().onChange(of: deviceEnabled) {
                                 // Call your function when the toggle is changed
                                 bluetoothModel.deviceEnabledUpdates(deviceEnabled: deviceEnabled)
                             }.tint(Color(red: 117/255, green: 13/255, blue: 55/255, opacity: 0.5))
@@ -129,6 +118,17 @@ struct StatusesView: View {
                 .padding()
                 
             }
+        }.onAppear {
+            // Add an observer to monitor changes to systemInfoPacketData
+            bluetoothModel.$configPacketData
+                .sink { configPacketData in
+                    // Update deviceEnabled when systemInfoPacketData changes
+                    self.updateDeviceEnabledOn(configPacketData)
+                }
+                .store(in: &cancellables) // Store the cancellable to avoid memory leaks
+            
+            // Trigger the initial update
+            self.updateDeviceEnabledOn(bluetoothModel.configPacketData)
         }
         .frame(maxWidth: .infinity)
         .background(Color(white:0.90))

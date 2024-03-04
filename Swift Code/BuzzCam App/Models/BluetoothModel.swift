@@ -37,12 +37,14 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
     private let characteristicUUID_CE73 = CBUUID(string: "CE73")
     
     // packets to send
-    var markPacket: Packet?
-    var systemInfoPacket: Packet?
-    var configPacket: Packet?
-    var specialFunction: Packet?
+    var markPacket: Packet = Packet()
+    var systemInfoPacket: Packet = Packet()
+    var configPacket: Packet = Packet()
+    var specialFunction: Packet = Packet()
     
     var updateTimer: Timer?
+    
+    var isConnected: Bool = false
 
     
     override init() {
@@ -72,27 +74,28 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
                 peripherals.append(peripheral)
             }
 
-            // Invalidate previous timer if exists
-            updateTimer?.invalidate()
-
-            // Schedule a new timer to update the list after a delay
-            updateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { _ in
-                // Remove peripherals that are no longer discoverable
-                self.filteredPeripherals = self.filteredPeripherals.filter { discoveredPeripheral in
-                    // Check if the peripheral advertisement data contains the service UUID or name
-                    if let advertisementName = advertisementData[CBAdvertisementDataLocalNameKey] as? String {
-                        let isDiscoverable = (advertisementName.contains("BuzzCam") || advertisementName.contains("STM") || advertisementName.contains("Buzz") || advertisementName.contains("BUZZ"))
-                        print("Peripheral \(advertisementName) - Discoverable: \(isDiscoverable)")
-                        return isDiscoverable
-                    }
-                    return false
-                }
-            }
+//            // Invalidate previous timer if exists
+//            updateTimer?.invalidate()
+//
+//            // Schedule a new timer to update the list after a delay
+//            updateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { _ in
+//                // Remove peripherals that are no longer discoverable
+//                self.filteredPeripherals = self.filteredPeripherals.filter { discoveredPeripheral in
+//                    // Check if the peripheral advertisement data contains the service UUID or name
+//                    if let advertisementName = advertisementData[CBAdvertisementDataLocalNameKey] as? String {
+//                        let isDiscoverable = (advertisementName.contains("BuzzCam") || advertisementName.contains("STM") || advertisementName.contains("Buzz") || advertisementName.contains("BUZZ"))
+//                        print("Peripheral \(advertisementName) - Discoverable: \(isDiscoverable)")
+//                        return isDiscoverable
+//                    }
+//                    return false
+//                }
+//            }
     }
     
     func connectToPeripheral(_ peripheral: CBPeripheral) {
         centralManager.connect(peripheral, options: nil)
         print("Connected to peripheral")
+        isConnected = true;
     }
     
     func disconnect() {
@@ -290,6 +293,9 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
                 // Update configPacketData only when the characteristic is CE72
                 // check if hasAudioConfig
                 
+                // populate initial config
+                configPacket.configPacket = message.configPacket
+                
                 DispatchQueue.main.async {
                     if message.configPacket.hasAudioConfig {
                         self.configPacketData_Audio = ConfigPacketData_Audio(
@@ -336,7 +342,8 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
                     
                     self.specialFunctionData = SpecialFunctionData(uwbPacket: message.specialFunction.uwbPacket)
                     
-                    self.configPacketData = ConfigPacketData(enableRecording: message.configPacket.enableRecording)
+                    self.configPacketData = ConfigPacketData(enableRecording: message.configPacket.enableRecording,
+                                                             enableLed: message.configPacket.enableLed)
                     print("configPacket enableRecording:", message.configPacket.enableRecording)
                 }
                 print("Updated configPacketData with CE72 characteristic")
@@ -397,6 +404,8 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
         // Remove the disconnected peripheral from the list of filtered peripherals
         filteredPeripherals.removeAll { $0.identifier == peripheral.identifier }
         print("Disconnected Peripheral: \(peripheral.name ?? "Unknown") with Identifier: \(peripheral.identifier)")
+        isConnected = false
+        reset()
     }
     
     
@@ -404,47 +413,47 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
     // PACKET BEHAVIOR
     
     func sendMarkPacket() {
-        if let markPacket = markPacket {
+//        if let markPacket = markPacket {
             do {
                 let markPacketData = try markPacket.serializedData()
                 sendMarkPacketData()
             } catch {
                 print("Error serializing MarkPacket: \(error)")
             }
-        }
+//        }
     }
     
     func sendSystemInfoPacket() {
-        if let systemInfoPacket = systemInfoPacket {
+//        if let systemInfoPacket = systemInfoPacket {
             do {
                 let systemInfoPacketData = try systemInfoPacket.serializedData()
                 sendSystemInfoPacketData()
             } catch {
                 print("Error serializing SystemInfoPacket: \(error)")
             }
-        }
+//        }
     }
     
     func sendConfigPacket() {
-        if let configPacket = configPacket {
+//        if let configPacket = configPacket {
             do {
                 let configPacketData = try configPacket.serializedData()
                 sendConfigPacketData()
             } catch {
                 print("Error serializing configPacket: \(error)")
             }
-        }
+//        }
     }
     
     func sendSpecialFunction() {
-        if let specialFunction = specialFunction {
+//        if let specialFunction = specialFunction {
             do {
                 let specialFunctionData = try specialFunction.serializedData()
                 sendSpecialFunctionData()
             } catch {
                 print("Error serializing configPacket: \(error)")
             }
-        }
+//        }
     }
     
     func sendMarkPacketData() {
@@ -469,7 +478,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
     func sendMarkPacketDataHelper(peripheral: CBPeripheral, characteristic: CBCharacteristic) {
         do {
             // Serialize the markPacket into Data
-            let markPacketData = try markPacket?.serializedData() ?? Data()
+            let markPacketData = try markPacket.serializedData() ?? Data()
             peripheral.writeValue(markPacketData, for: characteristic, type: .withResponse)
             print("Mark packet sent")
         } catch {
@@ -499,7 +508,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
     func sendSystemInfoPacketDataHelper(peripheral: CBPeripheral, characteristic: CBCharacteristic) {
         do {
             // Serialize the systemInfoPacket into Data
-            let systemInfoPacketData = try systemInfoPacket?.serializedData() ?? Data()
+            let systemInfoPacketData = try systemInfoPacket.serializedData() ?? Data()
             peripheral.writeValue(systemInfoPacketData, for: characteristic, type: .withResponse)
             print("System info packet sent")
         } catch {
@@ -529,7 +538,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
     func sendConfigPacketDataHelper(peripheral: CBPeripheral, characteristic: CBCharacteristic) {
         do {
             // Serialize the configPacket into Data
-            let configPacketData = try configPacket?.serializedData() ?? Data()
+            let configPacketData = try configPacket.serializedData() ?? Data()
             peripheral.writeValue(configPacketData, for: characteristic, type: .withResponse)
             print("Config packet sent")
         } catch {
@@ -559,7 +568,7 @@ class BluetoothModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPe
     func sendSpecialFunctionDataHelper(peripheral: CBPeripheral, characteristic: CBCharacteristic) {
         do {
             // Serialize the specialFunction into Data
-            let specialFunctionData = try specialFunction?.serializedData() ?? Data()
+            let specialFunctionData = try specialFunction.serializedData() ?? Data()
             peripheral.writeValue(specialFunctionData, for: characteristic, type: .withResponse)
             print("Special function sent")
         } catch {

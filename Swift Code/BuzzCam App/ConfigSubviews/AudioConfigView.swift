@@ -74,7 +74,7 @@ struct AudioConfigView: View {
                             .labelsHidden()
                             .onChange(of: channel1) {
                                 // Call your function when the toggle is changed
-//                                print("calling enableAudioChannel1, channel1 is \(channel1)")
+                                print("calling enableAudioChannel1, channel1 is \(channel1)")
                                 bluetoothModel.enableAudioChannel1(channel1: channel1)
                             }
                     }
@@ -130,6 +130,8 @@ struct AudioConfigView: View {
                             Button(action: {
                                 // Handle 8-bit button tap
                                 bluetoothModel.setBitResolution(bitResolution: .bitRes8)
+                                print("sent bitRes8")
+
                             }) {
                                 Text("8-bit")
                                     .padding()
@@ -141,17 +143,21 @@ struct AudioConfigView: View {
                             Button(action: {
                                 // Handle 16-bit button tap
                                 bluetoothModel.setBitResolution(bitResolution: .bitRes16)
+                                print("sent bitRes16")
+
                             }) {
                                 Text("16-bit")
                                     .padding()
                                     .foregroundColor(.white)
                                     .background(bluetoothModel.configPacketData_Audio?.bitResolution == .bitRes16 ? Color.blue : Color.gray)
                                     .cornerRadius(8)
+
                             }
                             
                             Button(action: {
                                 // Handle 16-bit button tap
                                 bluetoothModel.setBitResolution(bitResolution: .bitRes24)
+                                print("sent bitRes24")
                             }) {
                                 Text("24-bit")
                                     .padding()
@@ -279,9 +285,18 @@ struct AudioConfigView: View {
             }
         }.onAppear {
             // Set the initial value of selectedSampleFreq based on the stored value in bluetoothModel
-            print("initialized")
+            print("initialized audioconfigview")
             selectedSampleFreq = bluetoothModel.configPacketData_Audio?.sampleFreq
             
+            // Set initial value of micGain
+            if let micGain = bluetoothModel.configPacketData_Audio?.micGain,
+               let index = micGains.firstIndex(of: micGain) {
+                tempMicGain = micGainLabels[index]
+            } else {
+                // In case there's no valid micGain from bluetoothModel, set a default or handle the error accordingly
+                // For example, set to the default value you've previously defined or the first item in micGainLabels
+                tempMicGain = micGainLabels[0] // Adjust according to your needs, ensuring it never crashes
+            }
             // move all the onAppears here
             // Add an observer to monitor changes to configPacketData_Audio
             bluetoothModel.$configPacketData_Audio

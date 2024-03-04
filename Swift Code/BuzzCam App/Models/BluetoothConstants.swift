@@ -134,9 +134,11 @@ struct SpecialFunctionData {
 
 struct ConfigPacketData {
     var enableRecording: Bool = false
+    var enableLed: Bool = false
     
     mutating func reset() {
         enableRecording = false
+        enableLed = false
     }
 }
 

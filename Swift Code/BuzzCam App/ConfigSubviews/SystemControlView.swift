@@ -13,6 +13,7 @@ struct SystemControlView: View {
     @State private var isExpanded = false
     @State private var cancellables: Set<AnyCancellable> = Set()
     @State private var lowPowerModeEnabled = false
+    @State private var ledEnabled = false
     
     var body: some View {
         VStack (alignment: .leading) {
@@ -42,6 +43,33 @@ struct SystemControlView: View {
                                         bluetoothModel.enableLowPowerMode(lowPowerModeEnabled: lowPowerModeEnabled)
                                     }.padding()
                             }
+                            
+                            HStack {
+                                Text("Enabled led").fontWeight(.bold)
+                                Toggle("",isOn: $ledEnabled).labelsHidden()
+                                    .onChange(of: ledEnabled) {
+                                        // Call your function when the toggle is changed
+                                        bluetoothModel.enableLed(ledEnabled: ledEnabled)
+                                    }.padding()
+                            }
+                            
+                            HStack {
+                                Text("Reset config")
+                                    .padding()
+                                    .foregroundColor(.black)
+                                
+                                Button(action: {
+                                    // Call the associated function when the button is pressed
+                                    bluetoothModel.resetConfig()
+                                }) {
+                                    Image(systemName: "rays").padding()
+                                        .foregroundColor(.black)
+                                }
+                                .buttonStyle(BorderlessButtonStyle())
+                                .background(Color.gray)
+                                .cornerRadius(8)
+                            }
+                            .padding(.bottom, 10)
                             
                             HStack {
                                 Text("Format SD card")
@@ -142,6 +170,16 @@ struct SystemControlView: View {
             
             // Trigger the initial update
             self.updateLowPowerModeToggle(bluetoothModel.configPacketData_LowPower)
+            
+            bluetoothModel.$configPacketData
+                .sink { configPacketData in
+                    // Update beepOn when systemInfoPacketData changes
+                    self.updateLedToggle(configPacketData)
+                }
+                .store(in: &cancellables) // Store the cancellable to avoid memory leaks
+            
+            // Trigger the initial update
+            self.updateLedToggle(bluetoothModel.configPacketData)
         }
         .frame(maxWidth: .infinity)
         .background(Color(white:0.90))
@@ -151,6 +189,11 @@ struct SystemControlView: View {
     private func updateLowPowerModeToggle(_ configPacketData_LowPower: ConfigPacketData_LowPower?) {
         // Update channel2 based on configPacketData_Audio
         lowPowerModeEnabled = configPacketData_LowPower?.lowPowerMode ?? false
+    }
+    
+    private func updateLedToggle(_ configPacketData: ConfigPacketData?) {
+        // Update channel2 based on configPacketData_Audio
+        ledEnabled = configPacketData?.enableLed ?? false
     }
     
 }
