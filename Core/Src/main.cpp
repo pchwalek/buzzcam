@@ -1982,6 +1982,8 @@ void writeDefaultConfig(void){
 	configPacket.payload.config_packet.audio_config.free_run_mode=false;
 	configPacket.payload.config_packet.audio_config.chirp_enable=false;
 
+	configPacket.payload.config_packet.enable_led = true;
+
 	//	configPacket.payload.config_packet.has_camera_control=true;
 	//	configPacket.payload.config_packet.camera_control.capture=false;
 	//	configPacket.payload.config_packet.camera_control.pair_with_nearby_cameras=false;
@@ -2005,6 +2007,8 @@ void writeDefaultConfig(void){
 	configPacket.payload.config_packet.network_state.slave_sync = false;
 	configPacket.payload.config_packet.network_state.master_node = false;
 #endif
+
+
 
 	configPacket.payload.config_packet.has_sensor_config=true;
 	configPacket.payload.config_packet.sensor_config.enable_gas=true;
@@ -4187,7 +4191,8 @@ void mainSystemTask(void *argument){
 			}
 
 			/* start immediately if a slave device or no schedule is given */
-			else if(configPacket.payload.config_packet.schedule_config_count == 0){
+			else if((configPacket.payload.config_packet.schedule_config_count == 0) ||
+					(configPacket.payload.config_packet.audio_config.free_run_mode)){
 				micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
 			}
 			/* or if a schedule is given, start next alarm or start right away if within schedule */
@@ -4440,6 +4445,8 @@ void updateSystemConfig(void *argument){
 					/* disable low power mode settings */
 				}
 			}
+
+			configPacket.payload.config_packet.enable_led = new_config->enable_led;
 		}
 
 	//	if(new_config->has_network_state){
