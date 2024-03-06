@@ -14,6 +14,7 @@
 		216B6DC62B757C49005D5538 /* StarryNightView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 216B6DC52B757C49005D5538 /* StarryNightView.swift */; };
 		216B6DC92B757CF8005D5538 /* LoadingParticle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 216B6DC82B757CF8005D5538 /* LoadingParticle.swift */; };
 		218DACB72B7ABF770085981D /* Liquid in Frameworks */ = {isa = PBXBuildFile; productRef = 218DACB62B7ABF770085981D /* Liquid */; };
+		21A07DED2B98F64300424B27 /* PresetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21A07DEC2B98F64300424B27 /* PresetView.swift */; };
 		21A5600B2B16A55D00292A6A /* message.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21A5600A2B16A55D00292A6A /* message.pb.swift */; };
 		21A5600E2B1942AF00292A6A /* AudioConfigView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21A5600D2B1942AF00292A6A /* AudioConfigView.swift */; };
 		21BEAA4B2AFEE135001B89E6 /* BluetoothModelHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21BEAA4A2AFEE135001B89E6 /* BluetoothModelHelper.swift */; };
@@ -64,6 +65,7 @@
 		21152BCC2B29039F0078ADD4 /* testview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = testview.swift; sourceTree = "<group>"; };
 		216B6DC52B757C49005D5538 /* StarryNightView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StarryNightView.swift; sourceTree = "<group>"; };
 		216B6DC82B757CF8005D5538 /* LoadingParticle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingParticle.swift; sourceTree = "<group>"; };
+		21A07DEC2B98F64300424B27 /* PresetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresetView.swift; sourceTree = "<group>"; };
 		21A5600A2B16A55D00292A6A /* message.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = message.pb.swift; sourceTree = "<group>"; };
 		21A5600D2B1942AF00292A6A /* AudioConfigView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioConfigView.swift; sourceTree = "<group>"; };
 		21BEAA4A2AFEE135001B89E6 /* BluetoothModelHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothModelHelper.swift; sourceTree = "<group>"; };
@@ -211,6 +213,7 @@
 				21A5600C2B19429B00292A6A /* ConfigSubviews */,
 				21C0A20B2AE7104800BA2ABC /* DiscoverView.swift */,
 				21DAA5FF2AE0746B00E70BF2 /* MainView.swift */,
+				21A07DEC2B98F64300424B27 /* PresetView.swift */,
 				21C0A2052AE3152800BA2ABC /* StatusesView.swift */,
 				21C17DC62B854EC200A65338 /* RangingView.swift */,
 				21C0A2072AE320E000BA2ABC /* SensorReadingView.swift */,
@@ -393,6 +396,7 @@
 				21C0A20A2AE320FE00BA2ABC /* NearbyDevices.swift in Sources */,
 				21A5600B2B16A55D00292A6A /* message.pb.swift in Sources */,
 				21C0A2062AE3152800BA2ABC /* StatusesView.swift in Sources */,
+				21A07DED2B98F64300424B27 /* PresetView.swift in Sources */,
 				21BEAA4B2AFEE135001B89E6 /* BluetoothModelHelper.swift in Sources */,
 				21A5600E2B1942AF00292A6A /* AudioConfigView.swift in Sources */,
 				21F495E82B212DDF008E3808 /* SensingConfigView.swift in Sources */,

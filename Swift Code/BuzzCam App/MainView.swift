@@ -84,92 +84,95 @@ struct MainView: View {
                             )
                             
                             //mark box
-                            VStack{
+                            VStack (alignment: .leading) {
                                 
-                                ZStack {
-                                            Liquid()
-                                                .frame(width: 240, height: 240)
-                                                .foregroundColor(Color(red: 0x3D / 255, green: 0xA5 / 255, blue: 0xD9 / 255))
-                                                .opacity(0.3)
-
-
-                                            Liquid()
-                                                .frame(width: 220, height: 220)
-                                                .foregroundColor(Color(red: 0x3D / 255, green: 0xA5 / 255, blue: 0xD9 / 255))
-                                                .opacity(0.6)
-
-                                            Liquid(samples: 5)
-                                                .frame(width: 200, height: 200)
-                                                .foregroundColor(Color(red: 0x3D / 255, green: 0xA5 / 255, blue: 0xD9 / 255))
+                                ZStack (alignment: .center){
+                                    Liquid()
+                                        .frame(width: 240, height: 240)
+                                        .foregroundColor(Color(red: 0x3D / 255, green: 0xA5 / 255, blue: 0xD9 / 255))
+                                        .opacity(0.3)
                                     
-                                            
-                                            HStack{
-                                                Text("Mark #").foregroundColor(Color.white).font(customFontTextBold)
-                                                Text(String(bluetoothModel.systemInfoPacketData?.mark_number ?? 0))
-                                                    .font(customFontTextBoldLarge)
-                                                    .foregroundColor(Color.white)
-                                                    .contentTransition(.numericText())
-                                            }
+                                    
+                                    Liquid()
+                                        .frame(width: 220, height: 220)
+                                        .foregroundColor(Color(red: 0x3D / 255, green: 0xA5 / 255, blue: 0xD9 / 255))
+                                        .opacity(0.6)
+                                    
+                                    Liquid(samples: 5)
+                                        .frame(width: 200, height: 200)
+                                        .foregroundColor(Color(red: 0x3D / 255, green: 0xA5 / 255, blue: 0xD9 / 255))
+                                    
+                                    
+                                    HStack{
+                                        Text("Mark #").foregroundColor(Color.white).font(customFontTextBold)
+                                        Text(String(bluetoothModel.systemInfoPacketData?.mark_number ?? 0))
+                                            .font(customFontTextBoldLarge)
+                                            .foregroundColor(Color.white)
+                                            .contentTransition(.numericText())
+                                    }
+                                }.frame(maxWidth: .infinity)
+                                
+                                
+                                //                                HStack{
+                                //                                    Text("Mark #").foregroundColor(Color.black)
+                                //                                    Text(String(bluetoothModel.systemInfoPacketData?.mark_number ?? 0))
+                                //                                        .font(customFontTitle)
+                                //                                        .foregroundColor(Color.black)
+                                //                                }
+                                VStack (alignment: .leading) {
+                                    PresetView()
+                                    
+                                    Text("Custom").font(customFontTextBold)
+                                    
+                                    HStack {
+                                        Button(action: {
+                                            bluetoothModel.markUpdates(annotationText: annotationText, beep: beepOn)
+                                            // clear annotation text
+                                            annotationText = ""
+                                        }) {
+                                            Text("Mark")
+                                                .font(customFontText)
+                                                .padding(EdgeInsets(top: 5, leading: 20, bottom: 5, trailing: 20)) // Adjusted padding for thinner buttons
+                                                .background(Color(white: 0.7))
+                                                .cornerRadius(5)
                                         }
-                                
-                                
-//                                HStack{
-//                                    Text("Mark #").foregroundColor(Color.black)
-//                                    Text(String(bluetoothModel.systemInfoPacketData?.mark_number ?? 0))
-//                                        .font(customFontTitle)
-//                                        .foregroundColor(Color.black)
-//                                }
-                                HStack {
-                                    Spacer()
-                                    Button(action: {
-                                        bluetoothModel.markUpdates(annotationText: annotationText, beep: beepOn)
-                                        // clear annotation text
-                                        annotationText = ""
-                                    }) {
-                                        Text("Mark")
-                                            .font(customFontText)
-                                            .fontWeight(.bold)
-                                            .padding()
-                                            .background(Color(white: 0.7))
-                                            .cornerRadius(5)
+                                        
+                                        Toggle(isOn: $beepOn) {
+                                            Text("Play Beep")
+                                                .font(customFontText)
+                                                .frame(maxWidth: .infinity, alignment: .trailing)
+                                        }.tint(Color(red: 117/255, green: 13/255, blue: 55/255, opacity: 0.5))
+                                        Spacer()
                                     }
                                     
-                                    Toggle(isOn: $beepOn) {
-                                        Text("Play Beep")
+                                    VStack(alignment: .leading) {
+                                        Text("Add observation (max 40 char.)")
+                                            .foregroundColor(.black)
                                             .font(customFontText)
-                                            .fontWeight(.bold)
-                                            .frame(maxWidth: .infinity, alignment: .trailing)
-                                    }.tint(Color(red: 117/255, green: 13/255, blue: 55/255, opacity: 0.5))
-                                    Spacer()
-                                }
-                                
-                                VStack(alignment: .leading) {
-                                    Text("Add observation (max 40 char.)")
-                                        .foregroundColor(.black)
-                                        .font(customFontText)
-                                        .padding(.top, 20) // Adjust padding as needed
-                                    
-                                    TextField("", text: $annotationText)
-                                        .padding()
-                                        .background(
-                                            RoundedRectangle(cornerRadius: 5)
-                                                .fill(Color.white.opacity(0.8))
-                                        )
-                                        .foregroundColor(.black)
-                                        .onChange(of: annotationText) {
-                                                    if annotationText.count > 40 {
-                                                        annotationText = String(annotationText.prefix(40))
-                                                    }
+                                            .padding(.top, 20) // Adjust padding as needed
+                                        
+                                        TextField("", text: $annotationText)
+                                            .padding()
+                                            .background(
+                                                RoundedRectangle(cornerRadius: 5)
+                                                    .fill(Color.white.opacity(0.8))
+                                            )
+                                            .foregroundColor(.black)
+                                            .onChange(of: annotationText) {
+                                                if annotationText.count > 40 {
+                                                    annotationText = String(annotationText.prefix(40))
                                                 }
+                                            }
+                                    }
+                                    //                                    .padding(.horizontal, 8) // Adjust padding as needed
+                                    //                                    .overlay(
+                                    //                                        Text("Add observation (max 40 char.)")
+                                    //                                            .foregroundColor(.black)
+                                    //                                            .opacity(annotationText.isEmpty ? 1 : 0)
+                                    //                                            .padding(.horizontal, 8) // Adjust padding as needed
+                                    //                                    )
                                 }
-//                                    .padding(.horizontal, 8) // Adjust padding as needed
-//                                    .overlay(
-//                                        Text("Add observation (max 40 char.)")
-//                                            .foregroundColor(.black)
-//                                            .opacity(annotationText.isEmpty ? 1 : 0)
-//                                            .padding(.horizontal, 8) // Adjust padding as needed
-//                                    )
-                                                            }
+                            }
                             .padding()
                             .frame(
                                 minWidth: 0,
