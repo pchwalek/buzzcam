@@ -175,6 +175,8 @@ typedef struct beecam_uwb_i2c_downlink {
         /* Generic success message, currently associated with set_delay_ps. */
         beecam_uwb_i2c_unit_t success;
     } response;
+    /* Sample from clock counter. */
+    uint32_t clock_sample;
 } beecam_uwb_i2c_downlink_t;
 
 
@@ -212,7 +214,7 @@ extern "C" {
 #define BEECAM_UWB_I2C_DEVICE_INFO_FIRMWARE_BUILD_INFO_INIT_DEFAULT {"", "", ""}
 #define BEECAM_UWB_I2C_UPLINK_INIT_DEFAULT       {{0, {0}}, 0, {BEECAM_UWB_I2C_UNIT_INIT_DEFAULT}}
 #define BEECAM_UWB_I2C_UPLINK_MULTI_PTP_INIT_DEFAULT {false, BEECAM_UWB_I2C_PEER_ADDRESS_INIT_DEFAULT, 0, 0}
-#define BEECAM_UWB_I2C_DOWNLINK_INIT_DEFAULT     {{0, {0}}, 0, {BEECAM_UWB_I2C_DOWNLINK_ERROR_INIT_DEFAULT}}
+#define BEECAM_UWB_I2C_DOWNLINK_INIT_DEFAULT     {{0, {0}}, 0, {BEECAM_UWB_I2C_DOWNLINK_ERROR_INIT_DEFAULT}, 0}
 #define BEECAM_UWB_I2C_DOWNLINK_ERROR_INIT_DEFAULT {"", _BEECAM_UWB_I2C_DOWNLINK_ERROR_ERROR_CODE_MIN}
 #define BEECAM_UWB_I2C_DOWNLINK_STATUS_INIT_DEFAULT {0}
 #define BEECAM_UWB_I2C_DOWNLINK_PTP_RESULT_INIT_DEFAULT {false, BEECAM_UWB_I2C_PEER_ADDRESS_INIT_DEFAULT, 0, 0, 0, 0}
@@ -226,7 +228,7 @@ extern "C" {
 #define BEECAM_UWB_I2C_DEVICE_INFO_FIRMWARE_BUILD_INFO_INIT_ZERO {"", "", ""}
 #define BEECAM_UWB_I2C_UPLINK_INIT_ZERO          {{0, {0}}, 0, {BEECAM_UWB_I2C_UNIT_INIT_ZERO}}
 #define BEECAM_UWB_I2C_UPLINK_MULTI_PTP_INIT_ZERO {false, BEECAM_UWB_I2C_PEER_ADDRESS_INIT_ZERO, 0, 0}
-#define BEECAM_UWB_I2C_DOWNLINK_INIT_ZERO        {{0, {0}}, 0, {BEECAM_UWB_I2C_DOWNLINK_ERROR_INIT_ZERO}}
+#define BEECAM_UWB_I2C_DOWNLINK_INIT_ZERO        {{0, {0}}, 0, {BEECAM_UWB_I2C_DOWNLINK_ERROR_INIT_ZERO}, 0}
 #define BEECAM_UWB_I2C_DOWNLINK_ERROR_INIT_ZERO  {"", _BEECAM_UWB_I2C_DOWNLINK_ERROR_ERROR_CODE_MIN}
 #define BEECAM_UWB_I2C_DOWNLINK_STATUS_INIT_ZERO {0}
 #define BEECAM_UWB_I2C_DOWNLINK_PTP_RESULT_INIT_ZERO {false, BEECAM_UWB_I2C_PEER_ADDRESS_INIT_ZERO, 0, 0, 0, 0}
@@ -278,6 +280,7 @@ extern "C" {
 #define BEECAM_UWB_I2C_DOWNLINK_MULTI_PTP_NORMAL_TAG 6
 #define BEECAM_UWB_I2C_DOWNLINK_MULTI_PTP_FULL_TAG 7
 #define BEECAM_UWB_I2C_DOWNLINK_SUCCESS_TAG      8
+#define BEECAM_UWB_I2C_DOWNLINK_CLOCK_SAMPLE_TAG 9
 
 /* Struct field encoding specification for nanopb */
 #define BEECAM_UWB_I2C_UNIT_FIELDLIST(X, a) \
@@ -351,7 +354,8 @@ X(a, STATIC,   ONEOF,    MESSAGE,  (response,twr_ptp_result,response.twr_ptp_res
 X(a, STATIC,   ONEOF,    MESSAGE,  (response,info,response.info),   5) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (response,multi_ptp_normal,response.multi_ptp_normal),   6) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (response,multi_ptp_full,response.multi_ptp_full),   7) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (response,success,response.success),   8)
+X(a, STATIC,   ONEOF,    MESSAGE,  (response,success,response.success),   8) \
+X(a, STATIC,   SINGULAR, UINT32,   clock_sample,      9)
 #define BEECAM_UWB_I2C_DOWNLINK_CALLBACK NULL
 #define BEECAM_UWB_I2C_DOWNLINK_DEFAULT NULL
 #define beecam_uwb_i2c_downlink_t_response_error_MSGTYPE beecam_uwb_i2c_downlink_error_t
@@ -441,7 +445,7 @@ extern const pb_msgdesc_t beecam_uwb_i2c_downlink_full_multi_ptp_result_t_msg;
 #define BEECAM_UWB_I2C_DOWNLINK_FULL_MULTI_PTP_RESULT_SIZE 2861
 #define BEECAM_UWB_I2C_DOWNLINK_NORMAL_DISTRIBUTION_SIZE 27
 #define BEECAM_UWB_I2C_DOWNLINK_PTP_RESULT_SIZE  60
-#define BEECAM_UWB_I2C_DOWNLINK_SIZE             2930
+#define BEECAM_UWB_I2C_DOWNLINK_SIZE             2936
 #define BEECAM_UWB_I2C_DOWNLINK_STATUS_SIZE      2
 #define BEECAM_UWB_I2C_PEER_ADDRESS_SIZE         14
 #define BEECAM_UWB_I2C_UNIT_SIZE                 0

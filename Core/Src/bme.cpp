@@ -24,6 +24,12 @@
 //#include "config/Default_H2S_NonH2S/Default_H2S_NonH2S.h"
 #include "config/bsec_sel_iaq_33v_300s_28d/bsec_serialized_configurations_selectivity.h"
 
+#include "pb.h"
+#include "pb_decode.h"
+#include "pb_encode.h"
+#include "message.pb.h"
+#include "dts.h"
+#include "app_ble.h"
 
 #define BME_SAMPLE_PERIOD_MS		3000
 //#define MAX_BME_SAMPLES_PACKET	(int)(512-sizeof(PacketHeader))/sizeof(bsecData)
@@ -131,12 +137,14 @@ osTimerId_t periodicBMETimer_id;
 
 Adafruit_BME680 bme;
 
-static uint8_t bmeConfig[BSEC_MAX_PROPERTY_BLOB_SIZE];
-static uint8_t bmeState[BSEC_MAX_STATE_BLOB_SIZE];
+//static uint8_t bmeConfig[BSEC_MAX_PROPERTY_BLOB_SIZE];
+//static uint8_t bmeState[BSEC_MAX_STATE_BLOB_SIZE];
 
 static char outputString[500] = {0};
 
 static FIL sensorFile;
+
+static DTS_STM_Payload_t PackedPayload;
 
 void BME_Task(void *argument) {
 //	osDelay(2000);
@@ -255,6 +263,16 @@ void BME_Task(void *argument) {
 				bmeData[bmeIdx].signal_dimensions = bme.outputs.output[i].signal_dimensions;
 				bmeData[bmeIdx].sensor_id = static_cast<bme680_signal_id_t>(bme.outputs.output[i].sensor_id);
 				bmeData[bmeIdx++].accuracy = static_cast<bme680_accuracy_t>(bme.outputs.output[i].accuracy);
+
+				/* update characteristic */
+				if(bme.outputs.output[i].sensor_id == BSEC_OUTPUT_RAW_TEMPERATURE){
+					infoPacket.payload.system_info_packet.simple_sensor_reading.temperature=floorf(bme.outputs.output[i].signal * 10) / 10;
+				}else if(bme.outputs.output[i].sensor_id == BSEC_OUTPUT_RAW_HUMIDITY){
+					infoPacket.payload.system_info_packet.simple_sensor_reading.humidity=floorf(bme.outputs.output[i].signal * 10) / 10;
+				}else if(bme.outputs.output[i].sensor_id == BSEC_OUTPUT_CO2_EQUIVALENT){
+					infoPacket.payload.system_info_packet.simple_sensor_reading.co2=bme.outputs.output[i].signal;
+				}
+
 			}
 
 			if(bme.outputs.nOutputs != 0){
@@ -276,6 +294,16 @@ void BME_Task(void *argument) {
 					Error_Handler();
 				}
 				memset(outputString, '\0', sizeof(outputString));
+
+
+				infoPacket.payload.system_info_packet.has_simple_sensor_reading = true;
+				/* Create a stream that will write to our buffer. */
+				pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+				/* Now we are ready to encode the message! */
+				status = pb_encode(&stream, PACKET_FIELDS, &infoPacket);
+				PackedPayload.pPayload = (uint8_t*) buffer;
+				PackedPayload.Length = stream.bytes_written;
+				if(status) DTS_STM_UpdateChar(BUZZCAM_INFO_CHAR_UUID, (uint8_t*)&PackedPayload);
 
 
 		    	// Flush the cached data to the SD card

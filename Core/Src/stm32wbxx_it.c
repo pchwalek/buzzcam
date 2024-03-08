@@ -246,10 +246,19 @@ void USB_LP_IRQHandler(void)
 void TIM1_UP_TIM16_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM1_UP_TIM16_IRQn 0 */
-
+//https://community.st.com/t5/stm32-mcus-wireless/stm32wb-ble-shci-sub-evt-code-ready-event-is-not-received/td-p/87447/page/2
+//https://forums.freertos.org/t/stm32wb55-flash-sr-cfgbsy-never-clears-when-using-freertos-and-tim1/12300/15
   /* USER CODE END TIM1_UP_TIM16_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim1);
-  HAL_TIM_IRQHandler(&htim16);
+	if (htim1.Instance != NULL)
+	{
+		HAL_TIM_IRQHandler(&htim1);
+	}
+
+	if (htim16.Instance != NULL)
+	{
+		HAL_TIM_IRQHandler(&htim16);
+	}
+
   /* USER CODE BEGIN TIM1_UP_TIM16_IRQn 1 */
 
   /* USER CODE END TIM1_UP_TIM16_IRQn 1 */
@@ -261,11 +270,14 @@ void TIM1_UP_TIM16_IRQHandler(void)
 void TIM2_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM2_IRQn 0 */
-
+	  if (htim2.Instance != NULL)
+	  	{
   /* USER CODE END TIM2_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim2);
-  /* USER CODE BEGIN TIM2_IRQn 1 */
 
+  		HAL_TIM_IRQHandler(&htim2);
+
+  /* USER CODE BEGIN TIM2_IRQn 1 */
+		}
   /* USER CODE END TIM2_IRQn 1 */
 }
 

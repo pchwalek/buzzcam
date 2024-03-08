@@ -113,6 +113,17 @@ typedef struct{
 	uint8_t fromMaster;
 } configChange;
 
+typedef struct{
+	uint64_t epoch;
+	uint32_t ms_from_start;
+	uint32_t counter;
+} chirp_event_t;
+
+typedef struct{
+	uint32_t system_uid;
+	beecam_uwb_i2c_downlink_normal_distribution_t normal_distribution;
+} uwb_range_packet_multi_t;
+
 extern I2C_HandleTypeDef hi2c1;
 extern RTC_HandleTypeDef hrtc;
 extern SPI_HandleTypeDef hspi1;
@@ -250,6 +261,7 @@ extern osMessageQueueId_t markPacketQueueId;
 extern osMessageQueueId_t ledSeqQueueId;
 extern osMessageQueueId_t configChangeQueueId;
 extern osMessageQueueId_t timeSyncQueueId;
+extern osMessageQueueId_t fileWriteQueueId;
 extern osMessageQueueId_t txMsgQueueId;
 extern osMessageQueueId_t rxMsgQueueId;
 
@@ -263,8 +275,7 @@ extern osThreadId_t micThreadId;
 extern osThreadId_t sampleThreadId;
 extern osThreadId_t bmeTaskHandle;
 extern osThreadId_t chirpTaskHandle;
-extern osThreadId_t batteryMonitorTaskId;
-extern osThreadId_t timestampSyncTaskId;
+extern osThreadId_t fileWriteSyncTaskId;
 extern osThreadId_t triggerMarkTaskId;
 extern osThreadId_t uwbMessageTaskId;
 extern osThreadId_t ledSequencerId;

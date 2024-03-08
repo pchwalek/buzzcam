@@ -88,6 +88,9 @@ message Downlink {
     // Raw bytes supplied in the initiating request.
     bytes correlation_data = 1;
 
+    // Sample from clock counter.
+    uint32 clock_sample = 9;
+
     oneof response {
         // Requested action failed.
         Error error = 2;

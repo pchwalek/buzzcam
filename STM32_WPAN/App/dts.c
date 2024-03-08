@@ -221,12 +221,27 @@ static SVCCTL_EvtAckStatus_t DTS_Event_Handler(void *Event) {
 						/* start thread that interrupts systems, updates parameters, and restarts system */
 						state = osThreadGetState(configThreadId);
 						if( (state != osThreadReady) || (state != osThreadRunning) || (state != osThreadInactive) || (state != osThreadBlocked) ){
-							memcpy(&configMsg.config, &rxPacket.payload.config_packet, sizeof(config_packet_t));
-							configMsg.fromMaster = 0;
-							osMessageQueuePut(configChangeQueueId, &configMsg, 0, 100);
-//							configThreadId = osThreadNew(updateSystemConfig,
-//									&configMsg,
-//									&configTask_attributes);
+							if(rxPacket.payload.config_packet.enable_led != configPacket.payload.config_packet.enable_led){
+								configPacket.payload.config_packet.enable_led = rxPacket.payload.config_packet.enable_led;
+
+								/* (3) update config characteristic */
+								tBleStatus ret;
+								/* Create a stream that will write to our buffer. */
+								pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+								/* Now we are ready to encode the message! */
+								status = pb_encode(&stream, PACKET_FIELDS, &configPacket);
+								PackedPayload.pPayload = (uint8_t*) buffer;
+								PackedPayload.Length = stream.bytes_written;
+								if(status) ret = DTS_STM_UpdateChar(BUZZCAM_CONFIG_CHAR_UUID, (uint8_t*)&PackedPayload);
+							}else{
+
+								memcpy(&configMsg.config, &rxPacket.payload.config_packet, sizeof(config_packet_t));
+								configMsg.fromMaster = 0;
+								osMessageQueuePut(configChangeQueueId, &configMsg, 0, 100);
+	//							configThreadId = osThreadNew(updateSystemConfig,
+	//									&configMsg,
+	//									&configTask_attributes);
+							}
 						}
 						break;
 					case PACKET_SPECIAL_FUNCTION_TAG:

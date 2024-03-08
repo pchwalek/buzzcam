@@ -151,6 +151,21 @@ typedef enum
         float std_dev;
     } uwb_ranges_t;
 
+    typedef enum {
+    	TIMESTAMP_MSG,
+		UWB_MULTI_P2P_MSG,
+		UWB_TWR_MSG,
+		UWB_INFO_MSG,
+		MASTER_CHIRP_MSG,
+    } FileWriteMsgType_t;
+
+    typedef struct {
+    	FileWriteMsgType_t msgType;
+    	uint64_t msgTime; // milliseconds
+    	uint16_t msgLength;
+    	uint8_t data[180];
+    } fileWriteSync_t;
+
     typedef struct {
     	uint64_t master_epoch;
     	uint64_t slave_epoch;
@@ -160,7 +175,7 @@ typedef enum
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
 #define MAX_CONN_COUNT		20
-#define MAX_UWB_RANGES		100
+#define MAX_UWB_RANGES		20
 
 #define UPDATE_EXISTING_ENTRY 		0
 #define NEW_ENTRY 					1

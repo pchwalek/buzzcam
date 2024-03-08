@@ -69,7 +69,7 @@
 #define MAX_INTENSITY 1000
 
 //#define AUDIO_BUFFER_LEN		(38000)
-#define AUDIO_BUFFER_LEN		(30000)
+#define AUDIO_BUFFER_LEN		(32000)
 //#define AUDIO_BUFFER_LEN		(1000)
 #define AUDIO_BUFFER_HALF_LEN	(AUDIO_BUFFER_LEN >> 1)
 
@@ -140,7 +140,7 @@ osThreadId_t defaultTaskHandle;
 RTC_AlarmTypeDef sAlarm = {0};
 
 osThreadId_t batteryMonitorTaskId;
-osThreadId_t timestampSyncTaskId;
+osThreadId_t fileWriteSyncTaskId;
 osThreadId_t triggerMarkTaskId;
 osThreadId_t uwbMessageTaskId;
 osThreadId_t ledSequencerId;
@@ -148,7 +148,7 @@ osThreadId_t ledSequencerId;
 osThreadId_t chirpTaskHandle;
 const osThreadAttr_t defaultTask_attributes = { .name = "defaultTask",
 		.attr_bits = osThreadDetached, .cb_mem = NULL, .cb_size = 0,
-		.stack_mem = NULL, .stack_size = 256*4, .priority =
+		.stack_mem = NULL, .stack_size = 256*2, .priority =
 				(osPriority_t) osPriorityLow, .tz_module = 0, .reserved = 0 };
 
 uint16_t redVal = 0;
@@ -184,7 +184,7 @@ volatile uint8_t SAI_HALF_CALLBACK = 0;
 volatile uint8_t SAI_FULL_CALLBACK = 0;
 
 FIL batteryFile;
-FIL timeSyncFile;
+FIL fileWriteSyncFile;
 osTimerId_t periodicBatteryMonitorTimer_id;
 
 packet_t rxPacket = PACKET_INIT_ZERO;
@@ -249,6 +249,8 @@ void RTC_FromEpoch(time_t epoch, RTC_TimeTypeDef *time, RTC_DateTypeDef *date);
 uint64_t RTC_ToEpochMS(RTC_TimeTypeDef *time, RTC_DateTypeDef *date);
 void MX_SAI1_Init_Custom(SAI_HandleTypeDef &hsai_handle, uint8_t bit_resolution);
 
+//static void MPU_AccessPermConfig(void);
+
 void disableExtAudioDevices(void);
 void enableExtAudioDevices(void);
 uint32_t greatest_divisor(int audioFrequency, int half_buffer_size);
@@ -265,6 +267,8 @@ void startRecord(uint32_t recording_duration_s, char *folder_name);
 
 WORD getFatTime(const RTC_TimeTypeDef *time, const RTC_DateTypeDef *date);
 FRESULT updateFileTimestamp(char* path, RTC_HandleTypeDef *hrtc);
+
+uint32_t uint64_to_str(uint64_t num, char *str);
 
 void triggerSound(void);
 
@@ -327,11 +331,13 @@ static void save_config(char* folder_name);
 
 void batteryMonitorTask(void *argument);
 
-void timestampSyncTask(void *argument);
+void fileWriteSyncTask(void *argument);
 
 void triggerBatteryMonitorSample(void *argument);
 
 void reset_DFU_trigger(void);
+
+fileWriteSync_t fileWriteSyncUWB;
 /* USER CODE END 0 */
 
 /**
@@ -361,6 +367,8 @@ int main(void)
 
 	/* Configure the system clock */
 	SystemClock_Config();
+
+//	MPU_AccessPermConfig();
 
 	/**
 	 * Select LSE clock
@@ -433,6 +441,12 @@ int main(void)
    readSystemStateToFRAM();
    if(infoPacket.header.system_uid != LL_FLASH_GetUDN()){
 	   writeDefaultConfig();
+   }else{
+	   infoPacket.payload.system_info_packet.discovered_devices_count = 0;
+	   for(int i = 0; i<20; i++){
+		   infoPacket.payload.system_info_packet.discovered_devices[i].range = 0;
+		   infoPacket.payload.system_info_packet.discovered_devices[i].uid = 0;
+	   }
    }
 //	writeDefaultConfig();
 
@@ -479,22 +493,17 @@ int main(void)
 //	rxMsgQueueId = osMessageQueueNew (4, sizeof(packet_t *), NULL);
 
 	configChangeQueueId = osMessageQueueNew (4, sizeof(configChange), NULL);
-	timeSyncQueueId = osMessageQueueNew(2, sizeof(timestampSync_t), NULL);
+//	timeSyncQueueId = osMessageQueueNew(2, sizeof(timestampSync_t), NULL);
+	fileWriteQueueId = osMessageQueueNew(10, sizeof(fileWriteSync_t), NULL);
 
 	/* USER CODE END RTOS_QUEUES */
 
 	/* Create the thread(s) */
 	/* creation of defaultTask */
-	//  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+//	  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
 	/* USER CODE BEGIN RTOS_THREADS */
-	mainSystemThreadId = osThreadNew(mainSystemTask, NULL, &mainSystemTask_attributes);
-
-
-
-	//	micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
-
-	//	bmeTaskHandle = osThreadNew(BME_Task, NULL, &bmeTask_attributes);
+//	mainSystemThreadId = osThreadNew(mainSystemTask, NULL, &mainSystemTask_attributes);
 
 	/* USER CODE END RTOS_THREADS */
 
@@ -669,7 +678,7 @@ static void MX_ADC1_Init(void)
 	 */
 	sConfig.Channel = ADC_CHANNEL_15;
 	sConfig.Rank = ADC_REGULAR_RANK_1;
-	sConfig.SamplingTime = ADC_SAMPLETIME_2CYCLES_5;
+	sConfig.SamplingTime = ADC_SAMPLETIME_247CYCLES_5;
 	sConfig.SingleDiff = ADC_SINGLE_ENDED;
 	sConfig.OffsetNumber = ADC_OFFSET_NONE;
 	sConfig.Offset = 0;
@@ -938,6 +947,31 @@ static void MX_RTC_Init(void)
 	/* USER CODE END RTC_Init 2 */
 
 }
+
+//static void MPU_AccessPermConfig(void)
+//{
+//  MPU_Region_InitTypeDef MPU_InitStruct;
+//  /* Disable MPU */
+//  HAL_MPU_Disable();
+//
+//  MPU_InitStruct.Enable = MPU_REGION_ENABLE;
+//  MPU_InitStruct.BaseAddress = 0;
+//  MPU_InitStruct.Size = MPU_REGION_SIZE_1MB;
+//  MPU_InitStruct.AccessPermission = MPU_REGION_PRIV_RO;
+//  MPU_InitStruct.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
+//  MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
+//  MPU_InitStruct.IsShareable = MPU_ACCESS_NOT_SHAREABLE;
+//  MPU_InitStruct.Number = MPU_REGION_NUMBER0;
+//  MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
+//  MPU_InitStruct.SubRegionDisable = 0x00;
+//  MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_ENABLE;
+//
+//  HAL_MPU_ConfigRegion(&MPU_InitStruct);
+//  /* Enable MPU (any access not covered by any enabled region will cause a fault) */
+//  HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
+//
+//  return;
+//}
 
 /**
  * @brief SAI1 Initialization Function
@@ -1634,6 +1668,7 @@ void batteryMonitorTask(void *argument){
 	float battVltg;
 	static char str[60];
 	FRESULT res;
+	uint32_t idx_tracker = 0;
 
 //	double timestamp = 0;
 
@@ -1653,12 +1688,10 @@ void batteryMonitorTask(void *argument){
 
 	periodicBatteryMonitorTimer_id = osTimerNew(triggerBatteryMonitorSample, osTimerPeriodic,
 			NULL, NULL);
-	osTimerStart(periodicBatteryMonitorTimer_id, 30000);
+	osTimerStart(periodicBatteryMonitorTimer_id, 60000);
 
 	while(1){
 		flag = osThreadFlagsWait(UPDATE_EVENT | TERMINATE_EVENT, osFlagsWaitAny, osWaitForever);
-
-
 
 		if((flag & UPDATE_EVENT) == UPDATE_EVENT){
 
@@ -1685,19 +1718,40 @@ void batteryMonitorTask(void *argument){
 			flag = osThreadFlagsWait(COMPLETE_EVENT, osFlagsWaitAny, osWaitForever);
 
 			battVltg = ((((float) HAL_ADC_GetValue(&hadc1))) * 3.3 * 2) / 4096.0;
-			HAL_ADC_Stop(&hadc1);
+			HAL_ADC_Stop_IT(&hadc1);
 
 			HAL_GPIO_WritePin(EN_BATT_MON_GPIO_Port, EN_BATT_MON_Pin, GPIO_PIN_RESET);
 
-			snprintf(str, sizeof(str), "llu,%.3f,%u\n", getEpoch(), battVltg, battChgFlag);
+
+
+			idx_tracker += uint64_to_str(getEpoch(), &str[0]);
+			snprintf(&str[idx_tracker], sizeof(str)-idx_tracker, ",%.3f,%u\n", battVltg, battChgFlag);
+
+
 			f_write(&batteryFile, str, strlen(str), NULL);
 			memset(str, '\0', sizeof(str));
+			idx_tracker = 0;
 
 			// Close the file
 			res = f_close(&batteryFile);
 			if(res != FR_OK){
 				Error_Handler();
 			}
+
+			/* update characteristic */
+			infoPacket.payload.system_info_packet.has_battery_state = true;
+			infoPacket.payload.system_info_packet.battery_state.charging=battChgFlag;
+			infoPacket.payload.system_info_packet.battery_state.has_percentage=true;
+			infoPacket.payload.system_info_packet.battery_state.percentage=0;
+			infoPacket.payload.system_info_packet.battery_state.voltage=floorf(battVltg * 1000) / 1000;
+
+			/* Create a stream that will write to our buffer. */
+			pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+			/* Now we are ready to encode the message! */
+			status = pb_encode(&stream, PACKET_FIELDS, &infoPacket);
+			PackedPayload.pPayload = (uint8_t*) buffer;
+			PackedPayload.Length = stream.bytes_written;
+			if(status) DTS_STM_UpdateChar(BUZZCAM_INFO_CHAR_UUID, (uint8_t*)&PackedPayload);
 
 		}
 
@@ -1709,38 +1763,71 @@ void batteryMonitorTask(void *argument){
 
 }
 
-void timestampSyncTask(void *argument){
-	const char file_name[20] = "timestamp_sync.csv";
-	uint32_t flag = 0;
-	uint8_t battChgFlag = 0;
+char hexToAscii(uint8_t val){
+	// only look at first 4 bits
+	val = val & (0x0F);
+	if(val<10) return val+48;
+	else return val+87;
+}
 
-	static char str[60];
+void fileWriteSyncTask(void *argument){
+	const char file_name[20] = "logs.csv";
+//	uint32_t flag = 0;
+//	uint8_t battChgFlag = 0;
+
 	volatile FRESULT res;
 
-	uint32_t idx = 0;
-	timestampSync_t timestampSyncMsg;
+	char str[120] = {0};
 
+	uint32_t idx_tracker;
+
+	uint32_t idx = 0;
+	fileWriteSync_t fileWriteSyncMsg;
+
+	timestampSync_t*  timestampSync;
+	uwb_range_packet_multi_t* uwb_multi_range_pkt;
+	beecam_uwb_i2c_downlink_ptp_result_t* uwb_p2p_rslt;
+	beecam_uwb_i2c_device_info_t* uwb_info;
+	chirp_event_t* chirpEvent;
 
 	// add header
 	if(check_file_exists(file_name) == FR_NO_FILE){
-		if(f_open(&timeSyncFile, file_name, FA_CREATE_NEW | FA_WRITE) == FR_OK){
-			strcpy(str, "index, master time (ms), slave time (ms)\n");
-			f_write(&timeSyncFile, str, strlen(str), NULL);
-			// Flush the cached data to the SD card
-			f_sync(&timeSyncFile);
-			// Close the file
-			f_close(&timeSyncFile);
-
+		if(f_open(&fileWriteSyncFile, file_name, FA_CREATE_NEW | FA_WRITE) == FR_OK){
+			snprintf(str, sizeof(str), "index,%d,slave epoch,master epoch\n", TIMESTAMP_MSG);
+			f_write(&fileWriteSyncFile, str, strlen(str), NULL);
 			memset(str, '\0', sizeof(str));
+
+			snprintf(str, sizeof(str), "index,%d,epoch,delay,mean,n_samples,std_dev,UID\n", UWB_MULTI_P2P_MSG);
+			f_write(&fileWriteSyncFile, str, strlen(str), NULL);
+			memset(str, '\0', sizeof(str));
+
+			snprintf(str, sizeof(str), "index,%d,epoch,delay,raw_rx,raw_tx,uwb_addr_0,uwb_addr_1,range_mm,n_samples\n", UWB_TWR_MSG);
+			f_write(&fileWriteSyncFile, str, strlen(str), NULL);
+			memset(str, '\0', sizeof(str));
+
+			snprintf(str, sizeof(str), "index,%d,epoch,uwb_addr_0,uwb_addr_1\n", UWB_INFO_MSG);
+			f_write(&fileWriteSyncFile, str, strlen(str), NULL);
+			memset(str, '\0', sizeof(str));
+
+			snprintf(str, sizeof(str), "index,%d,epoch,ms_from_start,counter\n", MASTER_CHIRP_MSG);
+			f_write(&fileWriteSyncFile, str, strlen(str), NULL);
+			memset(str, '\0', sizeof(str));
+
+			// Flush the cached data to the SD card
+			f_sync(&fileWriteSyncFile);
+			// Close the file
+			f_close(&fileWriteSyncFile);
+
+
 		}
 	}
 
 
 	while(1){
-		osMessageQueueGet(timeSyncQueueId, &timestampSyncMsg, 0, osWaitForever);
+		osMessageQueueGet(fileWriteQueueId, &fileWriteSyncMsg, 0, osWaitForever);
 
 		do{
-			res = f_open(&timeSyncFile, file_name, FA_OPEN_APPEND | FA_WRITE | FA_READ);
+			res = f_open(&fileWriteSyncFile, file_name, FA_OPEN_APPEND | FA_WRITE | FA_READ);
 			if((res != FR_TIMEOUT) && (res != FR_OK) && (res != FR_TOO_MANY_OPEN_FILES)){
 				Error_Handler();
 			}
@@ -1748,14 +1835,218 @@ void timestampSyncTask(void *argument){
 				(res != FR_OK) );
 
 
-		snprintf(str, sizeof(str), "%u,%llu,%llu\n", idx,
-				timestampSyncMsg.master_epoch,
-				timestampSyncMsg.slave_epoch);
-		f_write(&timeSyncFile, str, strlen(str), NULL);
+		if(fileWriteSyncMsg.msgType == TIMESTAMP_MSG){
+			if(fileWriteSyncMsg.msgLength != sizeof(timestampSync_t)) Error_Handler();
+			timestampSync = (timestampSync_t *) fileWriteSyncMsg.data;
+
+			snprintf(str, sizeof(str), "%lu,%d,", idx++,
+					fileWriteSyncMsg.msgType);
+
+			idx_tracker = strlen(str);
+			idx_tracker += uint64_to_str(timestampSync->slave_epoch, &str[idx_tracker]);
+			str[idx_tracker++] = ',';
+			idx_tracker += uint64_to_str(timestampSync->master_epoch, &str[idx_tracker]);
+			str[idx_tracker++] = '\n';
+
+
+		}else if(fileWriteSyncMsg.msgType == UWB_MULTI_P2P_MSG){
+			if(fileWriteSyncMsg.msgLength != sizeof(uwb_range_packet_multi_t)) Error_Handler();
+			uwb_multi_range_pkt = (uwb_range_packet_multi_t *) fileWriteSyncMsg.data;
+
+			snprintf(str, sizeof(str), "%lu,%d,", idx++,
+					fileWriteSyncMsg.msgType);
+
+			idx_tracker = strlen(str);
+			idx_tracker += uint64_to_str(fileWriteSyncMsg.msgTime, &str[idx_tracker]);
+			str[idx_tracker++] = ',';
+			idx_tracker += uint64_to_str(uwb_multi_range_pkt->normal_distribution.delay, &str[idx_tracker]);
+			str[idx_tracker++] = ',';
+
+			snprintf(&str[idx_tracker], sizeof(str)-idx_tracker, "%.3f,%lu,%.3f,%ld\n",
+					uwb_multi_range_pkt->normal_distribution.mean,
+					uwb_multi_range_pkt->normal_distribution.n_samples,
+					uwb_multi_range_pkt->normal_distribution.stddev,
+					uwb_multi_range_pkt->system_uid);
+
+		}else if(fileWriteSyncMsg.msgType == UWB_TWR_MSG){
+			if(fileWriteSyncMsg.msgLength != sizeof(beecam_uwb_i2c_downlink_ptp_result_t)) Error_Handler();
+			uwb_p2p_rslt = (beecam_uwb_i2c_downlink_ptp_result_t *) fileWriteSyncMsg.data;
+
+//			snprintf(str, sizeof(str), "%lu,%d,%llu,%llu,%02X,%02X,%ld,%llu,%llu\n", idx++,
+//					fileWriteSyncMsg.msgType,
+//					fileWriteSyncMsg.msgTime,
+//					uwb_p2p_rslt->delay,
+//					(uint8_t) uwb_p2p_rslt->peer_address.address.bytes[0],
+//					(uint8_t) uwb_p2p_rslt->peer_address.address.bytes[1],
+//					uwb_p2p_rslt->range_mm,
+//					uwb_p2p_rslt->raw_rx_timestamp,
+//					uwb_p2p_rslt->raw_tx_timestamp);
+
+			snprintf(str, sizeof(str), "%lu,%d,", idx++, fileWriteSyncMsg.msgType);
+
+			idx_tracker = strlen(str);
+			idx_tracker += uint64_to_str(fileWriteSyncMsg.msgTime, &str[idx_tracker]);
+			str[idx_tracker++] = ',';
+			idx_tracker += uint64_to_str(uwb_p2p_rslt->delay, &str[idx_tracker]);
+			str[idx_tracker++] = ',';
+			idx_tracker += uint64_to_str(uwb_p2p_rslt->raw_rx_timestamp, &str[idx_tracker]);
+			str[idx_tracker++] = ',';
+			idx_tracker += uint64_to_str(uwb_p2p_rslt->raw_tx_timestamp, &str[idx_tracker]);
+			str[idx_tracker++] = ',';
+			str[idx_tracker++] = hexToAscii(uwb_p2p_rslt->peer_address.address.bytes[0]>>4);
+			str[idx_tracker++] = hexToAscii(uwb_p2p_rslt->peer_address.address.bytes[0]);
+			str[idx_tracker++] = ',';
+			str[idx_tracker++] = hexToAscii(uwb_p2p_rslt->peer_address.address.bytes[1]>>4);
+			str[idx_tracker++] = hexToAscii(uwb_p2p_rslt->peer_address.address.bytes[1]);
+
+			snprintf(&str[idx_tracker], sizeof(str)-idx_tracker, "%lu\n",
+					uwb_p2p_rslt->range_mm);
+
+//			idx_tracker = strlen(str);
+//			idx_tracker += uint64_to_str(uwb_normal_distribution->n_samples, &str[idx_tracker]);
+//			str[++idx_tracker] = '\n';
+
+
+		}else if(fileWriteSyncMsg.msgType == UWB_INFO_MSG){
+			if(fileWriteSyncMsg.msgLength != sizeof(beecam_uwb_i2c_device_info_t)) Error_Handler();
+			uwb_info = (beecam_uwb_i2c_device_info_t *) fileWriteSyncMsg.data;
+
+			snprintf(str, sizeof(str), "%lu,%d,", idx++,
+					fileWriteSyncMsg.msgType);
+
+			idx_tracker = strlen(str);
+			idx_tracker += uint64_to_str(fileWriteSyncMsg.msgTime, &str[idx_tracker]);
+			str[idx_tracker++] = ',';
+			str[idx_tracker++] = hexToAscii(uwb_info->uwb.address.address.bytes[0]>>4);
+			str[idx_tracker++] = hexToAscii(uwb_info->uwb.address.address.bytes[0]);
+			str[idx_tracker++] = ',';
+			str[idx_tracker++] = hexToAscii(uwb_info->uwb.address.address.bytes[1]>>4);
+			str[idx_tracker++] = hexToAscii(uwb_info->uwb.address.address.bytes[1]);
+			str[idx_tracker++] = '\n';
+		}else if(fileWriteSyncMsg.msgType == MASTER_CHIRP_MSG){
+			if(fileWriteSyncMsg.msgLength != sizeof(chirp_event_t)) Error_Handler();
+			chirpEvent = (chirp_event_t *) fileWriteSyncMsg.data;
+
+			snprintf(str, sizeof(str), "%lu,%d,", idx++,
+								fileWriteSyncMsg.msgType);
+
+			idx_tracker = strlen(str);
+			idx_tracker += uint64_to_str(chirpEvent->epoch, &str[idx_tracker]);
+			str[idx_tracker++] = ',';
+
+			snprintf(&str[idx_tracker], sizeof(str)-idx_tracker, "%lu,%lu\n",
+									chirpEvent->ms_from_start,
+									chirpEvent->counter);
+		}
+
+		if(sizeof(str) < idx_tracker) Error_Handler();
+		f_write(&fileWriteSyncFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
+		idx_tracker = 0;
+
+		/* keep checking buffer for 100ms timeout before closing the file */
+		while(osOK == osMessageQueueGet(fileWriteQueueId, &fileWriteSyncMsg, 0, 100)){
+			if(fileWriteSyncMsg.msgType == TIMESTAMP_MSG){
+				if(fileWriteSyncMsg.msgLength != sizeof(timestampSync_t)) Error_Handler();
+				timestampSync = (timestampSync_t *) fileWriteSyncMsg.data;
+
+				snprintf(str, sizeof(str), "%lu,%d,", idx++,
+						fileWriteSyncMsg.msgType);
+
+				idx_tracker = strlen(str);
+				idx_tracker += uint64_to_str(timestampSync->slave_epoch, &str[idx_tracker]);
+				str[idx_tracker++] = ',';
+				idx_tracker += uint64_to_str(timestampSync->master_epoch, &str[idx_tracker]);
+				str[idx_tracker++] = '\n';
+
+			}else if(fileWriteSyncMsg.msgType == UWB_MULTI_P2P_MSG){
+				if(fileWriteSyncMsg.msgLength != sizeof(uwb_range_packet_multi_t)) Error_Handler();
+				uwb_multi_range_pkt = (uwb_range_packet_multi_t *) fileWriteSyncMsg.data;
+
+				snprintf(str, sizeof(str), "%lu,%d,", idx++,
+						fileWriteSyncMsg.msgType);
+
+				idx_tracker = strlen(str);
+				idx_tracker += uint64_to_str(fileWriteSyncMsg.msgTime, &str[idx_tracker]);
+				str[idx_tracker++] = ',';
+				idx_tracker += uint64_to_str(uwb_multi_range_pkt->normal_distribution.delay, &str[idx_tracker]);
+				str[idx_tracker++] = ',';
+
+				snprintf(&str[idx_tracker], sizeof(str)-idx_tracker, "%.3f,%lu,%.3f,%ld\n",
+						uwb_multi_range_pkt->normal_distribution.mean,
+						uwb_multi_range_pkt->normal_distribution.n_samples,
+						uwb_multi_range_pkt->normal_distribution.stddev,
+						uwb_multi_range_pkt->system_uid);
+
+			}else if(fileWriteSyncMsg.msgType == UWB_TWR_MSG){
+				if(fileWriteSyncMsg.msgLength != sizeof(beecam_uwb_i2c_downlink_ptp_result_t)) Error_Handler();
+				uwb_p2p_rslt = (beecam_uwb_i2c_downlink_ptp_result_t *) fileWriteSyncMsg.data;
+
+				snprintf(str, sizeof(str), "%lu,%d,", idx++, fileWriteSyncMsg.msgType);
+
+				idx_tracker = strlen(str);
+				idx_tracker += uint64_to_str(fileWriteSyncMsg.msgTime, &str[idx_tracker]);
+				str[idx_tracker++] = ',';
+				idx_tracker += uint64_to_str(uwb_p2p_rslt->delay, &str[idx_tracker]);
+				str[idx_tracker++] = ',';
+				idx_tracker += uint64_to_str(uwb_p2p_rslt->raw_rx_timestamp, &str[idx_tracker]);
+				str[idx_tracker++] = ',';
+				idx_tracker += uint64_to_str(uwb_p2p_rslt->raw_tx_timestamp, &str[idx_tracker]);
+				str[idx_tracker++] = ',';
+				str[idx_tracker++] = hexToAscii(uwb_p2p_rslt->peer_address.address.bytes[0]>>4);
+				str[idx_tracker++] = hexToAscii(uwb_p2p_rslt->peer_address.address.bytes[0]);
+				str[idx_tracker++] = ',';
+				str[idx_tracker++] = hexToAscii(uwb_p2p_rslt->peer_address.address.bytes[1]>>4);
+				str[idx_tracker++] = hexToAscii(uwb_p2p_rslt->peer_address.address.bytes[1]);
+
+				snprintf(&str[idx_tracker], sizeof(str)-idx_tracker, "%lu\n",
+						uwb_p2p_rslt->range_mm);
+
+//				idx_tracker = strlen(str);
+//				idx_tracker += uint64_to_str(uwb_p2p_rslt->, &str[idx_tracker]);
+//				str[++idx_tracker] = '\n';
+
+
+			}else if(fileWriteSyncMsg.msgType == UWB_INFO_MSG){
+				if(fileWriteSyncMsg.msgLength != sizeof(beecam_uwb_i2c_device_info_t)) Error_Handler();
+				uwb_info = (beecam_uwb_i2c_device_info_t *) fileWriteSyncMsg.data;
+
+				snprintf(str, sizeof(str), "%lu,%d,", idx++,
+						fileWriteSyncMsg.msgType);
+
+				idx_tracker = strlen(str);
+				idx_tracker += uint64_to_str(fileWriteSyncMsg.msgTime, &str[idx_tracker]);
+				str[idx_tracker++] = ',';
+				str[idx_tracker++] = hexToAscii(uwb_info->uwb.address.address.bytes[0]>>4);
+				str[idx_tracker++] = hexToAscii(uwb_info->uwb.address.address.bytes[0]);
+				str[idx_tracker++] = ',';
+				str[idx_tracker++] = hexToAscii(uwb_info->uwb.address.address.bytes[1]>>4);
+				str[idx_tracker++] = hexToAscii(uwb_info->uwb.address.address.bytes[1]);
+				str[idx_tracker++] = '\n';
+			}else if(fileWriteSyncMsg.msgType == MASTER_CHIRP_MSG){
+				if(fileWriteSyncMsg.msgLength != sizeof(chirp_event_t)) Error_Handler();
+				chirpEvent = (chirp_event_t *) fileWriteSyncMsg.data;
+
+				snprintf(str, sizeof(str), "%lu,%d,", idx++,
+									fileWriteSyncMsg.msgType);
+
+				idx_tracker = strlen(str);
+				idx_tracker += uint64_to_str(chirpEvent->epoch, &str[idx_tracker]);
+				str[idx_tracker++] = ',';
+
+				snprintf(&str[idx_tracker], sizeof(str)-idx_tracker, "%lu,%lu\n",
+										chirpEvent->ms_from_start,
+										chirpEvent->counter);
+			}
+
+			if(sizeof(str) < idx_tracker) Error_Handler();
+			f_write(&fileWriteSyncFile, str, strlen(str), NULL);
+			memset(str, '\0', sizeof(str));
+			idx_tracker = 0;
+		}
 
 		// Close the file
-		res = f_close(&timeSyncFile);
+		res = f_close(&fileWriteSyncFile);
 		if(res != FR_OK){
 			Error_Handler();
 		}
@@ -1778,8 +2069,11 @@ static void sendDataToUWB(uint8_t* buf, uint16_t length){
 	if(hal_status == HAL_ERROR){
 		Error_Handler();
 	}
+
+	osDelay(500); // give time for UWB to do its thing
 }
 
+uwb_range_packet_multi_t range_packet_multi;
 void uwbMessageTask(void* argument){
 	uint32_t flags;
 
@@ -1839,10 +2133,12 @@ void uwbMessageTask(void* argument){
 						if(uwb_ranging_requested){
 							uwb_ranging_requested = 0;
 							flags |= UWB_START_RANGING;
+							osDelay(500);
 						}
 						if(uwb_info_requested){
 							uwb_info_requested = 1;
 							flags |= UWB_GET_INFO;
+							osDelay(500);
 						}
 //						osDelay(500); // add some delay to give UWB sometime
 						break;
@@ -1853,12 +2149,25 @@ void uwbMessageTask(void* argument){
 								0);
 
 						if(rangesRemaining > 0){
+							fileWriteSyncUWB.msgTime = getEpoch();
+							fileWriteSyncUWB.msgLength = sizeof(beecam_uwb_i2c_downlink_ptp_result_t);
+							fileWriteSyncUWB.msgType = UWB_TWR_MSG;
+							memcpy(fileWriteSyncUWB.data, &uwb_i2c_downlink_packet.response.twr_ptp_result, fileWriteSyncUWB.msgLength);
+							osMessageQueuePut(fileWriteQueueId, &fileWriteSyncUWB, 0, 0);
+
 							rangesRemaining--;
 							if(rangesRemaining != 0) flags |= UWB_START_RANGING;
 						}
 						break;
 					case BEECAM_UWB_I2C_DOWNLINK_INFO_TAG:
+						fileWriteSyncUWB.msgTime = getEpoch();
+						fileWriteSyncUWB.msgLength = sizeof(beecam_uwb_i2c_device_info_t);
+						fileWriteSyncUWB.msgType = UWB_INFO_MSG;
+						memcpy(fileWriteSyncUWB.data, &uwb_i2c_downlink_packet.response.info, fileWriteSyncUWB.msgLength);
+						osMessageQueuePut(fileWriteQueueId, &fileWriteSyncUWB, 0, 0);
+
 						memcpy(&local_uwbInfo,&uwb_i2c_downlink_packet.response.info,sizeof(local_uwbInfo));
+
 						if(uwb_i2c_downlink_packet.response.info.has_uwb){
 							if(uwb_i2c_downlink_packet.response.info.uwb.has_address){
 								sendUWB_InfoToNodes((peer_address_t*) &uwb_i2c_downlink_packet.response.info.uwb.address);
@@ -1872,6 +2181,15 @@ void uwbMessageTask(void* argument){
 //								0);
 						//todo: save multi_pt_data
 						if(rangesRemaining > 0){
+							fileWriteSyncUWB.msgTime = getEpoch();
+							fileWriteSyncUWB.msgLength = sizeof(uwb_range_packet_multi_t);
+							fileWriteSyncUWB.msgType = UWB_MULTI_P2P_MSG;
+							memcpy(&range_packet_multi.normal_distribution, &uwb_i2c_downlink_packet.response.multi_ptp_normal, sizeof(beecam_uwb_i2c_downlink_normal_distribution_t));
+							range_packet_multi.system_uid = connectedNodeInfo[rangesRemaining-1].system_uid;
+
+							memcpy(fileWriteSyncUWB.data, &range_packet_multi, fileWriteSyncUWB.msgLength);
+							osMessageQueuePut(fileWriteQueueId, &fileWriteSyncUWB, 0, 0);
+
 							rangesRemaining--;
 							infoPacket.payload.system_info_packet.discovered_devices[rangesRemaining].uid = connectedNodeInfo[rangesRemaining].system_uid;
 							infoPacket.payload.system_info_packet.discovered_devices[rangesRemaining].range = uwb_i2c_downlink_packet.response.multi_ptp_normal.mean;
@@ -1906,7 +2224,7 @@ void uwbMessageTask(void* argument){
 					/* calculate number of connected nodes */
 					rangesRemaining = totalConnectedNodes((uwb_info_t*) &connectedNodeInfo);
 					infoPacket.payload.system_info_packet.discovered_devices_count = rangesRemaining;
-					if(rangesRemaining == 0) return; // no ranges to do
+					if(rangesRemaining == 0) continue; // no ranges to do
 				}
 
 				/* request status since unknown if UWB is activated */
@@ -1934,6 +2252,8 @@ void uwbMessageTask(void* argument){
 			}
 		}
 
+
+
 		if((flags & UWB_GET_INFO) == UWB_GET_INFO){
 			if(uwb_ready){
 				/* request status since unknown if UWB is activated */
@@ -1952,6 +2272,8 @@ void uwbMessageTask(void* argument){
 //				hal_status = HAL_I2C_Mem_Write(&hi2c1, UWB_I2C_ADDR, UWB_I2C_GENERAL_MEM_ADDR, 1, uwb_buffer, stream.bytes_written, 100);
 			}
 		}
+
+
 	}
 }
 
@@ -2099,6 +2421,8 @@ void writeDefaultConfig(void){
 
 }
 
+
+
 void triggerBatteryMonitorSample(void *argument){
 	osThreadFlagsSet (batteryMonitorTaskId, UPDATE_EVENT);
 }
@@ -2118,7 +2442,7 @@ void unmount_sd_card(void){
 	f_mount(NULL, "", 1);
 }
 
-static FIL configFile;
+//static FIL configFile;
 static void save_config(char* folder_name){
 	char file_name[30] = {0};
 
@@ -2132,7 +2456,7 @@ static void save_config(char* folder_name){
 	FRESULT res = f_open(&configFile, file_name, FA_CREATE_ALWAYS | FA_WRITE | FA_OPEN_APPEND);
 	if(res == FR_OK){
 
-		snprintf(str, sizeof(str), "uid,%u\n", LL_FLASH_GetUDN());
+		snprintf(str, sizeof(str), "uid,%lu\n", LL_FLASH_GetUDN());
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
@@ -2160,7 +2484,7 @@ static void save_config(char* folder_name){
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
-		snprintf(str, sizeof(str), "compression factor,%u\n", configPacket.payload.config_packet.audio_config.audio_compression.compression_factor);
+		snprintf(str, sizeof(str), "compression factor,%lu\n", configPacket.payload.config_packet.audio_config.audio_compression.compression_factor);
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
@@ -2234,7 +2558,7 @@ static void save_config(char* folder_name){
 		memset(str, '\0', sizeof(str));
 
 		for(int i = 0; i < configPacket.payload.config_packet.schedule_config_count; i++){
-			snprintf(str, sizeof(str), "%u,%u,%u,%u,%u,", i,
+			snprintf(str, sizeof(str), "%u,%lu,%lu,%lu,%lu,", i,
 					configPacket.payload.config_packet.schedule_config[i].start_hour,
 					configPacket.payload.config_packet.schedule_config[i].start_minute,
 					configPacket.payload.config_packet.schedule_config[i].stop_hour,
@@ -2382,6 +2706,34 @@ const char* getBoolName(uint8_t val) {
 	case 1: return "True";
 	default: return "Unknown";
 	}
+}
+
+uint32_t uint64_to_str(uint64_t num, char *str) {
+    // Handle the special case of zero
+    if (num == 0) {
+        str[0] = '0';
+        str[1] = '\0';
+        return 1;
+    }
+
+    // Temporary index for filling the string in reverse order
+    uint32_t i = 0;
+    while (num > 0) {
+    	if(i > 50) return 0; // error condition but safety to avoid memory leak
+    	uint32_t digit = num % 10; // Extract the least significant digit
+        str[i++] = '0' + digit; // Convert to char and store in the string
+        num /= 10; // Move to the next digit
+    }
+    str[i] = '\0'; // Null-terminate the string
+
+    // Reverse the string since we filled it in reverse order
+    for (int j = 0, k = i - 1; j < k; j++, k--) {
+        char temp = str[j];
+        str[j] = str[k];
+        str[k] = temp;
+    }
+
+    return i;
 }
 
 void set_folder_from_time(char* folder_name){
@@ -2702,6 +3054,9 @@ void chirpTask(void *argument){
 
 	uint32_t counter = 0;
 
+	chirp_event_t chirp_event;
+	fileWriteSync_t fileWriteSyncMsg;
+
 	osTimerId_t periodicTimerHandle = osTimerNew(chirp_timer_callback, osTimerPeriodic, NULL, NULL);
 
 	if(periodicTimerHandle == NULL){
@@ -2709,13 +3064,17 @@ void chirpTask(void *argument){
 	}
 
 	//	osTimerStart(periodicTimerHandle,300000);
-	osTimerStart(periodicTimerHandle,5*60000); // 5 minutes
+	osTimerStart(periodicTimerHandle,30*60000); // 30 minutes
 	osThreadFlagsSet(chirpTaskHandle, CHIRP_EVENT);
 
 	uint32_t flags;
 
 	while(1){
 		flags = osThreadFlagsWait(TERMINATE_EVENT | CHIRP_EVENT, osFlagsWaitAny, osWaitForever);
+		chirp_event.epoch = getEpoch();
+		chirp_event.ms_from_start = HAL_GetTick();
+
+		fileWriteSyncMsg.msgTime = chirp_event.epoch;
 
 		if((flags | CHIRP_EVENT) == CHIRP_EVENT){
 			if((counter % 15) == 0){
@@ -2723,8 +3082,16 @@ void chirpTask(void *argument){
 			}else if((counter % 5) == 0){
 				tone(4200,1000);
 			}
+
+			/* save chirp */
+			chirp_event.counter = counter;
+			fileWriteSyncMsg.msgType = MASTER_CHIRP_MSG;
+			memcpy(fileWriteSyncMsg.data, &chirp_event, sizeof(chirp_event_t));
+			osMessageQueuePut(fileWriteQueueId, &fileWriteSyncMsg, 0, osWaitForever);
+
 			counter++;
 		}
+
 
 		if((flags | TERMINATE_EVENT) == TERMINATE_EVENT){
 			vTaskDelete( NULL );
@@ -2914,9 +3281,9 @@ void find_next_alarm(RTC_TimeTypeDef current_time, RTC_DateTypeDef current_date,
 	}
 
 	if (next_schedule != NULL) {
-		printf("Next alarm is on day %d at %02d:%02d\n", next_schedule_day, next_schedule->start_hour, next_schedule->start_minute);
+//		printf("Next alarm is on day %d at %02d:%02d\n", next_schedule_day, next_schedule->start_hour, next_schedule->start_minute);
 	} else {
-		printf("No next alarm found.\n");
+//		printf("No next alarm found.\n");
 	}
 }
 
@@ -3435,14 +3802,14 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 
 	//	triggerSound();
 	if(!configPacket.payload.config_packet.audio_config.audio_compression.enabled){
-		sprintf(file_name, "/audio_%u.wav", file_index);
+		sprintf(file_name, "/audio_%lu.wav", file_index);
 		strcat(file_path, file_name);
 	}else{
 		if(COMPRESSION_TYPE_FLAC == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
-			sprintf(file_name, "/audio_%u.flac", file_index);
+			sprintf(file_name, "/audio_%lu.flac", file_index);
 			strcat(file_path, file_name);
 		}else if(COMPRESSION_TYPE_OPUS == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
-			sprintf(file_name, "/audio_%u.opus", file_index);
+			sprintf(file_name, "/audio_%lu.opus", file_index);
 			strcat(file_path, file_name);
 		}
 	}
@@ -3687,26 +4054,46 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 
 
 void writeSystemStateToFRAM(void){
-	HAL_StatusTypeDef status = HAL_I2C_Mem_Write(&hi2c3, FRAM_CONFIG_WORD_ADDR, FRAM_CONFIG_BYTE_ADDR, 1, (uint8_t*) &configPacket, sizeof(configPacket), 1000);
-	if(status != HAL_OK) Error_Handler();
-	status = HAL_I2C_Mem_Write(&hi2c3, FRAM_INFO_WORD_ADDR, FRAM_INFO_BYTE_ADDR, 1, (uint8_t*) &infoPacket, sizeof(infoPacket), 1000);
+	HAL_StatusTypeDef status;
+	do{
+	 status = HAL_I2C_Mem_Write(&hi2c3, FRAM_CONFIG_WORD_ADDR, FRAM_CONFIG_BYTE_ADDR, 1, (uint8_t*) &configPacket, sizeof(configPacket), 1000);
+	}while(status == HAL_BUSY && (osOK == osDelay(100)));
+
+	do{
+		status = HAL_I2C_Mem_Write(&hi2c3, FRAM_INFO_WORD_ADDR, FRAM_INFO_BYTE_ADDR, 1, (uint8_t*) &infoPacket, sizeof(infoPacket), 1000);
+	}while(status == HAL_BUSY && (osOK == osDelay(100)));
+
 	if(status != HAL_OK) Error_Handler();
 }
 
 void writeSystemInfoToFRAM(void){
-	HAL_StatusTypeDef status = HAL_I2C_Mem_Write(&hi2c3, FRAM_INFO_WORD_ADDR, FRAM_INFO_BYTE_ADDR, 1, (uint8_t*) &infoPacket, sizeof(infoPacket), 1000);
+	HAL_StatusTypeDef status;
+	do{
+		status = HAL_I2C_Mem_Write(&hi2c3, FRAM_INFO_WORD_ADDR, FRAM_INFO_BYTE_ADDR, 1, (uint8_t*) &infoPacket, sizeof(infoPacket), 1000);
+	}while(status == HAL_BUSY && (osOK == osDelay(100)));
+
 	if(status != HAL_OK) Error_Handler();
 }
 
 void writeSystemConfigToFRAM(void){
-	HAL_StatusTypeDef status = HAL_I2C_Mem_Write(&hi2c3, FRAM_CONFIG_WORD_ADDR, FRAM_CONFIG_BYTE_ADDR, 1, (uint8_t*) &configPacket, sizeof(configPacket), 1000);
+	HAL_StatusTypeDef status;
+	do{
+		status = HAL_I2C_Mem_Write(&hi2c3, FRAM_CONFIG_WORD_ADDR, FRAM_CONFIG_BYTE_ADDR, 1, (uint8_t*) &configPacket, sizeof(configPacket), 1000);
+	}while(status == HAL_BUSY && (osOK == osDelay(100)));
+
 	if(status != HAL_OK) Error_Handler();
 }
 
 void readSystemStateToFRAM(void){
-	status = HAL_I2C_Mem_Read(&hi2c3, FRAM_CONFIG_WORD_ADDR, FRAM_CONFIG_BYTE_ADDR, 1, (uint8_t*) &configPacket, sizeof(configPacket), 1000);
-	if(status != HAL_OK) Error_Handler();
-	status = HAL_I2C_Mem_Read(&hi2c3, FRAM_INFO_WORD_ADDR, FRAM_INFO_BYTE_ADDR, 1, (uint8_t*) &infoPacket, sizeof(infoPacket), 1000);
+	HAL_StatusTypeDef status;
+	do{
+		status = HAL_I2C_Mem_Read(&hi2c3, FRAM_CONFIG_WORD_ADDR, FRAM_CONFIG_BYTE_ADDR, 1, (uint8_t*) &configPacket, sizeof(configPacket), 1000);
+	}while(status == HAL_BUSY && (osOK == osDelay(100)));
+
+	do{
+		status = HAL_I2C_Mem_Read(&hi2c3, FRAM_INFO_WORD_ADDR, FRAM_INFO_BYTE_ADDR, 1, (uint8_t*) &infoPacket, sizeof(infoPacket), 1000);
+	}while(status == HAL_BUSY && (osOK == osDelay(100)));
+
 	if(status != HAL_OK) Error_Handler();
 }
 
@@ -4079,8 +4466,7 @@ void mainSystemTask(void *argument){
 	triggerMarkTaskId = osThreadNew(triggerMarkTask, NULL, &triggerMarkTask_attributes);
 	uwbMessageTaskId = osThreadNew(uwbMessageTask, NULL, &uwbMessageTask_attributes);
 	ledSequencerId = osThreadNew(ledSequencer, NULL, &ledSequencerTask_attributes);
-	timestampSyncTaskId = osThreadNew(timestampSyncTask, NULL, &timestampTask_attributes);
-
+	fileWriteSyncTaskId = osThreadNew(fileWriteSyncTask, NULL, &timestampTask_attributes);
 
 	configThreadId = osThreadNew(updateSystemConfig,
 										NULL,
@@ -4393,16 +4779,20 @@ void ledSequencer(void *argument){
 		}
 
 		if(osErrorTimeout == status){
-			setLED_Red(0);
-			setLED_Green(0);
-			setLED_Blue(0);
+			if(configPacket.payload.config_packet.enable_led){
+				setLED_Red(0);
+				setLED_Green(0);
+				setLED_Blue(0);
+			}
 			color.duration = 0;
 		}
 
 		if(osOK == status){
-			setLED_Red(color.red_val);
-			setLED_Green(color.green_val);
-			setLED_Blue(color.blue_val);
+			if(configPacket.payload.config_packet.enable_led){
+				setLED_Red(color.red_val);
+				setLED_Green(color.green_val);
+				setLED_Blue(color.blue_val);
+			}
 		}
 	}
 }
@@ -4563,6 +4953,7 @@ void triggerMarkTask(void *argument){
 	osStatus_t queueStatus;
 	uint32_t flag;
 	const char file_name[20] = "marker.csv";
+	uint32_t idx_tracker = 0;
 
 	size_t buffer_size;
 	char result[MAX_MARK_SIZE] = {0};
@@ -4637,17 +5028,27 @@ void triggerMarkTask(void *argument){
 			memset(result, 0, sizeof(result));
 
 			if(new_mark.has_annotation){
-				sprintf(result, "%lu,%lu,%d,%s\n",
-						(long unsigned int) infoPacket.payload.system_info_packet.mark_state.timestamp_unix,
-						(long unsigned int) infoPacket.header.ms_from_start,
+				idx_tracker += uint64_to_str(infoPacket.payload.system_info_packet.mark_state.timestamp_unix,
+						&result[0]);
+
+				result[idx_tracker++] = ',';
+
+				sprintf(&result[idx_tracker], "%lu,%d,%s\n",
+						infoPacket.header.ms_from_start,
 						(uint8_t) new_mark.beep_enabled,
 						new_mark.annotation);
 			}else{
-				sprintf(result, "%lu,%lu,%d,\n",
-						(long unsigned int) infoPacket.payload.system_info_packet.mark_state.timestamp_unix,
-						(long unsigned int) infoPacket.header.ms_from_start,
+				idx_tracker += uint64_to_str(infoPacket.payload.system_info_packet.mark_state.timestamp_unix,
+										&result[0]);
+
+				result[idx_tracker++] = ',';
+
+				sprintf(&result[idx_tracker], "%lu,%d,\n",
+						infoPacket.header.ms_from_start,
 						(uint8_t) new_mark.beep_enabled);
 			}
+
+			idx_tracker = 0;
 
 			/* save to file */
 			UINT bytes_written;

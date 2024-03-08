@@ -617,6 +617,9 @@ static void APPE_SysEvtReadyProcessing(void * pPayload)
 //   APP_DBG("4- Configure OpenThread (Channel, PANID, IPv6 stack, ...) and Start it...");
    APP_THREAD_Init_Dyn_2();
 
+    mainSystemThreadId = osThreadNew(mainSystemTask, NULL, &mainSystemTask_attributes);
+
+
 //   stopThread = 1;
 //	Adv_Request(APP_BLE_LP_ADV);
 

@@ -223,7 +223,7 @@ static uint32_t DebugTxCoapCpt = 0;
 static uint8_t PayloadWrite[30] = { 0 };
 static uint8_t PayloadRead[30] = { 0 };
 
-
+fileWriteSync_t fileWriteSync;
 timestampSync_t  timestampSync;
 
 static volatile uint8_t waitingForAck = 0;
@@ -1434,7 +1434,13 @@ static void APP_THREAD_CoapConfigHandler(void *pContext, otMessage *pMessage,
 					case SPECIAL_FUNCTION_TIMESTAMP_TAG:
 						timestampSync.slave_epoch = getEpoch();
 						timestampSync.master_epoch = rxPacket.header.epoch;
-						osMessageQueuePut(timeSyncQueueId, &timestampSync, 0, 0);
+
+						fileWriteSync.msgType = TIMESTAMP_MSG;
+						fileWriteSync.msgTime = timestampSync.master_epoch;
+						fileWriteSync.msgLength = sizeof(timestampSync_t);
+						memcpy(fileWriteSync.data, &timestampSync, sizeof(timestampSync_t));
+//						osMessageQueuePut(timeSyncQueueId, &timestampSync, 0, 0);
+						osMessageQueuePut(fileWriteQueueId, &fileWriteSync, 0, 0);
 
 						color.blue_val = 100;
 						color.green_val = 100;
