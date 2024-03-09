@@ -223,6 +223,8 @@ static void MX_RF_Init(void);
 void StartDefaultTask(void *argument);
 
 /* USER CODE BEGIN PFP */
+void tamperAlarm(bool state);
+
 void chirp(void);
 void chirp_timestamp(void);
 void MX_USB_Device_Init(void);
@@ -1332,7 +1334,7 @@ static void MX_GPIO_Init(void)
 	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 	/*Configure GPIO pins : INT1_IMU_XL_Pin INT_MAG_Pin */
-	GPIO_InitStruct.Pin = INT1_IMU_XL_Pin|INT_MAG_Pin;
+	GPIO_InitStruct.Pin = INT_MAG_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
@@ -1388,6 +1390,12 @@ static void MX_GPIO_Init(void)
 
 	HAL_NVIC_SetPriority(EXTI4_IRQn, 5, 0);
 	HAL_NVIC_EnableIRQ(EXTI4_IRQn);
+
+	GPIO_InitStruct.Pin = INT1_IMU_XL_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+	GPIO_InitStruct.Pull = GPIO_PULLUP;
+//	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(INT1_IMU_XL_GPIO_Port, &GPIO_InitStruct);
 	/* USER CODE END MX_GPIO_Init_2 */
 }
 
@@ -1641,6 +1649,8 @@ void acousticSamplingTask(void *argument){
 	//	osDelay(1000);
 
 	grabOrientation(folder_name);
+//	tamperAlarm(ENABLE);
+
 	save_config(folder_name);
 
 	//	toneSweep(1);
@@ -2060,10 +2070,10 @@ void fileWriteSyncTask(void *argument){
 static void sendDataToUWB(uint8_t* buf, uint16_t length){
 	HAL_StatusTypeDef hal_status = HAL_OK;
 	do {
-		osSemaphoreAcquire(messageI2C1_LockHandle, osWaitForever);
+		osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
 		if((hal_status == HAL_BUSY) || (hal_status == HAL_TIMEOUT)) osDelay(50);
 		hal_status = HAL_I2C_Mem_Write(&hi2c1, UWB_I2C_ADDR, UWB_I2C_GENERAL_MEM_ADDR, 1, buf, length, 100);
-		osSemaphoreRelease(messageI2C1_LockHandle);
+		osMutexRelease(messageI2C1_LockHandle);
 	}while( (hal_status != HAL_ERROR) && ( (hal_status == HAL_BUSY) || (hal_status == HAL_TIMEOUT)));
 
 	if(hal_status == HAL_ERROR){
@@ -2093,10 +2103,10 @@ void uwbMessageTask(void* argument){
 
 		if((flags & UWB_MESSAGE_ALERT) == UWB_MESSAGE_ALERT){
 			memset(uwb_buffer, NULL, sizeof(uwb_buffer));
-			osSemaphoreAcquire(messageI2C1_LockHandle, osWaitForever);
+			osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
 			hal_status = HAL_I2C_Mem_Read(&hi2c1, UWB_I2C_ADDR, UWB_I2C_GENERAL_MEM_ADDR, 1,
 					uwb_buffer, UWB_READ_BYTES, 100);
-			osSemaphoreRelease(messageI2C1_LockHandle);
+			osMutexRelease(messageI2C1_LockHandle);
 
 			/* Create a stream that reads from the buffer. */
 			pb_istream_t stream = pb_istream_from_buffer(&uwb_buffer[1], uwb_buffer[0]);
@@ -2736,6 +2746,54 @@ uint32_t uint64_to_str(uint64_t num, char *str) {
     return i;
 }
 
+void tamperAlarm(bool state){
+	uint8_t txData;
+	HAL_StatusTypeDef status;
+
+	if(state == ENABLE){
+
+//		txData = 0x00; //disable all channels, no low power mode, HR / Normal / Low-power mode (10 Hz)
+//		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG1_A, 1, &txData, 1, 100);
+//
+//		txData = 0x18; // continous mode, 4g mode, high-resolution mode
+//		//  txData = 0x00; // continous mode, 2g mode, high-resolution mode
+//		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG4_A, 1, &txData, 1, 100);
+//
+//		txData = 0x00; // no filtering
+//		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG2_A, 1, &txData, 1, 100);
+//
+//		txData = 0x44; // no filtering
+//		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG3_A, 1, &txData, 1, 100);
+//
+//		txData = 0x38; //generation on X and Y high threshold events
+//		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) INT1_CFG_A, 1, &txData, 1, 100);
+//
+//		txData = 32; //0.512g (32*16mg @ +/- 4g)
+//		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) INT1_THS_A, 1, &txData, 1, 100);
+//
+//		txData = 10; // duration: 10 / (10Hz data rate)
+//		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) INT1_DURATION_A, 1, &txData, 1, 100);
+//
+//		txData = 0x01; // interrupt active low
+//		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG6_A, 1, &txData, 1, 100);
+//
+//		txData = 0x27; //enable all channels, no low power mode, HR / Normal / Low-power mode (10 Hz)
+//		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG1_A, 1, &txData, 1, 100);
+//
+//		osDelay(100); // to stablize
+//
+//		HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
+//		HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+
+	}else{
+//		HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
+	}
+}
+
+void readInterrupt(uint8_t *rxData){
+	HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) INT1_SRC_A, 1, rxData, 1, 100);
+}
+
 void set_folder_from_time(char* folder_name){
 	//	char folder_name[20];
 	getFormattedTime(&hrtc, folder_name);
@@ -2772,173 +2830,7 @@ void set_folder_from_time(char* folder_name){
 	//	}
 }
 
-enum regAddr
-{
-	TEMP_OUT_L        = 0x05, // D
-	TEMP_OUT_H        = 0x06, // D
 
-	STATUS_M          = 0x07, // D
-
-	INT_CTRL_M        = 0x12, // D
-	INT_SRC_M         = 0x13, // D
-	INT_THS_L_M       = 0x14, // D
-	INT_THS_H_M       = 0x15, // D
-
-	OFFSET_X_L_M      = 0x16, // D
-	OFFSET_X_H_M      = 0x17, // D
-	OFFSET_Y_L_M      = 0x18, // D
-	OFFSET_Y_H_M      = 0x19, // D
-	OFFSET_Z_L_M      = 0x1A, // D
-	OFFSET_Z_H_M      = 0x1B, // D
-	REFERENCE_X       = 0x1C, // D
-	REFERENCE_Y       = 0x1D, // D
-	REFERENCE_Z       = 0x1E, // D
-
-	CTRL0             = 0x1F, // D
-	CTRL1             = 0x20, // D
-	CTRL_REG1_A       = 0x20, // DLH, DLM, DLHC
-	CTRL2             = 0x21, // D
-	CTRL_REG2_A       = 0x21, // DLH, DLM, DLHC
-	CTRL3             = 0x22, // D
-	CTRL_REG3_A       = 0x22, // DLH, DLM, DLHC
-	CTRL4             = 0x23, // D
-	CTRL_REG4_A       = 0x23, // DLH, DLM, DLHC
-	CTRL5             = 0x24, // D
-	CTRL_REG5_A       = 0x24, // DLH, DLM, DLHC
-	CTRL6             = 0x25, // D
-	CTRL_REG6_A       = 0x25, // DLHC
-	HP_FILTER_RESET_A = 0x25, // DLH, DLM
-	CTRL7             = 0x26, // D
-	REFERENCE_A       = 0x26, // DLH, DLM, DLHC
-	STATUS_A          = 0x27, // D
-	STATUS_REG_A      = 0x27, // DLH, DLM, DLHC
-
-	OUT_X_L_A         = 0x28,
-	OUT_X_H_A         = 0x29,
-	OUT_Y_L_A         = 0x2A,
-	OUT_Y_H_A         = 0x2B,
-	OUT_Z_L_A         = 0x2C,
-	OUT_Z_H_A         = 0x2D,
-
-	FIFO_CTRL         = 0x2E, // D
-	FIFO_CTRL_REG_A   = 0x2E, // DLHC
-	FIFO_SRC          = 0x2F, // D
-	FIFO_SRC_REG_A    = 0x2F, // DLHC
-
-	IG_CFG1           = 0x30, // D
-	INT1_CFG_A        = 0x30, // DLH, DLM, DLHC
-	IG_SRC1           = 0x31, // D
-	INT1_SRC_A        = 0x31, // DLH, DLM, DLHC
-	IG_THS1           = 0x32, // D
-	INT1_THS_A        = 0x32, // DLH, DLM, DLHC
-	IG_DUR1           = 0x33, // D
-	INT1_DURATION_A   = 0x33, // DLH, DLM, DLHC
-	IG_CFG2           = 0x34, // D
-	INT2_CFG_A        = 0x34, // DLH, DLM, DLHC
-	IG_SRC2           = 0x35, // D
-	INT2_SRC_A        = 0x35, // DLH, DLM, DLHC
-	IG_THS2           = 0x36, // D
-	INT2_THS_A        = 0x36, // DLH, DLM, DLHC
-	IG_DUR2           = 0x37, // D
-	INT2_DURATION_A   = 0x37, // DLH, DLM, DLHC
-
-	CLICK_CFG         = 0x38, // D
-	CLICK_CFG_A       = 0x38, // DLHC
-	CLICK_SRC         = 0x39, // D
-	CLICK_SRC_A       = 0x39, // DLHC
-	CLICK_THS         = 0x3A, // D
-	CLICK_THS_A       = 0x3A, // DLHC
-	TIME_LIMIT        = 0x3B, // D
-	TIME_LIMIT_A      = 0x3B, // DLHC
-	TIME_LATENCY      = 0x3C, // D
-	TIME_LATENCY_A    = 0x3C, // DLHC
-	TIME_WINDOW       = 0x3D, // D
-	TIME_WINDOW_A     = 0x3D, // DLHC
-
-	Act_THS           = 0x3E, // D
-	Act_DUR           = 0x3F, // D
-
-	CRA_REG_M         = 0x00, // DLH, DLM, DLHC
-	CRB_REG_M         = 0x01, // DLH, DLM, DLHC
-	MR_REG_M          = 0x02, // DLH, DLM, DLHC
-
-	SR_REG_M          = 0x09, // DLH, DLM, DLHC
-	IRA_REG_M         = 0x0A, // DLH, DLM, DLHC
-	IRB_REG_M         = 0x0B, // DLH, DLM, DLHC
-	IRC_REG_M         = 0x0C, // DLH, DLM, DLHC
-
-	WHO_AM_I          = 0x0F, // D
-	WHO_AM_I_M        = 0x0F, // DLM
-
-	TEMP_OUT_H_M      = 0x31, // DLHC
-	TEMP_OUT_L_M      = 0x32, // DLHC
-
-
-	// dummy addresses for registers in different locations on different devices;
-	// the library translates these based on device type
-	// value with sign flipped is used as index into translated_regs array
-
-	OUT_X_H_M         = -1,
-	OUT_X_L_M         = -2,
-	OUT_Y_H_M         = -3,
-	OUT_Y_L_M         = -4,
-	OUT_Z_H_M         = -5,
-	OUT_Z_L_M         = -6,
-	// update dummy_reg_count if registers are added here!
-
-	// device-specific register addresses
-
-	DLH_OUT_X_H_M     = 0x03,
-	DLH_OUT_X_L_M     = 0x04,
-	DLH_OUT_Y_H_M     = 0x05,
-	DLH_OUT_Y_L_M     = 0x06,
-	DLH_OUT_Z_H_M     = 0x07,
-	DLH_OUT_Z_L_M     = 0x08,
-
-	DLM_OUT_X_H_M     = 0x03,
-	DLM_OUT_X_L_M     = 0x04,
-	DLM_OUT_Z_H_M     = 0x05,
-	DLM_OUT_Z_L_M     = 0x06,
-	DLM_OUT_Y_H_M     = 0x07,
-	DLM_OUT_Y_L_M     = 0x08,
-
-	DLHC_OUT_X_H_M    = 0x03,
-	DLHC_OUT_X_L_M    = 0x04,
-	DLHC_OUT_Z_H_M    = 0x05,
-	DLHC_OUT_Z_L_M    = 0x06,
-	DLHC_OUT_Y_H_M    = 0x07,
-	DLHC_OUT_Y_L_M    = 0x08,
-
-	D_OUT_X_L_M       = 0x08,
-	D_OUT_X_H_M       = 0x09,
-	D_OUT_Y_L_M       = 0x0A,
-	D_OUT_Y_H_M       = 0x0B,
-	D_OUT_Z_L_M       = 0x0C,
-	D_OUT_Z_H_M       = 0x0D
-};
-
-typedef enum {
-	LIS2MDL_OFFSET_X_REG_L = 0x45,
-	LIS2MDL_OFFSET_X_REG_H = 0x46,
-	LIS2MDL_OFFSET_Y_REG_L = 0x47,
-	LIS2MDL_OFFSET_Y_REG_H = 0x48,
-	LIS2MDL_OFFSET_Z_REG_L = 0x49,
-	LIS2MDL_OFFSET_Z_REG_H = 0x4A,
-	LIS2MDL_WHO_AM_I = 0x4F,
-	LIS2MDL_CFG_REG_A = 0x60,
-	LIS2MDL_CFG_REG_B = 0x61,
-	LIS2MDL_CFG_REG_C = 0x62,
-	LIS2MDL_INT_CRTL_REG = 0x63,
-	LIS2MDL_INT_SOURCE_REG = 0x64,
-	LIS2MDL_INT_THS_L_REG = 0x65,
-	LIS2MDL_STATUS_REG = 0x67,
-	LIS2MDL_OUTX_L_REG = 0x68,
-	LIS2MDL_OUTX_H_REG = 0x69,
-	LIS2MDL_OUTY_L_REG = 0x6A,
-	LIS2MDL_OUTY_H_REG = 0x6B,
-	LIS2MDL_OUTZ_L_REG = 0x6C,
-	LIS2MDL_OUTZ_H_REG = 0x6D,
-} lis2mdl_register_t;
 
 uint8_t check_file_exists(const char* path) {
 	// Check for the existence of a file
@@ -3050,7 +2942,7 @@ void systemTestCode(void){
 // the chirp will operate every 5 minutes where every 15 minutes, a series of three chirps will occur
 void chirpTask(void *argument){
 
-	osDelay(5000); // initial delay
+	osDelay(60000 * 5); // initial delay
 
 	uint32_t counter = 0;
 
@@ -3086,6 +2978,7 @@ void chirpTask(void *argument){
 			/* save chirp */
 			chirp_event.counter = counter;
 			fileWriteSyncMsg.msgType = MASTER_CHIRP_MSG;
+			fileWriteSyncMsg.msgLength = sizeof(chirp_event_t);
 			memcpy(fileWriteSyncMsg.data, &chirp_event, sizeof(chirp_event_t));
 			osMessageQueuePut(fileWriteQueueId, &fileWriteSyncMsg, 0, osWaitForever);
 
@@ -3400,9 +3293,6 @@ uint8_t setAlarm(schedule_config_t schedules[], uint8_t schedule_count){
 
 void grabInertialSample(float *pitch, float *roll, float *heading){
 
-#define MAG_ADDR (0x1E << 1)
-#define ACC_ADDR (0x19 << 1)
-
 	uint8_t data[10];
 	uint8_t txData, rxData;
 	HAL_StatusTypeDef status;
@@ -3414,7 +3304,7 @@ void grabInertialSample(float *pitch, float *roll, float *heading){
 
 	//	HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET);
 	osDelay(100);
-	osSemaphoreAcquire(messageI2C1_LockHandle, osWaitForever);
+	osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
 	//  status = HAL_I2C_Master_Receive(&hi2c1, ACC_ADDR, data, 1, 1000);
 	status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR,  (enum regAddr) WHO_AM_I, 1,data, 1, 100);
 
@@ -3430,12 +3320,12 @@ void grabInertialSample(float *pitch, float *roll, float *heading){
 
 	txData = 0x27; //enable all channels, no low power mode, HR / Normal / Low-power mode (10 Hz)
 	status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG1_A, 1, &txData, 1, 100);
-	osSemaphoreRelease(messageI2C1_LockHandle);
+	osMutexRelease(messageI2C1_LockHandle);
 	osDelay(1000);
 
 	uint8_t errorCnt = 0;
 	rxData = 0;
-	osSemaphoreAcquire(messageI2C1_LockHandle, osWaitForever);
+	osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
 	do{
 		if(rxData != 0){
 			errorCnt++;
@@ -3447,17 +3337,17 @@ void grabInertialSample(float *pitch, float *roll, float *heading){
 		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) STATUS_REG_A, 1,&rxData, 1, 100);
 
 	}while( (rxData & 0x08) != 0x08);
-	osSemaphoreRelease(messageI2C1_LockHandle);
+	osMutexRelease(messageI2C1_LockHandle);
 	if( (rxData & 0x08) == 0x08){
 		// new data available
-		osSemaphoreAcquire(messageI2C1_LockHandle, osWaitForever);
+		osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
 		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_X_L_A, 1,&accData[0], 1, 100);
 		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_X_H_A, 1,&accData[1], 1, 100);
 		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_Y_L_A, 1,&accData[2], 1, 100);
 		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_Y_H_A, 1,&accData[3], 1, 100);
 		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_Z_L_A, 1,&accData[4], 1, 100);
 		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_Z_H_A, 1,&accData[5], 1, 100);
-		osSemaphoreRelease(messageI2C1_LockHandle);
+		osMutexRelease(messageI2C1_LockHandle);
 		osDelay(100);
 		//	  status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_X_L_A, 1,accData, 6, 100);
 
@@ -3473,7 +3363,7 @@ void grabInertialSample(float *pitch, float *roll, float *heading){
 	}
 
 
-	osSemaphoreAcquire(messageI2C1_LockHandle, osWaitForever);
+	osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
 	txData = 0b10000000; // ODR 10Hz, temperature compensation,continous mode
 	status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_CFG_REG_A, 1, &txData, 1, 100);
 
@@ -3482,14 +3372,14 @@ void grabInertialSample(float *pitch, float *roll, float *heading){
 
 	txData = 0b00000000;
 	status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_CFG_REG_C, 1, &txData, 1, 100);
-	osSemaphoreRelease(messageI2C1_LockHandle);
+	osMutexRelease(messageI2C1_LockHandle);
 	osDelay(500);
 
 
 	// new data available
-	osSemaphoreAcquire(messageI2C1_LockHandle, osWaitForever);
+	osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
 	status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_OFFSET_X_REG_L, 1,magData, 6, 100);
-	osSemaphoreRelease(messageI2C1_LockHandle);
+	osMutexRelease(messageI2C1_LockHandle);
 	//	/* START MAG CAL */
 	//	if(status == HAL_OK){
 	//		x_mag_offset = ((int16_t) (((uint16_t) magData[1]) << 8)) + magData[0];
@@ -3580,34 +3470,34 @@ void grabInertialSample(float *pitch, float *roll, float *heading){
 //		status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_CFG_REG_C, 1, &txData, 1, 100);
 //
 //		osDelay(500);
-	osSemaphoreAcquire(messageI2C1_LockHandle, osWaitForever);
+	osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
 	if(mag_calibration.delimiter == 0xDEADBEEF){
 		status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_OFFSET_X_REG_L, 1, (uint8_t*) mag_calibration.mag_cal_vals, 6, 100);
 	}
 
 	// new data available
 	status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_OFFSET_X_REG_L, 1,magData, 6, 100);
-	osSemaphoreRelease(messageI2C1_LockHandle);
+	osMutexRelease(messageI2C1_LockHandle);
 	//	  readFRAM(FRAM_MAG_CAL_WORD_ADDR, FRAM_MAG_CAL_BYTE_ADDR, mag_cal_vals, FRAM_MAG_CAL_SIZE);
 	//	  writeFRAM(FRAM_MAG_CAL_WORD_ADDR, FRAM_MAG_CAL_BYTE_ADDR, mag_cal_vals, FRAM_MAG_CAL_SIZE);
 	//	mag_cal_vals[0] = -379;
 	//	mag_cal_vals[1] = 218;
 	//	mag_cal_vals[2] = 159;
 	//	status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_OFFSET_X_REG_L, 1, (uint8_t*) mag_cal_vals, 6, 100);
-	osSemaphoreAcquire(messageI2C1_LockHandle, osWaitForever);
+	osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
 	status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_STATUS_REG, 1,&rxData, 1, 100);
-	osSemaphoreRelease(messageI2C1_LockHandle);
+	osMutexRelease(messageI2C1_LockHandle);
 	if( (rxData & 0x08) == 0x08){
 		// new data available
-		osSemaphoreAcquire(messageI2C1_LockHandle, osWaitForever);
+		osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
 		status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_OUTX_L_REG, 1,magData, 6, 100);
-		osSemaphoreRelease(messageI2C1_LockHandle);
+		osMutexRelease(messageI2C1_LockHandle);
 
 		HAL_Delay(500);
 
-		osSemaphoreAcquire(messageI2C1_LockHandle, osWaitForever);
+		osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
 		status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_OUTX_L_REG, 1,magData, 6, 100);
-		osSemaphoreRelease(messageI2C1_LockHandle);
+		osMutexRelease(messageI2C1_LockHandle);
 
 		if(status == HAL_OK){
 			x_mag = ((int16_t) (((uint16_t) magData[1]) << 8)) + magData[0];
@@ -3674,13 +3564,21 @@ void performMagCalibration(uint32_t numOfSamples){
 	int16_t z_mag = 0;
 
 	uint32_t sampleCnt = 0;
+//
+//	setLED_Blue(500);
+//	setLED_Red(500);
 
-	setLED_Blue(500);
-	setLED_Red(500);
+	colorConfig color = {0,0,0,0};
+	color.blue_val = 1000;
+	color.red_val = 1000;
+	color.duration = 100;
 
 	while(sampleCnt < numOfSamples){
 		status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_STATUS_REG, 1,&rxData, 1, 100);
+
+
 		if( (rxData & 0x08) == 0x08){
+			osMessageQueuePut(ledSeqQueueId, &color, 0, 0);
 			// new data available
 			status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_OUTX_L_REG, 1,magData, 6, 100);
 
@@ -3761,7 +3659,6 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 	colorConfig color = {0,0,0,0};
 	color.blue_val = 70;
 	color.duration = 100;
-
 
 	/* all the possible frequencies below */
 
@@ -3921,7 +3818,7 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 					if(configPacket.payload.config_packet.network_state.master_node) sendConfigToNodes(false);
 
 					color.blue_val = 0;
-					color.red_val = 100;
+					color.red_val = 1000;
 					color.green_val = 0;
 					color.duration = 2000;
 					osMessageQueuePut(ledSeqQueueId, &color, 0, 0);
@@ -4012,7 +3909,7 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 		HAL_SAI_DMAStop(&hsai_BlockA1);
 
 		color.blue_val = 0;
-		color.red_val = 100;
+		color.red_val = 1000;
 		color.green_val = 0;
 		color.duration = 2000;
 		osMessageQueuePut(ledSeqQueueId, &color, 0, 0);
@@ -4445,12 +4342,42 @@ void mainSystemTask(void *argument){
 		//		}
 	}
 
+//	DWORD free_clusters = 0;
+//	f_getfree("",&free_clusters,NULL);
+//	infoPacket.payload.system_info_packet.sdcard_state.detected = true;
+//	infoPacket.payload.system_info_packet.sdcard_state.space_remaining = ((uint64_t) free_clusters) * 256 * 512 / (1048576);
+//
+//	// WARNING: calculation doesnt work for 24-bit
+//	infoPacket.payload.system_info_packet.sdcard_state.estimated_remaining_recording_time =
+//			(infoPacket.payload.system_info_packet.sdcard_state.space_remaining * 1048576) /
+//			(configPacket.payload.config_packet.audio_config.channel_1 +
+//					configPacket.payload.config_packet.audio_config.channel_2) /
+//					(configPacket.payload.config_packet.audio_config.bit_resolution + 1) /
+//					(getSampleFreq(configPacket.payload.config_packet.audio_config.sample_freq)) / 60 / 60;
+//
+//	/* Create a stream that will write to our buffer. */
+//	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+//	/* Now we are ready to encode the message! */
+//	status = pb_encode(&stream, PACKET_FIELDS, &infoPacket);
+//	PackedPayload.pPayload = (uint8_t*) buffer;
+//	PackedPayload.Length = stream.bytes_written;
+//	if(status) DTS_STM_UpdateChar(BUZZCAM_INFO_CHAR_UUID, (uint8_t*)&PackedPayload);
+
+//	tamperAlarm(ENABLE);
 //	if(osOK != osMessageQueuePut(txMsgQueueId, &txPacket,0, 0)){
 //		Error_Handler();
 //	}
 //	if(osOK != osMessageQueuePut(rxMsgQueueId, &rxPacket,0, 0)){
 //		Error_Handler();
 //	}
+
+	colorConfig color = {0,0,0,0};
+	color.red_val = 1000;
+	color.green_val = 1000;
+	color.duration = 1500;
+	osMessageQueuePut(ledSeqQueueId, &color, 0, 0);
+
+
 	/* read current config from SD card */
 
 	/* initiate system */

@@ -172,24 +172,24 @@ void BME_Task(void *argument) {
 
 //	osDelay(500);
 
-	osSemaphoreAcquire(messageI2C1_LockHandle, osWaitForever);
+	osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
 	while (!bme.begin(BME68X_DEFAULT_ADDRESS, &hi2c1, false)) {
 		Error_Handler();
 		i2c_error_check(&hi2c1);
-		osSemaphoreRelease(messageI2C1_LockHandle);
+		osMutexRelease(messageI2C1_LockHandle);
 		osDelay(100);
 		flags = osThreadFlagsGet();
 		if ((flags & TERMINATE_THREAD_BIT) == TERMINATE_THREAD_BIT) {
 			osTimerDelete (periodicBMETimer_id);
 //			saveBME_StateConfig();
-			osSemaphoreAcquire(messageI2C1_LockHandle, osWaitForever);
+			osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
 			bme.soft_reset();
-			osSemaphoreRelease(messageI2C1_LockHandle);
+			osMutexRelease(messageI2C1_LockHandle);
 
 			bmeTaskHandle = 0x0;
 			osThreadExit();
 		}
-		osSemaphoreAcquire(messageI2C1_LockHandle, osWaitForever);
+		osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
 
 	}
 
@@ -197,7 +197,7 @@ void BME_Task(void *argument) {
 //	recoverBME_StateConfig();
 
 	i2c_error_check(&hi2c1);
-	osSemaphoreRelease(messageI2C1_LockHandle);
+	osMutexRelease(messageI2C1_LockHandle);
 
 	bme.bsecSubscribe();
 
@@ -239,20 +239,20 @@ void BME_Task(void *argument) {
 //		if ((flags & GRAB_SAMPLE_BIT) == GRAB_SAMPLE_BIT) {
 		if(1){
 
-			osSemaphoreAcquire(messageI2C1_LockHandle, osWaitForever);
+			osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
 			while(!bme.bsecRun()){
 				i2c_error_check(&hi2c1);
-				osSemaphoreRelease(messageI2C1_LockHandle);
+				osMutexRelease(messageI2C1_LockHandle);
 				timeRemaining = floor((bme.bmeConf.next_call/1000000.0) - HAL_GetTick());
 				if(timeRemaining > BME_WAIT_TOL){
 					osDelay( (timeRemaining-BME_WAIT_TOL) );
 				}else if(timeRemaining > 1){
 					osDelay(1);
 				}
-				osSemaphoreAcquire(messageI2C1_LockHandle, osWaitForever);
+				osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
 			}
 			i2c_error_check(&hi2c1);
-			osSemaphoreRelease(messageI2C1_LockHandle);
+			osMutexRelease(messageI2C1_LockHandle);
 
 			for(int i = 0; i<bme.outputs.nOutputs; i++){
 //				memcpy(&bmeData[bmeIdx++], &bme.outputs.output[i], sizeof(bsecData));
@@ -339,9 +339,9 @@ void BME_Task(void *argument) {
 
 //			osTimerDelete (periodicBMETimer_id);
 //			saveBME_StateConfig();
-			osSemaphoreAcquire(messageI2C1_LockHandle, osWaitForever);
+			osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
 			bme.soft_reset();
-			osSemaphoreRelease(messageI2C1_LockHandle);
+			osMutexRelease(messageI2C1_LockHandle);
 
 			bmeTaskHandle = 0x0;
 			osThreadExit();
