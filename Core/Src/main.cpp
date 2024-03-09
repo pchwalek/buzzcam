@@ -1649,7 +1649,7 @@ void acousticSamplingTask(void *argument){
 	//	osDelay(1000);
 
 	grabOrientation(folder_name);
-//	tamperAlarm(ENABLE);
+	tamperAlarm(ENABLE);
 
 	save_config(folder_name);
 
@@ -4342,28 +4342,28 @@ void mainSystemTask(void *argument){
 		//		}
 	}
 
-//	DWORD free_clusters = 0;
-//	f_getfree("",&free_clusters,NULL);
-//	infoPacket.payload.system_info_packet.sdcard_state.detected = true;
-//	infoPacket.payload.system_info_packet.sdcard_state.space_remaining = ((uint64_t) free_clusters) * 256 * 512 / (1048576);
-//
-//	// WARNING: calculation doesnt work for 24-bit
-//	infoPacket.payload.system_info_packet.sdcard_state.estimated_remaining_recording_time =
-//			(infoPacket.payload.system_info_packet.sdcard_state.space_remaining * 1048576) /
-//			(configPacket.payload.config_packet.audio_config.channel_1 +
-//					configPacket.payload.config_packet.audio_config.channel_2) /
-//					(configPacket.payload.config_packet.audio_config.bit_resolution + 1) /
-//					(getSampleFreq(configPacket.payload.config_packet.audio_config.sample_freq)) / 60 / 60;
-//
-//	/* Create a stream that will write to our buffer. */
-//	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-//	/* Now we are ready to encode the message! */
-//	status = pb_encode(&stream, PACKET_FIELDS, &infoPacket);
-//	PackedPayload.pPayload = (uint8_t*) buffer;
-//	PackedPayload.Length = stream.bytes_written;
-//	if(status) DTS_STM_UpdateChar(BUZZCAM_INFO_CHAR_UUID, (uint8_t*)&PackedPayload);
+	DWORD free_clusters = 0;
+	f_getfree("",&free_clusters,NULL);
+	infoPacket.payload.system_info_packet.sdcard_state.detected = true;
+	infoPacket.payload.system_info_packet.sdcard_state.space_remaining = ((uint64_t) free_clusters) * 256 * 512 / (1048576);
 
-//	tamperAlarm(ENABLE);
+	// WARNING: calculation doesnt work for 24-bit
+	infoPacket.payload.system_info_packet.sdcard_state.estimated_remaining_recording_time =
+			(infoPacket.payload.system_info_packet.sdcard_state.space_remaining * 1048576) /
+			(configPacket.payload.config_packet.audio_config.channel_1 +
+					configPacket.payload.config_packet.audio_config.channel_2) /
+					(configPacket.payload.config_packet.audio_config.bit_resolution + 1) /
+					(getSampleFreq(configPacket.payload.config_packet.audio_config.sample_freq)) / 60 / 60;
+
+	/* Create a stream that will write to our buffer. */
+	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+	/* Now we are ready to encode the message! */
+	status = pb_encode(&stream, PACKET_FIELDS, &infoPacket);
+	PackedPayload.pPayload = (uint8_t*) buffer;
+	PackedPayload.Length = stream.bytes_written;
+	if(status) DTS_STM_UpdateChar(BUZZCAM_INFO_CHAR_UUID, (uint8_t*)&PackedPayload);
+
+	tamperAlarm(ENABLE);
 //	if(osOK != osMessageQueuePut(txMsgQueueId, &txPacket,0, 0)){
 //		Error_Handler();
 //	}
