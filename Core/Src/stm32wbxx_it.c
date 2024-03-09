@@ -375,6 +375,17 @@ void RTC_Alarm_IRQHandler(void) {
     HAL_RTC_AlarmIRQHandler(&hrtc);
 }
 
+void EXTI4_IRQHandler(void)
+{
+  /* USER CODE BEGIN EXTI2_IRQn 0 */
+  osThreadFlagsSet(uwbMessageTaskId, UWB_MESSAGE_ALERT);
+  /* USER CODE END EXTI2_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(UWB_ALERT_Pin);
+  /* USER CODE BEGIN EXTI2_IRQn 1 */
+
+  /* USER CODE END EXTI2_IRQn 1 */
+}
+
 //void EXTI15_10_IRQHandler(void)
 //{
 //	HAL_GPIO_EXTI_IRQHandler(INT1_IMU_XL_Pin);
