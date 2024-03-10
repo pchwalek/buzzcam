@@ -386,8 +386,10 @@ void EXTI4_IRQHandler(void)
   /* USER CODE END EXTI2_IRQn 1 */
 }
 
-//void EXTI15_10_IRQHandler(void)
-//{
-//	HAL_GPIO_EXTI_IRQHandler(INT1_IMU_XL_Pin);
-//}
+void EXTI15_10_IRQHandler(void)
+{
+	osThreadFlagsSet(triggerMarkTaskId, TAMPER_ALERT);
+
+	HAL_GPIO_EXTI_IRQHandler(INT1_IMU_XL_Pin);
+}
 /* USER CODE END 1 */

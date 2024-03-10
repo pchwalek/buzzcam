@@ -387,6 +387,7 @@ extern SPI_HandleTypeDef hspi1;
 #define COMPLETE_EVENT  	  0x00000004
 #define RTC_EVENT		  	  0x00000008
 #define CHIRP_EVENT		  	  0x00000010
+#define TAMPER_ALERT	      0x00000100
 
 #define CONFIG_UPDATED_EVENT  0x00000001
 #define CAMERA_EVENT		  0x00000004
