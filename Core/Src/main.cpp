@@ -347,7 +347,6 @@ fileWriteSync_t fileWriteSyncUWB;
  * @retval int
  */
 int main(void)
-
 {
 	/* USER CODE BEGIN 1 */
 	reset_DFU_trigger();
@@ -1398,7 +1397,7 @@ static void MX_GPIO_Init(void)
 	HAL_GPIO_Init(INT1_IMU_XL_GPIO_Port, &GPIO_InitStruct);
 
 	HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
-//	HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+	HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
 
 	/* USER CODE END MX_GPIO_Init_2 */
 }
@@ -1653,7 +1652,7 @@ void acousticSamplingTask(void *argument){
 	//	osDelay(1000);
 
 	grabOrientation(folder_name);
-	tamperAlarm(ENABLE);
+//	tamperAlarm(ENABLE);
 
 	save_config(folder_name);
 
@@ -2759,53 +2758,51 @@ void tamperAlarm(bool state){
 	volatile HAL_StatusTypeDef status;
 
 	if(state == ENABLE){
-//		HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
-//
-//		osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
-//		txData = 0x40; // reset mag
-//		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) 0x60, 1, &txData, 1, 100);
-//		txData = 0x80; // reset acc
-//		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG5_A, 1, &txData, 1, 100);
-//
-//		osDelay(5);
-//
-//		txData = 0x97; //enable all channels, no low power mode, HR / Normal / Low-power mode (10 Hz)
-//		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG1_A, 1, &txData, 1, 100);
-//
-//		txData = 0x00; // no filtering
-//		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG2_A, 1, &txData, 1, 100);
-//
-//		txData = 0x60; //
-//		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG3_A, 1, &txData, 1, 100);
-//
-//		txData = 0x10; // continous mode, 4g mode, high-resolution mode
-//		//  txData = 0x00; // continous mode, 2g mode, high-resolution mode
-//		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG4_A, 1, &txData, 1, 100);
-//
-//		txData = 0x0; // continous mode, 4g mode, high-resolution mode
-//		//  txData = 0x00; // continous mode, 2g mode, high-resolution mode
-//		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG5_A, 1, &txData, 1, 100);
-//
-////		txData = 0x28 ; //generation on X and Y high threshold events
+		osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
+		txData = 0x40; // reset mag
+		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) 0x60, 1, &txData, 1, 100);
+		txData = 0x80; // reset acc
+		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG5_A, 1, &txData, 1, 100);
+
+		osDelay(5);
+
+		txData = 0x97; //enable all channels, no low power mode, HR / Normal / Low-power mode (10 Hz)
+		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG1_A, 1, &txData, 1, 100);
+
+		txData = 0x00; // no filtering
+		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG2_A, 1, &txData, 1, 100);
+
+		txData = 0x60; //
+		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG3_A, 1, &txData, 1, 100);
+
+		txData = 0x10; // continous mode, 4g mode, high-resolution mode
+		//  txData = 0x00; // continous mode, 2g mode, high-resolution mode
+		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG4_A, 1, &txData, 1, 100);
+
+		txData = 0x0; // continous mode, 4g mode, high-resolution mode
+		//  txData = 0x00; // continous mode, 2g mode, high-resolution mode
+		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG5_A, 1, &txData, 1, 100);
+
 //		txData = 0x28 ; //generation on X and Y high threshold events
-//		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) INT1_CFG_A, 1, &txData, 1, 100);
-//
-//		txData = 50; //0.512g (32*16mg @ +/- 4g)
-//		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) INT1_THS_A, 1, &txData, 1, 100);
-//
-//		txData = 1; // duration: 10 / (10Hz data rate)
-//		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) INT1_DURATION_A, 1, &txData, 1, 100);
-//
-//		txData = 0x02; // interrupt active low
-//		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG6_A, 1, &txData, 1, 100);
-//		osMutexRelease(messageI2C1_LockHandle);
-//
-//
-//		osDelay(100); // to stablize
-//
-//		HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+		txData = 0x28 ; //generation on X and Y high threshold events
+		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) INT1_CFG_A, 1, &txData, 1, 100);
+
+		txData = 50; //0.512g (32*16mg @ +/- 4g)
+		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) INT1_THS_A, 1, &txData, 1, 100);
+
+		txData = 1; // duration: 10 / (10Hz data rate)
+		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) INT1_DURATION_A, 1, &txData, 1, 100);
+
+		txData = 0x02; // interrupt active low
+		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG6_A, 1, &txData, 1, 100);
+		osMutexRelease(messageI2C1_LockHandle);
+
+
+		osDelay(100); // to stablize
+
+		HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 	}else{
-//		HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
+		HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
 	}
 }
 
@@ -4357,28 +4354,28 @@ void mainSystemTask(void *argument){
 		//		}
 	}
 
-//	DWORD free_clusters = 0;
-//	f_getfree("",&free_clusters,NULL);
-//	infoPacket.payload.system_info_packet.sdcard_state.detected = true;
-//	infoPacket.payload.system_info_packet.sdcard_state.space_remaining = ((uint64_t) free_clusters) * 256 * 512 / (1048576);
-//
-//	// WARNING: calculation doesnt work for 24-bit
-//	infoPacket.payload.system_info_packet.sdcard_state.estimated_remaining_recording_time =
-//			(infoPacket.payload.system_info_packet.sdcard_state.space_remaining * 1048576) /
-//			(configPacket.payload.config_packet.audio_config.channel_1 +
-//					configPacket.payload.config_packet.audio_config.channel_2) /
-//					(configPacket.payload.config_packet.audio_config.bit_resolution + 1) /
-//					(getSampleFreq(configPacket.payload.config_packet.audio_config.sample_freq)) / 60 / 60;
-//
-//	/* Create a stream that will write to our buffer. */
-//	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-//	/* Now we are ready to encode the message! */
-//	status = pb_encode(&stream, PACKET_FIELDS, &infoPacket);
-//	PackedPayload.pPayload = (uint8_t*) buffer;
-//	PackedPayload.Length = stream.bytes_written;
-//	if(status) DTS_STM_UpdateChar(BUZZCAM_INFO_CHAR_UUID, (uint8_t*)&PackedPayload);
+	DWORD free_clusters = 0;
+	f_getfree("",&free_clusters,NULL);
+	infoPacket.payload.system_info_packet.sdcard_state.detected = true;
+	infoPacket.payload.system_info_packet.sdcard_state.space_remaining = ((uint64_t) free_clusters) * 256 * 512 / (1048576);
 
-	tamperAlarm(ENABLE);
+	// WARNING: calculation doesnt work for 24-bit
+	infoPacket.payload.system_info_packet.sdcard_state.estimated_remaining_recording_time =
+			(infoPacket.payload.system_info_packet.sdcard_state.space_remaining * 1048576) /
+			(configPacket.payload.config_packet.audio_config.channel_1 +
+					configPacket.payload.config_packet.audio_config.channel_2) /
+					(configPacket.payload.config_packet.audio_config.bit_resolution + 1) /
+					(getSampleFreq(configPacket.payload.config_packet.audio_config.sample_freq)) / 60 / 60;
+
+	/* Create a stream that will write to our buffer. */
+	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+	/* Now we are ready to encode the message! */
+	status = pb_encode(&stream, PACKET_FIELDS, &infoPacket);
+	PackedPayload.pPayload = (uint8_t*) buffer;
+	PackedPayload.Length = stream.bytes_written;
+	if(status) DTS_STM_UpdateChar(BUZZCAM_INFO_CHAR_UUID, (uint8_t*)&PackedPayload);
+
+//	tamperAlarm(ENABLE);
 //	if(osOK != osMessageQueuePut(txMsgQueueId, &txPacket,0, 0)){
 //		Error_Handler();
 //	}
@@ -5011,7 +5008,11 @@ void triggerMarkTask(void *argument){
 			writeSystemInfoToFRAM();
 
 		}else if(queueStatus == osErrorTimeout){
-			flag = osThreadFlagsWait(0x0001U | TERMINATE_EVENT, osFlagsWaitAny, 0);
+			flag = osThreadFlagsWait(0x0001U | TERMINATE_EVENT | TAMPER_ALERT, osFlagsWaitAny, 0);
+
+			if(flag == osFlagsErrorResource){
+				continue;
+			}
 
 			if((flag & TAMPER_ALERT) == TAMPER_ALERT){
 				for(int i = 0; i<5; i ++){
