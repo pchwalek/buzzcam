@@ -41,21 +41,21 @@ struct RangingView: View {
             }.frame(maxWidth: .infinity)
                 .background(
                     GeometryReader { proxy in
-                            Image("flowers 3") // Replace "your_image_name" with the name of your image asset
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(width: proxy.size.width, height: proxy.size.height)
-                                .clipped()
-                                .opacity(0.7)
-                                .allowsHitTesting(false) // Prevents the image from capturing taps
-                                .contentShape(Rectangle()) // Set content shape to Rectangle to allow tap gesture
-                        }
+                        Image("flowers 3") // Replace "your_image_name" with the name of your image asset
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: proxy.size.width, height: proxy.size.height)
+                            .clipped()
+                            .opacity(0.7)
+                            .allowsHitTesting(false) // Prevents the image from capturing taps
+                            .contentShape(Rectangle()) // Set content shape to Rectangle to allow tap gesture
+                    }
                 )
                 .onTapGesture {
-                withAnimation {
-                    isExpanded.toggle()
+                    withAnimation {
+                        isExpanded.toggle()
+                    }
                 }
-            }
             if isExpanded {
                 VStack (alignment: .leading, spacing: 20) {
                     VStack(alignment: .leading) {
@@ -84,21 +84,21 @@ struct RangingView: View {
                             .cornerRadius(8)
                         }.padding(.vertical, 30)
                         
-//                        VStack(alignment: .leading) {
-//                                    Table(bluetoothModel.specialFunctionData?.uwbPacket.ranges ?? []) { _ in
-//                                        TableColumn("UID") {
-//                                            Text("UID Placeholder")
-//                                        }
-//                                        TableColumn("Range") {
-//                                            Text("Range Placeholder")
-//                                        }
-//                                    }
-//                                }
+                        //                        VStack(alignment: .leading) {
+                        //                                    Table(bluetoothModel.specialFunctionData?.uwbPacket.ranges ?? []) { _ in
+                        //                                        TableColumn("UID") {
+                        //                                            Text("UID Placeholder")
+                        //                                        }
+                        //                                        TableColumn("Range") {
+                        //                                            Text("Range Placeholder")
+                        //                                        }
+                        //                                    }
+                        //                                }
                         HStack {
                             
                             
                             
-
+                            
                             VStack {
                                 Text("System UIDs")
                                     .font(customFontText)
@@ -117,15 +117,15 @@ struct RangingView: View {
                                     }
                                 }
                                 
-//                                if bluetoothModel.systemInfoPacketData?.discovered_devices.isEmpty ?? true {
-//                                    Text("...")
-//                                } else {
-//                                    List(bluetoothModel.systemInfoPacketData?.discovered_devices ?? [], id: \.self) { device in
-////                                        Text("\(range.systemUid)") // print hex, 8 digits
-//                                        let hexUID = String(format: "%08X", device.uid)
-//                                        Text(hexUID)
-//                                    }
-//                                }
+                                //                                if bluetoothModel.systemInfoPacketData?.discovered_devices.isEmpty ?? true {
+                                //                                    Text("...")
+                                //                                } else {
+                                //                                    List(bluetoothModel.systemInfoPacketData?.discovered_devices ?? [], id: \.self) { device in
+                                ////                                        Text("\(range.systemUid)") // print hex, 8 digits
+                                //                                        let hexUID = String(format: "%08X", device.uid)
+                                //                                        Text(hexUID)
+                                //                                    }
+                                //                                }
                             }
                             
                             Spacer()
@@ -147,13 +147,13 @@ struct RangingView: View {
                                     }
                                 }
                                 
-//                                if bluetoothModel.systemInfoPacketData?.discovered_devices.isEmpty ?? true {
-//                                    Text("...")
-//                                } else {
-//                                    List(bluetoothModel.systemInfoPacketData?.discovered_devices ?? [], id: \.self) { device in
-//                                        Text("\(device.range)")
-//                                    }
-//                                }
+                                //                                if bluetoothModel.systemInfoPacketData?.discovered_devices.isEmpty ?? true {
+                                //                                    Text("...")
+                                //                                } else {
+                                //                                    List(bluetoothModel.systemInfoPacketData?.discovered_devices ?? [], id: \.self) { device in
+                                //                                        Text("\(device.range)")
+                                //                                    }
+                                //                                }
                             }
                         }
                         
@@ -173,7 +173,7 @@ struct RangingView: View {
         }
         .frame(maxWidth: .infinity)
         .background(Color(white:0.90))
-        .padding(.bottom, 40)
+        .padding(.bottom, UIScreen.main.bounds.height * 0.08) // 8% padding from the bottom of the screen
     }
 }
 
