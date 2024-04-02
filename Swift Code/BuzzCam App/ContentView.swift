@@ -101,7 +101,7 @@ struct ContentView: View {
 //                }
             }
             .background(Color.clear) // Set the background color of the Group to clear
-        }
+        }.navigationViewStyle(StackNavigationViewStyle())
     }
 }
 
