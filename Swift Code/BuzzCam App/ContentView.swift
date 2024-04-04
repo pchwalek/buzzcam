@@ -15,6 +15,8 @@ struct ContentView: View {
     @State var connected = false // When connected, display correct view, default show DiscoverView
     @State private var showMainContent = false // Bool for splash screen
     @State var selectedTab = TabbedItems.home // Default selected tab is home
+    @ObservedObject var store = PresetButtonStore()
+
 
     var body: some View {
         NavigationView {
@@ -25,7 +27,7 @@ struct ContentView: View {
                             // Show corresponding view based on selected tab
                             switch selectedTab {
                             case .home:
-                                MainView(connected: $connected).environmentObject(bluetoothModel)
+                                MainView(connected: $connected, store: store).environmentObject(bluetoothModel)
                             case .conf:
                                 ConfigView().environmentObject(bluetoothModel)
                             }

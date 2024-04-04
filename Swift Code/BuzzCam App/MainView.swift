@@ -26,12 +26,16 @@ struct MainView: View {
     @EnvironmentObject var bluetoothModel: BluetoothModel
     @State private var cancellables: Set<AnyCancellable> = Set()
     
+    @ObservedObject var store: PresetButtonStore
+    
     let customFontTitle = Font.custom("Futura-Bold", size: 25) // Define a custom font
     let customFontText = Font.custom("AvenirNext-Regular", size: 18) // Define a custom font
     let customFontTextBold = Font.custom("AvenirNext-DemiBold", size: 23) // Define a custom font
     let customFontTextBoldLarge = Font.custom("AvenirNext-DemiBold", size: 40) // Define a custom font
     
     @State private var beeScale: CGFloat = 1.0 // Define beeScale here
+    
+
     
     var body: some View {
         NavigationView {
@@ -120,7 +124,23 @@ struct MainView: View {
                                 //                                        .foregroundColor(Color.black)
                                 //                                }
                                 VStack (alignment: .leading) {
-                                    PresetView()
+                                    PresetView(presetButtons: $store.presetButtons)
+                                    {
+                                        Task {
+                                            do {
+                                                try await store.save(presetButtons: store.presetButtons)
+                                            } catch {
+                                                fatalError(error.localizedDescription)
+                                            }
+                                        }
+                                    }
+                                    .task {
+                                        do {
+                                            try await store.load()
+                                        } catch {
+                                            fatalError(error.localizedDescription)
+                                        }
+                                    }
                                     
                                     Text("Custom").font(customFontTextBold)
                                     
@@ -266,6 +286,6 @@ struct MainView: View {
 }
 
 
-#Preview {
-    MainView(connected: .constant(true))
-}
+//#Preview {
+//    MainView(connected: .constant(true))
+//}

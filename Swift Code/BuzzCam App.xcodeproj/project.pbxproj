@@ -30,6 +30,7 @@
 		21C0A2272AF0E50A00BA2ABC /* SwiftProtobufPluginLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = 21C0A2262AF0E50A00BA2ABC /* SwiftProtobufPluginLibrary */; };
 		21C17DC72B854EC200A65338 /* RangingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C17DC62B854EC200A65338 /* RangingView.swift */; };
 		21C907BD2B7EB6A5007B33A1 /* SystemControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C907BC2B7EB6A5007B33A1 /* SystemControlView.swift */; };
+		21D26FF82BBDE33A008A4EF2 /* PresetButtonStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21D26FF72BBDE33A008A4EF2 /* PresetButtonStore.swift */; };
 		21DAA5D52ADF221F00E70BF2 /* BuzzCam_AppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21DAA5D42ADF221F00E70BF2 /* BuzzCam_AppApp.swift */; };
 		21DAA5D72ADF221F00E70BF2 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21DAA5D62ADF221F00E70BF2 /* ContentView.swift */; };
 		21DAA5D92ADF222000E70BF2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 21DAA5D82ADF222000E70BF2 /* Assets.xcassets */; };
@@ -78,6 +79,7 @@
 		21C0A21A2AEC4E1100BA2ABC /* BluetoothConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothConstants.swift; sourceTree = "<group>"; };
 		21C17DC62B854EC200A65338 /* RangingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RangingView.swift; sourceTree = "<group>"; };
 		21C907BC2B7EB6A5007B33A1 /* SystemControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemControlView.swift; sourceTree = "<group>"; };
+		21D26FF72BBDE33A008A4EF2 /* PresetButtonStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresetButtonStore.swift; sourceTree = "<group>"; };
 		21DAA5D12ADF221F00E70BF2 /* BuzzCam App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "BuzzCam App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		21DAA5D42ADF221F00E70BF2 /* BuzzCam_AppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuzzCam_AppApp.swift; sourceTree = "<group>"; };
 		21DAA5D62ADF221F00E70BF2 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -214,6 +216,7 @@
 				21C0A20B2AE7104800BA2ABC /* DiscoverView.swift */,
 				21DAA5FF2AE0746B00E70BF2 /* MainView.swift */,
 				21A07DEC2B98F64300424B27 /* PresetView.swift */,
+				21D26FF72BBDE33A008A4EF2 /* PresetButtonStore.swift */,
 				21C0A2052AE3152800BA2ABC /* StatusesView.swift */,
 				21C17DC62B854EC200A65338 /* RangingView.swift */,
 				21C0A2072AE320E000BA2ABC /* SensorReadingView.swift */,
@@ -406,6 +409,7 @@
 				21C0A2102AE7137100BA2ABC /* ConfigView.swift in Sources */,
 				21C907BD2B7EB6A5007B33A1 /* SystemControlView.swift in Sources */,
 				21DAA5D52ADF221F00E70BF2 /* BuzzCam_AppApp.swift in Sources */,
+				21D26FF82BBDE33A008A4EF2 /* PresetButtonStore.swift in Sources */,
 				21C0A20C2AE7104800BA2ABC /* DiscoverView.swift in Sources */,
 				21C0A2082AE320E000BA2ABC /* SensorReadingView.swift in Sources */,
 				216B6DC92B757CF8005D5538 /* LoadingParticle.swift in Sources */,
