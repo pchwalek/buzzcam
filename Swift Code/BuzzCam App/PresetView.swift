@@ -38,91 +38,257 @@ struct PresetView: View {
     @State private var newButtonColor = "#0000FF"
     @State private var newButtonDescription = ""
     
-    let customFontTitle = Font.custom("Futura-Bold", size: 25) // Define a custom font
-    let customFontText = Font.custom("AvenirNext-Regular", size: 18) // Define a custom font
-    let customFontTextBold = Font.custom("AvenirNext-DemiBold", size: 23) // Define a custom font
-    let customFontTextBoldLarge = Font.custom("AvenirNext-DemiBold", size: 40) // Define a custom font
+    @State private var isDeleteSheetVisible = false // Track whether delete sheet is visible
+    @State private var selectedPresetIDs = Set<UUID>() // Track selected preset IDs for deletion
+    
+    let customFontTitle = Font.custom("Futura-Bold", size: 25)
+    let customFontText = Font.custom("AvenirNext-Regular", size: 18)
+    let customFontTextBold = Font.custom("AvenirNext-DemiBold", size: 23)
+    let customFontTextBoldLarge = Font.custom("AvenirNext-DemiBold", size: 40)
     
     @Environment(\.scenePhase) private var scenePhase
-    let saveAction: ()->Void
+    let saveAction: () -> Void
+    @StateObject private var store = PresetButtonStore()
 
     var body: some View {
-        VStack (alignment: .leading) {
+        VStack(alignment: .leading) {
             Text("Preset").font(customFontTextBold)
             LazyVGrid(columns: [
-                            GridItem(.flexible(minimum: 100, maximum: .infinity)), // Flexible column to fit multiple buttons
-                            GridItem(.flexible(minimum: 100, maximum: .infinity)) // Add more columns if needed
-                        ], spacing: 10) { // Add spacing between buttons
-                            ForEach(presetButtons) { button in
-                                Button(action: {
-                                    bluetoothModel.markUpdates(annotationText: button.name, beep: button.beep)
-                                    // clear annotation text
-                                    annotationText = ""
-                                }) {
-                                    Text(button.name)
-                                        .font(customFontText)
-                                        .padding(EdgeInsets(top: 5, leading: 20, bottom: 5, trailing: 20))
-                                        .background(Color(hex: button.color).opacity(0.5)) // Convert hex string to Color
-                                        .cornerRadius(5)
+                GridItem(.flexible(minimum: 100, maximum: .infinity)),
+                GridItem(.flexible(minimum: 100, maximum: .infinity))
+            ], spacing: 10) {
+                ForEach(presetButtons) { button in
+                    Button(action: {
+                        bluetoothModel.markUpdates(annotationText: button.name, beep: button.beep)
+                        annotationText = ""
+                    }) {
+                        Text(button.name)
+                            .font(customFontText)
+                            .padding(EdgeInsets(top: 5, leading: 20, bottom: 5, trailing: 20))
+                            .background(Color(hex: button.color).opacity(0.5))
+                            .cornerRadius(5)
+                    }
+                }
+            }
+            .padding(.bottom, 10)
+            
+            Button(action: {
+                // Show popup to add new preset button
+                isAddButtonPopupVisible = true
+            }) {
+                Text("Add Preset")
+                    .font(customFontText)
+                    .foregroundColor(.blue)
+            }
+            
+            Button(action: {
+                            // Show delete sheet
+                            isDeleteSheetVisible = true
+                        }) {
+                            Text("Delete Preset")
+                                .font(customFontText)
+                                .foregroundColor(.red)
+                        }
+                    }
+                    .padding(.bottom, 20)
+                    .onChange(of: scenePhase) {
+                        if scenePhase == .inactive { saveAction() }
+                    }.sheet(isPresented: $isAddButtonPopupVisible) {
+                                    // Popup view to add new preset button
+                                    VStack {
+                                        TextField("Name", text: $newButtonName)
+                                            .padding()
+                                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                                        Toggle("Beep", isOn: $newButtonBeep)
+                                            .padding()
+                                        TextField("Color (hex)", text: $newButtonColor)
+                                            .padding()
+                                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                                        TextField("Description", text: $newButtonDescription)
+                                            .padding()
+                                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                                        Button(action: {
+                                            // Add new preset button
+                                            let newButton = PresetButton(name: newButtonName, color: newButtonColor, description: newButtonDescription, beep: newButtonBeep)
+                                            presetButtons.append(newButton)
+                                            isAddButtonPopupVisible = false
+                                            // Clear input fields
+                                            newButtonName = ""
+                                            newButtonBeep = false
+                                            newButtonColor = "#0000FF"
+                                            newButtonDescription = ""
+                                        }) {
+                                            Text("Save")
+                                                .padding()
+                                                .frame(maxWidth: .infinity)
+                                                .background(Color.blue)
+                                                .foregroundColor(.white)
+                                                .cornerRadius(10)
+                                        }
+                                    }.environment(\.colorScheme, .light)
+                                    .padding()
+                                    .background(Color.white)
+                                    .cornerRadius(10)
+                                }
+                    .sheet(isPresented: $isDeleteSheetVisible) {
+                        // Sheet for deleting presets
+                        VStack {
+                            Text("Delete Presets")
+                                .font(customFontTextBold)
+                                .padding(.bottom)
+                            
+                            ScrollView {
+                                ForEach(presetButtons) { button in
+                                    HStack {
+                                        Text(button.name)
+                                        Spacer()
+                                        // Checkbox for selecting preset
+                                        Image(systemName: selectedPresetIDs.contains(button.id) ? "checkmark.square" : "square")
+                                            .resizable()
+                                            .frame(width: 20, height: 20)
+                                            .onTapGesture {
+                                                // Toggle selection
+                                                if selectedPresetIDs.contains(button.id) {
+                                                    selectedPresetIDs.remove(button.id)
+                                                } else {
+                                                    selectedPresetIDs.insert(button.id)
+                                                }
+                                            }
+                                    }
+                                    .padding()
+                                    .onTapGesture {
+                                        // Toggle selection on tap
+                                        if selectedPresetIDs.contains(button.id) {
+                                            selectedPresetIDs.remove(button.id)
+                                        } else {
+                                            selectedPresetIDs.insert(button.id)
+                                        }
+                                    }
                                 }
                             }
+                            
+                            // Delete button
+                            Button(action: {
+                                // Remove selected presets from presetButtons
+                                presetButtons.removeAll { button in
+                                    selectedPresetIDs.contains(button.id)
+                                }
+                                // Dismiss the sheet
+                                isDeleteSheetVisible = false
+                            }) {
+                                Text("Delete Selected")
+                                    .font(customFontTextBold)
+                                    .padding()
+                                    .frame(maxWidth: .infinity)
+                                    .background(Color.red)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(10)
+                            }
                         }
-                        .padding(.vertical, 10) // Add vertical padding
-                        
-                Button(action: {
-                    // Show popup to add new preset button
-                    isAddButtonPopupVisible = true
-                }) {
-                    Text("Add Preset")
-                        .font(customFontText)
-                        .foregroundColor(.blue
-                        
-                        )
-                }
-            
-        }.padding(.bottom, 20)
-        .onChange(of: scenePhase) {
-            if scenePhase == .inactive { saveAction() }
-        }
-        .sheet(isPresented: $isAddButtonPopupVisible) {
-            // Popup view to add new preset button
-            VStack {
-                TextField("Name", text: $newButtonName)
-                    .padding()
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                Toggle("Beep", isOn: $newButtonBeep)
-                    .padding()
-                TextField("Color (hex)", text: $newButtonColor)
-                    .padding()
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                TextField("Description", text: $newButtonDescription)
-                    .padding()
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                Button(action: {
-                    // Add new preset button
-                    let newButton = PresetButton(name: newButtonName, color: newButtonColor, description: newButtonDescription, beep: newButtonBeep)
-                    presetButtons.append(newButton)
-                    isAddButtonPopupVisible = false
-                    // Clear input fields
-                    newButtonName = ""
-                    newButtonBeep = false
-                    newButtonColor = "#0000FF"
-                    newButtonDescription = ""
-                }) {
-                    Text("Save")
                         .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.blue)
-                        .foregroundColor(.white)
+                        .background(Color.white)
                         .cornerRadius(10)
-                }
-            }.environment(\.colorScheme, .light)
-            .padding()
-            .background(Color.white)
-            .cornerRadius(10)
-        }
+                    }
     }
 }
+
+
+////////////// WITHOUT DELETE FUNCTIONALITY
+//struct PresetView: View {
+//    
+//    @EnvironmentObject var bluetoothModel: BluetoothModel
+//    
+//    @Binding var presetButtons: [PresetButton]
+//    @State private var annotationText: String = ""
+//    @State private var isAddButtonPopupVisible = false
+//    @State private var newButtonName = ""
+//    @State private var newButtonBeep = false
+//    @State private var newButtonColor = "#0000FF"
+//    @State private var newButtonDescription = ""
+//    
+//    let customFontTitle = Font.custom("Futura-Bold", size: 25) // Define a custom font
+//    let customFontText = Font.custom("AvenirNext-Regular", size: 18) // Define a custom font
+//    let customFontTextBold = Font.custom("AvenirNext-DemiBold", size: 23) // Define a custom font
+//    let customFontTextBoldLarge = Font.custom("AvenirNext-DemiBold", size: 40) // Define a custom font
+//    
+//    @Environment(\.scenePhase) private var scenePhase
+//    let saveAction: ()->Void
+//
+//    var body: some View {
+//        VStack (alignment: .leading) {
+//            Text("Preset").font(customFontTextBold)
+//            LazyVGrid(columns: [
+//                            GridItem(.flexible(minimum: 100, maximum: .infinity)), // Flexible column to fit multiple buttons
+//                            GridItem(.flexible(minimum: 100, maximum: .infinity)) // Add more columns if needed
+//                        ], spacing: 10) { // Add spacing between buttons
+//                            ForEach(presetButtons) { button in
+//                                Button(action: {
+//                                    bluetoothModel.markUpdates(annotationText: button.name, beep: button.beep)
+//                                    // clear annotation text
+//                                    annotationText = ""
+//                                }) {
+//                                    Text(button.name)
+//                                        .font(customFontText)
+//                                        .padding(EdgeInsets(top: 5, leading: 20, bottom: 5, trailing: 20))
+//                                        .background(Color(hex: button.color).opacity(0.5)) // Convert hex string to Color
+//                                        .cornerRadius(5)
+//                                }
+//                            }
+//                        }
+//                        .padding(.bottom, 10) // Add vertical padding
+//                        
+//                Button(action: {
+//                    // Show popup to add new preset button
+//                    isAddButtonPopupVisible = true
+//                }) {
+//                    Text("Add Preset")
+//                        .font(customFontText)
+//                        .foregroundColor(.blue)
+//                }
+//            
+//        }.padding(.bottom, 20)
+//        .onChange(of: scenePhase) {
+//            if scenePhase == .inactive { saveAction() }
+//        }
+//        .sheet(isPresented: $isAddButtonPopupVisible) {
+//            // Popup view to add new preset button
+//            VStack {
+//                TextField("Name", text: $newButtonName)
+//                    .padding()
+//                    .textFieldStyle(RoundedBorderTextFieldStyle())
+//                Toggle("Beep", isOn: $newButtonBeep)
+//                    .padding()
+//                TextField("Color (hex)", text: $newButtonColor)
+//                    .padding()
+//                    .textFieldStyle(RoundedBorderTextFieldStyle())
+//                TextField("Description", text: $newButtonDescription)
+//                    .padding()
+//                    .textFieldStyle(RoundedBorderTextFieldStyle())
+//                Button(action: {
+//                    // Add new preset button
+//                    let newButton = PresetButton(name: newButtonName, color: newButtonColor, description: newButtonDescription, beep: newButtonBeep)
+//                    presetButtons.append(newButton)
+//                    isAddButtonPopupVisible = false
+//                    // Clear input fields
+//                    newButtonName = ""
+//                    newButtonBeep = false
+//                    newButtonColor = "#0000FF"
+//                    newButtonDescription = ""
+//                }) {
+//                    Text("Save")
+//                        .padding()
+//                        .frame(maxWidth: .infinity)
+//                        .background(Color.blue)
+//                        .foregroundColor(.white)
+//                        .cornerRadius(10)
+//                }
+//            }.environment(\.colorScheme, .light)
+//            .padding()
+//            .background(Color.white)
+//            .cornerRadius(10)
+//        }
+//    }
+//}
 
 
 

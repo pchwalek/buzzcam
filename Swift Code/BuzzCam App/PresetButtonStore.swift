@@ -14,54 +14,60 @@ struct PresetButton: Identifiable, Codable {
     var color: String
     var description: String
     var beep: Bool
+    var isSelectedForDeletion = false // Step 1: Property to track selection for deletion
 }
 
 @MainActor
-class PresetButtonStore: ObservableObject {    
+class PresetButtonStore: ObservableObject {
     @Published var presetButtons: [PresetButton] = [] {
-            didSet {
-                saveIfNeeded()
-            }
+        didSet {
+            saveIfNeeded()
         }
+    }
 
-        private func saveIfNeeded() {
-            Task {
-                do {
-                    try await save(presetButtons: presetButtons)
-                } catch {
-                    fatalError(error.localizedDescription)
-                }
+    private func saveIfNeeded() {
+        Task {
+            do {
+                try await save(presetButtons: presetButtons)
+            } catch {
+                fatalError(error.localizedDescription)
             }
         }
-    
+    }
+
     private static func fileURL() throws -> URL {
-            try FileManager.default.url(for: .documentDirectory,
-                                        in: .userDomainMask,
-                                        appropriateFor: nil,
-                                        create: false)
+        try FileManager.default.url(for: .documentDirectory,
+                                     in: .userDomainMask,
+                                     appropriateFor: nil,
+                                     create: false)
             .appendingPathComponent("presetbuttons.data")
-        }
-    
-    func load() async throws {
-        let task = Task<[PresetButton], Error> {
+    }
+
+    func load() async {
+        do {
             let fileURL = try Self.fileURL()
             guard let data = try? Data(contentsOf: fileURL) else {
-                return []
+                // File doesn't exist or couldn't be read
+                print("File not found or couldn't be read.")
+                return
             }
             let presetButtons = try JSONDecoder().decode([PresetButton].self, from: data)
-            return presetButtons
+            self.presetButtons = presetButtons
+        } catch {
+            print("Error loading data:", error)
         }
-        let presetButtons = try await task.value
-        self.presetButtons = presetButtons
+    }
+
+    func save(presetButtons: [PresetButton]) async throws {
+        let task = Task {
+            let data = try JSONEncoder().encode(presetButtons)
+            let outfile = try Self.fileURL()
+            try data.write(to: outfile)
+        }
+        _ = try await task.value
     }
     
-    func save(presetButtons: [PresetButton]) async throws {
-            let task = Task {
-                let data = try JSONEncoder().encode(presetButtons)
-                let outfile = try Self.fileURL()
-                try data.write(to: outfile)
-            }
-            _ = try await task.value
-        }
+    func deletePresetButtons(withIDs ids: Set<UUID>) {
+        presetButtons.removeAll { ids.contains($0.id) }
+    }
 }
-

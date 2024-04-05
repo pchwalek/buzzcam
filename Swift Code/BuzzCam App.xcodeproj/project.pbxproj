@@ -31,6 +31,13 @@
 		21C17DC72B854EC200A65338 /* RangingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C17DC62B854EC200A65338 /* RangingView.swift */; };
 		21C907BD2B7EB6A5007B33A1 /* SystemControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C907BC2B7EB6A5007B33A1 /* SystemControlView.swift */; };
 		21D26FF82BBDE33A008A4EF2 /* PresetButtonStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21D26FF72BBDE33A008A4EF2 /* PresetButtonStore.swift */; };
+		21D26FFA2BC089C9008A4EF2 /* VideoPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21D26FF92BC089C9008A4EF2 /* VideoPlayerView.swift */; };
+		21D270052BC091BA008A4EF2 /* patagonia_vid (1).mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 21D270042BC091BA008A4EF2 /* patagonia_vid (1).mp4 */; };
+		21D270062BC091BA008A4EF2 /* patagonia_vid (1).mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 21D270042BC091BA008A4EF2 /* patagonia_vid (1).mp4 */; };
+		21D270072BC091BA008A4EF2 /* patagonia_vid (1).mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 21D270042BC091BA008A4EF2 /* patagonia_vid (1).mp4 */; };
+		21D270092BC0934C008A4EF2 /* patagonia_vid_1.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 21D270082BC0934C008A4EF2 /* patagonia_vid_1.mp4 */; };
+		21D2700A2BC0934C008A4EF2 /* patagonia_vid_1.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 21D270082BC0934C008A4EF2 /* patagonia_vid_1.mp4 */; };
+		21D2700B2BC0934C008A4EF2 /* patagonia_vid_1.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 21D270082BC0934C008A4EF2 /* patagonia_vid_1.mp4 */; };
 		21DAA5D52ADF221F00E70BF2 /* BuzzCam_AppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21DAA5D42ADF221F00E70BF2 /* BuzzCam_AppApp.swift */; };
 		21DAA5D72ADF221F00E70BF2 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21DAA5D62ADF221F00E70BF2 /* ContentView.swift */; };
 		21DAA5D92ADF222000E70BF2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 21DAA5D82ADF222000E70BF2 /* Assets.xcassets */; };
@@ -80,6 +87,9 @@
 		21C17DC62B854EC200A65338 /* RangingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RangingView.swift; sourceTree = "<group>"; };
 		21C907BC2B7EB6A5007B33A1 /* SystemControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemControlView.swift; sourceTree = "<group>"; };
 		21D26FF72BBDE33A008A4EF2 /* PresetButtonStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresetButtonStore.swift; sourceTree = "<group>"; };
+		21D26FF92BC089C9008A4EF2 /* VideoPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerView.swift; sourceTree = "<group>"; };
+		21D270042BC091BA008A4EF2 /* patagonia_vid (1).mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = "patagonia_vid (1).mp4"; sourceTree = "<group>"; };
+		21D270082BC0934C008A4EF2 /* patagonia_vid_1.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = patagonia_vid_1.mp4; sourceTree = "<group>"; };
 		21DAA5D12ADF221F00E70BF2 /* BuzzCam App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "BuzzCam App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		21DAA5D42ADF221F00E70BF2 /* BuzzCam_AppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuzzCam_AppApp.swift; sourceTree = "<group>"; };
 		21DAA5D62ADF221F00E70BF2 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -182,6 +192,15 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		21D270032BC0919F008A4EF2 /* Videos */ = {
+			isa = PBXGroup;
+			children = (
+				21D270042BC091BA008A4EF2 /* patagonia_vid (1).mp4 */,
+				21D270082BC0934C008A4EF2 /* patagonia_vid_1.mp4 */,
+			);
+			path = Videos;
+			sourceTree = "<group>";
+		};
 		21DAA5C82ADF221F00E70BF2 = {
 			isa = PBXGroup;
 			children = (
@@ -215,6 +234,8 @@
 				21A5600C2B19429B00292A6A /* ConfigSubviews */,
 				21C0A20B2AE7104800BA2ABC /* DiscoverView.swift */,
 				21DAA5FF2AE0746B00E70BF2 /* MainView.swift */,
+				21D26FF92BC089C9008A4EF2 /* VideoPlayerView.swift */,
+				21D270032BC0919F008A4EF2 /* Videos */,
 				21A07DEC2B98F64300424B27 /* PresetView.swift */,
 				21D26FF72BBDE33A008A4EF2 /* PresetButtonStore.swift */,
 				21C0A2052AE3152800BA2ABC /* StatusesView.swift */,
@@ -369,6 +390,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				21D270092BC0934C008A4EF2 /* patagonia_vid_1.mp4 in Resources */,
+				21D270052BC091BA008A4EF2 /* patagonia_vid (1).mp4 in Resources */,
 				21DAA5DD2ADF222000E70BF2 /* Preview Assets.xcassets in Resources */,
 				21DAA5D92ADF222000E70BF2 /* Assets.xcassets in Resources */,
 			);
@@ -378,6 +401,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				21D2700A2BC0934C008A4EF2 /* patagonia_vid_1.mp4 in Resources */,
+				21D270062BC091BA008A4EF2 /* patagonia_vid (1).mp4 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -385,6 +410,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				21D2700B2BC0934C008A4EF2 /* patagonia_vid_1.mp4 in Resources */,
+				21D270072BC091BA008A4EF2 /* patagonia_vid (1).mp4 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -414,6 +441,7 @@
 				21C0A2082AE320E000BA2ABC /* SensorReadingView.swift in Sources */,
 				216B6DC92B757CF8005D5538 /* LoadingParticle.swift in Sources */,
 				21F495EA2B2783DA008E3808 /* CameraConfigView.swift in Sources */,
+				21D26FFA2BC089C9008A4EF2 /* VideoPlayerView.swift in Sources */,
 				21C17DC72B854EC200A65338 /* RangingView.swift in Sources */,
 				21152BC92B2790920078ADD4 /* NetworkView.swift in Sources */,
 				216B6DC62B757C49005D5538 /* StarryNightView.swift in Sources */,

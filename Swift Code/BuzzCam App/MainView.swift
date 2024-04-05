@@ -16,6 +16,7 @@ import CoreBluetooth
 import SwiftProtobuf
 import Combine
 import Liquid
+import AVKit
 //import Shiny
 
 struct MainView: View {
@@ -46,46 +47,50 @@ struct MainView: View {
                         
                         VStack {
                             // upper box
-                            VStack(alignment: .center){
-                                HStack {
-                                    Text(String(bluetoothModel.connectedPeripheral?.name ?? "BuzzCam").split(separator: "_")[1]) // split by underscore
-                                        .font(customFontTitle)
-                                        .foregroundColor(Color.white)
-                                        .shadow(color: .black, radius: 3, x: 0, y: 2)
-                                    Spacer()
-                                    
-                                    Button(action: {
-                                        // Action when Disconnect button is clicked
-                                        connected = false
-                                        // disconnect from peripheral
-                                        bluetoothModel.disconnect()
-                                    }) {
-                                        Text("Disconnect")
-                                            .foregroundColor(Color.white)
-                                            .font(customFontText)
-                                    }
-                                    .padding()
-                                    .background(Color(white: 0.2))
-                                    .opacity(0.8)
-                                    .cornerRadius(5)
-                                }
-                            }
-                            .padding()
-                            .frame(
-                                minWidth: 0,
-                                maxWidth: .infinity,
-                                minHeight: 200,
-                                maxHeight: .infinity,
-                                alignment: .topLeading
-                            )
-                            .background(
-                                Image("patagonia 4") // Replace "your_image_name" with the name of your image asset
-                                    .resizable()
-                                    .scaledToFill()
+                            ZStack {
+                                PlayerView().frame(maxWidth: .infinity, maxHeight: .infinity) // Ensure the PlayerView fills the available spacr
                                     .edgesIgnoringSafeArea(.all)
-                                    .opacity(0.9) // Adjust the opacity of the image if needed
-//                                    .blur(radius: 1)
-                            )
+                                VStack(alignment: .center){
+                                    HStack {
+                                        Text(String(bluetoothModel.connectedPeripheral?.name ?? "BuzzCam").split(separator: "_")[1]) // split by underscore
+                                            .font(customFontTitle)
+                                            .foregroundColor(Color.white)
+                                            .shadow(color: .black, radius: 3, x: 0, y: 2)
+                                        Spacer()
+                                        
+                                        Button(action: {
+                                            // Action when Disconnect button is clicked
+                                            connected = false
+                                            // disconnect from peripheral
+                                            bluetoothModel.disconnect()
+                                        }) {
+                                            Text("Disconnect")
+                                                .foregroundColor(Color.white)
+                                                .font(customFontText)
+                                        }
+                                        .padding()
+                                        .background(Color(white: 0.2))
+                                        .opacity(0.8)
+                                        .cornerRadius(5)
+                                    }
+                                }
+                                .padding()
+                                .frame(
+                                    minWidth: 0,
+                                    maxWidth: .infinity,
+                                    minHeight: 500,
+                                    maxHeight: .infinity,
+                                    alignment: .topLeading
+                                )
+                                //                            .background(
+                                //                                Image("patagonia 4") // Replace "your_image_name" with the name of your image asset
+                                //                                    .resizable()
+                                //                                    .scaledToFill()
+                                //                                    .edgesIgnoringSafeArea(.all)
+                                //                                    .opacity(0.9) // Adjust the opacity of the image if needed
+                                ////                                    .blur(radius: 1)
+                                //                            )
+                            }
                             
                             //mark box
                             VStack (alignment: .leading) {
@@ -93,19 +98,19 @@ struct MainView: View {
                                 ZStack (alignment: .center){
                                     Liquid()
                                         .frame(width: 240, height: 240)
-                                        .foregroundColor(Color(red: 0x3D / 255, green: 0xA5 / 255, blue: 0xD9 / 255))
+                                        .foregroundColor(Color(red: 38 / 255, green: 96 / 255, blue: 162 / 255))
                                         .opacity(0.3)
                                     
                                     
                                     Liquid()
                                         .frame(width: 220, height: 220)
-                                        .foregroundColor(Color(red: 0x3D / 255, green: 0xA5 / 255, blue: 0xD9 / 255))
+                                        .foregroundColor(Color(red: 38 / 255, green: 96 / 255, blue: 162 / 255))
                                         .opacity(0.6)
                                     
                                     Liquid(samples: 5)
                                         .frame(width: 200, height: 200)
-                                        .foregroundColor(Color(red: 0x3D / 255, green: 0xA5 / 255, blue: 0xD9 / 255))
-                                    
+                                        .foregroundColor(Color(red: 38 / 255, green: 96 / 255, blue: 162 / 255))
+
                                     
                                     HStack{
                                         Text("Mark #").foregroundColor(Color.white).font(customFontTextBold)
@@ -201,11 +206,19 @@ struct MainView: View {
                                 maxHeight: .infinity,
                                 alignment: .center
                             )
-                            .background(Color.white)
-                            .opacity(0.85)
+                            .background(
+                                LinearGradient(
+                                    gradient: Gradient(
+                                        colors: [Color.white.opacity(0.2), Color.white.opacity(0.85)] // Gradient from transparent to 0.7 opacity
+                                    ),
+                                    startPoint: .top,
+                                    endPoint: .init(x: 0.5, y: 0.5)
+                                )
+                            )
+                            .opacity(1) // Set the overall opacity to 1 since the gradient handles opacity
                             .cornerRadius(15)
-                            .offset(y: -100)
-                            .padding(.bottom, -100)
+                            .offset(y: -400)
+                            .padding(.bottom, -400)
                             .shadow(color: .black, radius: 10, x: 0, y: 5)
                             
                             // camera capture
