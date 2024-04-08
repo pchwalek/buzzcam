@@ -11,18 +11,34 @@ struct CameraConfigView: View {
     @EnvironmentObject var bluetoothModel: BluetoothModel
     @State private var isExpanded = false
     
+    let customFontTitle = Font.custom("Futura-Bold", size: 25)
+    let customFontText = Font.custom("AvenirNext-Regular", size: 18)
+    let customFontTextBold = Font.custom("AvenirNext-DemiBold", size: 20)
+    let customFontTextBoldLarge = Font.custom("AvenirNext-DemiBold", size: 25)
+    let customFontTextBoldSmall = Font.custom("AvenirNext-DemiBold", size: 18)
+    
     var body: some View {
         VStack (alignment: .leading) {
             HStack {
                 Spacer()
                 Text("Camera Control")
-                    .font(.title)
+                    .font(customFontTextBoldLarge)
                     .padding()
                 
                 Image(systemName: "chevron.down")
                     .rotationEffect(.degrees(isExpanded ? 180 : 0))
                 Spacer()
-            }.background(Color(white:0.75)).onTapGesture {
+            }.background(
+                GeometryReader { proxy in
+                        Image("IMG_4587 (3)")
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: proxy.size.width, height: proxy.size.height)
+                            .clipped()
+                            .opacity(0.7)
+                            .allowsHitTesting(false) // Prevents the image from capturing taps
+                            .contentShape(Rectangle()) // Set content shape to Rectangle to allow tap gesture
+                    }).onTapGesture {
                 withAnimation {
                     isExpanded.toggle()
                 }
@@ -33,6 +49,7 @@ struct CameraConfigView: View {
                         VStack(alignment: .leading) {
                             HStack {
                                 Text("Pair with Nearby Cameras")
+                                    .font(customFontTextBoldSmall)
                                     .padding()
                                     .foregroundColor(.black)
                                 Spacer()
@@ -52,6 +69,7 @@ struct CameraConfigView: View {
                             
                             HStack {
                                 Text("Force Camera Capture")
+                                    .font(customFontTextBoldSmall)
                                     .padding()
                                     .foregroundColor(.black)
                                 Spacer()
@@ -72,6 +90,7 @@ struct CameraConfigView: View {
                             
                             HStack {
                                 Text("Wakeup Cameras")
+                                    .font(customFontTextBoldSmall)
                                     .padding()
                                     .foregroundColor(.black)
                                 Spacer()

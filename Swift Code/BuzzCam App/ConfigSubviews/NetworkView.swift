@@ -18,18 +18,34 @@ struct NetworkView: View {
     @State private var selectedChannel: Double = 32
     @State private var panID: String = ""
     
+    let customFontTitle = Font.custom("Futura-Bold", size: 25)
+    let customFontText = Font.custom("AvenirNext-Regular", size: 18)
+    let customFontTextBold = Font.custom("AvenirNext-DemiBold", size: 20)
+    let customFontTextBoldLarge = Font.custom("AvenirNext-DemiBold", size: 25)
+    let customFontTextBoldSmall = Font.custom("AvenirNext-DemiBold", size: 18)
+    
     var body: some View {
         VStack (alignment: .leading) {
             HStack {
                 Spacer()
                 Text("Network")
-                    .font(.title)
+                    .font(customFontTextBoldLarge)
                     .padding()
                 
                 Image(systemName: "chevron.down")
                     .rotationEffect(.degrees(isExpanded ? 180 : 0))
                 Spacer()
-            }.background(Color(white:0.75)).onTapGesture {
+            }.background(
+                GeometryReader { proxy in
+                        Image("IMG_4587 (4)")
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: proxy.size.width, height: proxy.size.height)
+                            .clipped()
+                            .opacity(0.7)
+                            .allowsHitTesting(false) // Prevents the image from capturing taps
+                            .contentShape(Rectangle()) // Set content shape to Rectangle to allow tap gesture
+                    }).onTapGesture {
                 withAnimation {
                     isExpanded.toggle()
                 }
@@ -39,7 +55,7 @@ struct NetworkView: View {
                     VStack (alignment: .leading) {
                         HStack {
                             Text("Master node")
-                                .fontWeight(.bold)
+                                .font(customFontTextBoldSmall)
                                 .padding()
                             
                             Toggle("", isOn: $masterNodeEnabled)
@@ -52,7 +68,7 @@ struct NetworkView: View {
                         
                         HStack {
                             Text("Slave sync")
-                                .fontWeight(.bold)
+                                .font(customFontTextBoldSmall)
                                 .padding()
                             
                             Toggle("", isOn: $slaveSyncEnabled)
@@ -65,7 +81,7 @@ struct NetworkView: View {
                         
                         HStack {
                             Text("Master chirp")
-                                .fontWeight(.bold)
+                                .font(customFontTextBoldSmall)
                                 .padding()
                             
                             Toggle("", isOn: $masterChirpEnabled)
@@ -85,7 +101,9 @@ struct NetworkView: View {
                         .cornerRadius(10)
                     
                     VStack(alignment: .leading) {
-                        Text("Change channel: \(Int(selectedChannel))").fontWeight(.bold)
+                        Text("Change channel: \(Int(selectedChannel))")
+                            .font(customFontTextBoldSmall)
+
                         Slider(value: Binding(
                             get: {
                                 selectedChannel
@@ -109,10 +127,12 @@ struct NetworkView: View {
                     .cornerRadius(10)
                     
                     VStack(alignment: .leading) {
-                        Text("PanID: ").fontWeight(.bold)
+                        Text("PanID: ")
+                            .font(customFontTextBoldSmall)
+
                         HStack {
-                            Text("0x")
-                            TextField("", text: $panID)
+                            Text("0x").font(customFontText)
+                            TextField("", text: $panID).font(customFontText)
                                 .padding()
                                 .background(
                                     RoundedRectangle(cornerRadius: 5)
@@ -147,8 +167,10 @@ struct NetworkView: View {
                     
                     VStack(alignment: .leading) {
                         HStack {
-                            Text("Number of Discovered Devices: ").fontWeight(.bold)
-                            Text("\(bluetoothModel.configPacketData_NetworkState?.numberOfDiscoveredDevices ?? 0)")
+                            Text("Number of Discovered Devices: ")
+                                .font(customFontTextBoldSmall)
+
+                            Text("\(bluetoothModel.configPacketData_NetworkState?.numberOfDiscoveredDevices ?? 0)").font(customFontText)
                         }
 //                        HStack {
 //                            Text("Force rediscovery").fontWeight(.bold)
@@ -180,7 +202,7 @@ struct NetworkView: View {
                         if let systemInfoPacketData = bluetoothModel.systemInfoPacketData {
                             VStack(alignment: .leading, spacing: 10) {
                                 Text("Discovered Devices:")
-                                    .fontWeight(.bold)
+                                    .font(customFontTextBoldSmall)
                                     .foregroundColor(.black)
                                     .padding(.bottom)
 
@@ -191,7 +213,7 @@ struct NetworkView: View {
                                                 .foregroundColor(.black)
                                                 .font(.system(size: 10))
                                             let hexUID = String(format: "%08X", device.uid)
-                                            Text(hexUID)
+                                            Text(hexUID).font(customFontText)
                                         }
                                     }
                                 } else {

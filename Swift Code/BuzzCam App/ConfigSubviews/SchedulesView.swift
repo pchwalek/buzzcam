@@ -18,20 +18,34 @@ struct SchedulesView: View {
     @State private var isPopupPresented = false
     @State private var enableFreeRunMode = false
     
-    
+    let customFontTitle = Font.custom("Futura-Bold", size: 25)
+    let customFontText = Font.custom("AvenirNext-Regular", size: 18)
+    let customFontTextBold = Font.custom("AvenirNext-DemiBold", size: 20)
+    let customFontTextBoldLarge = Font.custom("AvenirNext-DemiBold", size: 25)
+    let customFontTextBoldSmall = Font.custom("AvenirNext-DemiBold", size: 18)
     
     var body: some View {
         VStack (alignment: .leading) {
             HStack {
                 Spacer()
                 Text("Schedules")
-                    .font(.title)
+                    .font(customFontTextBoldLarge)
                     .padding()
                 
                 Image(systemName: "chevron.down")
                     .rotationEffect(.degrees(isExpanded ? 180 : 0))
                 Spacer()
-            }.background(Color(white:0.75)).onTapGesture {
+            }.background(
+                GeometryReader { proxy in
+                        Image("IMG_4587 (6)")
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: proxy.size.width, height: proxy.size.height)
+                            .clipped()
+                            .opacity(0.7)
+                            .allowsHitTesting(false) // Prevents the image from capturing taps
+                            .contentShape(Rectangle()) // Set content shape to Rectangle to allow tap gesture
+                    }).onTapGesture {
                 withAnimation {
                     isExpanded.toggle()
                 }
@@ -42,7 +56,7 @@ struct SchedulesView: View {
                     VStack (alignment: .leading) {
                         HStack {
                             Text("Free run mode")
-                                .fontWeight(.bold)
+                                .font(customFontTextBoldSmall)
                                 .padding(.horizontal)
                             
                             Toggle("", isOn: $enableFreeRunMode)
@@ -53,7 +67,8 @@ struct SchedulesView: View {
                                 }
                         }
                         
-                        Text("Free run mode bypasses any schedules and runs continuously").padding(.bottom, 10).padding(.horizontal)
+                        Text("Free run mode bypasses any schedules and runs continuously")
+                            .font(customFontText).padding(.bottom, 10).padding(.horizontal)
                     }
                     
                     VStack(alignment: .leading) {
@@ -62,7 +77,7 @@ struct SchedulesView: View {
                             selectedIndex = nil
                             isPopupPresented.toggle()
                             print("add")
-                        }.padding()
+                        }.font(customFontText).padding()
                             .background(Color(white: 0.8))
                             .cornerRadius(5)
                             
@@ -72,7 +87,7 @@ struct SchedulesView: View {
                         ForEach(schedules.indices, id: \.self) { index in
                             VStack {
                                 HStack {
-                                    Text("Schedule #\(index)").fontWeight(.bold)
+                                    Text("Schedule #\(index)").font(customFontTextBoldSmall)
                                     Spacer()
                                     Button("Edit") {
                                         // Show the pop-up for editing the schedule
@@ -80,10 +95,10 @@ struct SchedulesView: View {
                                         print("index: \(index)")
                                         isPopupPresented.toggle()
                                         print("edit")
-                                    }.foregroundColor(.blue)
+                                    }.font(customFontText).foregroundColor(.blue)
                                 }
-                                Text("Days: \(selectedDaysString(schedule: schedules[index]))")
-                                Text("Time: \(selectedTimeString(schedule: schedules[index]))")
+                                Text("Days: \(selectedDaysString(schedule: schedules[index]))").font(customFontText)
+                                Text("Time: \(selectedTimeString(schedule: schedules[index]))").font(customFontText)
                             }
                         }
                     }
@@ -196,6 +211,13 @@ struct SchedulePopupView: View {
     var onSave: (ScheduleConfig) -> Void
     var onDelete: (() -> Void)? // Closure for delete action
     
+    let customFontTitle = Font.custom("Futura-Bold", size: 25)
+    let customFontText = Font.custom("AvenirNext-Regular", size: 18)
+    let customFontTextBold = Font.custom("AvenirNext-DemiBold", size: 20)
+    let customFontTextBoldLarge = Font.custom("AvenirNext-DemiBold", size: 25)
+    let customFontTextBoldSmall = Font.custom("AvenirNext-DemiBold", size: 18)
+    
+    
     init(isPresented: Binding<Bool>, selectedIndex: Int?, schedule: ScheduleConfig? = nil, onSave: @escaping (ScheduleConfig) -> Void, onDelete: (() -> Void)? = nil) {
             self._isPresented = isPresented
             self.originalSchedule = schedule ?? ScheduleConfig()
@@ -208,8 +230,8 @@ struct SchedulePopupView: View {
     var body: some View {
         VStack {
             Text(selectedIndex != nil ? "Edit Schedule" : "Add Schedule")
-                .font(.title)
-                .padding()
+                .font(customFontTextBoldLarge)
+                .padding(.top)
             
             // Checkboxes for days
             ForEach(DaysOfWeek.allCases, id: \.self) { day in
@@ -220,7 +242,7 @@ struct SchedulePopupView: View {
                         Image(systemName: editedSchedule.isDaySelected(day) ? "checkmark.square" : "square")
                             .resizable()
                             .frame(width: 20, height: 20)
-                        Text(day.rawValue.prefix(3))
+                        Text(day.rawValue.prefix(3)).font(customFontText)
                     }
                     .padding(.vertical, 5)
                 }
@@ -228,12 +250,12 @@ struct SchedulePopupView: View {
             
             // Time picker
             HStack {
-                Text("Start Time:")
+                Text("Start").font(customFontText).padding()
                 TimePicker(selectedHour: $editedSchedule.startHour, selectedMinute: $editedSchedule.startMinute)
             }
             
             HStack {
-                Text("End Time:")
+                Text("End").font(customFontText).padding()
                 TimePicker(selectedHour: $editedSchedule.stopHour, selectedMinute: $editedSchedule.stopMinute)
             }
             
@@ -242,7 +264,7 @@ struct SchedulePopupView: View {
                 onDelete?() // Call delete closure if provided
                 isPresented.toggle()
 
-            }
+            }.font(customFontText)
             .foregroundColor(.red) // Make delete button red
             .padding()
             
@@ -250,12 +272,13 @@ struct SchedulePopupView: View {
                 onSave(editedSchedule)
                 isPresented.toggle()
                 isPresented.toggle()
-            }
+            }.font(customFontText)
+                .foregroundColor(.blue)
             .padding()
             
             Button("Cancel") {
                 isPresented.toggle()
-            }
+            }.font(customFontText)
             .padding()
         }
         .onChange(of: selectedIndex) {

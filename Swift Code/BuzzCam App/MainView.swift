@@ -54,8 +54,8 @@ struct MainView: View {
                                     HStack {
                                         Text(String(bluetoothModel.connectedPeripheral?.name ?? "BuzzCam").split(separator: "_")[1]) // split by underscore
                                             .font(customFontTitle)
-                                            .foregroundColor(Color.white)
-                                            .shadow(color: .black, radius: 3, x: 0, y: 2)
+                                            .foregroundColor(Color.black)
+                                            .shadow(color: .white, radius: 3, x: 0, y: 2)
                                         Spacer()
                                         
                                         Button(action: {
@@ -70,7 +70,7 @@ struct MainView: View {
                                         }
                                         .padding()
                                         .background(Color(white: 0.2))
-                                        .opacity(0.8)
+                                        .opacity(0.9)
                                         .cornerRadius(5)
                                     }
                                 }
@@ -78,7 +78,7 @@ struct MainView: View {
                                 .frame(
                                     minWidth: 0,
                                     maxWidth: .infinity,
-                                    minHeight: 500,
+                                    minHeight: 800,
                                     maxHeight: .infinity,
                                     alignment: .topLeading
                                 )
@@ -217,8 +217,8 @@ struct MainView: View {
                             )
                             .opacity(1) // Set the overall opacity to 1 since the gradient handles opacity
                             .cornerRadius(15)
-                            .offset(y: -400)
-                            .padding(.bottom, -400)
+                            .offset(y: -700)
+                            .padding(.bottom, -700)
                             .shadow(color: .black, radius: 10, x: 0, y: 5)
                             
                             // camera capture
@@ -280,7 +280,7 @@ struct MainView: View {
 //                            Image("BuzzCam Logo 1").resizable()
 //                                .frame(width: 100, height: 100)
 //                                .scaledToFit().padding() // replace with transparent background logo
-                        }.background(Color(red: 36/255, green: 18/255, blue: 21/255))
+                        }.background(Color(red: 54/255, green: 58/255, blue: 1/255))
                     } else {
                         // Placeholder view while the peripheral name is not available, waiting for it to load
                         VStack {

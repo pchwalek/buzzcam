@@ -17,20 +17,34 @@ struct SensingConfigView: View {
     @State private var enableGas = false
     @State private var enableHumidity = false
     
-    
+    let customFontTitle = Font.custom("Futura-Bold", size: 25)
+    let customFontText = Font.custom("AvenirNext-Regular", size: 18)
+    let customFontTextBold = Font.custom("AvenirNext-DemiBold", size: 20)
+    let customFontTextBoldLarge = Font.custom("AvenirNext-DemiBold", size: 25)
+    let customFontTextBoldSmall = Font.custom("AvenirNext-DemiBold", size: 18)
     
     var body: some View {
         VStack (alignment: .leading) {
             HStack {
                 Spacer()
                 Text("Sensings")
-                    .font(.title)
+                    .font(customFontTextBoldLarge)
                     .padding()
                 
                 Image(systemName: "chevron.down")
                     .rotationEffect(.degrees(isExpanded ? 180 : 0))
                 Spacer()
-            }.background(Color(white:0.75)).onTapGesture {
+            }.background(
+                GeometryReader { proxy in
+                        Image("IMG_4587 (2)")
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: proxy.size.width, height: proxy.size.height)
+                            .clipped()
+                            .opacity(0.7)
+                            .allowsHitTesting(false) // Prevents the image from capturing taps
+                            .contentShape(Rectangle()) // Set content shape to Rectangle to allow tap gesture
+                    }).onTapGesture {
                 withAnimation {
                     isExpanded.toggle()
                 }
@@ -73,7 +87,7 @@ struct SensingConfigView: View {
                     VStack(alignment: .leading) {
                         HStack {
                             Text("Enable temperature sensing")
-                                .fontWeight(.bold)
+                                .font(customFontTextBoldSmall)
                                 .padding()
                             
                             Toggle("", isOn: $enableTemperature)
@@ -86,7 +100,7 @@ struct SensingConfigView: View {
                         
                         HStack {
                             Text("Enable humidity sensing")
-                                .fontWeight(.bold)
+                                .font(customFontTextBoldSmall)
                                 .padding()
                             
                             Toggle("", isOn: $enableHumidity)
@@ -99,7 +113,7 @@ struct SensingConfigView: View {
                         
                         HStack {
                             Text("Enable gas sensing")
-                                .fontWeight(.bold)
+                                .font(customFontTextBoldSmall)
                                 .padding()
                             
                             Toggle("", isOn: $enableGas)

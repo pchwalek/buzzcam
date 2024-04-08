@@ -15,18 +15,34 @@ struct SystemControlView: View {
     @State private var lowPowerModeEnabled = false
     @State private var ledEnabled = false
     
+    let customFontTitle = Font.custom("Futura-Bold", size: 25)
+    let customFontText = Font.custom("AvenirNext-Regular", size: 18)
+    let customFontTextBold = Font.custom("AvenirNext-DemiBold", size: 20)
+    let customFontTextBoldLarge = Font.custom("AvenirNext-DemiBold", size: 25)
+    let customFontTextBoldSmall = Font.custom("AvenirNext-DemiBold", size: 18)
+    
     var body: some View {
         VStack (alignment: .leading) {
             HStack {
                 Spacer()
                 Text("System Control")
-                    .font(.title)
+                    .font(customFontTextBoldLarge)
                     .padding()
                 
                 Image(systemName: "chevron.down")
                     .rotationEffect(.degrees(isExpanded ? 180 : 0))
                 Spacer()
-            }.background(Color(white:0.75)).onTapGesture {
+            }.background(
+                GeometryReader { proxy in
+                        Image("IMG_4587 (5)")
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: proxy.size.width, height: proxy.size.height)
+                            .clipped()
+                            .opacity(0.7)
+                            .allowsHitTesting(false) // Prevents the image from capturing taps
+                            .contentShape(Rectangle()) // Set content shape to Rectangle to allow tap gesture
+                    }).onTapGesture {
                 withAnimation {
                     isExpanded.toggle()
                 }
@@ -36,7 +52,7 @@ struct SystemControlView: View {
                     VStack(alignment: .leading) {
                         VStack(alignment: .leading) {
                             HStack {
-                                Text("Lower power mode").fontWeight(.bold)
+                                Text("Lower power mode").font(customFontTextBoldSmall)
                                 Toggle("",isOn: $lowPowerModeEnabled).labelsHidden()
                                     .onChange(of: lowPowerModeEnabled) {
                                         // Call your function when the toggle is changed
@@ -45,7 +61,7 @@ struct SystemControlView: View {
                             }
                             
                             HStack {
-                                Text("Enabled led").fontWeight(.bold)
+                                Text("Enabled led").font(customFontTextBoldSmall)
                                 
                                 Toggle("",isOn: $ledEnabled).labelsHidden()
                                     .onChange(of: ledEnabled) {
@@ -56,6 +72,7 @@ struct SystemControlView: View {
                             
                             HStack {
                                 Text("Reset config")
+                                    .font(customFontText)
                                     .padding()
                                     .foregroundColor(.black)
                                 Spacer()
@@ -75,6 +92,7 @@ struct SystemControlView: View {
                             
                             HStack {
                                 Text("Format SD card")
+                                    .font(customFontText)
                                     .padding()
                                     .foregroundColor(.black)
                                 Spacer()
@@ -94,6 +112,7 @@ struct SystemControlView: View {
                             
                             HStack {
                                 Text("Open thread sync time")
+                                    .font(customFontText)
                                     .padding()
                                     .foregroundColor(.black)
                                 Spacer()
@@ -113,6 +132,7 @@ struct SystemControlView: View {
                             
                             HStack {
                                 Text("Magnetometer calibration")
+                                    .font(customFontText)
                                     .padding()
                                     .foregroundColor(.black)
                                 Spacer()
@@ -132,6 +152,7 @@ struct SystemControlView: View {
                             
                             HStack {
                                 Text("Trigger DFU Mode")
+                                    .font(customFontText)
                                     .padding()
                                     .foregroundColor(.black)
                                 Spacer()

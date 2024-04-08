@@ -13,6 +13,12 @@ struct AudioConfigView: View {
     @State private var isExpanded = false
     @State private var cancellables: Set<AnyCancellable> = Set()
     
+    let customFontTitle = Font.custom("Futura-Bold", size: 25)
+    let customFontText = Font.custom("AvenirNext-Regular", size: 18)
+    let customFontTextBold = Font.custom("AvenirNext-DemiBold", size: 20)
+    let customFontTextBoldLarge = Font.custom("AvenirNext-DemiBold", size: 25)
+    let customFontTextBoldSmall = Font.custom("AvenirNext-DemiBold", size: 18)
+    
     @State private var channel1 = false
     @State private var channel2 = false
     
@@ -51,13 +57,24 @@ struct AudioConfigView: View {
             HStack {
                 Spacer()
                 Text("Audio")
-                    .font(.title)
+                    .font(customFontTextBoldLarge)
                     .padding()
                 
-                Image(systemName: "chevron.down")
+                Image(systemName: "chevron.down") //IMG_4587 (6)
                     .rotationEffect(.degrees(isExpanded ? 180 : 0))
                 Spacer()
-            }.background(Color(white:0.75)).onTapGesture {
+            }.background(
+                GeometryReader { proxy in
+                        Image("IMG_4587 (1)")
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: proxy.size.width, height: proxy.size.height)
+                            .clipped()
+                            .opacity(0.7)
+                            .allowsHitTesting(false) // Prevents the image from capturing taps
+                            .contentShape(Rectangle()) // Set content shape to Rectangle to allow tap gesture
+                    }
+            ).onTapGesture {
                 withAnimation {
                     isExpanded.toggle()
                 }
@@ -66,7 +83,7 @@ struct AudioConfigView: View {
                 VStack (alignment: .leading, spacing: 20) {
                     HStack {
                         Text("Enable channel 1")
-                            .font(.title2)
+                            .font(customFontTextBold)
                             .fontWeight(.bold)
                             .padding()
                         
@@ -81,7 +98,7 @@ struct AudioConfigView: View {
  
                     HStack {
                         Text("Enable channel 2")
-                            .font(.title2)
+                            .font(customFontTextBold)
                             .fontWeight(.bold)
                             .padding()
                         
@@ -97,7 +114,7 @@ struct AudioConfigView: View {
                     VStack(alignment: .leading) {
                         
                         Text("Sampling Frequency")
-                            .font(.title2)
+                            .font(customFontTextBold)
                             .fontWeight(.bold)
                         VStack (alignment: .leading, spacing: 10){
                             ScrollView {
@@ -124,7 +141,7 @@ struct AudioConfigView: View {
                     
                     VStack(alignment: .leading) {
                         Text("Bit Resolution")
-                            .font(.title2)
+                            .font(customFontTextBold)
                             .fontWeight(.bold)
                         HStack {
                             Button(action: {
@@ -134,6 +151,7 @@ struct AudioConfigView: View {
 
                             }) {
                                 Text("8-bit")
+                                    .font(customFontText)
                                     .padding()
                                     .foregroundColor(.white)
                                     .background(bluetoothModel.configPacketData_Audio?.bitResolution == .bitRes8 ? Color.blue : Color.gray)
@@ -147,6 +165,7 @@ struct AudioConfigView: View {
 
                             }) {
                                 Text("16-bit")
+                                    .font(customFontText)
                                     .padding()
                                     .foregroundColor(.white)
                                     .background(bluetoothModel.configPacketData_Audio?.bitResolution == .bitRes16 ? Color.blue : Color.gray)
@@ -160,6 +179,7 @@ struct AudioConfigView: View {
                                 print("sent bitRes24")
                             }) {
                                 Text("24-bit")
+                                    .font(customFontText)
                                     .padding()
                                     .foregroundColor(.white)
                                     .background(bluetoothModel.configPacketData_Audio?.bitResolution == .bitRes24 ? Color.blue : Color.gray)
@@ -193,12 +213,13 @@ struct AudioConfigView: View {
                     
                     VStack (alignment: .leading) { // this is a bit weird
                         Text("Microphone Gain")
-                        .font(.title2)
+                            .font(customFontTextBold)
                         .fontWeight(.bold)
                         
                         Picker("Select Mic Gain", selection: $tempMicGain) {
                             ForEach(micGainLabels, id: \.self) { gainLabel in
                                 Text(gainLabel)
+                                    .font(customFontText)
                                     .tag(gainLabel)
                             }
                         }
@@ -219,11 +240,13 @@ struct AudioConfigView: View {
                     
                     VStack(alignment: .leading) {
                         Text("Audio compression")
-                            .font(.title2)
+                            .font(customFontTextBold)
                             .fontWeight(.bold)
                         VStack (alignment: .leading){
                             HStack {
-                                Text("Enabled").fontWeight(.bold)
+                                Text("Enabled")
+                                    .font(customFontTextBoldSmall)
+
                                 Toggle("",isOn: $audioCompressionEnabled).labelsHidden()
                                     .onChange(of: audioCompressionEnabled) {
                                         // Call your function when the toggle is changed
@@ -232,7 +255,9 @@ struct AudioConfigView: View {
                             }
                             
                             VStack(alignment: .leading) {
-                                Text("Type").fontWeight(/*@START_MENU_TOKEN@*/.bold/*@END_MENU_TOKEN@*/)
+                                Text("Type")
+                                    .font(customFontTextBoldSmall)
+
                                 VStack (alignment: .leading){
                                     ScrollView {
                                         VStack {
@@ -249,7 +274,8 @@ struct AudioConfigView: View {
                             }
                             
                             VStack(alignment: .leading) {
-                                Text("Compression Factor: \(Int(selectedCompressionFactor))").fontWeight(.bold)
+                                Text("Compression Factor: \(Int(selectedCompressionFactor))")
+                                    .font(customFontTextBoldSmall)
                                 Slider(value: Binding(
                                     get: {
                                         selectedCompressionFactor
@@ -265,7 +291,9 @@ struct AudioConfigView: View {
                                     }
                                 })
                                 .padding()
-                                Text("Estimated recording time: ").fontWeight(.bold)
+                                Text("Estimated recording time: ")
+                                    .font(customFontTextBoldSmall)
+
                                 Text(String(bluetoothModel.configPacketData_Audio?.estimatedRecordTime ?? 0))
                             }
                         }
@@ -375,10 +403,12 @@ struct FrequencyCell: View {
     @Binding var selectedSampleFreq: MicSampleFreq?
     let sampleFreqInt: [Int] = [8000, 11025, 16000, 22500, 24000, 32000, 44100, 48000, 96000]
     
+    let customFontText = Font.custom("AvenirNext-Regular", size: 18)
+
     
     var body: some View {
         HStack {
-            Text("\(sampleFreqInt[sampleFreq.rawValue])")
+            Text("\(sampleFreqInt[sampleFreq.rawValue])").font(customFontText)
             Spacer()
             if sampleFreq == selectedSampleFreq {
                 Image(systemName: "largecircle.fill.circle")
@@ -400,9 +430,12 @@ struct CompressionTypeCell: View {
     @Binding var selectedCompressionType: CompressionType?
     let compressionStrings: [String] = ["Opus", "Flac"]
     
+    let customFontText = Font.custom("AvenirNext-Regular", size: 18)
+
+    
     var body: some View {
         HStack {
-            Text("\(compressionStrings[compressionType.rawValue])")
+            Text("\(compressionStrings[compressionType.rawValue])").font(customFontText)
             Spacer()
             if compressionType == selectedCompressionType {
                 Image(systemName: "largecircle.fill.circle")

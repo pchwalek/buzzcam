@@ -95,18 +95,41 @@ struct PresetView: View {
                         if scenePhase == .inactive { saveAction() }
                     }.sheet(isPresented: $isAddButtonPopupVisible) {
                                     // Popup view to add new preset button
-                                    VStack {
-                                        TextField("Name", text: $newButtonName)
+                                    VStack (alignment: .leading) {
+                                        Text("Add Presets")
+                                            .font(customFontTextBold)
                                             .padding()
-                                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                                        Toggle("Beep", isOn: $newButtonBeep)
-                                            .padding()
-                                        TextField("Color (hex)", text: $newButtonColor)
-                                            .padding()
-                                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                                        TextField("Description", text: $newButtonDescription)
-                                            .padding()
-                                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                                        
+                                        HStack {
+                                            Text("Name").font(customFontText)
+                                            TextField("Name", text: $newButtonName).font(customFontText)
+                                                .padding(.bottom)
+                                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                        }
+                                        
+                                        VStack{
+                                            HStack {
+                                                Text("Beep").font(customFontText)
+                                                Toggle("Beep", isOn: $newButtonBeep).labelsHidden()
+                                                    .padding(.bottom)
+                                                Spacer()
+                                            }
+                                        }
+                                        HStack {
+                                            Text("Color (hex)").font(customFontText)
+                                            TextField("Color (hex)", text: $newButtonColor)
+                                                .padding(.bottom)
+                                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                        }
+                                        
+                                        HStack {
+                                            Text("Description").font(customFontText)
+                                            TextField("Description", text: $newButtonDescription)
+                                                .padding(.bottom)
+                                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                        }
+                                        
+                                        
                                         Button(action: {
                                             // Add new preset button
                                             let newButton = PresetButton(name: newButtonName, color: newButtonColor, description: newButtonDescription, beep: newButtonBeep)
@@ -119,13 +142,16 @@ struct PresetView: View {
                                             newButtonDescription = ""
                                         }) {
                                             Text("Save")
+                                                .font(customFontText).fontWeight(.bold)
                                                 .padding()
                                                 .frame(maxWidth: .infinity)
-                                                .background(Color.blue)
-                                                .foregroundColor(.white)
+//                                                .background(Color.blue)
+//                                                .opacity(0.8)
+                                                .foregroundColor(.blue)
                                                 .cornerRadius(10)
                                         }
                                     }.environment(\.colorScheme, .light)
+                                    .presentationDetents([.medium])
                                     .padding()
                                     .background(Color.white)
                                     .cornerRadius(10)
@@ -140,7 +166,7 @@ struct PresetView: View {
                             ScrollView {
                                 ForEach(presetButtons) { button in
                                     HStack {
-                                        Text(button.name)
+                                        Text(button.name).font(customFontText)
                                         Spacer()
                                         // Checkbox for selecting preset
                                         Image(systemName: selectedPresetIDs.contains(button.id) ? "checkmark.square" : "square")
@@ -177,14 +203,16 @@ struct PresetView: View {
                                 isDeleteSheetVisible = false
                             }) {
                                 Text("Delete Selected")
-                                    .font(customFontTextBold)
+                                    .font(customFontText).fontWeight(.bold)
                                     .padding()
                                     .frame(maxWidth: .infinity)
-                                    .background(Color.red)
-                                    .foregroundColor(.white)
+//                                    .background(Color.red)
+//                                    .opacity(0.8)
+                                    .foregroundColor(.red)
                                     .cornerRadius(10)
                             }
                         }
+                        .presentationDetents([.medium])
                         .padding()
                         .background(Color.white)
                         .cornerRadius(10)
