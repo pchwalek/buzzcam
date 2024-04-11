@@ -26,6 +26,51 @@ extension Color {
     }
 }
 
+//extension UIColor {
+//    func rgbaHexString() -> String {
+//        guard let components = cgColor.components, components.count >= 3 else {
+//            return "#000000" // Default to black if unable to get components
+//        }
+//
+//        let r = Float(components[0])
+//        let g = Float(components[1])
+//        let b = Float(components[2])
+//        
+//        return String(format: "#%02lX%02lX%02lX", lroundf(r * 255), lroundf(g * 255), lroundf(b * 255))
+//    }
+//}
+
+extension Color {
+    public func toHex(alpha: Bool = false) -> String {
+        // Get the components of the color
+        let uiColor = UIColor(self)
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alphaValue: CGFloat = 0
+        uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alphaValue)
+        
+        // Multiply the components by 255 and convert them to hexadecimal strings
+        let r = Int(red * 255)
+        let g = Int(green * 255)
+        let b = Int(blue * 255)
+        let a = Int(alphaValue * 255)
+        
+        // Construct the hexadecimal string
+        let hexString: String
+        if alpha {
+            hexString = String(format: "%02X%02X%02X%02X", r, g, b, a)
+        } else {
+            hexString = String(format: "%02X%02X%02X", r, g, b)
+        }
+        
+        return hexString
+    }
+}
+
+
+
+
 struct PresetView: View {
     
     @EnvironmentObject var bluetoothModel: BluetoothModel
@@ -35,8 +80,16 @@ struct PresetView: View {
     @State private var isAddButtonPopupVisible = false
     @State private var newButtonName = ""
     @State private var newButtonBeep = false
-    @State private var newButtonColor = "#0000FF"
+    @State private var newButtonColor = Color.red
     @State private var newButtonDescription = ""
+//    @State private var newButtonColorHex = "#FF0000" // Initial color hex string
+//
+//    @State private var newButtonColor: Color = Color.red {
+//            didSet {
+//                // Update the hex string whenever the color changes
+//                newButtonColorHex = $newButtonColor.toHexString
+//            }
+//        }
     
     @State private var isDeleteSheetVisible = false // Track whether delete sheet is visible
     @State private var selectedPresetIDs = Set<UUID>() // Track selected preset IDs for deletion
@@ -116,10 +169,12 @@ struct PresetView: View {
                                             }
                                         }
                                         HStack {
-                                            Text("Color (hex)").font(customFontText)
-                                            TextField("Color (hex)", text: $newButtonColor)
-                                                .padding(.bottom)
-                                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                            Text("Color").font(customFontText)
+                                            ColorPicker("", selection: $newButtonColor)
+//                                            TextField("Color (hex)", text: $newButtonColor)
+//                                                .padding(.bottom)
+//                                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                            Spacer()
                                         }
                                         
                                         HStack {
@@ -132,13 +187,13 @@ struct PresetView: View {
                                         
                                         Button(action: {
                                             // Add new preset button
-                                            let newButton = PresetButton(name: newButtonName, color: newButtonColor, description: newButtonDescription, beep: newButtonBeep)
+                                            let newButton = PresetButton(name: newButtonName, color: newButtonColor.toHex(alpha: false), description: newButtonDescription, beep: newButtonBeep)
                                             presetButtons.append(newButton)
                                             isAddButtonPopupVisible = false
                                             // Clear input fields
                                             newButtonName = ""
                                             newButtonBeep = false
-                                            newButtonColor = "#0000FF"
+                                            newButtonColor = Color.red
                                             newButtonDescription = ""
                                         }) {
                                             Text("Save")
