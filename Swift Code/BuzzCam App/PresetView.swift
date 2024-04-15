@@ -117,6 +117,7 @@ struct PresetView: View {
                     }) {
                         Text(button.name)
                             .font(customFontText)
+                            .frame(minWidth: 80)
                             .padding(EdgeInsets(top: 5, leading: 20, bottom: 5, trailing: 20))
                             .background(Color(hex: button.color).opacity(0.5))
                             .cornerRadius(5)
@@ -170,7 +171,7 @@ struct PresetView: View {
                                         }
                                         HStack {
                                             Text("Color").font(customFontText)
-                                            ColorPicker("", selection: $newButtonColor)
+                                            ColorPicker("", selection: $newButtonColor).labelsHidden()
 //                                            TextField("Color (hex)", text: $newButtonColor)
 //                                                .padding(.bottom)
 //                                                .textFieldStyle(RoundedBorderTextFieldStyle())
