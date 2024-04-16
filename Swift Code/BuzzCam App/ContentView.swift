@@ -30,7 +30,10 @@ struct ContentView: View {
                                 MainView(connected: $connected, store: store).environmentObject(bluetoothModel)
                             case .conf:
                                 ConfigView().environmentObject(bluetoothModel)
+                            case .cam:
+                                CameraViewOut().environmentObject(bluetoothModel)
                             }
+                            
 
                             VStack {
                                 Spacer()
@@ -46,7 +49,7 @@ struct ContentView: View {
                                 }
                                 .background(Color(red: 117/255, green: 13/255, blue: 55/255, opacity: 0.5))
                                 .cornerRadius(35)
-                                .padding(.horizontal, 60)
+                                .padding(.horizontal, 27)
                                 .padding(.bottom, 20) // Add padding to the bottom of the tab bar
                             }
                         }.foregroundColor(Color.black)
@@ -111,6 +114,7 @@ struct ContentView: View {
 enum TabbedItems: CaseIterable {
     case home
     case conf
+    case cam
     
     var title: String {
         switch self {
@@ -118,6 +122,8 @@ enum TabbedItems: CaseIterable {
             return "Home"
         case .conf:
             return "Config"
+        case .cam:
+            return "Camera"
         }
     }
     
@@ -127,7 +133,10 @@ enum TabbedItems: CaseIterable {
             return "house.fill"
         case .conf:
             return "gearshape.fill"
+        case .cam:
+            return "camera.fill"
         }
+        
     }
 }
 
@@ -137,7 +146,7 @@ extension TabbedItems: Identifiable {
 
 extension ContentView {
     func CustomTabItem(imageName: String, title: String, isActive: Bool) -> some View {
-        HStack(spacing: 10) {
+        HStack {
             Spacer()
             Image(systemName: imageName)
                 .resizable()

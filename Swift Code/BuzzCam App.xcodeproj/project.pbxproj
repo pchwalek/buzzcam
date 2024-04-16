@@ -9,7 +9,21 @@
 /* Begin PBXBuildFile section */
 		21152BC92B2790920078ADD4 /* NetworkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21152BC82B2790920078ADD4 /* NetworkView.swift */; };
 		21152BCB2B29002E0078ADD4 /* SchedulesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21152BCA2B29002E0078ADD4 /* SchedulesView.swift */; };
-		21152BCD2B29039F0078ADD4 /* testview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21152BCC2B29039F0078ADD4 /* testview.swift */; };
+		2127C39E2BCF15AA00196455 /* CachedImageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2127C39D2BCF15AA00196455 /* CachedImageManager.swift */; };
+		2127C3A02BCF15C000196455 /* Camera.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2127C39F2BCF15C000196455 /* Camera.swift */; };
+		2127C3A22BCF15D600196455 /* CameraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2127C3A12BCF15D600196455 /* CameraApp.swift */; };
+		2127C3A42BCF15F800196455 /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2127C3A32BCF15F800196455 /* CameraView.swift */; };
+		2127C3A62BCF162D00196455 /* DataModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2127C3A52BCF162D00196455 /* DataModel.swift */; };
+		2127C3A82BCF163F00196455 /* PhotoAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2127C3A72BCF163F00196455 /* PhotoAsset.swift */; };
+		2127C3AA2BCF165700196455 /* PhotoAssetCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2127C3A92BCF165700196455 /* PhotoAssetCollection.swift */; };
+		2127C3AC2BCF166A00196455 /* PhotoCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2127C3AB2BCF166A00196455 /* PhotoCollection.swift */; };
+		2127C3AE2BCF167C00196455 /* PhotoCollectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2127C3AD2BCF167C00196455 /* PhotoCollectionView.swift */; };
+		2127C3B02BCF168C00196455 /* PhotoItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2127C3AF2BCF168C00196455 /* PhotoItemView.swift */; };
+		2127C3B22BCF169C00196455 /* PhotoLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2127C3B12BCF169C00196455 /* PhotoLibrary.swift */; };
+		2127C3B42BCF16AA00196455 /* PhotoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2127C3B32BCF16AA00196455 /* PhotoView.swift */; };
+		2127C3B62BCF16C100196455 /* ThumbnailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2127C3B52BCF16C100196455 /* ThumbnailView.swift */; };
+		2127C3B82BCF16D300196455 /* ViewfinderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2127C3B72BCF16D300196455 /* ViewfinderView.swift */; };
+		2127C3BA2BCF1A3F00196455 /* CameraViewOut.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2127C3B92BCF1A3F00196455 /* CameraViewOut.swift */; };
 		212DA4BE2B7AFEAA00324DDA /* Shiny in Frameworks */ = {isa = PBXBuildFile; productRef = 212DA4BD2B7AFEAA00324DDA /* Shiny */; };
 		216B6DC62B757C49005D5538 /* StarryNightView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 216B6DC52B757C49005D5538 /* StarryNightView.swift */; };
 		216B6DC92B757CF8005D5538 /* LoadingParticle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 216B6DC82B757CF8005D5538 /* LoadingParticle.swift */; };
@@ -70,7 +84,22 @@
 /* Begin PBXFileReference section */
 		21152BC82B2790920078ADD4 /* NetworkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkView.swift; sourceTree = "<group>"; };
 		21152BCA2B29002E0078ADD4 /* SchedulesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchedulesView.swift; sourceTree = "<group>"; };
-		21152BCC2B29039F0078ADD4 /* testview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = testview.swift; sourceTree = "<group>"; };
+		2127C39D2BCF15AA00196455 /* CachedImageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedImageManager.swift; sourceTree = "<group>"; };
+		2127C39F2BCF15C000196455 /* Camera.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Camera.swift; sourceTree = "<group>"; };
+		2127C3A12BCF15D600196455 /* CameraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraApp.swift; sourceTree = "<group>"; };
+		2127C3A32BCF15F800196455 /* CameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
+		2127C3A52BCF162D00196455 /* DataModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataModel.swift; sourceTree = "<group>"; };
+		2127C3A72BCF163F00196455 /* PhotoAsset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoAsset.swift; sourceTree = "<group>"; };
+		2127C3A92BCF165700196455 /* PhotoAssetCollection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoAssetCollection.swift; sourceTree = "<group>"; };
+		2127C3AB2BCF166A00196455 /* PhotoCollection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoCollection.swift; sourceTree = "<group>"; };
+		2127C3AD2BCF167C00196455 /* PhotoCollectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoCollectionView.swift; sourceTree = "<group>"; };
+		2127C3AF2BCF168C00196455 /* PhotoItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoItemView.swift; sourceTree = "<group>"; };
+		2127C3B12BCF169C00196455 /* PhotoLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoLibrary.swift; sourceTree = "<group>"; };
+		2127C3B32BCF16AA00196455 /* PhotoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoView.swift; sourceTree = "<group>"; };
+		2127C3B52BCF16C100196455 /* ThumbnailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailView.swift; sourceTree = "<group>"; };
+		2127C3B72BCF16D300196455 /* ViewfinderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewfinderView.swift; sourceTree = "<group>"; };
+		2127C3B92BCF1A3F00196455 /* CameraViewOut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraViewOut.swift; sourceTree = "<group>"; };
+		2127C3BB2BCF1DD100196455 /* BuzzCam-App-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "BuzzCam-App-Info.plist"; sourceTree = SOURCE_ROOT; };
 		216B6DC52B757C49005D5538 /* StarryNightView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StarryNightView.swift; sourceTree = "<group>"; };
 		216B6DC82B757CF8005D5538 /* LoadingParticle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingParticle.swift; sourceTree = "<group>"; };
 		21A07DEC2B98F64300424B27 /* PresetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresetView.swift; sourceTree = "<group>"; };
@@ -136,6 +165,27 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		2127C39C2BCF156200196455 /* CameraApp */ = {
+			isa = PBXGroup;
+			children = (
+				2127C39D2BCF15AA00196455 /* CachedImageManager.swift */,
+				2127C39F2BCF15C000196455 /* Camera.swift */,
+				2127C3A12BCF15D600196455 /* CameraApp.swift */,
+				2127C3A32BCF15F800196455 /* CameraView.swift */,
+				2127C3A52BCF162D00196455 /* DataModel.swift */,
+				2127C3A72BCF163F00196455 /* PhotoAsset.swift */,
+				2127C3A92BCF165700196455 /* PhotoAssetCollection.swift */,
+				2127C3AB2BCF166A00196455 /* PhotoCollection.swift */,
+				2127C3AD2BCF167C00196455 /* PhotoCollectionView.swift */,
+				2127C3AF2BCF168C00196455 /* PhotoItemView.swift */,
+				2127C3B12BCF169C00196455 /* PhotoLibrary.swift */,
+				2127C3B32BCF16AA00196455 /* PhotoView.swift */,
+				2127C3B52BCF16C100196455 /* ThumbnailView.swift */,
+				2127C3B72BCF16D300196455 /* ViewfinderView.swift */,
+			);
+			path = CameraApp;
+			sourceTree = "<group>";
+		};
 		216B6DC42B757C33005D5538 /* ImportedSubviews */ = {
 			isa = PBXGroup;
 			children = (
@@ -162,7 +212,6 @@
 				21C907BC2B7EB6A5007B33A1 /* SystemControlView.swift */,
 				21F495E72B212DDF008E3808 /* SensingConfigView.swift */,
 				21F495E92B2783DA008E3808 /* CameraConfigView.swift */,
-				21152BCC2B29039F0078ADD4 /* testview.swift */,
 			);
 			path = ConfigSubviews;
 			sourceTree = "<group>";
@@ -195,6 +244,7 @@
 		21D270032BC0919F008A4EF2 /* Videos */ = {
 			isa = PBXGroup;
 			children = (
+				21D26FF92BC089C9008A4EF2 /* VideoPlayerView.swift */,
 				21D270042BC091BA008A4EF2 /* patagonia_vid (1).mp4 */,
 				21D270082BC0934C008A4EF2 /* patagonia_vid_1.mp4 */,
 			);
@@ -225,6 +275,7 @@
 		21DAA5D32ADF221F00E70BF2 /* BuzzCam App */ = {
 			isa = PBXGroup;
 			children = (
+				2127C3BB2BCF1DD100196455 /* BuzzCam-App-Info.plist */,
 				216B6DC42B757C33005D5538 /* ImportedSubviews */,
 				21C0A21C2AF04A3500BA2ABC /* Protobuf */,
 				21C0A2112AE71BA300BA2ABC /* Models */,
@@ -234,7 +285,8 @@
 				21A5600C2B19429B00292A6A /* ConfigSubviews */,
 				21C0A20B2AE7104800BA2ABC /* DiscoverView.swift */,
 				21DAA5FF2AE0746B00E70BF2 /* MainView.swift */,
-				21D26FF92BC089C9008A4EF2 /* VideoPlayerView.swift */,
+				2127C3B92BCF1A3F00196455 /* CameraViewOut.swift */,
+				2127C39C2BCF156200196455 /* CameraApp */,
 				21D270032BC0919F008A4EF2 /* Videos */,
 				21A07DEC2B98F64300424B27 /* PresetView.swift */,
 				21D26FF72BBDE33A008A4EF2 /* PresetButtonStore.swift */,
@@ -424,29 +476,43 @@
 			files = (
 				21C0A21B2AEC4E1100BA2ABC /* BluetoothConstants.swift in Sources */,
 				21C0A20A2AE320FE00BA2ABC /* NearbyDevices.swift in Sources */,
+				2127C3BA2BCF1A3F00196455 /* CameraViewOut.swift in Sources */,
 				21A5600B2B16A55D00292A6A /* message.pb.swift in Sources */,
 				21C0A2062AE3152800BA2ABC /* StatusesView.swift in Sources */,
+				2127C3B22BCF169C00196455 /* PhotoLibrary.swift in Sources */,
+				2127C3A22BCF15D600196455 /* CameraApp.swift in Sources */,
+				2127C3A62BCF162D00196455 /* DataModel.swift in Sources */,
 				21A07DED2B98F64300424B27 /* PresetView.swift in Sources */,
+				2127C3AC2BCF166A00196455 /* PhotoCollection.swift in Sources */,
+				2127C3B62BCF16C100196455 /* ThumbnailView.swift in Sources */,
 				21BEAA4B2AFEE135001B89E6 /* BluetoothModelHelper.swift in Sources */,
 				21A5600E2B1942AF00292A6A /* AudioConfigView.swift in Sources */,
+				2127C3B02BCF168C00196455 /* PhotoItemView.swift in Sources */,
 				21F495E82B212DDF008E3808 /* SensingConfigView.swift in Sources */,
 				21DAA5D72ADF221F00E70BF2 /* ContentView.swift in Sources */,
+				2127C3AA2BCF165700196455 /* PhotoAssetCollection.swift in Sources */,
 				21152BCB2B29002E0078ADD4 /* SchedulesView.swift in Sources */,
 				21DAA6002AE0746B00E70BF2 /* MainView.swift in Sources */,
 				21C0A2102AE7137100BA2ABC /* ConfigView.swift in Sources */,
+				2127C3A42BCF15F800196455 /* CameraView.swift in Sources */,
+				2127C3B42BCF16AA00196455 /* PhotoView.swift in Sources */,
 				21C907BD2B7EB6A5007B33A1 /* SystemControlView.swift in Sources */,
+				2127C3A82BCF163F00196455 /* PhotoAsset.swift in Sources */,
+				2127C39E2BCF15AA00196455 /* CachedImageManager.swift in Sources */,
 				21DAA5D52ADF221F00E70BF2 /* BuzzCam_AppApp.swift in Sources */,
 				21D26FF82BBDE33A008A4EF2 /* PresetButtonStore.swift in Sources */,
 				21C0A20C2AE7104800BA2ABC /* DiscoverView.swift in Sources */,
+				2127C3A02BCF15C000196455 /* Camera.swift in Sources */,
 				21C0A2082AE320E000BA2ABC /* SensorReadingView.swift in Sources */,
 				216B6DC92B757CF8005D5538 /* LoadingParticle.swift in Sources */,
 				21F495EA2B2783DA008E3808 /* CameraConfigView.swift in Sources */,
+				2127C3B82BCF16D300196455 /* ViewfinderView.swift in Sources */,
 				21D26FFA2BC089C9008A4EF2 /* VideoPlayerView.swift in Sources */,
 				21C17DC72B854EC200A65338 /* RangingView.swift in Sources */,
 				21152BC92B2790920078ADD4 /* NetworkView.swift in Sources */,
 				216B6DC62B757C49005D5538 /* StarryNightView.swift in Sources */,
-				21152BCD2B29039F0078ADD4 /* testview.swift in Sources */,
 				21C0A2192AE71EE800BA2ABC /* BluetoothModel.swift in Sources */,
+				2127C3AE2BCF167C00196455 /* PhotoCollectionView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -611,8 +677,11 @@
 				DEVELOPMENT_TEAM = A35W4MM59Y;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "BuzzCam-App-Info.plist";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "App uses Bluetooth to find, connect and communicate with nearby devices. Please grant access.";
 				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "App uses Bluetooth to find, connect and communicate with nearby devices. Please grant access.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "App uses camera to take photos and store them";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "App uses photo library to display photos in app gallery";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -654,8 +723,11 @@
 				DEVELOPMENT_TEAM = A35W4MM59Y;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "BuzzCam-App-Info.plist";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "App uses Bluetooth to find, connect and communicate with nearby devices. Please grant access.";
 				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "App uses Bluetooth to find, connect and communicate with nearby devices. Please grant access.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "App uses camera to take photos and store them";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "App uses photo library to display photos in app gallery";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;

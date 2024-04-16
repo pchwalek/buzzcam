@@ -32,7 +32,7 @@ struct MainView: View {
     let customFontTitle = Font.custom("Futura-Bold", size: 25) // Define a custom font
     let customFontText = Font.custom("AvenirNext-Regular", size: 18) // Define a custom font
     let customFontTextBold = Font.custom("AvenirNext-DemiBold", size: 23) // Define a custom font
-    let customFontTextBoldLarge = Font.custom("AvenirNext-DemiBold", size: 40) // Define a custom font
+    let customFontTextBoldLarge = Font.custom("Futura-Bold", size: 35) // Define a custom font
     
     @State private var beeScale: CGFloat = 1.0 // Define beeScale here
     
@@ -69,7 +69,7 @@ struct MainView: View {
                                                 .font(customFontText)
                                         }
                                         .padding()
-                                        .background(Color(white: 0.2))
+                                        .background(.black)
                                         .opacity(0.9)
                                         .cornerRadius(5)
                                     }
