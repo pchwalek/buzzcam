@@ -11,6 +11,7 @@ See the License.txt file for this sample’s licensing information.
 
 import SwiftUI
 import Photos
+import CoreLocation
 
 struct PhotoItemView: View {
     var asset: PhotoAsset

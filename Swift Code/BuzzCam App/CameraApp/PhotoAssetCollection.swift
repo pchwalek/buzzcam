@@ -10,6 +10,8 @@ See the License.txt file for this sample’s licensing information.
 */
 
 import Photos
+import CoreLocation
+import UIKit
 
 class PhotoAssetCollection: RandomAccessCollection {
     private(set) var fetchResult: PHFetchResult<PHAsset>

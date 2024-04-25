@@ -11,6 +11,8 @@ struct CameraViewOut: View {
     @EnvironmentObject var bluetoothModel: BluetoothModel
 
     var body: some View {
+        // timestamp
+        // location
         CameraApp()
     }
 }

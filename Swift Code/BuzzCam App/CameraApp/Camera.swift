@@ -13,14 +13,19 @@ import AVFoundation
 import CoreImage
 import UIKit
 import os.log
+import CoreLocation
 
+//class Camera: NSObject, CLLocationManagerDelegate {
 class Camera: NSObject {
+
     private let captureSession = AVCaptureSession()
     private var isCaptureSessionConfigured = false
     private var deviceInput: AVCaptureDeviceInput?
     private var photoOutput: AVCapturePhotoOutput?
     private var videoOutput: AVCaptureVideoDataOutput?
     private var sessionQueue: DispatchQueue!
+    
+//    private var locationManager: CLLocationManager?
     
     private var allCaptureDevices: [AVCaptureDevice] {
         AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInTrueDepthCamera, .builtInDualCamera, .builtInDualWideCamera, .builtInWideAngleCamera, .builtInDualWideCamera], mediaType: .video, position: .unspecified).devices
@@ -117,6 +122,10 @@ class Camera: NSObject {
         
         UIDevice.current.beginGeneratingDeviceOrientationNotifications()
         NotificationCenter.default.addObserver(self, selector: #selector(updateForDeviceOrientation), name: UIDevice.orientationDidChangeNotification, object: nil)
+        
+//        locationManager = CLLocationManager()
+//        locationManager?.delegate = self
+//        locationManager?.requestAlwaysAuthorization()
     }
     
     private func configureCaptureSession(completionHandler: (_ success: Bool) -> Void) {
@@ -198,6 +207,37 @@ class Camera: NSObject {
         }
     }
     
+//    private func checkAuthorizationLoc() -> Bool {
+//        switch CLLocationManager.authorizationStatus() {
+//        case .authorizedAlways, .authorizedWhenInUse:
+//            logger.debug("Location access authorized.")
+//            return true
+//        case .notDetermined:
+//            logger.debug("Location access not determined.")
+//            sessionQueue.suspend()
+//            // Request location authorization asynchronously
+//            locationManager?.requestWhenInUseAuthorization()
+//            sessionQueue.resume()
+//            return CLLocationManager.authorizationStatus() == .authorizedAlways
+//                || CLLocationManager.authorizationStatus() == .authorizedWhenInUse
+//            // No need to check the authorization status here
+//            // The completion handler will be called by the delegate method
+//        case .denied:
+//            logger.debug("Location access denied.")
+//            return false
+//        case .restricted:
+//            logger.debug("Location access restricted.")
+//            return false
+//        @unknown default:
+//            return false
+//        }
+//    }
+
+
+
+
+
+    
     private func deviceInputFor(device: AVCaptureDevice?) -> AVCaptureDeviceInput? {
         guard let validDevice = device else { return nil }
         do {
@@ -237,12 +277,31 @@ class Camera: NSObject {
         }
     }
     
+    
     func start() async {
         let authorized = await checkAuthorization()
         guard authorized else {
             logger.error("Camera access was not authorized.")
             return
         }
+        
+//        locationManager = CLLocationManager()
+//        locationManager?.delegate = self
+//        locationManager?.requestAlwaysAuthorization()
+        
+//        let authorizedLoc = await checkAuthorizationLoc()
+//        guard authorizedLoc else {
+//            logger.error("Location access was not authorized.")
+//            return
+//        }
+//
+//        // Check if location services are enabled
+//        if CLLocationManager.locationServicesEnabled() {
+//            // Start location updates
+//            locationManager?.startUpdatingLocation()
+//        } else {
+//            logger.error("Location services are not enabled.")
+//        }
         
         if isCaptureSessionConfigured {
             if !captureSession.isRunning {
@@ -260,6 +319,7 @@ class Camera: NSObject {
             }
         }
     }
+
     
     func stop() {
         guard isCaptureSessionConfigured else { return }

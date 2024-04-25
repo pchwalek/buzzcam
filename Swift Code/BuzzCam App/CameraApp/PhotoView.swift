@@ -11,6 +11,8 @@ See the License.txt file for this sample’s licensing information.
 
 import SwiftUI
 import Photos
+import Foundation
+import CoreLocation
 
 struct PhotoView: View {
     var asset: PhotoAsset
@@ -19,6 +21,13 @@ struct PhotoView: View {
     @State private var imageRequestID: PHImageRequestID?
     @Environment(\.dismiss) var dismiss
     private let imageSize = CGSize(width: 1024, height: 1024)
+
+    // Create a DateFormatter instance to format the date
+    let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM dd, yyyy   HH:mm:ss" // Date format with time in military format (00:00:00)
+        return formatter
+    }()
     
     var body: some View {
         Group {
@@ -53,33 +62,48 @@ struct PhotoView: View {
     }
     
     private func buttonsView() -> some View {
-        HStack(spacing: 60) {
-            
-            Button {
-                Task {
-                    await asset.setIsFavorite(!asset.isFavorite)
-                }
-            } label: {
-                Label("Favorite", systemImage: asset.isFavorite ? "heart.fill" : "heart")
-                    .font(.system(size: 24))
-            }
-
-            Button {
-                Task {
-                    await asset.delete()
-                    await MainActor.run {
-                        dismiss()
+        VStack {
+            HStack(spacing: 60) {
+                
+                Button {
+                    Task {
+                        await asset.setIsFavorite(!asset.isFavorite)
                     }
+                } label: {
+                    Label("Favorite", systemImage: asset.isFavorite ? "heart.fill" : "heart")
+                        .font(.system(size: 24))
                 }
-            } label: {
-                Label("Delete", systemImage: "trash")
-                    .font(.system(size: 24))
+                
+                Button {
+                    Task {
+                        await asset.delete()
+                        await MainActor.run {
+                            dismiss()
+                        }
+                    }
+                } label: {
+                    Label("Delete", systemImage: "trash")
+                        .font(.system(size: 24))
+                }
             }
-        }
-        .buttonStyle(.plain)
-        .labelStyle(.iconOnly)
-        .padding(EdgeInsets(top: 20, leading: 30, bottom: 20, trailing: 30))
-        .background(Color.secondary.colorInvert())
-        .cornerRadius(15)
+            .buttonStyle(.plain)
+            .labelStyle(.iconOnly)
+        
+            // Format the foundation date into a string
+            let dateString = dateFormatter.string(from: asset.creationDate)
+            
+            // Display the formatted date string as a SwiftUI view
+            Text(dateString).padding()
+            
+//            let latitude = asset.location.coordinate.latitude;
+//            let longitude = asset.location.coordinate.longitude;
+//            Text("Location: \(latitude) \(longitude)");
+            
+
+            
+        }.padding(EdgeInsets(top: 20, leading: 30, bottom: 20, trailing: 30))
+            .foregroundColor(.white)
+            .background(Color.secondary.colorInvert())
+            .cornerRadius(15)
     }
 }

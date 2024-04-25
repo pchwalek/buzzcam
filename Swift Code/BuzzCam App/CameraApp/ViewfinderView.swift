@@ -10,6 +10,7 @@ See the License.txt file for this sample’s licensing information.
 */
 
 import SwiftUI
+import CoreLocation
 
 struct ViewfinderView: View {
     @Binding var image: Image?

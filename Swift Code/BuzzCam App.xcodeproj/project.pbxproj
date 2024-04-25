@@ -169,6 +169,7 @@
 			isa = PBXGroup;
 			children = (
 				2127C39D2BCF15AA00196455 /* CachedImageManager.swift */,
+				21C0A20B2AE7104800BA2ABC /* DiscoverView.swift */,
 				2127C39F2BCF15C000196455 /* Camera.swift */,
 				2127C3A12BCF15D600196455 /* CameraApp.swift */,
 				2127C3A32BCF15F800196455 /* CameraView.swift */,
@@ -282,10 +283,9 @@
 				21DAA5D42ADF221F00E70BF2 /* BuzzCam_AppApp.swift */,
 				21DAA5D62ADF221F00E70BF2 /* ContentView.swift */,
 				21C0A20F2AE7137100BA2ABC /* ConfigView.swift */,
-				21A5600C2B19429B00292A6A /* ConfigSubviews */,
-				21C0A20B2AE7104800BA2ABC /* DiscoverView.swift */,
 				21DAA5FF2AE0746B00E70BF2 /* MainView.swift */,
 				2127C3B92BCF1A3F00196455 /* CameraViewOut.swift */,
+				21A5600C2B19429B00292A6A /* ConfigSubviews */,
 				2127C39C2BCF156200196455 /* CameraApp */,
 				21D270032BC0919F008A4EF2 /* Videos */,
 				21A07DEC2B98F64300424B27 /* PresetView.swift */,
@@ -681,6 +681,7 @@
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "App uses Bluetooth to find, connect and communicate with nearby devices. Please grant access.";
 				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "App uses Bluetooth to find, connect and communicate with nearby devices. Please grant access.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "App uses camera to take photos and store them";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "App uses location to display coordinates of photos";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "App uses photo library to display photos in app gallery";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -727,6 +728,7 @@
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "App uses Bluetooth to find, connect and communicate with nearby devices. Please grant access.";
 				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "App uses Bluetooth to find, connect and communicate with nearby devices. Please grant access.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "App uses camera to take photos and store them";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "App uses location to display coordinates of photos";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "App uses photo library to display photos in app gallery";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;

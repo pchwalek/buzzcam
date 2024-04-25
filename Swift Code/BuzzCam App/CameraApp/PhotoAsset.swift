@@ -11,6 +11,8 @@ See the License.txt file for this sample’s licensing information.
 
 import Photos
 import os.log
+import Foundation
+import CoreLocation
 
 struct PhotoAsset: Identifiable {
     var id: String { identifier }
@@ -23,6 +25,14 @@ struct PhotoAsset: Identifiable {
     var isFavorite: Bool {
         phAsset?.isFavorite ?? false
     }
+    
+    var creationDate: Date {
+        phAsset?.creationDate ?? Date()
+    }
+    
+//    var location: CLLocation {
+//        phAsset?.location ?? CLLocation()
+//    }
     
     var mediaType: MediaType {
         phAsset?.mediaType ?? .unknown

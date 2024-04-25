@@ -10,6 +10,7 @@ See the License.txt file for this sample’s licensing information.
 */
 
 import SwiftUI
+import CoreLocation
 
 struct CameraView: View {
     @StateObject private var model = DataModel()
