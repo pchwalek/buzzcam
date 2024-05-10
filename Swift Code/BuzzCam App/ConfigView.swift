@@ -33,6 +33,9 @@ struct ConfigView: View {
                     SystemControlView()
                     Spacer()
                     SchedulesView()
+
+
+
                 }
                 else {
                     // Placeholder view while the peripheral name is not available, waiting for it to load

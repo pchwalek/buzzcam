@@ -23,7 +23,7 @@
 		2127C3B42BCF16AA00196455 /* PhotoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2127C3B32BCF16AA00196455 /* PhotoView.swift */; };
 		2127C3B62BCF16C100196455 /* ThumbnailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2127C3B52BCF16C100196455 /* ThumbnailView.swift */; };
 		2127C3B82BCF16D300196455 /* ViewfinderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2127C3B72BCF16D300196455 /* ViewfinderView.swift */; };
-		2127C3BA2BCF1A3F00196455 /* CameraViewOut.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2127C3B92BCF1A3F00196455 /* CameraViewOut.swift */; };
+		2127C3BA2BCF1A3F00196455 /* CameraViewTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2127C3B92BCF1A3F00196455 /* CameraViewTab.swift */; };
 		212DA4BE2B7AFEAA00324DDA /* Shiny in Frameworks */ = {isa = PBXBuildFile; productRef = 212DA4BD2B7AFEAA00324DDA /* Shiny */; };
 		216B6DC62B757C49005D5538 /* StarryNightView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 216B6DC52B757C49005D5538 /* StarryNightView.swift */; };
 		216B6DC92B757CF8005D5538 /* LoadingParticle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 216B6DC82B757CF8005D5538 /* LoadingParticle.swift */; };
@@ -98,7 +98,7 @@
 		2127C3B32BCF16AA00196455 /* PhotoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoView.swift; sourceTree = "<group>"; };
 		2127C3B52BCF16C100196455 /* ThumbnailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailView.swift; sourceTree = "<group>"; };
 		2127C3B72BCF16D300196455 /* ViewfinderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewfinderView.swift; sourceTree = "<group>"; };
-		2127C3B92BCF1A3F00196455 /* CameraViewOut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraViewOut.swift; sourceTree = "<group>"; };
+		2127C3B92BCF1A3F00196455 /* CameraViewTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraViewTab.swift; sourceTree = "<group>"; };
 		2127C3BB2BCF1DD100196455 /* BuzzCam-App-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "BuzzCam-App-Info.plist"; sourceTree = SOURCE_ROOT; };
 		216B6DC52B757C49005D5538 /* StarryNightView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StarryNightView.swift; sourceTree = "<group>"; };
 		216B6DC82B757CF8005D5538 /* LoadingParticle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingParticle.swift; sourceTree = "<group>"; };
@@ -169,7 +169,6 @@
 			isa = PBXGroup;
 			children = (
 				2127C39D2BCF15AA00196455 /* CachedImageManager.swift */,
-				21C0A20B2AE7104800BA2ABC /* DiscoverView.swift */,
 				2127C39F2BCF15C000196455 /* Camera.swift */,
 				2127C3A12BCF15D600196455 /* CameraApp.swift */,
 				2127C3A32BCF15F800196455 /* CameraView.swift */,
@@ -282,18 +281,15 @@
 				21C0A2112AE71BA300BA2ABC /* Models */,
 				21DAA5D42ADF221F00E70BF2 /* BuzzCam_AppApp.swift */,
 				21DAA5D62ADF221F00E70BF2 /* ContentView.swift */,
-				21C0A20F2AE7137100BA2ABC /* ConfigView.swift */,
+				21C0A20B2AE7104800BA2ABC /* DiscoverView.swift */,
 				21DAA5FF2AE0746B00E70BF2 /* MainView.swift */,
-				2127C3B92BCF1A3F00196455 /* CameraViewOut.swift */,
+				21DB64782BEC1A4200F20C14 /* MainSubviews */,
+				21C0A20F2AE7137100BA2ABC /* ConfigView.swift */,
 				21A5600C2B19429B00292A6A /* ConfigSubviews */,
+				2127C3B92BCF1A3F00196455 /* CameraViewTab.swift */,
 				2127C39C2BCF156200196455 /* CameraApp */,
 				21D270032BC0919F008A4EF2 /* Videos */,
-				21A07DEC2B98F64300424B27 /* PresetView.swift */,
 				21D26FF72BBDE33A008A4EF2 /* PresetButtonStore.swift */,
-				21C0A2052AE3152800BA2ABC /* StatusesView.swift */,
-				21C17DC62B854EC200A65338 /* RangingView.swift */,
-				21C0A2072AE320E000BA2ABC /* SensorReadingView.swift */,
-				21C0A2092AE320FE00BA2ABC /* NearbyDevices.swift */,
 				21DAA5D82ADF222000E70BF2 /* Assets.xcassets */,
 				21DAA5DA2ADF222000E70BF2 /* BuzzCam_App.entitlements */,
 				21DAA5DB2ADF222000E70BF2 /* Preview Content */,
@@ -324,6 +320,18 @@
 				21DAA5F22ADF222000E70BF2 /* BuzzCam_AppUITestsLaunchTests.swift */,
 			);
 			path = "BuzzCam AppUITests";
+			sourceTree = "<group>";
+		};
+		21DB64782BEC1A4200F20C14 /* MainSubviews */ = {
+			isa = PBXGroup;
+			children = (
+				21A07DEC2B98F64300424B27 /* PresetView.swift */,
+				21C0A2052AE3152800BA2ABC /* StatusesView.swift */,
+				21C0A2072AE320E000BA2ABC /* SensorReadingView.swift */,
+				21C17DC62B854EC200A65338 /* RangingView.swift */,
+				21C0A2092AE320FE00BA2ABC /* NearbyDevices.swift */,
+			);
+			path = MainSubviews;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -476,7 +484,7 @@
 			files = (
 				21C0A21B2AEC4E1100BA2ABC /* BluetoothConstants.swift in Sources */,
 				21C0A20A2AE320FE00BA2ABC /* NearbyDevices.swift in Sources */,
-				2127C3BA2BCF1A3F00196455 /* CameraViewOut.swift in Sources */,
+				2127C3BA2BCF1A3F00196455 /* CameraViewTab.swift in Sources */,
 				21A5600B2B16A55D00292A6A /* message.pb.swift in Sources */,
 				21C0A2062AE3152800BA2ABC /* StatusesView.swift in Sources */,
 				2127C3B22BCF169C00196455 /* PhotoLibrary.swift in Sources */,

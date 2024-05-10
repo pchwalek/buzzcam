@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct CameraViewOut: View {
+struct CameraViewTab: View {
     @EnvironmentObject var bluetoothModel: BluetoothModel
 
     var body: some View {

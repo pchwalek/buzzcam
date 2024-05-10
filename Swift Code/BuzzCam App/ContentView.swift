@@ -31,7 +31,7 @@ struct ContentView: View {
                             case .conf:
                                 ConfigView().environmentObject(bluetoothModel)
                             case .cam:
-                                CameraViewOut().environmentObject(bluetoothModel)
+                                CameraViewTab().environmentObject(bluetoothModel)
                             }
                             
 
@@ -82,28 +82,10 @@ struct ContentView: View {
                             withAnimation {
                                 self.showMainContent = true
                             }
-    //                        self.showMainContent = true
                         }
                     }
                 }
 
-//                else { // Show splash screen
-//                    // Launch screen
-//                    withAnimation {
-//                        ZStack {
-//                            Color.black
-//                                .edgesIgnoringSafeArea(.all)
-//                        }
-//                    }
-//                    .onAppear {
-//                        // Show launch screen for 3 seconds
-//                        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-//                            withAnimation {
-//                                self.showMainContent = true
-//                            }
-//                        }
-//                    }
-//                }
             }
             .background(Color.clear) // Set the background color of the Group to clear
         }.navigationViewStyle(StackNavigationViewStyle())

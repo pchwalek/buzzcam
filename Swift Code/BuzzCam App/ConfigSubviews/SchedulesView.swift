@@ -20,6 +20,8 @@ struct SchedulesView: View {
     
     let customFontTitle = Font.custom("Futura-Bold", size: 25)
     let customFontText = Font.custom("AvenirNext-Regular", size: 18)
+    let customFontTextSmall = Font.custom("AvenirNext-Regular", size: 12)
+
     let customFontTextBold = Font.custom("AvenirNext-DemiBold", size: 20)
     let customFontTextBoldLarge = Font.custom("AvenirNext-DemiBold", size: 25)
     let customFontTextBoldSmall = Font.custom("AvenirNext-DemiBold", size: 18)
@@ -48,6 +50,9 @@ struct SchedulesView: View {
                     }).onTapGesture {
                 withAnimation {
                     isExpanded.toggle()
+                    if !isExpanded {
+                        isPopupPresented = false
+                    }
                 }
             }
             
@@ -112,7 +117,17 @@ struct SchedulesView: View {
                 }
                 .padding()
             }
-            
+            if !isPopupPresented {
+                HStack {
+                    Spacer()
+                    VStack (alignment: .center){
+                        Text("Made with ❤️ by the Responsive Environments Lab").font(customFontTextSmall).foregroundColor(.black)
+                        Text("Contributors: Patrick Chwalek, Isamar Zhu").font(customFontTextSmall).foregroundColor(.black)
+                    }
+                    Spacer()
+                }.padding(.top, 20)
+
+            }
             // Unified view for editing/creating schedules
             SchedulePopupView(
                 isPresented: $isPopupPresented,
@@ -144,6 +159,7 @@ struct SchedulesView: View {
             )
             .opacity(isPopupPresented ? 1 : 0) // Optionally, fade out when not presented
             .animation(.easeInOut, value: 1)
+        
         }
         .onAppear {
             // Initialize schedules when the view appears
@@ -301,7 +317,7 @@ struct SchedulePopupView: View {
                 print("new schedule")
             }
         }
-        .frame(width: 300, height: 700)
+        .frame(width: 300, height: 600)
         .background(Color.white)
         .cornerRadius(10)
         .overlay(
