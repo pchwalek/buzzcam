@@ -132,7 +132,6 @@ struct SchedulesView: View {
             SchedulePopupView(
                 isPresented: $isPopupPresented,
                 selectedIndex: selectedIndex,
-                //                    schedules: schedules,
                 schedule: selectedIndex != nil ? schedules[selectedIndex!] : nil,
                 onSave: { newSchedule in
                     if let index = selectedIndex {
@@ -212,11 +211,7 @@ struct SchedulesView: View {
 //        enableFreeRunMode = configData.freeRunMode
         enableFreeRunMode = configPacketData_Audio?.freeRunMode ?? false
     }
-    
-//    private func updateAudioCompressionToggle(_ configPacketData_Audio: ConfigPacketData_Audio?) {
-//        // Update channel2 based on configPacketData_Audio
-//        audioCompressionEnabled = configPacketData_Audio?.audioCompressionEnabled ?? false
-//    }
+
 }
 
 struct SchedulePopupView: View {
@@ -342,7 +337,7 @@ struct TimePicker: View {
         HStack {
             Picker("", selection: $selectedHour) {
                 ForEach(0..<24, id: \.self) { hour in
-                    Text(String(format: "%02d", hour))
+                    Text(String(format: "%02d", hour))// Format display for 00:00
                         .tag(UInt32(hour))
                         .foregroundColor(.black)
                 }

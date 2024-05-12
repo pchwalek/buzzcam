@@ -11,8 +11,7 @@ struct CameraViewTab: View {
     @EnvironmentObject var bluetoothModel: BluetoothModel
 
     var body: some View {
-        // timestamp
-        // location
+        // source: https://developer.apple.com/tutorials/sample-apps/capturingphotos-captureandsave
         CameraApp()
     }
 }

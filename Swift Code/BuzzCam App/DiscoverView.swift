@@ -26,29 +26,20 @@ struct DiscoverView: View {
     let customFontTitle = Font.custom("Futura-Bold", size: 30) // Define a custom font
     let customFontText = Font.custom("AvenirNext-Regular", size: 18) // Define a custom font
     let customFontTextBold = Font.custom("AvenirNext-Bold", size: 18) // Define a custom font
-    //HiraginoSans-W3
-//    let customFontText = Font.custom("HiraginoSans-W3", size: 17) // Define a custom font
 
     var body: some View {
-//        NavigationView {
             ZStack {
-//                Color(red: 243/255, green: 237/255, blue: 151/255)
-//                    .edgesIgnoringSafeArea(.all)
-                
-                StarrySkyView()
+             StarrySkyView()
                 
                 VStack {
                     Text("Discover Devices")
-//                        .font(.title)
                         .font(customFontTitle)
-//                        .foregroundColor(Color.white)
                         .padding(.top, 40)
                     
                     Text("All discoverable devices shown below. Click on any to connect.")
                         .font(customFontText)
                         .padding(.horizontal, 40)
                         .padding(.vertical, 20)
-//                        .foregroundColor(Color.white)
                         .multilineTextAlignment(.center)
                     
                     ScrollView {
@@ -63,9 +54,7 @@ struct DiscoverView: View {
                                             HStack {
                                                 Text(peripheral.name ?? "Unknown")
                                                     .font(customFontTextBold)
-                                                
-                                                
-                                                
+     
                                                 Spacer()
                                                 
                                                 Button(action: {
@@ -90,33 +79,7 @@ struct DiscoverView: View {
                         }
                         .padding(.horizontal)
                     }
-//                    List {
-//                        ForEach(bluetoothModel.filteredPeripherals) { peripheral in
-//                            HStack {
-//                                Text(peripheral.name ?? "Unknown")
-//                                    .font(.body)
-//                                
-//                                Spacer()
-//                                
-//                                Button(action: {
-//                                    // Action when Connect button is clicked
-//                                    connected = true // Set this to true to trigger the navigation
-//                                    bluetoothModel.connectToPeripheral(peripheral)
-//                                    isConnected = true
-//                                }) {
-//                                    Text("Connect")
-//                                        .foregroundColor(.white)
-//                                        .padding(.horizontal, 10)
-//                                        .padding(.vertical, 5)
-//                                        .background(Color.green)
-//                                        .cornerRadius(5)
-//                                }
-//                            }
-//                            .padding(.vertical, 8)
-//                        }
-//                        .transition(.fanInOut)
-//                    }
-//                }
+
             }
         }
         .onAppear {
@@ -146,53 +109,9 @@ struct DiscoverView: View {
 
 
 
-//extension AnyTransition {
-//    static var fanInOut: AnyTransition {
-//        let insertion = AnyTransition.move(edge: .top).combined(with: .opacity)
-//        let removal = AnyTransition.move(edge: .bottom).combined(with: .opacity)
-//        return .asymmetric(insertion: insertion, removal: removal)
-//    }
-//}
-
-
-//struct DiscoverView: View {
-//    @EnvironmentObject var bluetoothModel: BluetoothModel
-//    @State private var isConnected = false
-//    @Binding var connected: Bool
-//    
-//    
-//    var body: some View {
-//        NavigationView {
-//            VStack {
-//                Text("Discover Devices").font(.title)
-//                // loop thru devices with "BuzzCam" or "STM" in name
-//                List(bluetoothModel.filteredPeripherals) { peripheral in
-//                    Text(peripheral.name ?? "Unknown")
-//                    Button(action: {
-//                        // Action when Disconnect button is clicked
-//                        connected = true // Set this to true to trigger the navigation
-//                        bluetoothModel.connectToPeripheral(peripheral)
-//                        isConnected = true
-//                    }) {
-//                        Text("Connect")
-//                            .foregroundColor(Color.white)
-//                    }
-//                    .padding()
-//                    .background(Color(white: 0.2))
-//                    .cornerRadius(5)
-//                    
-//                }
-//            }
-//        }
-//    }
-//}
 
 struct DiscoverView_Previews: PreviewProvider {
     static var previews: some View {
         DiscoverView(connected: .constant(false)).environmentObject(BluetoothModel())
     }
 }
-
-//#Preview {
-//    DiscoverView(bluetoothModel: BluetoothModel())
-//}

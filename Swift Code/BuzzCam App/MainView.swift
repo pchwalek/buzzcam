@@ -272,14 +272,7 @@ struct MainView: View {
                             Spacer()
                             // ranging dropdown
                             RangingView()
-//                            Spacer()
-                            // nearby devices dropdown
-//                            NearbyDevices()
-                            
-                            
-//                            Image("BuzzCam Logo 1").resizable()
-//                                .frame(width: 100, height: 100)
-//                                .scaledToFit().padding() // replace with transparent background logo
+
                         }.background(Color(red: 54/255, green: 58/255, blue: 1/255))
                     } else {
                         // Placeholder view while the peripheral name is not available, waiting for it to load

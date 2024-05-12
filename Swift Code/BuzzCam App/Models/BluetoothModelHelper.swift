@@ -31,13 +31,11 @@ extension BluetoothModel {
         
         currentMarkPacket.markPacket.beepEnabled = beep
         
-
         // Update markPacket
         markPacket = currentMarkPacket
         
         print("sent markPacket")
 
-//        sendSystemInfoPacket()
         sendMarkPacket()
         
         markPacket.markPacket.clearAnnotation() //clear annotation and reset hasAnnotation
@@ -75,9 +73,7 @@ extension BluetoothModel {
         currentSpecialFunction.specialFunction.cameraControl.capture = true
         
         specialFunction = currentSpecialFunction
-        
-        print("For/Users/resenv/Documents/GitHub/buzzcam/Swift Code/BuzzCam App.xcodeprojced camera capture")
-        
+                
         sendSpecialFunction()
     }
     
@@ -94,17 +90,15 @@ extension BluetoothModel {
         print("currentConfigPacket.configPacket.audioConfig.channel1", currentConfigPacket.configPacket.audioConfig.channel1)
         print("channel1", channel1)
         
-//        if (currentConfigPacket.configPacket.audioConfig.channel1 != channel1) {
-            // edit field if changed
-            currentConfigPacket.configPacket.audioConfig.channel1 = channel1
-            
-            configPacket = currentConfigPacket
-            
-            print("in enableAudioChannel1, channel1 is \(channel1)")
-            print("Sent enable audio channel1")
-            
-            sendConfigPacket()
-//        }
+
+        currentConfigPacket.configPacket.audioConfig.channel1 = channel1
+        
+        configPacket = currentConfigPacket
+        
+        print("in enableAudioChannel1, channel1 is \(channel1)")
+        print("Sent enable audio channel1")
+        
+        sendConfigPacket()
     }
     
     //send packet to enable/disable audio channels
@@ -280,27 +274,6 @@ extension BluetoothModel {
 //        }
     }
     
-//    // send [packet to change sample period
-//    func changeSamplePeriod(samplePeriod: UInt32) {
-//        // Retrieve the current values of SystemInfoPacket (if they exist)
-//        var currentConfigPacket = configPacket ?? Packet()
-//        
-//        
-//        // Set unix time
-//        let currentTimestamp = Date().timeIntervalSince1970
-//        currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
-//        
-//        // edit field if changed
-//        if (currentConfigPacket.configPacket.sensorConfig.samplePeriodMs != samplePeriod) {
-//            currentConfigPacket.configPacket.sensorConfig.samplePeriodMs = samplePeriod
-//            
-//            configPacket = currentConfigPacket
-//            
-//            print("Sent new samplePeriod")
-//            
-//            sendConfigPacket()
-//        }
-//    }
     
     //send packet to enable/disable gas
     func enableGasSensing(enableGas: Bool) {
@@ -407,25 +380,6 @@ extension BluetoothModel {
         sendConfigPacket()
     }
     
-//    // send packet to force rediscovery
-//    func forceRediscovery() {
-//        // Retrieve the current values of SystemInfoPacket (if they exist)
-//        var currentConfigPacket = configPacket ?? Packet()
-//        
-//        // Set unix time
-//        let currentTimestamp = Date().timeIntervalSince1970
-//        currentConfigPacket.header.systemUid = UInt32(currentTimestamp)
-//        
-//        currentConfigPacket.configPacket.networkState.forceRediscovery = true
-//        
-//        configPacket = currentConfigPacket
-//        
-//        print("Sent forceRediscovery")
-//        
-//        sendConfigPacket()
-//    }
-    
-    // functions for schedule
     
     // send packet with schedules
     func sendSchedules(_ schedules: [ScheduleConfig]) {
