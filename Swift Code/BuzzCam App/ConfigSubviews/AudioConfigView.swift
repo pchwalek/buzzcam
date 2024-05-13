@@ -191,27 +191,9 @@ struct AudioConfigView: View {
                     .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
                     .background(Color(white: 0.98))
                     .cornerRadius(10)
+
                     
-//                    ScrollView(.horizontal, showsIndicators: false) {
-//                                HStack {
-//                                    ForEach(micGains, id: \.self) { gain in
-//                                        Text(self.micGainLabels[gain.rawValue])
-//                                            .padding()
-//                                            .background(self.selectedMicGain == gain ? Color.blue : Color.clear)
-//                                            .clipShape(RoundedRectangle(cornerRadius: 10))
-//                                            .onTapGesture {
-//                                                bluetoothModel.changeMicGain(micGain: selectedMicGain ?? .gain60Db)
-//                                                self.selectedMicGain = gain
-//                                            }
-//                                    }
-//                                }
-//                            }
-//                    .padding()
-//                    .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
-//                    .background(Color(white: 0.98))
-//                    .cornerRadius(10)
-                    
-                    VStack (alignment: .leading) { // this is a bit weird
+                    VStack (alignment: .leading) { 
                         Text("Microphone Gain")
                             .font(customFontTextBold)
                         .fontWeight(.bold)

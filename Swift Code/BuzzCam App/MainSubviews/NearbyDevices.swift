@@ -34,7 +34,7 @@ struct NearbyDevices: View {
             }.frame(maxWidth: .infinity)
                 .background(
                     GeometryReader { proxy in
-                            Image("flowers 3") // Replace "your_image_name" with the name of your image asset
+                            Image("flowers 3")
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
                                 .frame(width: proxy.size.width, height: proxy.size.height)
@@ -54,7 +54,6 @@ struct NearbyDevices: View {
                 VStack {
                     HStack {
                         Text("Number of Nearby Devices: ").font(customFontTextBold)
-                        // \(bluetoothModel.systemInfoPacketData?.number_discovered_devices ?? 0)
                         Text("").font(customFontText) // use length of discovered_devices
                     }.padding(.top, 20)
                     
@@ -85,9 +84,7 @@ struct NearbyDevices: View {
                         }
                 }
                 .frame(maxWidth: .infinity)
-                .padding(30)  
-                
-                
+                .padding(30)
                 }
             }
         }

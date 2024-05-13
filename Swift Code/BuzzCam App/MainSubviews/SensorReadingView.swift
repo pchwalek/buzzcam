@@ -13,7 +13,7 @@ struct SensorReadingView: View {
     
     let customFontTitle = Font.custom("Futura-Bold", size: 20) // Define a custom font
     let customFontText = Font.custom("AvenirNext-Regular", size: 18) // Define a custom font
-    let customFontTextBold = Font.custom("AvenirNext-DemiBold", size: 23) // Define a custom font
+    let customFontTextBold = Font.custom("AvenirNext-DemiBold", size: 20) // Define a custom font
     
     var body: some View {
         VStack (alignment: .leading) {
@@ -33,7 +33,7 @@ struct SensorReadingView: View {
             }.frame(maxWidth: .infinity)
                 .background(
                     GeometryReader { proxy in
-                            Image("flowers 1") // Replace "your_image_name" with the name of your image asset
+                            Image("flowers 1")
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
                                 .frame(width: proxy.size.width, height: proxy.size.height)
@@ -50,48 +50,54 @@ struct SensorReadingView: View {
             }
             if isExpanded {
                 VStack (alignment: .leading, spacing: 20) {
-                    HStack {
-                        Image(systemName: "thermometer").resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 30, height: 30)
-                        Text("Temperature:")
-                            .font(customFontText)
-                        Text(String(bluetoothModel.systemInfoPacketData?.temperature ?? 0))
-                            .font(customFontTextBold)
-//                            .fontWeight(.bold)
+                    VStack(alignment: .leading) {
+                        HStack {
+                            Image(systemName: "thermometer").resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 30, height: 30)
+                            Text("Temperature:")
+                                .font(customFontText)
+                            Text(String(bluetoothModel.systemInfoPacketData?.temperature ?? 0))
+                                .font(customFontTextBold)
+                        }
+                        
+                        HStack {
+                            Image(systemName: "humidity").resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 30, height: 30)
+                            Text("Humidity:")
+                                .font(customFontText)
+                            Text(String(bluetoothModel.systemInfoPacketData?.humidity ?? 0))
+                                .font(customFontTextBold)
+                        }
+                        
+                        HStack {
+                            Image(systemName: "wind").resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 30, height: 30)
+                            Text("CO2:")
+                                .font(.body)
+                            Text(String(bluetoothModel.systemInfoPacketData?.co2 ?? 0))
+                                .font(customFontTextBold)
+                        }
+                        
+                        HStack {
+                            Image(systemName: "lightbulb.max").resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 30, height: 30)
+                            Text("Light level:")
+                                .font(customFontText)
+                            Text(String(bluetoothModel.systemInfoPacketData?.light_level ?? 0))
+                                .font(customFontTextBold)
+                        }
                     }
-                    
-                    HStack {
-                        Image(systemName: "humidity").resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 30, height: 30)
-                        Text("Humidity:")
-                            .font(customFontText)
-                        Text(String(bluetoothModel.systemInfoPacketData?.humidity ?? 0))
-                            .font(customFontTextBold)
-                    }
-                    
-                    HStack {
-                        Image(systemName: "wind").resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 30, height: 30)
-                        Text("CO2:")
-                            .font(.body)
-                        Text(String(bluetoothModel.systemInfoPacketData?.co2 ?? 0))
-                            .font(customFontTextBold)
-//                            .fontWeight(.bold)
-                    }
-                    
-                    HStack {
-                        Image(systemName: "lightbulb.max").resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 30, height: 30)
-                        Text("Light level:")
-                            .font(customFontText)
-                        Text(String(bluetoothModel.systemInfoPacketData?.light_level ?? 0))
-                            .font(customFontTextBold)
-//                            .fontWeight(.bold)
-                    }
+                    .padding()
+                    .frame(
+                        minWidth: 0,
+                        maxWidth: .infinity,
+                        alignment: .leading)
+                    .background(Color(white: 0.98))
+                    .cornerRadius(10)
                 }
                 .padding(30)
                 

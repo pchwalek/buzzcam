@@ -41,7 +41,7 @@ struct RangingView: View {
             }.frame(maxWidth: .infinity)
                 .background(
                     GeometryReader { proxy in
-                        Image("flowers 3") // Replace "your_image_name" with the name of your image asset
+                        Image("flowers 3")
                             .resizable()
                             .aspectRatio(contentMode: .fill)
                             .frame(width: proxy.size.width, height: proxy.size.height)

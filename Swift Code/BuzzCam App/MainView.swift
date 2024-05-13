@@ -22,7 +22,6 @@ import AVKit
 struct MainView: View {
     @State private var beepOn = false
     @State private var annotationText: String = ""
-    @State private var shouldNavigate = false
     @Binding var connected: Bool // is connected to peripheral
     @EnvironmentObject var bluetoothModel: BluetoothModel
     @State private var cancellables: Set<AnyCancellable> = Set()
@@ -34,7 +33,7 @@ struct MainView: View {
     let customFontTextBold = Font.custom("AvenirNext-DemiBold", size: 23) // Define a custom font
     let customFontTextBoldLarge = Font.custom("Futura-Bold", size: 35) // Define a custom font
     
-    @State private var beeScale: CGFloat = 1.0 // Define beeScale here
+    @State private var beeScale: CGFloat = 1.0 // Define starting scale for bee emoji
     
 
     
@@ -48,10 +47,11 @@ struct MainView: View {
                         VStack {
                             // upper box
                             ZStack {
-                                PlayerView().frame(maxWidth: .infinity, maxHeight: .infinity) // Ensure the PlayerView fills the available spacr
+                                PlayerView().frame(maxWidth: .infinity, maxHeight: .infinity) // Ensure the PlayerView fills the available space
                                     .edgesIgnoringSafeArea(.all)
                                 VStack(alignment: .center){
                                     HStack {
+                                        // Get name of device
                                         Text(String(bluetoothModel.connectedPeripheral?.name ?? "BuzzCam").split(separator: "_")[1]) // split by underscore
                                             .font(customFontTitle)
                                             .foregroundColor(Color.black)
@@ -82,14 +82,6 @@ struct MainView: View {
                                     maxHeight: .infinity,
                                     alignment: .topLeading
                                 )
-                                //                            .background(
-                                //                                Image("patagonia 4") // Replace "your_image_name" with the name of your image asset
-                                //                                    .resizable()
-                                //                                    .scaledToFill()
-                                //                                    .edgesIgnoringSafeArea(.all)
-                                //                                    .opacity(0.9) // Adjust the opacity of the image if needed
-                                ////                                    .blur(radius: 1)
-                                //                            )
                             }
                             
                             //mark box
@@ -121,13 +113,7 @@ struct MainView: View {
                                     }
                                 }.frame(maxWidth: .infinity)
                                 
-                                
-                                //                                HStack{
-                                //                                    Text("Mark #").foregroundColor(Color.black)
-                                //                                    Text(String(bluetoothModel.systemInfoPacketData?.mark_number ?? 0))
-                                //                                        .font(customFontTitle)
-                                //                                        .foregroundColor(Color.black)
-                                //                                }
+
                                 VStack (alignment: .leading) {
                                     PresetView(presetButtons: $store.presetButtons)
                                     {
@@ -189,13 +175,7 @@ struct MainView: View {
                                                 }
                                             }
                                     }
-                                    //                                    .padding(.horizontal, 8) // Adjust padding as needed
-                                    //                                    .overlay(
-                                    //                                        Text("Add observation (max 40 char.)")
-                                    //                                            .foregroundColor(.black)
-                                    //                                            .opacity(annotationText.isEmpty ? 1 : 0)
-                                    //                                            .padding(.horizontal, 8) // Adjust padding as needed
-                                    //                                    )
+
                                 }
                             }
                             .padding()
@@ -231,18 +211,17 @@ struct MainView: View {
                                                 .frame(width: 100, height: 100)
                                                 .scaledToFit()
                                                 .foregroundColor(Color(red: 0x3D / 255, green: 0xA5 / 255, blue: 0xD9 / 255))
-//                                                .shiny(.glossy(.black))
                                         }
                                         .frame(width: 100, height: 100)
                                         .padding()
                                         
-                                        Image("bee")
+                                        Image("honeybee")
                                             .resizable()
                                             .aspectRatio(contentMode: .fit)
-                                            .frame(width: 100, height: 100)
+                                            .frame(width: 60, height: 60)
                                             .rotationEffect(.degrees(45))
                                             .offset(x: 35, y: -35)
-//                                            .shadow(color: .white, radius: 3, x: 0, y: 2)
+                                            .shadow(color: .black, radius: 3, x: 0, y: 2)
                                             .scaleEffect(beeScale)
                                             .onAppear {
                                                 withAnimation(Animation.easeInOut(duration: 1.0).repeatForever()) {
@@ -260,8 +239,6 @@ struct MainView: View {
                                     )
                                     .background(Color(white:0.89))
                                     .cornerRadius(15)
-                                
-                                
                             }.padding(.vertical, 20)
                             
                             // statuses dropdown
@@ -283,7 +260,7 @@ struct MainView: View {
                         }.padding(.top,300).frame(
                             maxHeight: .infinity,
                             alignment: .center
-                        ) // This ensures the VStack fills the screen
+                        ) // Ensures the VStack fills the screen
                     }
                 })
             }

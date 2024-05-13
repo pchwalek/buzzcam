@@ -34,14 +34,12 @@ struct ConfigView: View {
                     Spacer()
                     SchedulesView()
 
-
-
                 }
                 else {
                     // Placeholder view while the peripheral name is not available, waiting for it to load
                     VStack {
                         Spacer()
-                        Text("Loading...").foregroundColor(.white)
+                        Text("Loading...").font(customFontTextBold).foregroundColor(.white)
                         Spacer()
                     }.padding(.top,300).frame(
                         maxHeight: .infinity,

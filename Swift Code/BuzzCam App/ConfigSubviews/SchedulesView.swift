@@ -204,11 +204,6 @@ struct SchedulesView: View {
 
     
     private func updateFreeRunMode(_ configPacketData_Audio: ConfigPacketData_Audio?) {
-        // Update freeRunMode based on configPacketData_Audio
-//        guard let configData = configPacketData_Audio, enableFreeRunMode != configData.freeRunMode else {
-//            return
-//        }
-//        enableFreeRunMode = configData.freeRunMode
         enableFreeRunMode = configPacketData_Audio?.freeRunMode ?? false
     }
 
