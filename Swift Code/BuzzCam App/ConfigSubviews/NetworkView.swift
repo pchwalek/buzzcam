@@ -172,21 +172,6 @@ struct NetworkView: View {
 
                             Text("\(bluetoothModel.configPacketData_NetworkState?.numberOfDiscoveredDevices ?? 0)").font(customFontText)
                         }
-//                        HStack {
-//                            Text("Force rediscovery").fontWeight(.bold)
-//                                .foregroundColor(.black)
-//                            
-//                            Button(action: {
-//                                // Call the associated function when the button is pressed
-//                                bluetoothModel.forceRediscovery()
-//                            }) {
-//                                Image(systemName: "arrow.clockwise").padding()
-//                                    .foregroundColor(.black)
-//                            }
-//                            .buttonStyle(BorderlessButtonStyle())
-//                            .background(Color.gray)
-//                            .cornerRadius(8)
-//                        }
                     }
                     .padding()
                     .frame(

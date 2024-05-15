@@ -13,7 +13,7 @@ struct ConfigView: View {
     let customFontTitle = Font.custom("Futura-Bold", size: 25)
     let customFontText = Font.custom("AvenirNext-Regular", size: 18)
     let customFontTextBold = Font.custom("AvenirNext-DemiBold", size: 23)
-    let customFontTextBoldLarge = Font.custom("AvenirNext-DemiBold", size: 40)
+    let customFontTextBoldLarge = Font.custom("AvenirNext-DemiBold", size: 34)
     
     var body: some View {
         
@@ -21,7 +21,7 @@ struct ConfigView: View {
             ScrollViewReader(content: { proxy in
                 if (bluetoothModel.updatedConfigPacket) {
                     
-                    Text("Configuration").font(customFontTextBoldLarge).font(customFontTextBold).foregroundColor(.white)
+                    Text("Configuration").font(customFontTextBoldLarge).font(customFontTextBold).foregroundColor(.white).padding()
                     AudioConfigView()
                     Spacer()
                     SensingConfigView()

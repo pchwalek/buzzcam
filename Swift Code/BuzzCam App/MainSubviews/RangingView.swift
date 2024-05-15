@@ -83,22 +83,8 @@ struct RangingView: View {
                             .background(Color(white: 0.9))
                             .cornerRadius(8)
                         }.padding(.vertical, 30)
-                        
-                        //                        VStack(alignment: .leading) {
-                        //                                    Table(bluetoothModel.specialFunctionData?.uwbPacket.ranges ?? []) { _ in
-                        //                                        TableColumn("UID") {
-                        //                                            Text("UID Placeholder")
-                        //                                        }
-                        //                                        TableColumn("Range") {
-                        //                                            Text("Range Placeholder")
-                        //                                        }
-                        //                                    }
-                        //                                }
+
                         HStack {
-                            
-                            
-                            
-                            
                             VStack {
                                 Text("System UIDs")
                                     .font(customFontText)
@@ -116,16 +102,6 @@ struct RangingView: View {
                                         }
                                     }
                                 }
-                                
-                                //                                if bluetoothModel.systemInfoPacketData?.discovered_devices.isEmpty ?? true {
-                                //                                    Text("...")
-                                //                                } else {
-                                //                                    List(bluetoothModel.systemInfoPacketData?.discovered_devices ?? [], id: \.self) { device in
-                                ////                                        Text("\(range.systemUid)") // print hex, 8 digits
-                                //                                        let hexUID = String(format: "%08X", device.uid)
-                                //                                        Text(hexUID)
-                                //                                    }
-                                //                                }
                             }
                             
                             Spacer()
@@ -146,18 +122,8 @@ struct RangingView: View {
                                         }
                                     }
                                 }
-                                
-                                //                                if bluetoothModel.systemInfoPacketData?.discovered_devices.isEmpty ?? true {
-                                //                                    Text("...")
-                                //                                } else {
-                                //                                    List(bluetoothModel.systemInfoPacketData?.discovered_devices ?? [], id: \.self) { device in
-                                //                                        Text("\(device.range)")
-                                //                                    }
-                                //                                }
                             }
                         }
-                        
-                        
                     }
                     .padding()
                     .frame(

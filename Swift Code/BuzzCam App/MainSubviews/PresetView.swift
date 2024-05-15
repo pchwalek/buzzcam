@@ -151,9 +151,6 @@ struct PresetView: View {
                                         HStack {
                                             Text("Color").font(customFontText)
                                             ColorPicker("", selection: $newButtonColor).labelsHidden()
-//                                            TextField("Color (hex)", text: $newButtonColor)
-//                                                .padding(.bottom)
-//                                                .textFieldStyle(RoundedBorderTextFieldStyle())
                                             Spacer()
                                         }
                                         

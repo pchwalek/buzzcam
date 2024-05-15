@@ -175,7 +175,6 @@ struct MainView: View {
                                                 }
                                             }
                                     }
-
                                 }
                             }
                             .padding()
