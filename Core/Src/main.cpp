@@ -2787,10 +2787,10 @@ void tamperAlarm(bool state){
 		txData = 0x28 ; //generation on X and Y high threshold events
 		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) INT1_CFG_A, 1, &txData, 1, 100);
 
-		txData = 50; //0.512g (32*16mg @ +/- 4g)
+		txData = 25; //0.512g (32*16mg @ +/- 4g)
 		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) INT1_THS_A, 1, &txData, 1, 100);
 
-		txData = 1; // duration: 10 / (10Hz data rate)
+		txData = 10; // duration: 10 / (10Hz data rate)
 		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) INT1_DURATION_A, 1, &txData, 1, 100);
 
 		txData = 0x02; // interrupt active low
@@ -5014,7 +5014,7 @@ void triggerMarkTask(void *argument){
 				continue;
 			}
 
-			if((flag & TAMPER_ALERT) == TAMPER_ALERT){
+			if(flag == TAMPER_ALERT){
 				for(int i = 0; i<5; i ++){
 					tone(3500,50);
 					tone(3750,50);
