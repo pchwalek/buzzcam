@@ -14,14 +14,15 @@ struct SystemInfoPacketData {
     var humidity: Float
     var co2: Float
     var light_level: Float
-    var sd_detected: Bool
+    var sd_detected: Bool = false
     var space_remaining: UInt64
     var estimated_recording_time: UInt64
     var battery_charging: Bool
     var battery_voltage: Float
     var device_recording: Bool
     var mark_number: UInt32
-//    var beep_enabled: Bool
+    var discovered_devices: [Device]
+
     
     mutating func reset() {
         // set property default values
@@ -37,7 +38,7 @@ struct SystemInfoPacketData {
         battery_voltage = 0.0
         device_recording = false
         mark_number = 0
-//        beep_enabled = false
+        discovered_devices = []
     }
 }
 
@@ -51,6 +52,9 @@ struct ConfigPacketData_Audio {
     var audioCompressionType: CompressionType
     var audioCompressionFactor: UInt32
     var estimatedRecordTime: Float
+    var freeRunMode: Bool
+    var chirpEnable: Bool
+    var micGain: MicGain
     
     mutating func reset() {
         channel1 = false
@@ -61,6 +65,9 @@ struct ConfigPacketData_Audio {
         audioCompressionType = CompressionType()
         audioCompressionFactor = 0
         estimatedRecordTime = 0.0
+        freeRunMode = false
+        chirpEnable = false
+        micGain = MicGain()
     }
 }
 
@@ -86,13 +93,22 @@ struct ConfigPacketData_Sensor {
     }
 }
 
-struct ConfigPacketData_Discover {
+struct ConfigPacketData_NetworkState {
     var numberOfDiscoveredDevices: UInt32 = 0
-    var discoveredDeviceUid: [UInt32] = []
+    var discoveredDeviceUid: [DeviceUID] = []
+    var slaveSync: Bool = false
+    var masterNode: Bool = false
+    var panID: UInt32 = 0
+    var channel: UInt32 = 0
+    
     
     mutating func reset() {
         numberOfDiscoveredDevices = 0
         discoveredDeviceUid = []
+        slaveSync = false
+        masterNode = false
+        panID = 0
+        channel = 11
     }
 }
 
@@ -101,6 +117,25 @@ struct ConfigPacketData_LowPower {
     
     mutating func reset() {
         lowPowerMode = false
+    }
+}
+
+struct SpecialFunctionData {
+    
+    var uwbPacket: UWB_Packet
+    
+    mutating func reset() {
+        uwbPacket = UWB_Packet()
+    }
+}
+
+struct ConfigPacketData {
+    var enableRecording: Bool = false
+    var enableLed: Bool = false
+    
+    mutating func reset() {
+        enableRecording = false
+        enableLed = false
     }
 }
 

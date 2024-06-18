@@ -17,63 +17,77 @@ struct SensingConfigView: View {
     @State private var enableGas = false
     @State private var enableHumidity = false
     
-    
+    let customFontTitle = Font.custom("Futura-Bold", size: 25)
+    let customFontText = Font.custom("AvenirNext-Regular", size: 18)
+    let customFontTextBold = Font.custom("AvenirNext-DemiBold", size: 20)
+    let customFontTextBoldLarge = Font.custom("AvenirNext-DemiBold", size: 25)
+    let customFontTextBoldSmall = Font.custom("AvenirNext-DemiBold", size: 18)
     
     var body: some View {
         VStack (alignment: .leading) {
             HStack {
                 Spacer()
                 Text("Sensings")
-                    .font(.title)
+                    .font(customFontTextBoldLarge)
                     .padding()
                 
                 Image(systemName: "chevron.down")
                     .rotationEffect(.degrees(isExpanded ? 180 : 0))
                 Spacer()
-            }.background(Color(white:0.75)).onTapGesture {
+            }.background(
+                GeometryReader { proxy in
+                        Image("IMG_4587 (2)")
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: proxy.size.width, height: proxy.size.height)
+                            .clipped()
+                            .opacity(0.7)
+                            .allowsHitTesting(false) // Prevents the image from capturing taps
+                            .contentShape(Rectangle()) // Set content shape to Rectangle to allow tap gesture
+                    }).onTapGesture {
                 withAnimation {
                     isExpanded.toggle()
                 }
             }
             if isExpanded {
                 VStack (alignment: .leading, spacing: 20) {
-                    VStack(alignment: .leading) {
-                        Text("Sensor Sample Period: \(Int(selectedSamplePeriod))").font(.title3).fontWeight(.bold)
-                        Slider(value: Binding(
-                            get: {
-                                Double(selectedSamplePeriod)
-                            },
-                            set: { newValue in
-                                selectedSamplePeriod = UInt32(newValue)
-                                // This code will be executed when the user starts dragging
-                            }
-                        ), in: 1...300, step: 1, onEditingChanged: { editingChanged in
-                            if !editingChanged {
-                                // This code will be executed when the user finishes dragging
-                                bluetoothModel.changeSamplePeriod(samplePeriod: UInt32(selectedSamplePeriod))
-                            }
-                        })
-                        .padding()
-                        Text("1") // Display the left end value
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal)
-                        
-                        Text("300") // Display the right end value
-                            .frame(maxWidth: .infinity, alignment: .trailing)
-                            .padding(.horizontal)
-                    }
-                    .padding()
-                    .frame(
-                        minWidth: 0,
-                        maxWidth: .infinity,
-                        alignment: .leading)
-                    .background(Color(white: 0.98))
-                    .cornerRadius(10)
+//                    VStack(alignment: .leading) {
+//                        Text("Sensor Sample Period: \(Int(selectedSamplePeriod))").font(.title3).fontWeight(.bold)
+//                        Slider(value: Binding(
+//                            get: {
+//                                Double(selectedSamplePeriod)
+//                            },
+//                            set: { newValue in
+//                                selectedSamplePeriod = UInt32(newValue)
+//                                // This code will be executed when the user starts dragging
+//                            }
+//                        ), in: 1...300, step: 1, onEditingChanged: { editingChanged in
+//                            if !editingChanged {
+//                                // This code will be executed when the user finishes dragging
+//                                bluetoothModel.changeSamplePeriod(samplePeriod: UInt32(selectedSamplePeriod))
+//                            }
+//                        })
+//                        .padding()
+//                        Text("1") // Display the left end value
+//                            .frame(maxWidth: .infinity, alignment: .leading)
+//                            .padding(.horizontal)
+//                        
+//                        Text("300") // Display the right end value
+//                            .frame(maxWidth: .infinity, alignment: .trailing)
+//                            .padding(.horizontal)
+//                    }
+//                    .padding()
+//                    .frame(
+//                        minWidth: 0,
+//                        maxWidth: .infinity,
+//                        alignment: .leading)
+//                    .background(Color(white: 0.98))
+//                    .cornerRadius(10)
                     
                     VStack(alignment: .leading) {
                         HStack {
                             Text("Enable temperature sensing")
-                                .fontWeight(.bold)
+                                .font(customFontTextBoldSmall)
                                 .padding()
                             
                             Toggle("", isOn: $enableTemperature)
@@ -86,7 +100,7 @@ struct SensingConfigView: View {
                         
                         HStack {
                             Text("Enable humidity sensing")
-                                .fontWeight(.bold)
+                                .font(customFontTextBoldSmall)
                                 .padding()
                             
                             Toggle("", isOn: $enableHumidity)
@@ -99,7 +113,7 @@ struct SensingConfigView: View {
                         
                         HStack {
                             Text("Enable gas sensing")
-                                .fontWeight(.bold)
+                                .font(customFontTextBoldSmall)
                                 .padding()
                             
                             Toggle("", isOn: $enableGas)
@@ -127,10 +141,10 @@ struct SensingConfigView: View {
             }
         }.onAppear {
             // Set the initial value of selectedSampleFreq based on the stored value in bluetoothModel
-            print("initialized")
+            print("initialized sensingconfigview")
             selectedSamplePeriod = bluetoothModel.configPacketData_Sensor?.samplePeriodMs ?? 0
             
-            // Add an observer to monitor changes to configPacketData_Audio
+            // Add an observer to monitor changes to configPacketData_Sensor
             bluetoothModel.$configPacketData_Sensor
                 .sink { configPacketData_Sensor in
                     self.updateHumiditySensing(configPacketData_Sensor)

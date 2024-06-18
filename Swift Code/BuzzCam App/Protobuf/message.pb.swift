@@ -160,35 +160,47 @@ extension SensorAccuracy: CaseIterable {
 
 public enum MicSampleFreq: SwiftProtobuf.Enum {
   public typealias RawValue = Int
-  case sampleRate16000 // = 0
-  case sampleRate20500 // = 1
-  case sampleRate44100 // = 2
-  case sampleRate48000 // = 3
-  case sampleRate96000 // = 4
+  case sampleRate8000 // = 0
+  case sampleRate11025 // = 1
+  case sampleRate16000 // = 2
+  case sampleRate22500 // = 3
+  case sampleRate24000 // = 4
+  case sampleRate32000 // = 5
+  case sampleRate44100 // = 6
+  case sampleRate48000 // = 7
+  case sampleRate96000 // = 8
   case UNRECOGNIZED(Int)
 
   public init() {
-    self = .sampleRate16000
+    self = .sampleRate8000
   }
 
   public init?(rawValue: Int) {
     switch rawValue {
-    case 0: self = .sampleRate16000
-    case 1: self = .sampleRate20500
-    case 2: self = .sampleRate44100
-    case 3: self = .sampleRate48000
-    case 4: self = .sampleRate96000
+    case 0: self = .sampleRate8000
+    case 1: self = .sampleRate11025
+    case 2: self = .sampleRate16000
+    case 3: self = .sampleRate22500
+    case 4: self = .sampleRate24000
+    case 5: self = .sampleRate32000
+    case 6: self = .sampleRate44100
+    case 7: self = .sampleRate48000
+    case 8: self = .sampleRate96000
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
 
   public var rawValue: Int {
     switch self {
-    case .sampleRate16000: return 0
-    case .sampleRate20500: return 1
-    case .sampleRate44100: return 2
-    case .sampleRate48000: return 3
-    case .sampleRate96000: return 4
+    case .sampleRate8000: return 0
+    case .sampleRate11025: return 1
+    case .sampleRate16000: return 2
+    case .sampleRate22500: return 3
+    case .sampleRate24000: return 4
+    case .sampleRate32000: return 5
+    case .sampleRate44100: return 6
+    case .sampleRate48000: return 7
+    case .sampleRate96000: return 8
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -200,11 +212,151 @@ public enum MicSampleFreq: SwiftProtobuf.Enum {
 extension MicSampleFreq: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   public static var allCases: [MicSampleFreq] = [
+    .sampleRate8000,
+    .sampleRate11025,
     .sampleRate16000,
-    .sampleRate20500,
+    .sampleRate22500,
+    .sampleRate24000,
+    .sampleRate32000,
     .sampleRate44100,
     .sampleRate48000,
     .sampleRate96000,
+  ]
+}
+
+#endif  // swift(>=4.2)
+
+public enum MicGain: SwiftProtobuf.Enum {
+  public typealias RawValue = Int
+  case gain60Db // = 0
+  case gain57Db // = 1
+  case gain54Db // = 2
+  case gain51Db // = 3
+  case gain48Db // = 4
+  case gain45Db // = 5
+  case gain42Db // = 6
+  case gain39Db // = 7
+  case gain36Db // = 8
+  case gain33Db // = 9
+  case gain30Db // = 10
+  case gain27Db // = 11
+  case gain24Db // = 12
+  case gain21Db // = 13
+  case gain18Db // = 14
+  case gain15Db // = 15
+  case gain12Db // = 16
+  case gain9Db // = 17
+  case gain6Db // = 18
+  case gain3Db // = 19
+  case gain0Db // = 20
+  case gainNeg3Db // = 21
+  case gainNeg6Db // = 22
+  case gainNeg9Db // = 23
+  case gainNeg12Db // = 24
+  case gainNeg15Db // = 25
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .gain60Db
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .gain60Db
+    case 1: self = .gain57Db
+    case 2: self = .gain54Db
+    case 3: self = .gain51Db
+    case 4: self = .gain48Db
+    case 5: self = .gain45Db
+    case 6: self = .gain42Db
+    case 7: self = .gain39Db
+    case 8: self = .gain36Db
+    case 9: self = .gain33Db
+    case 10: self = .gain30Db
+    case 11: self = .gain27Db
+    case 12: self = .gain24Db
+    case 13: self = .gain21Db
+    case 14: self = .gain18Db
+    case 15: self = .gain15Db
+    case 16: self = .gain12Db
+    case 17: self = .gain9Db
+    case 18: self = .gain6Db
+    case 19: self = .gain3Db
+    case 20: self = .gain0Db
+    case 21: self = .gainNeg3Db
+    case 22: self = .gainNeg6Db
+    case 23: self = .gainNeg9Db
+    case 24: self = .gainNeg12Db
+    case 25: self = .gainNeg15Db
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .gain60Db: return 0
+    case .gain57Db: return 1
+    case .gain54Db: return 2
+    case .gain51Db: return 3
+    case .gain48Db: return 4
+    case .gain45Db: return 5
+    case .gain42Db: return 6
+    case .gain39Db: return 7
+    case .gain36Db: return 8
+    case .gain33Db: return 9
+    case .gain30Db: return 10
+    case .gain27Db: return 11
+    case .gain24Db: return 12
+    case .gain21Db: return 13
+    case .gain18Db: return 14
+    case .gain15Db: return 15
+    case .gain12Db: return 16
+    case .gain9Db: return 17
+    case .gain6Db: return 18
+    case .gain3Db: return 19
+    case .gain0Db: return 20
+    case .gainNeg3Db: return 21
+    case .gainNeg6Db: return 22
+    case .gainNeg9Db: return 23
+    case .gainNeg12Db: return 24
+    case .gainNeg15Db: return 25
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+}
+
+#if swift(>=4.2)
+
+extension MicGain: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static var allCases: [MicGain] = [
+    .gain60Db,
+    .gain57Db,
+    .gain54Db,
+    .gain51Db,
+    .gain48Db,
+    .gain45Db,
+    .gain42Db,
+    .gain39Db,
+    .gain36Db,
+    .gain33Db,
+    .gain30Db,
+    .gain27Db,
+    .gain24Db,
+    .gain21Db,
+    .gain18Db,
+    .gain15Db,
+    .gain12Db,
+    .gain9Db,
+    .gain6Db,
+    .gain3Db,
+    .gain0Db,
+    .gainNeg3Db,
+    .gainNeg6Db,
+    .gainNeg9Db,
+    .gainNeg12Db,
+    .gainNeg15Db,
   ]
 }
 
@@ -214,6 +366,7 @@ public enum MicBitResolution: SwiftProtobuf.Enum {
   public typealias RawValue = Int
   case bitRes8 // = 0
   case bitRes16 // = 1
+  case bitRes24 // = 2
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -224,6 +377,7 @@ public enum MicBitResolution: SwiftProtobuf.Enum {
     switch rawValue {
     case 0: self = .bitRes8
     case 1: self = .bitRes16
+    case 2: self = .bitRes24
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -232,6 +386,7 @@ public enum MicBitResolution: SwiftProtobuf.Enum {
     switch self {
     case .bitRes8: return 0
     case .bitRes16: return 1
+    case .bitRes24: return 2
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -245,6 +400,7 @@ extension MicBitResolution: CaseIterable {
   public static var allCases: [MicBitResolution] = [
     .bitRes8,
     .bitRes16,
+    .bitRes24,
   ]
 }
 
@@ -253,6 +409,7 @@ extension MicBitResolution: CaseIterable {
 public enum CompressionType: SwiftProtobuf.Enum {
   public typealias RawValue = Int
   case opus // = 0
+  case flac // = 1
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -262,6 +419,7 @@ public enum CompressionType: SwiftProtobuf.Enum {
   public init?(rawValue: Int) {
     switch rawValue {
     case 0: self = .opus
+    case 1: self = .flac
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -269,6 +427,7 @@ public enum CompressionType: SwiftProtobuf.Enum {
   public var rawValue: Int {
     switch self {
     case .opus: return 0
+    case .flac: return 1
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -281,6 +440,7 @@ extension CompressionType: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   public static var allCases: [CompressionType] = [
     .opus,
+    .flac,
   ]
 }
 
@@ -369,8 +529,6 @@ public struct SensorConfig {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var samplePeriodMs: UInt32 = 0
-
   public var enableTemperature: Bool = false
 
   public var enableHumidity: Bool = false
@@ -437,35 +595,6 @@ public struct MarkPacket {
   fileprivate var _annotation: String? = nil
 }
 
-public struct DiscoveredDevices {
-  // SwiftProtobuf.Message conformance is added in an extension below. See the
-  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
-  // methods supported on all messages.
-
-  public var numberOfDevices: UInt32 = 0
-
-  ///repeated Device device = 2 [(nanopb).max_count = 20];
-  public var device: [DiscoveredDevices.Device] = []
-
-  public var unknownFields = SwiftProtobuf.UnknownStorage()
-
-  public struct Device {
-    // SwiftProtobuf.Message conformance is added in an extension below. See the
-    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
-    // methods supported on all messages.
-
-    public var uid: UInt32 = 0
-
-    public var range: Float = 0
-
-    public var unknownFields = SwiftProtobuf.UnknownStorage()
-
-    public init() {}
-  }
-
-  public init() {}
-}
-
 public struct BatteryState {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -491,71 +620,73 @@ public struct BatteryState {
   fileprivate var _percentage: Float? = nil
 }
 
+public struct Device {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var uid: UInt32 = 0
+
+  public var range: UInt32 = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
 public struct SystemInfoPacket {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var numberDiscoveredDevices: UInt32 {
-    get {return _storage._numberDiscoveredDevices}
-    set {_uniqueStorage()._numberDiscoveredDevices = newValue}
-  }
-
   public var simpleSensorReading: SimpleSensorReading {
-    get {return _storage._simpleSensorReading ?? SimpleSensorReading()}
-    set {_uniqueStorage()._simpleSensorReading = newValue}
+    get {return _simpleSensorReading ?? SimpleSensorReading()}
+    set {_simpleSensorReading = newValue}
   }
   /// Returns true if `simpleSensorReading` has been explicitly set.
-  public var hasSimpleSensorReading: Bool {return _storage._simpleSensorReading != nil}
+  public var hasSimpleSensorReading: Bool {return self._simpleSensorReading != nil}
   /// Clears the value of `simpleSensorReading`. Subsequent reads from it will return its default value.
-  public mutating func clearSimpleSensorReading() {_uniqueStorage()._simpleSensorReading = nil}
+  public mutating func clearSimpleSensorReading() {self._simpleSensorReading = nil}
 
-  public var deviceRecording: Bool {
-    get {return _storage._deviceRecording}
-    set {_uniqueStorage()._deviceRecording = newValue}
-  }
+  public var deviceRecording: Bool = false
 
   public var sdcardState: SDCardState {
-    get {return _storage._sdcardState ?? SDCardState()}
-    set {_uniqueStorage()._sdcardState = newValue}
+    get {return _sdcardState ?? SDCardState()}
+    set {_sdcardState = newValue}
   }
   /// Returns true if `sdcardState` has been explicitly set.
-  public var hasSdcardState: Bool {return _storage._sdcardState != nil}
+  public var hasSdcardState: Bool {return self._sdcardState != nil}
   /// Clears the value of `sdcardState`. Subsequent reads from it will return its default value.
-  public mutating func clearSdcardState() {_uniqueStorage()._sdcardState = nil}
+  public mutating func clearSdcardState() {self._sdcardState = nil}
 
   public var markState: MarkState {
-    get {return _storage._markState ?? MarkState()}
-    set {_uniqueStorage()._markState = newValue}
+    get {return _markState ?? MarkState()}
+    set {_markState = newValue}
   }
   /// Returns true if `markState` has been explicitly set.
-  public var hasMarkState: Bool {return _storage._markState != nil}
+  public var hasMarkState: Bool {return self._markState != nil}
   /// Clears the value of `markState`. Subsequent reads from it will return its default value.
-  public mutating func clearMarkState() {_uniqueStorage()._markState = nil}
+  public mutating func clearMarkState() {self._markState = nil}
 
   public var batteryState: BatteryState {
-    get {return _storage._batteryState ?? BatteryState()}
-    set {_uniqueStorage()._batteryState = newValue}
+    get {return _batteryState ?? BatteryState()}
+    set {_batteryState = newValue}
   }
   /// Returns true if `batteryState` has been explicitly set.
-  public var hasBatteryState: Bool {return _storage._batteryState != nil}
+  public var hasBatteryState: Bool {return self._batteryState != nil}
   /// Clears the value of `batteryState`. Subsequent reads from it will return its default value.
-  public mutating func clearBatteryState() {_uniqueStorage()._batteryState = nil}
+  public mutating func clearBatteryState() {self._batteryState = nil}
 
-  public var discoveredDevices: DiscoveredDevices {
-    get {return _storage._discoveredDevices ?? DiscoveredDevices()}
-    set {_uniqueStorage()._discoveredDevices = newValue}
-  }
-  /// Returns true if `discoveredDevices` has been explicitly set.
-  public var hasDiscoveredDevices: Bool {return _storage._discoveredDevices != nil}
-  /// Clears the value of `discoveredDevices`. Subsequent reads from it will return its default value.
-  public mutating func clearDiscoveredDevices() {_uniqueStorage()._discoveredDevices = nil}
+  public var discoveredDevices: [Device] = []
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
-  fileprivate var _storage = _StorageClass.defaultInstance
+  fileprivate var _simpleSensorReading: SimpleSensorReading? = nil
+  fileprivate var _sdcardState: SDCardState? = nil
+  fileprivate var _markState: MarkState? = nil
+  fileprivate var _batteryState: BatteryState? = nil
 }
 
 public struct AudioCompression {
@@ -583,7 +714,9 @@ public struct AudioConfig {
 
   public var channel2: Bool = false
 
-  public var sampleFreq: MicSampleFreq = .sampleRate16000
+  public var sampleFreq: MicSampleFreq = .sampleRate8000
+
+  public var micGain: MicGain = .gain60Db
 
   public var bitResolution: MicBitResolution = .bitRes8
 
@@ -597,6 +730,10 @@ public struct AudioConfig {
   public mutating func clearAudioCompression() {self._audioCompression = nil}
 
   public var estimatedRecordTime: Float = 0
+
+  public var freeRunMode: Bool = false
+
+  public var chirpEnable: Bool = false
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -665,6 +802,18 @@ public struct CameraControl {
   public init() {}
 }
 
+public struct DeviceUID {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var addr: String = String()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
 public struct NetworkState {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -672,10 +821,15 @@ public struct NetworkState {
 
   public var numberOfDiscoveredDevices: UInt32 = 0
 
-  ///repeated uint32 discovered_device_UID = 2 [(nanopb).max_count = 20];
-  public var discoveredDeviceUid: [UInt32] = []
+  public var discoveredDeviceUid: [DeviceUID] = []
 
-  public var forceRediscovery: Bool = false
+  public var channel: UInt32 = 0
+
+  public var panID: UInt32 = 0
+
+  public var slaveSync: Bool = false
+
+  public var masterNode: Bool = false
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -719,15 +873,6 @@ public struct ConfigPacket {
   /// Clears the value of `lowPowerConfig`. Subsequent reads from it will return its default value.
   public mutating func clearLowPowerConfig() {_uniqueStorage()._lowPowerConfig = nil}
 
-  public var cameraControl: CameraControl {
-    get {return _storage._cameraControl ?? CameraControl()}
-    set {_uniqueStorage()._cameraControl = newValue}
-  }
-  /// Returns true if `cameraControl` has been explicitly set.
-  public var hasCameraControl: Bool {return _storage._cameraControl != nil}
-  /// Clears the value of `cameraControl`. Subsequent reads from it will return its default value.
-  public mutating func clearCameraControl() {_uniqueStorage()._cameraControl = nil}
-
   public var networkState: NetworkState {
     get {return _storage._networkState ?? NetworkState()}
     set {_uniqueStorage()._networkState = newValue}
@@ -742,11 +887,118 @@ public struct ConfigPacket {
     set {_uniqueStorage()._enableRecording = newValue}
   }
 
+  public var enableLed: Bool {
+    get {return _storage._enableLed}
+    set {_uniqueStorage()._enableLed = newValue}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
   fileprivate var _storage = _StorageClass.defaultInstance
+}
+
+public struct PeerAddress {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// Encoded as u16.
+  public var panID: UInt32 = 0
+
+  /// 2 or 8 bytes (short / extended).
+  public var address: Data = Data()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public struct UWB_Range {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var openthreadUid: DeviceUID {
+    get {return _openthreadUid ?? DeviceUID()}
+    set {_openthreadUid = newValue}
+  }
+  /// Returns true if `openthreadUid` has been explicitly set.
+  public var hasOpenthreadUid: Bool {return self._openthreadUid != nil}
+  /// Clears the value of `openthreadUid`. Subsequent reads from it will return its default value.
+  public mutating func clearOpenthreadUid() {self._openthreadUid = nil}
+
+  public var systemUid: UInt32 = 0
+
+  public var uwbAddr: PeerAddress {
+    get {return _uwbAddr ?? PeerAddress()}
+    set {_uwbAddr = newValue}
+  }
+  /// Returns true if `uwbAddr` has been explicitly set.
+  public var hasUwbAddr: Bool {return self._uwbAddr != nil}
+  /// Clears the value of `uwbAddr`. Subsequent reads from it will return its default value.
+  public mutating func clearUwbAddr() {self._uwbAddr = nil}
+
+  public var range: UInt32 = 0
+
+  public var stdDev: Float = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _openthreadUid: DeviceUID? = nil
+  fileprivate var _uwbAddr: PeerAddress? = nil
+}
+
+public struct UWB_Info {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var openthreadUid: DeviceUID {
+    get {return _openthreadUid ?? DeviceUID()}
+    set {_openthreadUid = newValue}
+  }
+  /// Returns true if `openthreadUid` has been explicitly set.
+  public var hasOpenthreadUid: Bool {return self._openthreadUid != nil}
+  /// Clears the value of `openthreadUid`. Subsequent reads from it will return its default value.
+  public mutating func clearOpenthreadUid() {self._openthreadUid = nil}
+
+  public var systemUid: UInt32 = 0
+
+  public var uwbAddr: PeerAddress {
+    get {return _uwbAddr ?? PeerAddress()}
+    set {_uwbAddr = newValue}
+  }
+  /// Returns true if `uwbAddr` has been explicitly set.
+  public var hasUwbAddr: Bool {return self._uwbAddr != nil}
+  /// Clears the value of `uwbAddr`. Subsequent reads from it will return its default value.
+  public mutating func clearUwbAddr() {self._uwbAddr = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _openthreadUid: DeviceUID? = nil
+  fileprivate var _uwbAddr: PeerAddress? = nil
+}
+
+public struct UWB_Packet {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var startRanging: Bool = false
+
+  public var turnOnUwb: Bool = false
+
+  public var ranges: [UWB_Range] = []
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
 }
 
 public struct SpecialFunction {
@@ -764,55 +1016,91 @@ public struct SpecialFunction {
     set {payload = .formatSdcard(newValue)}
   }
 
-  public var function2: Bool {
+  public var cameraControl: CameraControl {
     get {
-      if case .function2(let v)? = payload {return v}
-      return false
+      if case .cameraControl(let v)? = payload {return v}
+      return CameraControl()
     }
-    set {payload = .function2(newValue)}
+    set {payload = .cameraControl(newValue)}
   }
 
-  public var function3: Bool {
+  public var uwbPacket: UWB_Packet {
     get {
-      if case .function3(let v)? = payload {return v}
-      return false
+      if case .uwbPacket(let v)? = payload {return v}
+      return UWB_Packet()
     }
-    set {payload = .function3(newValue)}
+    set {payload = .uwbPacket(newValue)}
   }
 
-  public var function4: Bool {
+  public var openthreadSyncTime: Bool {
     get {
-      if case .function4(let v)? = payload {return v}
+      if case .openthreadSyncTime(let v)? = payload {return v}
       return false
     }
-    set {payload = .function4(newValue)}
+    set {payload = .openthreadSyncTime(newValue)}
   }
 
-  public var function5: Bool {
+  public var magCalibration: Bool {
     get {
-      if case .function5(let v)? = payload {return v}
+      if case .magCalibration(let v)? = payload {return v}
       return false
     }
-    set {payload = .function5(newValue)}
+    set {payload = .magCalibration(newValue)}
   }
 
-  public var function6: Bool {
+  public var slaveReqConfig: Bool {
     get {
-      if case .function6(let v)? = payload {return v}
+      if case .slaveReqConfig(let v)? = payload {return v}
       return false
     }
-    set {payload = .function6(newValue)}
+    set {payload = .slaveReqConfig(newValue)}
+  }
+
+  public var timestamp: UInt32 {
+    get {
+      if case .timestamp(let v)? = payload {return v}
+      return 0
+    }
+    set {payload = .timestamp(newValue)}
+  }
+
+  public var dfuMode: Bool {
+    get {
+      if case .dfuMode(let v)? = payload {return v}
+      return false
+    }
+    set {payload = .dfuMode(newValue)}
+  }
+
+  public var uwbInfo: UWB_Info {
+    get {
+      if case .uwbInfo(let v)? = payload {return v}
+      return UWB_Info()
+    }
+    set {payload = .uwbInfo(newValue)}
+  }
+
+  public var resetConfig: Bool {
+    get {
+      if case .resetConfig(let v)? = payload {return v}
+      return false
+    }
+    set {payload = .resetConfig(newValue)}
   }
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public enum OneOf_Payload: Equatable {
     case formatSdcard(Bool)
-    case function2(Bool)
-    case function3(Bool)
-    case function4(Bool)
-    case function5(Bool)
-    case function6(Bool)
+    case cameraControl(CameraControl)
+    case uwbPacket(UWB_Packet)
+    case openthreadSyncTime(Bool)
+    case magCalibration(Bool)
+    case slaveReqConfig(Bool)
+    case timestamp(UInt32)
+    case dfuMode(Bool)
+    case uwbInfo(UWB_Info)
+    case resetConfig(Bool)
 
   #if !swift(>=4.1)
     public static func ==(lhs: SpecialFunction.OneOf_Payload, rhs: SpecialFunction.OneOf_Payload) -> Bool {
@@ -824,24 +1112,40 @@ public struct SpecialFunction {
         guard case .formatSdcard(let l) = lhs, case .formatSdcard(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
-      case (.function2, .function2): return {
-        guard case .function2(let l) = lhs, case .function2(let r) = rhs else { preconditionFailure() }
+      case (.cameraControl, .cameraControl): return {
+        guard case .cameraControl(let l) = lhs, case .cameraControl(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
-      case (.function3, .function3): return {
-        guard case .function3(let l) = lhs, case .function3(let r) = rhs else { preconditionFailure() }
+      case (.uwbPacket, .uwbPacket): return {
+        guard case .uwbPacket(let l) = lhs, case .uwbPacket(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
-      case (.function4, .function4): return {
-        guard case .function4(let l) = lhs, case .function4(let r) = rhs else { preconditionFailure() }
+      case (.openthreadSyncTime, .openthreadSyncTime): return {
+        guard case .openthreadSyncTime(let l) = lhs, case .openthreadSyncTime(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
-      case (.function5, .function5): return {
-        guard case .function5(let l) = lhs, case .function5(let r) = rhs else { preconditionFailure() }
+      case (.magCalibration, .magCalibration): return {
+        guard case .magCalibration(let l) = lhs, case .magCalibration(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
-      case (.function6, .function6): return {
-        guard case .function6(let l) = lhs, case .function6(let r) = rhs else { preconditionFailure() }
+      case (.slaveReqConfig, .slaveReqConfig): return {
+        guard case .slaveReqConfig(let l) = lhs, case .slaveReqConfig(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.timestamp, .timestamp): return {
+        guard case .timestamp(let l) = lhs, case .timestamp(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.dfuMode, .dfuMode): return {
+        guard case .dfuMode(let l) = lhs, case .dfuMode(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.uwbInfo, .uwbInfo): return {
+        guard case .uwbInfo(let l) = lhs, case .uwbInfo(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.resetConfig, .resetConfig): return {
+        guard case .resetConfig(let l) = lhs, case .resetConfig(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -859,46 +1163,49 @@ public struct Packet {
   // methods supported on all messages.
 
   public var header: PacketHeader {
-    get {return _header ?? PacketHeader()}
-    set {_header = newValue}
+    get {return _storage._header ?? PacketHeader()}
+    set {_uniqueStorage()._header = newValue}
   }
   /// Returns true if `header` has been explicitly set.
-  public var hasHeader: Bool {return self._header != nil}
+  public var hasHeader: Bool {return _storage._header != nil}
   /// Clears the value of `header`. Subsequent reads from it will return its default value.
-  public mutating func clearHeader() {self._header = nil}
+  public mutating func clearHeader() {_uniqueStorage()._header = nil}
 
-  public var payload: Packet.OneOf_Payload? = nil
+  public var payload: OneOf_Payload? {
+    get {return _storage._payload}
+    set {_uniqueStorage()._payload = newValue}
+  }
 
   public var systemInfoPacket: SystemInfoPacket {
     get {
-      if case .systemInfoPacket(let v)? = payload {return v}
+      if case .systemInfoPacket(let v)? = _storage._payload {return v}
       return SystemInfoPacket()
     }
-    set {payload = .systemInfoPacket(newValue)}
+    set {_uniqueStorage()._payload = .systemInfoPacket(newValue)}
   }
 
   public var markPacket: MarkPacket {
     get {
-      if case .markPacket(let v)? = payload {return v}
+      if case .markPacket(let v)? = _storage._payload {return v}
       return MarkPacket()
     }
-    set {payload = .markPacket(newValue)}
+    set {_uniqueStorage()._payload = .markPacket(newValue)}
   }
 
   public var configPacket: ConfigPacket {
     get {
-      if case .configPacket(let v)? = payload {return v}
+      if case .configPacket(let v)? = _storage._payload {return v}
       return ConfigPacket()
     }
-    set {payload = .configPacket(newValue)}
+    set {_uniqueStorage()._payload = .configPacket(newValue)}
   }
 
   public var specialFunction: SpecialFunction {
     get {
-      if case .specialFunction(let v)? = payload {return v}
+      if case .specialFunction(let v)? = _storage._payload {return v}
       return SpecialFunction()
     }
-    set {payload = .specialFunction(newValue)}
+    set {_uniqueStorage()._payload = .specialFunction(newValue)}
   }
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -939,13 +1246,14 @@ public struct Packet {
 
   public init() {}
 
-  fileprivate var _header: PacketHeader? = nil
+  fileprivate var _storage = _StorageClass.defaultInstance
 }
 
 #if swift(>=5.5) && canImport(_Concurrency)
 extension SignalIdentifier: @unchecked Sendable {}
 extension SensorAccuracy: @unchecked Sendable {}
 extension MicSampleFreq: @unchecked Sendable {}
+extension MicGain: @unchecked Sendable {}
 extension MicBitResolution: @unchecked Sendable {}
 extension CompressionType: @unchecked Sendable {}
 extension PacketHeader: @unchecked Sendable {}
@@ -956,17 +1264,21 @@ extension SensorConfig: @unchecked Sendable {}
 extension SDCardState: @unchecked Sendable {}
 extension MarkState: @unchecked Sendable {}
 extension MarkPacket: @unchecked Sendable {}
-extension DiscoveredDevices: @unchecked Sendable {}
-extension DiscoveredDevices.Device: @unchecked Sendable {}
 extension BatteryState: @unchecked Sendable {}
+extension Device: @unchecked Sendable {}
 extension SystemInfoPacket: @unchecked Sendable {}
 extension AudioCompression: @unchecked Sendable {}
 extension AudioConfig: @unchecked Sendable {}
 extension ScheduleConfig: @unchecked Sendable {}
 extension LowPowerConfig: @unchecked Sendable {}
 extension CameraControl: @unchecked Sendable {}
+extension DeviceUID: @unchecked Sendable {}
 extension NetworkState: @unchecked Sendable {}
 extension ConfigPacket: @unchecked Sendable {}
+extension PeerAddress: @unchecked Sendable {}
+extension UWB_Range: @unchecked Sendable {}
+extension UWB_Info: @unchecked Sendable {}
+extension UWB_Packet: @unchecked Sendable {}
 extension SpecialFunction: @unchecked Sendable {}
 extension SpecialFunction.OneOf_Payload: @unchecked Sendable {}
 extension Packet: @unchecked Sendable {}
@@ -1005,11 +1317,46 @@ extension SensorAccuracy: SwiftProtobuf._ProtoNameProviding {
 
 extension MicSampleFreq: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "SAMPLE_RATE_16000"),
-    1: .same(proto: "SAMPLE_RATE_20500"),
-    2: .same(proto: "SAMPLE_RATE_44100"),
-    3: .same(proto: "SAMPLE_RATE_48000"),
-    4: .same(proto: "SAMPLE_RATE_96000"),
+    0: .same(proto: "SAMPLE_RATE_8000"),
+    1: .same(proto: "SAMPLE_RATE_11025"),
+    2: .same(proto: "SAMPLE_RATE_16000"),
+    3: .same(proto: "SAMPLE_RATE_22500"),
+    4: .same(proto: "SAMPLE_RATE_24000"),
+    5: .same(proto: "SAMPLE_RATE_32000"),
+    6: .same(proto: "SAMPLE_RATE_44100"),
+    7: .same(proto: "SAMPLE_RATE_48000"),
+    8: .same(proto: "SAMPLE_RATE_96000"),
+  ]
+}
+
+extension MicGain: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "GAIN_60_DB"),
+    1: .same(proto: "GAIN_57_DB"),
+    2: .same(proto: "GAIN_54_DB"),
+    3: .same(proto: "GAIN_51_DB"),
+    4: .same(proto: "GAIN_48_DB"),
+    5: .same(proto: "GAIN_45_DB"),
+    6: .same(proto: "GAIN_42_DB"),
+    7: .same(proto: "GAIN_39_DB"),
+    8: .same(proto: "GAIN_36_DB"),
+    9: .same(proto: "GAIN_33_DB"),
+    10: .same(proto: "GAIN_30_DB"),
+    11: .same(proto: "GAIN_27_DB"),
+    12: .same(proto: "GAIN_24_DB"),
+    13: .same(proto: "GAIN_21_DB"),
+    14: .same(proto: "GAIN_18_DB"),
+    15: .same(proto: "GAIN_15_DB"),
+    16: .same(proto: "GAIN_12_DB"),
+    17: .same(proto: "GAIN_9_DB"),
+    18: .same(proto: "GAIN_6_DB"),
+    19: .same(proto: "GAIN_3_DB"),
+    20: .same(proto: "GAIN_0_DB"),
+    21: .same(proto: "GAIN_NEG_3_DB"),
+    22: .same(proto: "GAIN_NEG_6_DB"),
+    23: .same(proto: "GAIN_NEG_9_DB"),
+    24: .same(proto: "GAIN_NEG_12_DB"),
+    25: .same(proto: "GAIN_NEG_15_DB"),
   ]
 }
 
@@ -1017,12 +1364,14 @@ extension MicBitResolution: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "BIT_RES_8"),
     1: .same(proto: "BIT_RES_16"),
+    2: .same(proto: "BIT_RES_24"),
   ]
 }
 
 extension CompressionType: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "OPUS"),
+    1: .same(proto: "FLAC"),
   ]
 }
 
@@ -1247,10 +1596,9 @@ extension SensorReading.Payload: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
 extension SensorConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = "SensorConfig"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "sample_period_ms"),
-    2: .standard(proto: "enable_temperature"),
-    3: .standard(proto: "enable_humidity"),
-    4: .standard(proto: "enable_gas"),
+    1: .standard(proto: "enable_temperature"),
+    2: .standard(proto: "enable_humidity"),
+    3: .standard(proto: "enable_gas"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1259,33 +1607,28 @@ extension SensorConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.samplePeriodMs) }()
-      case 2: try { try decoder.decodeSingularBoolField(value: &self.enableTemperature) }()
-      case 3: try { try decoder.decodeSingularBoolField(value: &self.enableHumidity) }()
-      case 4: try { try decoder.decodeSingularBoolField(value: &self.enableGas) }()
+      case 1: try { try decoder.decodeSingularBoolField(value: &self.enableTemperature) }()
+      case 2: try { try decoder.decodeSingularBoolField(value: &self.enableHumidity) }()
+      case 3: try { try decoder.decodeSingularBoolField(value: &self.enableGas) }()
       default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if self.samplePeriodMs != 0 {
-      try visitor.visitSingularUInt32Field(value: self.samplePeriodMs, fieldNumber: 1)
-    }
     if self.enableTemperature != false {
-      try visitor.visitSingularBoolField(value: self.enableTemperature, fieldNumber: 2)
+      try visitor.visitSingularBoolField(value: self.enableTemperature, fieldNumber: 1)
     }
     if self.enableHumidity != false {
-      try visitor.visitSingularBoolField(value: self.enableHumidity, fieldNumber: 3)
+      try visitor.visitSingularBoolField(value: self.enableHumidity, fieldNumber: 2)
     }
     if self.enableGas != false {
-      try visitor.visitSingularBoolField(value: self.enableGas, fieldNumber: 4)
+      try visitor.visitSingularBoolField(value: self.enableGas, fieldNumber: 3)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: SensorConfig, rhs: SensorConfig) -> Bool {
-    if lhs.samplePeriodMs != rhs.samplePeriodMs {return false}
     if lhs.enableTemperature != rhs.enableTemperature {return false}
     if lhs.enableHumidity != rhs.enableHumidity {return false}
     if lhs.enableGas != rhs.enableGas {return false}
@@ -1418,82 +1761,6 @@ extension MarkPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
   }
 }
 
-extension DiscoveredDevices: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  public static let protoMessageName: String = "DiscoveredDevices"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "number_of_devices"),
-    2: .same(proto: "device"),
-  ]
-
-  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.numberOfDevices) }()
-      case 2: try { try decoder.decodeRepeatedMessageField(value: &self.device) }()
-      default: break
-      }
-    }
-  }
-
-  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if self.numberOfDevices != 0 {
-      try visitor.visitSingularUInt32Field(value: self.numberOfDevices, fieldNumber: 1)
-    }
-    if !self.device.isEmpty {
-      try visitor.visitRepeatedMessageField(value: self.device, fieldNumber: 2)
-    }
-    try unknownFields.traverse(visitor: &visitor)
-  }
-
-  public static func ==(lhs: DiscoveredDevices, rhs: DiscoveredDevices) -> Bool {
-    if lhs.numberOfDevices != rhs.numberOfDevices {return false}
-    if lhs.device != rhs.device {return false}
-    if lhs.unknownFields != rhs.unknownFields {return false}
-    return true
-  }
-}
-
-extension DiscoveredDevices.Device: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  public static let protoMessageName: String = DiscoveredDevices.protoMessageName + ".Device"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "UID"),
-    2: .same(proto: "range"),
-  ]
-
-  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.uid) }()
-      case 2: try { try decoder.decodeSingularFloatField(value: &self.range) }()
-      default: break
-      }
-    }
-  }
-
-  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if self.uid != 0 {
-      try visitor.visitSingularUInt32Field(value: self.uid, fieldNumber: 1)
-    }
-    if self.range != 0 {
-      try visitor.visitSingularFloatField(value: self.range, fieldNumber: 2)
-    }
-    try unknownFields.traverse(visitor: &visitor)
-  }
-
-  public static func ==(lhs: DiscoveredDevices.Device, rhs: DiscoveredDevices.Device) -> Bool {
-    if lhs.uid != rhs.uid {return false}
-    if lhs.range != rhs.range {return false}
-    if lhs.unknownFields != rhs.unknownFields {return false}
-    return true
-  }
-}
-
 extension BatteryState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = "BatteryState"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
@@ -1542,117 +1809,105 @@ extension BatteryState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
   }
 }
 
-extension SystemInfoPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  public static let protoMessageName: String = "SystemInfoPacket"
+extension Device: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = "Device"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "number_discovered_devices"),
-    2: .standard(proto: "simple_sensor_reading"),
-    3: .standard(proto: "device_recording"),
-    4: .standard(proto: "sdcard_state"),
-    5: .standard(proto: "mark_state"),
-    6: .standard(proto: "battery_state"),
-    7: .standard(proto: "discovered_devices"),
+    1: .same(proto: "UID"),
+    2: .same(proto: "range"),
   ]
 
-  fileprivate class _StorageClass {
-    var _numberDiscoveredDevices: UInt32 = 0
-    var _simpleSensorReading: SimpleSensorReading? = nil
-    var _deviceRecording: Bool = false
-    var _sdcardState: SDCardState? = nil
-    var _markState: MarkState? = nil
-    var _batteryState: BatteryState? = nil
-    var _discoveredDevices: DiscoveredDevices? = nil
-
-    static let defaultInstance = _StorageClass()
-
-    private init() {}
-
-    init(copying source: _StorageClass) {
-      _numberDiscoveredDevices = source._numberDiscoveredDevices
-      _simpleSensorReading = source._simpleSensorReading
-      _deviceRecording = source._deviceRecording
-      _sdcardState = source._sdcardState
-      _markState = source._markState
-      _batteryState = source._batteryState
-      _discoveredDevices = source._discoveredDevices
-    }
-  }
-
-  fileprivate mutating func _uniqueStorage() -> _StorageClass {
-    if !isKnownUniquelyReferenced(&_storage) {
-      _storage = _StorageClass(copying: _storage)
-    }
-    return _storage
-  }
-
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    _ = _uniqueStorage()
-    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      while let fieldNumber = try decoder.nextFieldNumber() {
-        // The use of inline closures is to circumvent an issue where the compiler
-        // allocates stack space for every case branch when no optimizations are
-        // enabled. https://github.com/apple/swift-protobuf/issues/1034
-        switch fieldNumber {
-        case 1: try { try decoder.decodeSingularUInt32Field(value: &_storage._numberDiscoveredDevices) }()
-        case 2: try { try decoder.decodeSingularMessageField(value: &_storage._simpleSensorReading) }()
-        case 3: try { try decoder.decodeSingularBoolField(value: &_storage._deviceRecording) }()
-        case 4: try { try decoder.decodeSingularMessageField(value: &_storage._sdcardState) }()
-        case 5: try { try decoder.decodeSingularMessageField(value: &_storage._markState) }()
-        case 6: try { try decoder.decodeSingularMessageField(value: &_storage._batteryState) }()
-        case 7: try { try decoder.decodeSingularMessageField(value: &_storage._discoveredDevices) }()
-        default: break
-        }
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.uid) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.range) }()
+      default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+    if self.uid != 0 {
+      try visitor.visitSingularUInt32Field(value: self.uid, fieldNumber: 1)
+    }
+    if self.range != 0 {
+      try visitor.visitSingularUInt32Field(value: self.range, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Device, rhs: Device) -> Bool {
+    if lhs.uid != rhs.uid {return false}
+    if lhs.range != rhs.range {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension SystemInfoPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = "SystemInfoPacket"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "simple_sensor_reading"),
+    2: .standard(proto: "device_recording"),
+    3: .standard(proto: "sdcard_state"),
+    4: .standard(proto: "mark_state"),
+    5: .standard(proto: "battery_state"),
+    6: .same(proto: "discoveredDevices"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every if/case branch local when no optimizations
-      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-      // https://github.com/apple/swift-protobuf/issues/1182
-      if _storage._numberDiscoveredDevices != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._numberDiscoveredDevices, fieldNumber: 1)
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._simpleSensorReading) }()
+      case 2: try { try decoder.decodeSingularBoolField(value: &self.deviceRecording) }()
+      case 3: try { try decoder.decodeSingularMessageField(value: &self._sdcardState) }()
+      case 4: try { try decoder.decodeSingularMessageField(value: &self._markState) }()
+      case 5: try { try decoder.decodeSingularMessageField(value: &self._batteryState) }()
+      case 6: try { try decoder.decodeRepeatedMessageField(value: &self.discoveredDevices) }()
+      default: break
       }
-      try { if let v = _storage._simpleSensorReading {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-      } }()
-      if _storage._deviceRecording != false {
-        try visitor.visitSingularBoolField(value: _storage._deviceRecording, fieldNumber: 3)
-      }
-      try { if let v = _storage._sdcardState {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
-      } }()
-      try { if let v = _storage._markState {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
-      } }()
-      try { if let v = _storage._batteryState {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
-      } }()
-      try { if let v = _storage._discoveredDevices {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
-      } }()
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._simpleSensorReading {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    if self.deviceRecording != false {
+      try visitor.visitSingularBoolField(value: self.deviceRecording, fieldNumber: 2)
+    }
+    try { if let v = self._sdcardState {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    } }()
+    try { if let v = self._markState {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
+    } }()
+    try { if let v = self._batteryState {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
+    } }()
+    if !self.discoveredDevices.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.discoveredDevices, fieldNumber: 6)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: SystemInfoPacket, rhs: SystemInfoPacket) -> Bool {
-    if lhs._storage !== rhs._storage {
-      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
-        let _storage = _args.0
-        let rhs_storage = _args.1
-        if _storage._numberDiscoveredDevices != rhs_storage._numberDiscoveredDevices {return false}
-        if _storage._simpleSensorReading != rhs_storage._simpleSensorReading {return false}
-        if _storage._deviceRecording != rhs_storage._deviceRecording {return false}
-        if _storage._sdcardState != rhs_storage._sdcardState {return false}
-        if _storage._markState != rhs_storage._markState {return false}
-        if _storage._batteryState != rhs_storage._batteryState {return false}
-        if _storage._discoveredDevices != rhs_storage._discoveredDevices {return false}
-        return true
-      }
-      if !storagesAreEqual {return false}
-    }
+    if lhs._simpleSensorReading != rhs._simpleSensorReading {return false}
+    if lhs.deviceRecording != rhs.deviceRecording {return false}
+    if lhs._sdcardState != rhs._sdcardState {return false}
+    if lhs._markState != rhs._markState {return false}
+    if lhs._batteryState != rhs._batteryState {return false}
+    if lhs.discoveredDevices != rhs.discoveredDevices {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1708,9 +1963,12 @@ extension AudioConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     1: .standard(proto: "channel_1"),
     2: .standard(proto: "channel_2"),
     3: .standard(proto: "sample_freq"),
-    4: .standard(proto: "bit_resolution"),
-    5: .standard(proto: "audio_compression"),
-    6: .standard(proto: "estimated_record_time"),
+    4: .standard(proto: "mic_gain"),
+    5: .standard(proto: "bit_resolution"),
+    6: .standard(proto: "audio_compression"),
+    7: .standard(proto: "estimated_record_time"),
+    8: .standard(proto: "free_run_mode"),
+    9: .standard(proto: "chirp_enable"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1722,9 +1980,12 @@ extension AudioConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       case 1: try { try decoder.decodeSingularBoolField(value: &self.channel1) }()
       case 2: try { try decoder.decodeSingularBoolField(value: &self.channel2) }()
       case 3: try { try decoder.decodeSingularEnumField(value: &self.sampleFreq) }()
-      case 4: try { try decoder.decodeSingularEnumField(value: &self.bitResolution) }()
-      case 5: try { try decoder.decodeSingularMessageField(value: &self._audioCompression) }()
-      case 6: try { try decoder.decodeSingularFloatField(value: &self.estimatedRecordTime) }()
+      case 4: try { try decoder.decodeSingularEnumField(value: &self.micGain) }()
+      case 5: try { try decoder.decodeSingularEnumField(value: &self.bitResolution) }()
+      case 6: try { try decoder.decodeSingularMessageField(value: &self._audioCompression) }()
+      case 7: try { try decoder.decodeSingularFloatField(value: &self.estimatedRecordTime) }()
+      case 8: try { try decoder.decodeSingularBoolField(value: &self.freeRunMode) }()
+      case 9: try { try decoder.decodeSingularBoolField(value: &self.chirpEnable) }()
       default: break
       }
     }
@@ -1741,17 +2002,26 @@ extension AudioConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     if self.channel2 != false {
       try visitor.visitSingularBoolField(value: self.channel2, fieldNumber: 2)
     }
-    if self.sampleFreq != .sampleRate16000 {
+    if self.sampleFreq != .sampleRate8000 {
       try visitor.visitSingularEnumField(value: self.sampleFreq, fieldNumber: 3)
     }
+    if self.micGain != .gain60Db {
+      try visitor.visitSingularEnumField(value: self.micGain, fieldNumber: 4)
+    }
     if self.bitResolution != .bitRes8 {
-      try visitor.visitSingularEnumField(value: self.bitResolution, fieldNumber: 4)
+      try visitor.visitSingularEnumField(value: self.bitResolution, fieldNumber: 5)
     }
     try { if let v = self._audioCompression {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
     } }()
     if self.estimatedRecordTime != 0 {
-      try visitor.visitSingularFloatField(value: self.estimatedRecordTime, fieldNumber: 6)
+      try visitor.visitSingularFloatField(value: self.estimatedRecordTime, fieldNumber: 7)
+    }
+    if self.freeRunMode != false {
+      try visitor.visitSingularBoolField(value: self.freeRunMode, fieldNumber: 8)
+    }
+    if self.chirpEnable != false {
+      try visitor.visitSingularBoolField(value: self.chirpEnable, fieldNumber: 9)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -1760,9 +2030,12 @@ extension AudioConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     if lhs.channel1 != rhs.channel1 {return false}
     if lhs.channel2 != rhs.channel2 {return false}
     if lhs.sampleFreq != rhs.sampleFreq {return false}
+    if lhs.micGain != rhs.micGain {return false}
     if lhs.bitResolution != rhs.bitResolution {return false}
     if lhs._audioCompression != rhs._audioCompression {return false}
     if lhs.estimatedRecordTime != rhs.estimatedRecordTime {return false}
+    if lhs.freeRunMode != rhs.freeRunMode {return false}
+    if lhs.chirpEnable != rhs.chirpEnable {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1936,12 +2209,47 @@ extension CameraControl: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
   }
 }
 
+extension DeviceUID: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = "DeviceUID"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "addr"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.addr) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.addr.isEmpty {
+      try visitor.visitSingularStringField(value: self.addr, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: DeviceUID, rhs: DeviceUID) -> Bool {
+    if lhs.addr != rhs.addr {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension NetworkState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = "NetworkState"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "number_of_discovered_devices"),
     2: .standard(proto: "discovered_device_UID"),
-    3: .standard(proto: "force_rediscovery"),
+    3: .same(proto: "channel"),
+    4: .same(proto: "panID"),
+    5: .same(proto: "slaveSync"),
+    6: .same(proto: "masterNode"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1951,8 +2259,11 @@ extension NetworkState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularUInt32Field(value: &self.numberOfDiscoveredDevices) }()
-      case 2: try { try decoder.decodeRepeatedUInt32Field(value: &self.discoveredDeviceUid) }()
-      case 3: try { try decoder.decodeSingularBoolField(value: &self.forceRediscovery) }()
+      case 2: try { try decoder.decodeRepeatedMessageField(value: &self.discoveredDeviceUid) }()
+      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.channel) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self.panID) }()
+      case 5: try { try decoder.decodeSingularBoolField(value: &self.slaveSync) }()
+      case 6: try { try decoder.decodeSingularBoolField(value: &self.masterNode) }()
       default: break
       }
     }
@@ -1963,10 +2274,19 @@ extension NetworkState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       try visitor.visitSingularUInt32Field(value: self.numberOfDiscoveredDevices, fieldNumber: 1)
     }
     if !self.discoveredDeviceUid.isEmpty {
-      try visitor.visitPackedUInt32Field(value: self.discoveredDeviceUid, fieldNumber: 2)
+      try visitor.visitRepeatedMessageField(value: self.discoveredDeviceUid, fieldNumber: 2)
     }
-    if self.forceRediscovery != false {
-      try visitor.visitSingularBoolField(value: self.forceRediscovery, fieldNumber: 3)
+    if self.channel != 0 {
+      try visitor.visitSingularUInt32Field(value: self.channel, fieldNumber: 3)
+    }
+    if self.panID != 0 {
+      try visitor.visitSingularUInt32Field(value: self.panID, fieldNumber: 4)
+    }
+    if self.slaveSync != false {
+      try visitor.visitSingularBoolField(value: self.slaveSync, fieldNumber: 5)
+    }
+    if self.masterNode != false {
+      try visitor.visitSingularBoolField(value: self.masterNode, fieldNumber: 6)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -1974,7 +2294,10 @@ extension NetworkState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
   public static func ==(lhs: NetworkState, rhs: NetworkState) -> Bool {
     if lhs.numberOfDiscoveredDevices != rhs.numberOfDiscoveredDevices {return false}
     if lhs.discoveredDeviceUid != rhs.discoveredDeviceUid {return false}
-    if lhs.forceRediscovery != rhs.forceRediscovery {return false}
+    if lhs.channel != rhs.channel {return false}
+    if lhs.panID != rhs.panID {return false}
+    if lhs.slaveSync != rhs.slaveSync {return false}
+    if lhs.masterNode != rhs.masterNode {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1987,9 +2310,9 @@ extension ConfigPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     2: .standard(proto: "schedule_config"),
     3: .standard(proto: "sensor_config"),
     4: .standard(proto: "low_power_config"),
-    5: .standard(proto: "camera_control"),
-    6: .standard(proto: "network_state"),
-    7: .standard(proto: "enable_recording"),
+    5: .standard(proto: "network_state"),
+    6: .standard(proto: "enable_recording"),
+    7: .standard(proto: "enable_led"),
   ]
 
   fileprivate class _StorageClass {
@@ -1997,9 +2320,9 @@ extension ConfigPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     var _scheduleConfig: [ScheduleConfig] = []
     var _sensorConfig: SensorConfig? = nil
     var _lowPowerConfig: LowPowerConfig? = nil
-    var _cameraControl: CameraControl? = nil
     var _networkState: NetworkState? = nil
     var _enableRecording: Bool = false
+    var _enableLed: Bool = false
 
     static let defaultInstance = _StorageClass()
 
@@ -2010,9 +2333,9 @@ extension ConfigPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       _scheduleConfig = source._scheduleConfig
       _sensorConfig = source._sensorConfig
       _lowPowerConfig = source._lowPowerConfig
-      _cameraControl = source._cameraControl
       _networkState = source._networkState
       _enableRecording = source._enableRecording
+      _enableLed = source._enableLed
     }
   }
 
@@ -2035,9 +2358,9 @@ extension ConfigPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         case 2: try { try decoder.decodeRepeatedMessageField(value: &_storage._scheduleConfig) }()
         case 3: try { try decoder.decodeSingularMessageField(value: &_storage._sensorConfig) }()
         case 4: try { try decoder.decodeSingularMessageField(value: &_storage._lowPowerConfig) }()
-        case 5: try { try decoder.decodeSingularMessageField(value: &_storage._cameraControl) }()
-        case 6: try { try decoder.decodeSingularMessageField(value: &_storage._networkState) }()
-        case 7: try { try decoder.decodeSingularBoolField(value: &_storage._enableRecording) }()
+        case 5: try { try decoder.decodeSingularMessageField(value: &_storage._networkState) }()
+        case 6: try { try decoder.decodeSingularBoolField(value: &_storage._enableRecording) }()
+        case 7: try { try decoder.decodeSingularBoolField(value: &_storage._enableLed) }()
         default: break
         }
       }
@@ -2062,14 +2385,14 @@ extension ConfigPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       try { if let v = _storage._lowPowerConfig {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
       } }()
-      try { if let v = _storage._cameraControl {
+      try { if let v = _storage._networkState {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
       } }()
-      try { if let v = _storage._networkState {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
-      } }()
       if _storage._enableRecording != false {
-        try visitor.visitSingularBoolField(value: _storage._enableRecording, fieldNumber: 7)
+        try visitor.visitSingularBoolField(value: _storage._enableRecording, fieldNumber: 6)
+      }
+      if _storage._enableLed != false {
+        try visitor.visitSingularBoolField(value: _storage._enableLed, fieldNumber: 7)
       }
     }
     try unknownFields.traverse(visitor: &visitor)
@@ -2084,9 +2407,9 @@ extension ConfigPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         if _storage._scheduleConfig != rhs_storage._scheduleConfig {return false}
         if _storage._sensorConfig != rhs_storage._sensorConfig {return false}
         if _storage._lowPowerConfig != rhs_storage._lowPowerConfig {return false}
-        if _storage._cameraControl != rhs_storage._cameraControl {return false}
         if _storage._networkState != rhs_storage._networkState {return false}
         if _storage._enableRecording != rhs_storage._enableRecording {return false}
+        if _storage._enableLed != rhs_storage._enableLed {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -2096,15 +2419,209 @@ extension ConfigPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
   }
 }
 
+extension PeerAddress: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = "PeerAddress"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "pan_id"),
+    2: .same(proto: "address"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.panID) }()
+      case 2: try { try decoder.decodeSingularBytesField(value: &self.address) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.panID != 0 {
+      try visitor.visitSingularUInt32Field(value: self.panID, fieldNumber: 1)
+    }
+    if !self.address.isEmpty {
+      try visitor.visitSingularBytesField(value: self.address, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: PeerAddress, rhs: PeerAddress) -> Bool {
+    if lhs.panID != rhs.panID {return false}
+    if lhs.address != rhs.address {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension UWB_Range: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = "UWB_Range"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "openthread_UID"),
+    2: .standard(proto: "system_UID"),
+    3: .standard(proto: "UWB_addr"),
+    4: .same(proto: "range"),
+    5: .same(proto: "stdDev"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._openthreadUid) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.systemUid) }()
+      case 3: try { try decoder.decodeSingularMessageField(value: &self._uwbAddr) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self.range) }()
+      case 5: try { try decoder.decodeSingularFloatField(value: &self.stdDev) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._openthreadUid {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    if self.systemUid != 0 {
+      try visitor.visitSingularUInt32Field(value: self.systemUid, fieldNumber: 2)
+    }
+    try { if let v = self._uwbAddr {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    } }()
+    if self.range != 0 {
+      try visitor.visitSingularUInt32Field(value: self.range, fieldNumber: 4)
+    }
+    if self.stdDev != 0 {
+      try visitor.visitSingularFloatField(value: self.stdDev, fieldNumber: 5)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: UWB_Range, rhs: UWB_Range) -> Bool {
+    if lhs._openthreadUid != rhs._openthreadUid {return false}
+    if lhs.systemUid != rhs.systemUid {return false}
+    if lhs._uwbAddr != rhs._uwbAddr {return false}
+    if lhs.range != rhs.range {return false}
+    if lhs.stdDev != rhs.stdDev {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension UWB_Info: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = "UWB_Info"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "openthread_UID"),
+    2: .standard(proto: "system_UID"),
+    3: .standard(proto: "UWB_addr"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._openthreadUid) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.systemUid) }()
+      case 3: try { try decoder.decodeSingularMessageField(value: &self._uwbAddr) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._openthreadUid {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    if self.systemUid != 0 {
+      try visitor.visitSingularUInt32Field(value: self.systemUid, fieldNumber: 2)
+    }
+    try { if let v = self._uwbAddr {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: UWB_Info, rhs: UWB_Info) -> Bool {
+    if lhs._openthreadUid != rhs._openthreadUid {return false}
+    if lhs.systemUid != rhs.systemUid {return false}
+    if lhs._uwbAddr != rhs._uwbAddr {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension UWB_Packet: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = "UWB_Packet"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "startRanging"),
+    2: .same(proto: "turnOnUWB"),
+    3: .same(proto: "ranges"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBoolField(value: &self.startRanging) }()
+      case 2: try { try decoder.decodeSingularBoolField(value: &self.turnOnUwb) }()
+      case 3: try { try decoder.decodeRepeatedMessageField(value: &self.ranges) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.startRanging != false {
+      try visitor.visitSingularBoolField(value: self.startRanging, fieldNumber: 1)
+    }
+    if self.turnOnUwb != false {
+      try visitor.visitSingularBoolField(value: self.turnOnUwb, fieldNumber: 2)
+    }
+    if !self.ranges.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.ranges, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: UWB_Packet, rhs: UWB_Packet) -> Bool {
+    if lhs.startRanging != rhs.startRanging {return false}
+    if lhs.turnOnUwb != rhs.turnOnUwb {return false}
+    if lhs.ranges != rhs.ranges {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension SpecialFunction: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = "SpecialFunction"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "format_sdcard"),
-    2: .standard(proto: "function_2"),
-    3: .standard(proto: "function_3"),
-    4: .standard(proto: "function_4"),
-    5: .standard(proto: "function_5"),
-    6: .standard(proto: "function_6"),
+    2: .standard(proto: "camera_control"),
+    3: .standard(proto: "uwb_packet"),
+    4: .standard(proto: "openthread_sync_time"),
+    5: .standard(proto: "mag_calibration"),
+    6: .standard(proto: "slave_req_config"),
+    7: .same(proto: "timestamp"),
+    8: .standard(proto: "dfu_mode"),
+    9: .standard(proto: "uwb_info"),
+    10: .standard(proto: "reset_config"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2122,19 +2639,29 @@ extension SpecialFunction: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
         }
       }()
       case 2: try {
-        var v: Bool?
-        try decoder.decodeSingularBoolField(value: &v)
+        var v: CameraControl?
+        var hadOneofValue = false
+        if let current = self.payload {
+          hadOneofValue = true
+          if case .cameraControl(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
         if let v = v {
-          if self.payload != nil {try decoder.handleConflictingOneOf()}
-          self.payload = .function2(v)
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payload = .cameraControl(v)
         }
       }()
       case 3: try {
-        var v: Bool?
-        try decoder.decodeSingularBoolField(value: &v)
+        var v: UWB_Packet?
+        var hadOneofValue = false
+        if let current = self.payload {
+          hadOneofValue = true
+          if case .uwbPacket(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
         if let v = v {
-          if self.payload != nil {try decoder.handleConflictingOneOf()}
-          self.payload = .function3(v)
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payload = .uwbPacket(v)
         }
       }()
       case 4: try {
@@ -2142,7 +2669,7 @@ extension SpecialFunction: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
         try decoder.decodeSingularBoolField(value: &v)
         if let v = v {
           if self.payload != nil {try decoder.handleConflictingOneOf()}
-          self.payload = .function4(v)
+          self.payload = .openthreadSyncTime(v)
         }
       }()
       case 5: try {
@@ -2150,7 +2677,7 @@ extension SpecialFunction: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
         try decoder.decodeSingularBoolField(value: &v)
         if let v = v {
           if self.payload != nil {try decoder.handleConflictingOneOf()}
-          self.payload = .function5(v)
+          self.payload = .magCalibration(v)
         }
       }()
       case 6: try {
@@ -2158,7 +2685,44 @@ extension SpecialFunction: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
         try decoder.decodeSingularBoolField(value: &v)
         if let v = v {
           if self.payload != nil {try decoder.handleConflictingOneOf()}
-          self.payload = .function6(v)
+          self.payload = .slaveReqConfig(v)
+        }
+      }()
+      case 7: try {
+        var v: UInt32?
+        try decoder.decodeSingularUInt32Field(value: &v)
+        if let v = v {
+          if self.payload != nil {try decoder.handleConflictingOneOf()}
+          self.payload = .timestamp(v)
+        }
+      }()
+      case 8: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.payload != nil {try decoder.handleConflictingOneOf()}
+          self.payload = .dfuMode(v)
+        }
+      }()
+      case 9: try {
+        var v: UWB_Info?
+        var hadOneofValue = false
+        if let current = self.payload {
+          hadOneofValue = true
+          if case .uwbInfo(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payload = .uwbInfo(v)
+        }
+      }()
+      case 10: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.payload != nil {try decoder.handleConflictingOneOf()}
+          self.payload = .resetConfig(v)
         }
       }()
       default: break
@@ -2176,25 +2740,41 @@ extension SpecialFunction: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
       guard case .formatSdcard(let v)? = self.payload else { preconditionFailure() }
       try visitor.visitSingularBoolField(value: v, fieldNumber: 1)
     }()
-    case .function2?: try {
-      guard case .function2(let v)? = self.payload else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 2)
+    case .cameraControl?: try {
+      guard case .cameraControl(let v)? = self.payload else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
     }()
-    case .function3?: try {
-      guard case .function3(let v)? = self.payload else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 3)
+    case .uwbPacket?: try {
+      guard case .uwbPacket(let v)? = self.payload else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
     }()
-    case .function4?: try {
-      guard case .function4(let v)? = self.payload else { preconditionFailure() }
+    case .openthreadSyncTime?: try {
+      guard case .openthreadSyncTime(let v)? = self.payload else { preconditionFailure() }
       try visitor.visitSingularBoolField(value: v, fieldNumber: 4)
     }()
-    case .function5?: try {
-      guard case .function5(let v)? = self.payload else { preconditionFailure() }
+    case .magCalibration?: try {
+      guard case .magCalibration(let v)? = self.payload else { preconditionFailure() }
       try visitor.visitSingularBoolField(value: v, fieldNumber: 5)
     }()
-    case .function6?: try {
-      guard case .function6(let v)? = self.payload else { preconditionFailure() }
+    case .slaveReqConfig?: try {
+      guard case .slaveReqConfig(let v)? = self.payload else { preconditionFailure() }
       try visitor.visitSingularBoolField(value: v, fieldNumber: 6)
+    }()
+    case .timestamp?: try {
+      guard case .timestamp(let v)? = self.payload else { preconditionFailure() }
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 7)
+    }()
+    case .dfuMode?: try {
+      guard case .dfuMode(let v)? = self.payload else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 8)
+    }()
+    case .uwbInfo?: try {
+      guard case .uwbInfo(let v)? = self.payload else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
+    }()
+    case .resetConfig?: try {
+      guard case .resetConfig(let v)? = self.payload else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 10)
     }()
     case nil: break
     }
@@ -2218,103 +2798,137 @@ extension Packet: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
     5: .standard(proto: "special_function"),
   ]
 
+  fileprivate class _StorageClass {
+    var _header: PacketHeader? = nil
+    var _payload: Packet.OneOf_Payload?
+
+    static let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _header = source._header
+      _payload = source._payload
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularMessageField(value: &self._header) }()
-      case 2: try {
-        var v: SystemInfoPacket?
-        var hadOneofValue = false
-        if let current = self.payload {
-          hadOneofValue = true
-          if case .systemInfoPacket(let m) = current {v = m}
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularMessageField(value: &_storage._header) }()
+        case 2: try {
+          var v: SystemInfoPacket?
+          var hadOneofValue = false
+          if let current = _storage._payload {
+            hadOneofValue = true
+            if case .systemInfoPacket(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payload = .systemInfoPacket(v)
+          }
+        }()
+        case 3: try {
+          var v: MarkPacket?
+          var hadOneofValue = false
+          if let current = _storage._payload {
+            hadOneofValue = true
+            if case .markPacket(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payload = .markPacket(v)
+          }
+        }()
+        case 4: try {
+          var v: ConfigPacket?
+          var hadOneofValue = false
+          if let current = _storage._payload {
+            hadOneofValue = true
+            if case .configPacket(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payload = .configPacket(v)
+          }
+        }()
+        case 5: try {
+          var v: SpecialFunction?
+          var hadOneofValue = false
+          if let current = _storage._payload {
+            hadOneofValue = true
+            if case .specialFunction(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payload = .specialFunction(v)
+          }
+        }()
+        default: break
         }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.payload = .systemInfoPacket(v)
-        }
-      }()
-      case 3: try {
-        var v: MarkPacket?
-        var hadOneofValue = false
-        if let current = self.payload {
-          hadOneofValue = true
-          if case .markPacket(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.payload = .markPacket(v)
-        }
-      }()
-      case 4: try {
-        var v: ConfigPacket?
-        var hadOneofValue = false
-        if let current = self.payload {
-          hadOneofValue = true
-          if case .configPacket(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.payload = .configPacket(v)
-        }
-      }()
-      case 5: try {
-        var v: SpecialFunction?
-        var hadOneofValue = false
-        if let current = self.payload {
-          hadOneofValue = true
-          if case .specialFunction(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.payload = .specialFunction(v)
-        }
-      }()
-      default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    try { if let v = self._header {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
-    } }()
-    switch self.payload {
-    case .systemInfoPacket?: try {
-      guard case .systemInfoPacket(let v)? = self.payload else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-    }()
-    case .markPacket?: try {
-      guard case .markPacket(let v)? = self.payload else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
-    }()
-    case .configPacket?: try {
-      guard case .configPacket(let v)? = self.payload else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
-    }()
-    case .specialFunction?: try {
-      guard case .specialFunction(let v)? = self.payload else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
-    }()
-    case nil: break
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      try { if let v = _storage._header {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+      } }()
+      switch _storage._payload {
+      case .systemInfoPacket?: try {
+        guard case .systemInfoPacket(let v)? = _storage._payload else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+      }()
+      case .markPacket?: try {
+        guard case .markPacket(let v)? = _storage._payload else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+      }()
+      case .configPacket?: try {
+        guard case .configPacket(let v)? = _storage._payload else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
+      }()
+      case .specialFunction?: try {
+        guard case .specialFunction(let v)? = _storage._payload else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
+      }()
+      case nil: break
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Packet, rhs: Packet) -> Bool {
-    if lhs._header != rhs._header {return false}
-    if lhs.payload != rhs.payload {return false}
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._header != rhs_storage._header {return false}
+        if _storage._payload != rhs_storage._payload {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

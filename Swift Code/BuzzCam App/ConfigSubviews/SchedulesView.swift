@@ -11,44 +11,88 @@ import Combine
 struct SchedulesView: View {
     @EnvironmentObject var bluetoothModel: BluetoothModel
     @State private var isExpanded = false
+    @State private var cancellables: Set<AnyCancellable> = Set()
     @State private var schedules: [ScheduleConfig] = []
     @State private var selectedSchedule: ScheduleConfig?
     @State private var selectedIndex: Int?
     @State private var isPopupPresented = false
+    @State private var enableFreeRunMode = false
     
-    
+    let customFontTitle = Font.custom("Futura-Bold", size: 25)
+    let customFontText = Font.custom("AvenirNext-Regular", size: 18)
+    let customFontTextSmall = Font.custom("AvenirNext-Regular", size: 12)
+
+    let customFontTextBold = Font.custom("AvenirNext-DemiBold", size: 20)
+    let customFontTextBoldLarge = Font.custom("AvenirNext-DemiBold", size: 25)
+    let customFontTextBoldSmall = Font.custom("AvenirNext-DemiBold", size: 18)
     
     var body: some View {
         VStack (alignment: .leading) {
             HStack {
                 Spacer()
                 Text("Schedules")
-                    .font(.title)
+                    .font(customFontTextBoldLarge)
                     .padding()
                 
                 Image(systemName: "chevron.down")
                     .rotationEffect(.degrees(isExpanded ? 180 : 0))
                 Spacer()
-            }.background(Color(white:0.75)).onTapGesture {
+            }.background(
+                GeometryReader { proxy in
+                        Image("IMG_4587 (6)")
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: proxy.size.width, height: proxy.size.height)
+                            .clipped()
+                            .opacity(0.7)
+                            .allowsHitTesting(false) // Prevents the image from capturing taps
+                            .contentShape(Rectangle()) // Set content shape to Rectangle to allow tap gesture
+                    }).onTapGesture {
                 withAnimation {
                     isExpanded.toggle()
+                    if !isExpanded {
+                        isPopupPresented = false
+                    }
                 }
             }
             
             if isExpanded {
                 VStack (alignment: .leading, spacing: 20) {
+                    VStack (alignment: .leading) {
+                        HStack {
+                            Text("Free run mode")
+                                .font(customFontTextBoldSmall)
+                                .padding(.horizontal)
+                            
+                            Toggle("", isOn: $enableFreeRunMode)
+                                .labelsHidden()
+                                .onChange(of: enableFreeRunMode) {
+                                    // Call your function when the toggle is changed
+                                    bluetoothModel.enableFreeRunMode(enableFreeRunMode: enableFreeRunMode)
+                                }
+                        }
+                        
+                        Text("Free run mode bypasses any schedules and runs continuously")
+                            .font(customFontText).padding(.bottom, 10).padding(.horizontal)
+                    }
+                    
                     VStack(alignment: .leading) {
                         Button("Add Schedule") {
                             // Show the pop-up for adding a new schedule
                             selectedIndex = nil
                             isPopupPresented.toggle()
                             print("add")
-                        }
+                        }.font(customFontText).padding()
+                            .background(Color(white: 0.8))
+                            .cornerRadius(5)
+                            
+                            
+                            
                         
                         ForEach(schedules.indices, id: \.self) { index in
                             VStack {
                                 HStack {
-                                    Text("Schedule #\(index)").fontWeight(.bold)
+                                    Text("Schedule #\(index)").font(customFontTextBoldSmall)
                                     Spacer()
                                     Button("Edit") {
                                         // Show the pop-up for editing the schedule
@@ -56,10 +100,10 @@ struct SchedulesView: View {
                                         print("index: \(index)")
                                         isPopupPresented.toggle()
                                         print("edit")
-                                    }
+                                    }.font(customFontText).foregroundColor(.blue)
                                 }
-                                Text("Days: \(selectedDaysString(schedule: schedules[index]))")
-                                Text("Time: \(selectedTimeString(schedule: schedules[index]))")
+                                Text("Days: \(selectedDaysString(schedule: schedules[index]))").font(customFontText)
+                                Text("Time: \(selectedTimeString(schedule: schedules[index]))").font(customFontText)
                             }
                         }
                     }
@@ -73,12 +117,21 @@ struct SchedulesView: View {
                 }
                 .padding()
             }
-            
+            if !isPopupPresented {
+                HStack {
+                    Spacer()
+                    VStack (alignment: .center){
+                        Text("Made with ❤️ by the Responsive Environments Lab").font(customFontTextSmall).foregroundColor(.black)
+                        Text("Contributors: Patrick Chwalek, Isamar Zhu").font(customFontTextSmall).foregroundColor(.black)
+                    }
+                    Spacer()
+                }.padding(.top, 20)
+
+            }
             // Unified view for editing/creating schedules
             SchedulePopupView(
                 isPresented: $isPopupPresented,
                 selectedIndex: selectedIndex,
-                //                    schedules: schedules,
                 schedule: selectedIndex != nil ? schedules[selectedIndex!] : nil,
                 onSave: { newSchedule in
                     if let index = selectedIndex {
@@ -88,14 +141,39 @@ struct SchedulesView: View {
                     }
                     bluetoothModel.sendSchedules(schedules)
                     isPopupPresented = false
-                }
+                },
+                onDelete: {
+                        if let index = selectedIndex {
+                            if index < schedules.count {
+                                schedules.remove(at: index)
+                                bluetoothModel.sendSchedules(schedules)
+                                
+                                // Adjust selected index if it's out of bounds after deletion
+                                if selectedIndex! >= schedules.count {
+                                    selectedIndex = nil
+                                }
+                            }
+                        }
+                    }
             )
             .opacity(isPopupPresented ? 1 : 0) // Optionally, fade out when not presented
             .animation(.easeInOut, value: 1)
+        
         }
         .onAppear {
             // Initialize schedules when the view appears
             schedules = bluetoothModel.configPacketData_Schedule?.scheduleConfig ?? []
+            
+            // Add an observer to monitor changes to configPacketData_Audio
+            bluetoothModel.$configPacketData_Audio
+                .sink { configPacketData_Audio in
+                    self.updateFreeRunMode(configPacketData_Audio)
+                }
+                .store(in: &cancellables)
+            
+            // Trigger the initial update
+            self.updateFreeRunMode(bluetoothModel.configPacketData_Audio)
+
         }
         .frame(maxWidth: .infinity)
         .background(Color(white:0.90))
@@ -119,8 +197,16 @@ struct SchedulesView: View {
     }
     
     private func selectedTimeString(schedule: ScheduleConfig) -> String {
-        return "\(schedule.startHour):\(schedule.startMinute) - \(schedule.stopHour):\(schedule.stopMinute)"
+        return String(format: "%02d:%02d - %02d:%02d",
+                      schedule.startHour, schedule.startMinute,
+                      schedule.stopHour, schedule.stopMinute)
     }
+
+    
+    private func updateFreeRunMode(_ configPacketData_Audio: ConfigPacketData_Audio?) {
+        enableFreeRunMode = configPacketData_Audio?.freeRunMode ?? false
+    }
+
 }
 
 struct SchedulePopupView: View {
@@ -129,20 +215,29 @@ struct SchedulePopupView: View {
     let originalSchedule: ScheduleConfig
     let selectedIndex: Int?
     var onSave: (ScheduleConfig) -> Void
+    var onDelete: (() -> Void)? // Closure for delete action
     
-    init(isPresented: Binding<Bool>, selectedIndex: Int?, schedule: ScheduleConfig? = nil, onSave: @escaping (ScheduleConfig) -> Void) {
-        self._isPresented = isPresented
-        self.originalSchedule = schedule ?? ScheduleConfig()
-        self._editedSchedule = State(initialValue: selectedIndex != nil ? (schedule ?? ScheduleConfig()) : ScheduleConfig())
-        self.selectedIndex = selectedIndex
-        self.onSave = onSave
-    }
+    let customFontTitle = Font.custom("Futura-Bold", size: 25)
+    let customFontText = Font.custom("AvenirNext-Regular", size: 18)
+    let customFontTextBold = Font.custom("AvenirNext-DemiBold", size: 20)
+    let customFontTextBoldLarge = Font.custom("AvenirNext-DemiBold", size: 25)
+    let customFontTextBoldSmall = Font.custom("AvenirNext-DemiBold", size: 18)
+    
+    
+    init(isPresented: Binding<Bool>, selectedIndex: Int?, schedule: ScheduleConfig? = nil, onSave: @escaping (ScheduleConfig) -> Void, onDelete: (() -> Void)? = nil) {
+            self._isPresented = isPresented
+            self.originalSchedule = schedule ?? ScheduleConfig()
+            self._editedSchedule = State(initialValue: selectedIndex != nil ? (schedule ?? ScheduleConfig()) : ScheduleConfig())
+            self.selectedIndex = selectedIndex
+            self.onSave = onSave
+            self.onDelete = onDelete
+        }
     
     var body: some View {
         VStack {
             Text(selectedIndex != nil ? "Edit Schedule" : "Add Schedule")
-                .font(.title)
-                .padding()
+                .font(customFontTextBoldLarge)
+                .padding(.top)
             
             // Checkboxes for days
             ForEach(DaysOfWeek.allCases, id: \.self) { day in
@@ -153,7 +248,7 @@ struct SchedulePopupView: View {
                         Image(systemName: editedSchedule.isDaySelected(day) ? "checkmark.square" : "square")
                             .resizable()
                             .frame(width: 20, height: 20)
-                        Text(day.rawValue.prefix(3))
+                        Text(day.rawValue.prefix(3)).font(customFontText)
                     }
                     .padding(.vertical, 5)
                 }
@@ -161,25 +256,35 @@ struct SchedulePopupView: View {
             
             // Time picker
             HStack {
-                Text("Start Time:")
+                Text("Start").font(customFontText).padding()
                 TimePicker(selectedHour: $editedSchedule.startHour, selectedMinute: $editedSchedule.startMinute)
             }
             
             HStack {
-                Text("End Time:")
+                Text("End").font(customFontText).padding()
                 TimePicker(selectedHour: $editedSchedule.stopHour, selectedMinute: $editedSchedule.stopMinute)
             }
+            
+            
+            Button("Delete") {
+                onDelete?() // Call delete closure if provided
+                isPresented.toggle()
+
+            }.font(customFontText)
+            .foregroundColor(.red) // Make delete button red
+            .padding()
             
             Button("Save") {
                 onSave(editedSchedule)
                 isPresented.toggle()
                 isPresented.toggle()
-            }
+            }.font(customFontText)
+                .foregroundColor(.blue)
             .padding()
             
             Button("Cancel") {
                 isPresented.toggle()
-            }
+            }.font(customFontText)
             .padding()
         }
         .onChange(of: selectedIndex) {
@@ -211,6 +316,7 @@ struct SchedulePopupView: View {
         )
         .shadow(radius: 5)
         .padding()
+        .padding(.bottom, isPresented ? 80 : 0)
     }
     
     private func toggleDay(_ day: DaysOfWeek) {
@@ -226,25 +332,29 @@ struct TimePicker: View {
         HStack {
             Picker("", selection: $selectedHour) {
                 ForEach(0..<24, id: \.self) { hour in
-                    Text("\(hour)")
+                    Text(String(format: "%02d", hour))// Format display for 00:00
                         .tag(UInt32(hour))
+                        .foregroundColor(.black)
                 }
             }
-            .frame(width: 50)
-            .clipped()
+            .pickerStyle(WheelPickerStyle())
+            .frame(width: 80, height: 40)
             
             Text(":")
             
             Picker("", selection: $selectedMinute) {
                 ForEach(0..<60, id: \.self) { minute in
-                    Text("\(minute)")
+                    Text(String(format: "%02d", minute))
                         .tag(UInt32(minute))
+                        .foregroundColor(.black)
                 }
             }
-            .frame(width: 50)
-            .clipped()
+            .pickerStyle(WheelPickerStyle())
+            .frame(width: 80, height: 40)
+
         }
-        .pickerStyle(WheelPickerStyle())
+        .environment(\.colorScheme, .light)
+        .padding()
     }
 }
 
