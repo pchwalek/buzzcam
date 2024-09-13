@@ -244,14 +244,16 @@ bool Adafruit_BME680::begin(uint8_t i2c_address, I2C_HandleTypeDef *i2c_handle, 
 bool Adafruit_BME680::bsecSubscribe(void) {
     bsecSensor sensorList[] = {
             BSEC_OUTPUT_IAQ,
-            BSEC_OUTPUT_RAW_TEMPERATURE,
+//            BSEC_OUTPUT_RAW_TEMPERATURE,
             BSEC_OUTPUT_RAW_PRESSURE,
-            BSEC_OUTPUT_RAW_HUMIDITY,
+//            BSEC_OUTPUT_RAW_HUMIDITY,
             BSEC_OUTPUT_RAW_GAS,
             BSEC_OUTPUT_STABILIZATION_STATUS,
             BSEC_OUTPUT_RUN_IN_STATUS,
 			BSEC_OUTPUT_CO2_EQUIVALENT,
 			BSEC_OUTPUT_BREATH_VOC_EQUIVALENT,
+			BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE,
+			BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY,
 //			BSEC_OUTPUT_GAS_ESTIMATE_1,
 //			BSEC_OUTPUT_GAS_ESTIMATE_2
     };
@@ -263,8 +265,8 @@ bool Adafruit_BME680::bsecSubscribe(void) {
     for (uint8_t i = 0; i < nSensors; i++)
     {
         virtualSensors[i].sensor_id = sensorList[i];
-//        virtualSensors[i].sample_rate = BSEC_SAMPLE_RATE_CONT;
-		virtualSensors[i].sample_rate = BSEC_SAMPLE_RATE_ULP;
+        virtualSensors[i].sample_rate = BSEC_SAMPLE_RATE_CONT;
+//		virtualSensors[i].sample_rate = BSEC_SAMPLE_RATE_ULP;
 //		virtualSensors[i].sample_rate = BSEC_SAMPLE_RATE_SCAN;
     }
 

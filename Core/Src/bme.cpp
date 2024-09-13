@@ -22,7 +22,9 @@
 
 //#include "config/FieldAir_HandSanitizer/FieldAir_HandSanitizer.h"
 //#include "config/Default_H2S_NonH2S/Default_H2S_NonH2S.h"
-#include "config/bsec_sel_iaq_33v_300s_28d/bsec_serialized_configurations_selectivity.h"
+//#include "config/bsec_sel_iaq_33v_300s_28d/bsec_serialized_configurations_selectivity.h"
+#include "config/bsec_sel_iaq_33v_3s_28d/bsec_serialized_configurations_selectivity.h"
+
 
 #include "pb.h"
 #include "pb_decode.h"
@@ -31,7 +33,7 @@
 #include "dts.h"
 #include "app_ble.h"
 
-#define BME_SAMPLE_PERIOD_MS		3000
+//#define BME_SAMPLE_PERIOD_MS		3000
 //#define MAX_BME_SAMPLES_PACKET	(int)(512-sizeof(PacketHeader))/sizeof(bsecData)
 #define MAX_BME_SAMPLES_PACKET		5
 #define BME_WAIT_TOL			10
@@ -114,7 +116,8 @@ void formatBmePayload(char *buffer, size_t bufSize, const bme_packet_payload_t *
     strcat(buffer, temp);
     strcat(buffer, ",");
 
-    utoa(payload->signal, temp, 10);
+//    utoa(payload->signal, temp, 10);
+    sprintf(temp, "%.2f", payload->signal);
     strcat(buffer, temp);
     strcat(buffer, ",");
 
@@ -204,7 +207,7 @@ void BME_Task(void *argument) {
 	volatile uint16_t bmeIdx = 0;
 	uint32_t bmeID = 0;
 
-	int64_t timeRemaining;
+	volatile int64_t timeRemaining;
 
 
 
@@ -225,6 +228,7 @@ void BME_Task(void *argument) {
 	}
 
 	FRESULT res;
+	volatile uint8_t negativeNumber = 0;
 
 	do{
 		res = f_open(&sensorFile, file_name, FA_OPEN_APPEND | FA_WRITE | FA_READ);
@@ -246,8 +250,10 @@ void BME_Task(void *argument) {
 				timeRemaining = floor((bme.bmeConf.next_call/1000000.0) - HAL_GetTick());
 				if(timeRemaining > BME_WAIT_TOL){
 					osDelay( (timeRemaining-BME_WAIT_TOL) );
-				}else if(timeRemaining > 1){
-					osDelay(1);
+				}else if(timeRemaining > 0){
+					osDelay(timeRemaining);
+				}else{
+					negativeNumber = 1;
 				}
 				osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
 			}
@@ -255,6 +261,7 @@ void BME_Task(void *argument) {
 			osMutexRelease(messageI2C1_LockHandle);
 
 			for(int i = 0; i<bme.outputs.nOutputs; i++){
+				setLED_Green(1000);
 //				memcpy(&bmeData[bmeIdx++], &bme.outputs.output[i], sizeof(bsecData));
 				bmeData[bmeIdx].timestamp_unix = getEpoch();
 				bmeData[bmeIdx].timestamp_sensor = bme.outputs.output[i].time_stamp;
@@ -276,6 +283,7 @@ void BME_Task(void *argument) {
 			}
 
 			if(bme.outputs.nOutputs != 0){
+
 //				res = f_open(&sensorFile, file_name, FA_OPEN_APPEND | FA_WRITE | FA_READ);
 
 
@@ -321,6 +329,8 @@ void BME_Task(void *argument) {
 
 				bmeID++;
 				bmeIdx = 0;
+
+				setLED_Green(0);
 
 			}
 //			}

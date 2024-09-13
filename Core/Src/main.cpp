@@ -3781,50 +3781,51 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 		/* continue recording until max bytes written */
 		while((totalBuffersWritten <= half_buffers_per_session) || (half_buffers_per_session == 0)){
 			while( (sampleCntr <= half_buffers_per_period) && ((totalBuffersWritten <= half_buffers_per_session) || (half_buffers_per_session == 0))){
-				// Wait for a notification
-				flag = osThreadFlagsWait(0x0001U | TERMINATE_EVENT, osFlagsWaitAny, osWaitForever);
+				osDelay(osWaitForever);
+//				// Wait for a notification
+//				flag = osThreadFlagsWait(0x0001U | TERMINATE_EVENT, osFlagsWaitAny, osWaitForever);
+//
+//				if( (sampleCntr % 20) == 0) osMessageQueuePut(ledSeqQueueId, &color, 0, 0);
 
-				if( (sampleCntr % 20) == 0) osMessageQueuePut(ledSeqQueueId, &color, 0, 0);
-
-				if(SAI_HALF_CALLBACK){
-					SAI_HALF_CALLBACK = 0;
-
-					if(!configPacket.payload.config_packet.audio_config.audio_compression.enabled){
-						FRESULT res;
-						res = f_write(&WavFile, audioSample, buffer_half_size * 2, (UINT*)&byteswritten);
-						if(res != FR_OK) Error_Handler();
-					}else{
-						if(COMPRESSION_TYPE_FLAC == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
-							//todo: FLAC compression
-							if(tflac_encode_s16i(&t, frames, samples, audioSample, bufferlen, &bufferused) != 0) Error_Handler();
-							if(f_write(&WavFile, buffer, bufferused, (UINT*)&byteswritten) != FR_OK) Error_Handler();
-						}else if(COMPRESSION_TYPE_OPUS == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
-							//todo: OPUS compression
-						}
-					}
-
-					totalBuffersWritten += 1;
-					totalBytesWrittenToFile += buffer_half_size * 2;
-				}
-
-				if(SAI_FULL_CALLBACK){
-					SAI_FULL_CALLBACK = 0;
-
-					if(!configPacket.payload.config_packet.audio_config.audio_compression.enabled){
-						if(f_write(&WavFile, &audioSample[buffer_half_size], buffer_half_size * 2, (UINT*)&byteswritten) != FR_OK) Error_Handler();
-					}else{
-						if(COMPRESSION_TYPE_FLAC == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
-							//todo: FLAC compression
-							if(tflac_encode_s16i(&t, frames, samples, audioSample, bufferlen, &bufferused) != 0) Error_Handler();
-							if(f_write(&WavFile, buffer, bufferused, (UINT*)&byteswritten) != FR_OK) Error_Handler();
-						}else if(COMPRESSION_TYPE_OPUS == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
-							//todo: OPUS compression
-						}
-					}
-
-					totalBuffersWritten += 1;
-					totalBytesWrittenToFile += buffer_half_size * 2;
-				}
+//				if(SAI_HALF_CALLBACK){
+//					SAI_HALF_CALLBACK = 0;
+//
+//					if(!configPacket.payload.config_packet.audio_config.audio_compression.enabled){
+//						FRESULT res;
+//						res = f_write(&WavFile, audioSample, buffer_half_size * 2, (UINT*)&byteswritten);
+//						if(res != FR_OK) Error_Handler();
+//					}else{
+//						if(COMPRESSION_TYPE_FLAC == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+//							//todo: FLAC compression
+//							if(tflac_encode_s16i(&t, frames, samples, audioSample, bufferlen, &bufferused) != 0) Error_Handler();
+//							if(f_write(&WavFile, buffer, bufferused, (UINT*)&byteswritten) != FR_OK) Error_Handler();
+//						}else if(COMPRESSION_TYPE_OPUS == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+//							//todo: OPUS compression
+//						}
+//					}
+//
+//					totalBuffersWritten += 1;
+//					totalBytesWrittenToFile += buffer_half_size * 2;
+//				}
+//
+//				if(SAI_FULL_CALLBACK){
+//					SAI_FULL_CALLBACK = 0;
+//
+//					if(!configPacket.payload.config_packet.audio_config.audio_compression.enabled){
+//						if(f_write(&WavFile, &audioSample[buffer_half_size], buffer_half_size * 2, (UINT*)&byteswritten) != FR_OK) Error_Handler();
+//					}else{
+//						if(COMPRESSION_TYPE_FLAC == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+//							//todo: FLAC compression
+//							if(tflac_encode_s16i(&t, frames, samples, audioSample, bufferlen, &bufferused) != 0) Error_Handler();
+//							if(f_write(&WavFile, buffer, bufferused, (UINT*)&byteswritten) != FR_OK) Error_Handler();
+//						}else if(COMPRESSION_TYPE_OPUS == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+//							//todo: OPUS compression
+//						}
+//					}
+//
+//					totalBuffersWritten += 1;
+//					totalBytesWrittenToFile += buffer_half_size * 2;
+//				}
 
 				if((flag & TERMINATE_EVENT) == TERMINATE_EVENT){
 					if(configPacket.payload.config_packet.network_state.master_node) sendConfigToNodes(false);
