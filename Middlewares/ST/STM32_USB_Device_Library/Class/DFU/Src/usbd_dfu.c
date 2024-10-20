@@ -665,7 +665,8 @@ uint8_t USBD_DFU_RegisterMedia(USBD_HandleTypeDef *pdev,
     return (uint8_t)USBD_FAIL;
   }
 
-  pdev->pUserData = fops;
+//  pdev->pUserData = (void *) fops;
+  pdev->pUserData[pdev->classId] = fops;
 
   return (uint8_t)USBD_OK;
 }

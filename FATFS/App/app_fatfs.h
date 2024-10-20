@@ -22,6 +22,7 @@
 #ifndef __APP_FATFS_H
 #define __APP_FATFS_H
 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -68,6 +69,7 @@ int32_t MX_FATFS_Process(void);
 extern FATFS USERFatFs;    /* File system object for USER logical drive */
 extern FIL USERFile;       /* File  object for USER */
 extern char USERPath[4];   /* USER logical drive path */
+
 
 #ifdef __cplusplus
 }

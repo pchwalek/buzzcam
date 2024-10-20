@@ -43,7 +43,11 @@
 /**
  * Define Advertising parameters
  */
+
 #define CFG_ADV_BD_ADDRESS               (0x7257acd87a6c) /* (0x11aabbccddee) */
+
+//#define CFG_ADV_BD_ADDRESS                (0x11aabbccddee)
+#define CFG_ADV_BD_ADDRESS                (0x7257acd87a6c)
 
 /**
  * Define BD_ADDR type: define proper address. Can only be GAP_PUBLIC_ADDR (0x00) or GAP_STATIC_RANDOM_ADDR (0x01)
@@ -86,7 +90,7 @@
 #define CFG_IO_CAPABILITY_NO_INPUT_NO_OUTPUT  (0x03)
 #define CFG_IO_CAPABILITY_KEYBOARD_DISPLAY    (0x04)
 
-#define CFG_IO_CAPABILITY                     CFG_IO_CAPABILITY_DISPLAY_YES_NO
+#define CFG_IO_CAPABILITY                     CFG_IO_CAPABILITY_DISPLAY_ONLY
 
 /**
  * Define MITM modes
@@ -247,6 +251,7 @@
 //#define CFG_BLE_MAX_ATT_MTU             (156)
 //#endif
 #define CFG_BLE_MAX_ATT_MTU             (251)
+#define CFG_BLE_MAX_ATT_MTU             (156)
 
 /**
  * Size of the storage area for Attribute values
@@ -779,4 +784,3 @@ typedef enum
 #define CFG_OTP_END_ADRESS      OTP_AREA_END_ADDR
 
 #endif /*APP_CONF_H */
-

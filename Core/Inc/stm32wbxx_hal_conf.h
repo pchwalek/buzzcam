@@ -56,7 +56,7 @@
 #define HAL_SPI_MODULE_ENABLED
 #define HAL_TIM_MODULE_ENABLED
 /*#define HAL_TSC_MODULE_ENABLED   */
-#define HAL_UART_MODULE_ENABLED
+/*#define HAL_UART_MODULE_ENABLED   */
 /*#define HAL_USART_MODULE_ENABLED   */
 /*#define HAL_WWDG_MODULE_ENABLED   */
 #define HAL_EXTI_MODULE_ENABLED
@@ -143,7 +143,6 @@
 #if !defined  (LSE_VALUE)
 #define LSE_VALUE    32774U               /*!< Value of the External oscillator in Hz*/
 #endif /* LSE_VALUE */
-
 
 /**
   * @brief Internal Multiple Speed oscillator (HSI48) default value.

@@ -50,7 +50,7 @@
  * This shall take into account all registered handlers
  * (from either the provided services or the custom services)
  */
-#define BLE_CFG_SVC_MAX_NBR_CB                                                 3
+#define BLE_CFG_SVC_MAX_NBR_CB                                                 7
 
 #define BLE_CFG_CLT_MAX_NBR_CB                                                 0
 
@@ -88,17 +88,13 @@
 #define BLE_CFG_HRS_ENERGY_EXPENDED_INFO_FLAG               1/**< ENERGY EXTENDED INFO FLAG */
 #define BLE_CFG_HRS_ENERGY_RR_INTERVAL_FLAG                 1/**< Max number of RR interval values - Shall not be greater than 9 */
 
-#define CRS_STM_UUID128    0x00, 0x00, 0xfe, 0x60, 0xcc, 0x7a, 0x48, 0x2a, 0x98, 0x4a, 0x7f, 0x2e, 0xd5, 0xb3, 0xe5, 0x8f
-#define CRS_STM_TX_UUID128 0x00, 0x00, 0xfe, 0x61, 0x8e, 0x22, 0x45, 0x41, 0x9d, 0x4c, 0x21, 0xed, 0xae, 0x82, 0xed, 0x19
-#define CRS_STM_RX_UUID128 0x00, 0x00, 0xfe, 0x62, 0x8e, 0x22, 0x45, 0x41, 0x9d, 0x4c, 0x21, 0xed, 0xae, 0x82, 0xed, 0x19
-
 /******************************************************************************
  * GAP Service - Appearance
  ******************************************************************************/
 
 #define BLE_CFG_UNKNOWN_APPEARANCE                  (0)
 #define BLE_CFG_HR_SENSOR_APPEARANCE                (832)
-#define BLE_CFG_GAP_APPEARANCE                      (BLE_CFG_UNKNOWN_APPEARANCE)
+#define BLE_CFG_GAP_APPEARANCE                      (BLE_CFG_HR_SENSOR_APPEARANCE)
 
 /******************************************************************************
  * Over The Air Feature (OTA) - STM Proprietary

@@ -1382,8 +1382,8 @@ typedef struct {
   *
   * @param clockSel: It can be one of the following list
   *                -  SET_SYSTEM_CLOCK_HSE_TO_PLL : CPU2 set system clock to PLL, PLL must be configured and started before.
-  *                -  SET_SYSTEM_CLOCK_PLL_ON_TO_HSE : CPU2 set System clock to HSE, PLL is still ON after command execution. 
-  *                -  SET_SYSTEM_CLOCK_PLL_OFF_TO_HSE : CPU2 set System clock to HSE, PLL is turned OFF after command execution. 
+  *                -  SET_SYSTEM_CLOCK_PLL_ON_TO_HSE : CPU2 set System clock to HSE, PLL is still ON after command execution.
+  *                -  SET_SYSTEM_CLOCK_PLL_OFF_TO_HSE : CPU2 set System clock to HSE, PLL is turned OFF after command execution.
   *
   * @retval Status
   */

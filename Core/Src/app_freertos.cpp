@@ -96,6 +96,11 @@ const osThreadAttr_t triggerMarkTask_attributes = { .name = "tiggerMarkTask", .a
 		.stack_size = 512 * 4, .priority = (osPriority_t) osPriorityAboveNormal,
 		.tz_module = 0, .reserved = 0 };
 
+const osThreadAttr_t buzzDetectorTask_attributes = { .name = "buzzDetectorTask", .attr_bits =
+		osThreadDetached, .cb_mem = NULL, .cb_size = 0, .stack_mem = NULL,
+		.stack_size = 512 * 4, .priority = (osPriority_t) osPriorityAboveNormal,
+		.tz_module = 0, .reserved = 0 };
+
 const osThreadAttr_t uwbMessageTask_attributes = { .name = "uwbMessageTask", .attr_bits =
 		osThreadDetached, .cb_mem = NULL, .cb_size = 0, .stack_mem = NULL,
 		.stack_size = 512 * 4, .priority = (osPriority_t) osPriorityBelowNormal,

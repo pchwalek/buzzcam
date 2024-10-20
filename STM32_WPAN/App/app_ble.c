@@ -865,7 +865,7 @@ APP_BLE_ConnStatus_t APP_BLE_Get_Server_Connection_Status(void)
 /* USER CODE BEGIN FD*/
 void APP_BLE_Init_Dyn_1( void )
 {
-	  SHCI_CmdStatus_t status;
+	  volatile SHCI_CmdStatus_t status;
 	#ifndef CUSTOM_BT_PARAMETERS
 	  SHCI_C2_Ble_Init_Cmd_Packet_t ble_init_cmd_packet =
 	  {

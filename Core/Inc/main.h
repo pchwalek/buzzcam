@@ -298,20 +298,16 @@ extern SPI_HandleTypeDef hspi1;
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define RED_LED_Pin GPIO_PIN_2
-#define RED_LED_GPIO_Port GPIOA
-#define BLUE_LED_Pin GPIO_PIN_1
-#define BLUE_LED_GPIO_Port GPIOA
-#define GREEN_LED_Pin GPIO_PIN_0
-#define GREEN_LED_GPIO_Port GPIOA
-#define P0_15_Pin GPIO_PIN_2
-#define P0_15_GPIO_Port GPIOC
+#define BATT_VLTG_Pin GPIO_PIN_2
+#define BATT_VLTG_GPIO_Port GPIOC
 #define SD_CS_Pin GPIO_PIN_1
 #define SD_CS_GPIO_Port GPIOC
+#define BATT_CHG_Pin GPIO_PIN_9
+#define BATT_CHG_GPIO_Port GPIOB
+#define EN_SD_REG_Pin GPIO_PIN_8
+#define EN_SD_REG_GPIO_Port GPIOB
 #define EN_3V3_ALT_Pin GPIO_PIN_7
 #define EN_3V3_ALT_GPIO_Port GPIOB
-#define EN_SD_REG_Pin GPIO_PIN_3
-#define EN_SD_REG_GPIO_Port GPIOB
 #define EN_UWB_REG_Pin GPIO_PIN_10
 #define EN_UWB_REG_GPIO_Port GPIOC
 #define EN_SD_REG_2_Pin GPIO_PIN_11
@@ -320,48 +316,62 @@ extern SPI_HandleTypeDef hspi1;
 #define EN_MIC_PWR_GPIO_Port GPIOC
 #define INT1_IMU_XL_Pin GPIO_PIN_15
 #define INT1_IMU_XL_GPIO_Port GPIOA
-#define P1_09_Pin GPIO_PIN_0
-#define P1_09_GPIO_Port GPIOD
-#define EN_BUZZER_PWR_Pin GPIO_PIN_1
-#define EN_BUZZER_PWR_GPIO_Port GPIOD
-#define BATT_VLTG_Pin GPIO_PIN_13
-#define BATT_VLTG_GPIO_Port GPIOB
-#define EN_BATT_MON_Pin GPIO_PIN_6
-#define EN_BATT_MON_GPIO_Port GPIOC
+#define SD_DETECT_Pin GPIO_PIN_0
+#define SD_DETECT_GPIO_Port GPIOD
+#define SAI_SCK_A_Pin GPIO_PIN_13
+#define SAI_SCK_A_GPIO_Port GPIOB
+#define GPS_INT_Pin GPIO_PIN_6
+#define GPS_INT_GPIO_Port GPIOC
 #define ADC_PD_RST_Pin GPIO_PIN_15
 #define ADC_PD_RST_GPIO_Port GPIOB
-#define DW_GP6_Pin GPIO_PIN_13
-#define DW_GP6_GPIO_Port GPIOC
-#define BATT_CHG_Pin GPIO_PIN_4
-#define BATT_CHG_GPIO_Port GPIOE
+#define MAX78_INT1_Pin GPIO_PIN_13
+#define MAX78_INT1_GPIO_Port GPIOC
 #define ZPFL_TRIG_Pin GPIO_PIN_5
 #define ZPFL_TRIG_GPIO_Port GPIOC
-#define SD_DETECT_Pin GPIO_PIN_2
-#define SD_DETECT_GPIO_Port GPIOB
+#define BLUE_LED_Pin GPIO_PIN_11
+#define BLUE_LED_GPIO_Port GPIOB
+#define RED_LED_Pin GPIO_PIN_10
+#define RED_LED_GPIO_Port GPIOB
 #define P1_00_Pin GPIO_PIN_4
 #define P1_00_GPIO_Port GPIOC
-#define BATT_VLTGA8_Pin GPIO_PIN_8
-#define BATT_VLTGA8_GPIO_Port GPIOA
 #define INT_MAG_Pin GPIO_PIN_9
 #define INT_MAG_GPIO_Port GPIOA
 #define BUZZER_PWM_Pin GPIO_PIN_6
 #define BUZZER_PWM_GPIO_Port GPIOA
-#define P1_01_Pin GPIO_PIN_4
-#define P1_01_GPIO_Port GPIOA
-#define P0_13_Pin GPIO_PIN_3
-#define P0_13_GPIO_Port GPIOA
-#define PD14_Pin GPIO_PIN_14
-#define PD14_GPIO_Port GPIOD
-#define PD13_Pin GPIO_PIN_13
-#define PD13_GPIO_Port GPIOD
-#define PD12_Pin GPIO_PIN_12
-#define PD12_GPIO_Port GPIOD
+#define GREEN_LED_Pin GPIO_PIN_5
+#define GREEN_LED_GPIO_Port GPIOA
+#define DWM_WAKEUP_Pin GPIO_PIN_4
+#define DWM_WAKEUP_GPIO_Port GPIOA
+#define TIMEPULSE_Pin GPIO_PIN_1
+#define TIMEPULSE_GPIO_Port GPIOE
+#define EN_BATT_MON_Pin GPIO_PIN_13
+#define EN_BATT_MON_GPIO_Port GPIOD
+#define DWM_CS_Pin GPIO_PIN_12
+#define DWM_CS_GPIO_Port GPIOD
+#define DWM_INT_Pin GPIO_PIN_7
+#define DWM_INT_GPIO_Port GPIOD
 #define EN_SD_MUX_Pin GPIO_PIN_2
 #define EN_SD_MUX_GPIO_Port GPIOD
-#define SD_MUX_SEL_Pin GPIO_PIN_7
-#define SD_MUX_SEL_GPIO_Port GPIOC
+#define SPI1_SX1262_CS_Pin GPIO_PIN_9
+#define SPI1_SX1262_CS_GPIO_Port GPIOC
+#define EN_BUZZER_PWR_Pin GPIO_PIN_7
+#define EN_BUZZER_PWR_GPIO_Port GPIOC
 #define SD_DETECT_2_Pin GPIO_PIN_3
 #define SD_DETECT_2_GPIO_Port GPIOE
+#define EN_MAX78000_Pin GPIO_PIN_9
+#define EN_MAX78000_GPIO_Port GPIOD
+#define MAX78_INT2_Pin GPIO_PIN_8
+#define MAX78_INT2_GPIO_Port GPIOD
+#define SD_MUX_SEL_Pin GPIO_PIN_0
+#define SD_MUX_SEL_GPIO_Port GPIOE
+#define EN_3V3_GPS_Pin GPIO_PIN_5
+#define EN_3V3_GPS_GPIO_Port GPIOD
+#define SX_DIO1_Pin GPIO_PIN_6
+#define SX_DIO1_GPIO_Port GPIOD
+#define SX_BUSY_Pin GPIO_PIN_11
+#define SX_BUSY_GPIO_Port GPIOD
+#define SX_NRESET_Pin GPIO_PIN_8
+#define SX_NRESET_GPIO_Port GPIOC
 
 /* USER CODE BEGIN Private defines */
 #define MAG_ADDR (0x1E << 1)
@@ -389,6 +399,10 @@ extern SPI_HandleTypeDef hspi1;
 #define CHIRP_EVENT		  	  0x00000010
 
 #define TAMPER_ALERT	      0x00000004
+
+#define BEE_1_ALERT	      	  0x00000008
+#define BEE_2_ALERT	      	  0x00000010
+
 
 #define CONFIG_UPDATED_EVENT  0x00000001
 #define CAMERA_EVENT		  0x00000004
@@ -452,6 +466,7 @@ extern osThreadId_t fileWriteSyncTaskId;
 extern osThreadId_t triggerMarkTaskId;
 extern osThreadId_t uwbMessageTaskId;
 extern osThreadId_t ledSequencerId;
+extern osThreadId_t buzzDetectorTaskId;
 
 extern osTimerId_t periodicBatteryMonitorTimer_id;
 
@@ -469,6 +484,7 @@ extern const osThreadAttr_t bmeTask_attributes;
 extern const osThreadAttr_t batteryMonitorTask_attributes;
 extern const osThreadAttr_t timestampTask_attributes;
 extern const osThreadAttr_t triggerMarkTask_attributes;
+extern const osThreadAttr_t buzzDetectorTask_attributes;
 extern const osThreadAttr_t chirpTask_attributes;
 extern const osThreadAttr_t uwbMessageTask_attributes;
 extern const osThreadAttr_t ledSequencerTask_attributes;

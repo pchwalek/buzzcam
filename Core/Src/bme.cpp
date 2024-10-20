@@ -176,6 +176,7 @@ void BME_Task(void *argument) {
 //	osDelay(500);
 
 	osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
+
 	while (!bme.begin(BME68X_DEFAULT_ADDRESS, &hi2c1, false)) {
 		Error_Handler();
 		i2c_error_check(&hi2c1);
@@ -261,7 +262,7 @@ void BME_Task(void *argument) {
 			osMutexRelease(messageI2C1_LockHandle);
 
 			for(int i = 0; i<bme.outputs.nOutputs; i++){
-				setLED_Green(1000);
+//				setLED_Green(1000);
 //				memcpy(&bmeData[bmeIdx++], &bme.outputs.output[i], sizeof(bsecData));
 				bmeData[bmeIdx].timestamp_unix = getEpoch();
 				bmeData[bmeIdx].timestamp_sensor = bme.outputs.output[i].time_stamp;

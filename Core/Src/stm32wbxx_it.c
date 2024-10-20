@@ -56,7 +56,6 @@
 
 /* External variables --------------------------------------------------------*/
 extern PCD_HandleTypeDef hpcd_USB_FS;
-extern ADC_HandleTypeDef hadc1;
 extern IPCC_HandleTypeDef hipcc;
 extern DMA_HandleTypeDef hdma_sai1_a;
 extern SAI_HandleTypeDef hsai_BlockA1;
@@ -213,20 +212,6 @@ void DMA1_Channel3_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles ADC1 global interrupt.
-  */
-void ADC1_IRQHandler(void)
-{
-  /* USER CODE BEGIN ADC1_IRQn 0 */
-
-  /* USER CODE END ADC1_IRQn 0 */
-  HAL_ADC_IRQHandler(&hadc1);
-  /* USER CODE BEGIN ADC1_IRQn 1 */
-
-  /* USER CODE END ADC1_IRQn 1 */
-}
-
-/**
   * @brief This function handles USB low priority interrupt, USB wake-up interrupt through EXTI line 28.
   */
 void USB_LP_IRQHandler(void)
@@ -249,16 +234,8 @@ void TIM1_UP_TIM16_IRQHandler(void)
 //https://community.st.com/t5/stm32-mcus-wireless/stm32wb-ble-shci-sub-evt-code-ready-event-is-not-received/td-p/87447/page/2
 //https://forums.freertos.org/t/stm32wb55-flash-sr-cfgbsy-never-clears-when-using-freertos-and-tim1/12300/15
   /* USER CODE END TIM1_UP_TIM16_IRQn 0 */
-	if (htim1.Instance != NULL)
-	{
-		HAL_TIM_IRQHandler(&htim1);
-	}
-
-	if (htim16.Instance != NULL)
-	{
-		HAL_TIM_IRQHandler(&htim16);
-	}
-
+  HAL_TIM_IRQHandler(&htim1);
+  HAL_TIM_IRQHandler(&htim16);
   /* USER CODE BEGIN TIM1_UP_TIM16_IRQn 1 */
 
   /* USER CODE END TIM1_UP_TIM16_IRQn 1 */
@@ -273,9 +250,7 @@ void TIM2_IRQHandler(void)
 	  if (htim2.Instance != NULL)
 	  	{
   /* USER CODE END TIM2_IRQn 0 */
-
-  		HAL_TIM_IRQHandler(&htim2);
-
+  HAL_TIM_IRQHandler(&htim2);
   /* USER CODE BEGIN TIM2_IRQn 1 */
 		}
   /* USER CODE END TIM2_IRQn 1 */
@@ -388,8 +363,24 @@ void EXTI4_IRQHandler(void)
 
 void EXTI15_10_IRQHandler(void)
 {
-	osThreadFlagsSet(triggerMarkTaskId, TAMPER_ALERT);
+	if (__HAL_GPIO_EXTI_GET_IT(MAX78_INT1_Pin) != RESET)
+	{
+		osThreadFlagsSet(triggerMarkTaskId, BEE_1_ALERT);
 
-	HAL_GPIO_EXTI_IRQHandler(INT1_IMU_XL_Pin);
+		__HAL_GPIO_EXTI_CLEAR_IT(MAX78_INT1_Pin);
+	}
+
+	if (__HAL_GPIO_EXTI_GET_IT(MAX78_INT2_Pin) != RESET)
+	{
+		osThreadFlagsSet(triggerMarkTaskId, BEE_2_ALERT);
+
+		__HAL_GPIO_EXTI_CLEAR_IT(MAX78_INT2_Pin);
+	}
+
+
+
+//	osThreadFlagsSet(triggerMarkTaskId, TAMPER_ALERT);
+//
+//	HAL_GPIO_EXTI_IRQHandler(INT1_IMU_XL_Pin);
 }
 /* USER CODE END 1 */
