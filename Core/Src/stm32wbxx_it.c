@@ -361,22 +361,27 @@ void EXTI4_IRQHandler(void)
   /* USER CODE END EXTI2_IRQn 1 */
 }
 
+void EXTI9_5_IRQHandler(void){
+	HAL_GPIO_EXTI_IRQHandler(MAX78_INT2_Pin);
+}
+
 void EXTI15_10_IRQHandler(void)
 {
-	if (__HAL_GPIO_EXTI_GET_IT(MAX78_INT1_Pin) != RESET)
-	{
-		osThreadFlagsSet(triggerMarkTaskId, BEE_1_ALERT);
+//	if (EXTI_GetITStatus(MAX78_INT1_Pin) != RESET)
+//	{
+//		osThreadFlagsSet(triggerMarkTaskId, BEE_1_ALERT);
+//
+//		EXTI_ClearITPendingBit(MAX78_INT1_Pin);
+//	}
+//
+//	if (EXTI_GetITStatus(MAX78_INT2_Pin) != RESET)
+//	{
+//		osThreadFlagsSet(triggerMarkTaskId, BEE_2_ALERT);
+//
+//		EXTI_ClearITPendingBit(MAX78_INT2_Pin);
+//	}
 
-		__HAL_GPIO_EXTI_CLEAR_IT(MAX78_INT1_Pin);
-	}
-
-	if (__HAL_GPIO_EXTI_GET_IT(MAX78_INT2_Pin) != RESET)
-	{
-		osThreadFlagsSet(triggerMarkTaskId, BEE_2_ALERT);
-
-		__HAL_GPIO_EXTI_CLEAR_IT(MAX78_INT2_Pin);
-	}
-
+	HAL_GPIO_EXTI_IRQHandler(MAX78_INT1_Pin);
 
 
 //	osThreadFlagsSet(triggerMarkTaskId, TAMPER_ALERT);

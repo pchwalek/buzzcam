@@ -257,6 +257,8 @@ uint32_t greatest_divisor(int audioFrequency, int half_buffer_size);
 void exit_audio(void);
 void unmount_sd_card(void);
 
+void delay_nop(uint32_t count);
+
 void set_folder_from_time(char* folder_name);
 void getFormattedTime(RTC_HandleTypeDef *hrtc, char *formattedTime);
 
@@ -360,7 +362,7 @@ int main(void)
   MX_APPE_Config();
 
   /* USER CODE BEGIN Init */
-
+  HAL_Delay(5);
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -385,7 +387,9 @@ int main(void)
   /* USER CODE BEGIN SysInit */
 	//  tflac_detect_cpu();
 
-  Init_Exti( );
+//  Init_Exti( );
+//
+//  MX_IPCC_Init();
 
   /* USER CODE END SysInit */
 
@@ -428,13 +432,16 @@ int main(void)
 	enable_SD_Mux();
 	mux_Select_SD_Card(1);
 
+	  Init_Exti( );
 
-//	HAL_Delay(1000);
+	  MX_IPCC_Init();
 
-	HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_SET);
+	HAL_Delay(1000);
 
-	HAL_Delay(10);
+//	HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET);
+//	HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_SET);
+//
+//	HAL_Delay(10);
 
 //	HAL_GPIO_WritePin(EN_MAX78000_GPIO_Port, EN_MAX78000_Pin, GPIO_PIN_SET);
 
@@ -511,7 +518,7 @@ int main(void)
 	sendSlavesTimestampId = osTimerNew (sendSlavesTimestamp, osTimerPeriodic, (void *)0, NULL);
 	mainTaskUpdateId = osTimerNew (alertMainTask, osTimerOnce, (void *)0, NULL);
 	/* add events, ... */
-	MX_IPCC_Init();
+//	MX_IPCC_Init();
   /* USER CODE END RTOS_EVENTS */
 
   /* Init code for STM32_WPAN */
@@ -1331,6 +1338,17 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(SD_MUX_SEL_GPIO_Port, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
+
+  GPIO_InitStruct.Pin = MAX78_INT1_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  GPIO_InitStruct.Pin = MAX78_INT2_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
 	GPIO_InitStruct.Pin = UWB_ALERT_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
 	GPIO_InitStruct.Pull = GPIO_PULLUP;
@@ -1345,9 +1363,14 @@ static void MX_GPIO_Init(void)
 	HAL_GPIO_Init(INT1_IMU_XL_GPIO_Port, &GPIO_InitStruct);
 
 	HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
+	HAL_NVIC_SetPriority(EXTI9_5_IRQn, 5, 0);
+
 //	HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
 
-	HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+	HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
+	HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
+
+
 
 /* USER CODE END MX_GPIO_Init_2 */
 }
@@ -2406,6 +2429,12 @@ void unmount_sd_card(void){
 	f_mount(NULL, "", 1);
 }
 
+void delay_nop(uint32_t count) {
+    while (count--) {
+        __NOP(); // Executes the NOP assembly instruction
+    }
+}
+
 //static FIL configFile;
 static void save_config(char* folder_name){
 	char file_name[30] = {0};
@@ -2751,9 +2780,9 @@ void tamperAlarm(bool state){
 
 		osDelay(100); // to stablize
 
-		HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+//		HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 	}else{
-		HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
+//		HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
 	}
 }
 
@@ -4348,6 +4377,10 @@ void mainSystemTask(void *argument){
 	// start MAX78000
 	HAL_GPIO_WritePin(EN_MAX78000_GPIO_Port, EN_MAX78000_Pin, GPIO_PIN_SET);
 
+	delay_nop(1000000);
+	HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+	HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+//	HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 //	HAL_Delay( 10);
 
 	taskEXIT_CRITICAL();
@@ -4969,13 +5002,13 @@ void triggerMarkTask(void *argument){
 			writeSystemInfoToFRAM();
 
 		}else if(queueStatus == osErrorTimeout){
-			flag = osThreadFlagsWait(0x0001U | TERMINATE_EVENT | TAMPER_ALERT, osFlagsWaitAny, 0);
+			flag = osThreadFlagsWait(0x0001U | TERMINATE_EVENT | TAMPER_ALERT | BEE_1_ALERT | BEE_2_ALERT, osFlagsWaitAny, 0);
 
 			if(flag == osFlagsErrorResource){
 				continue;
 			}
 
-			if(flag == TAMPER_ALERT){
+			if( (flag & TAMPER_ALERT) == TAMPER_ALERT){
 				for(int i = 0; i<5; i ++){
 					tone(3500,50);
 					tone(3750,50);
@@ -4990,18 +5023,18 @@ void triggerMarkTask(void *argument){
 				}
 			}
 
-			if(flag == BEE_1_ALERT){
+			if((flag & BEE_1_ALERT) == BEE_1_ALERT){
 				setLED_Red(100);
 				setLED_Blue(100);
-				osDelay(50);
+				osDelay(100);
 				setLED_Red(0);
 				setLED_Blue(0);
 			}
 
-			if(flag == BEE_2_ALERT){
+			if((flag & BEE_2_ALERT) == BEE_2_ALERT){
 				setLED_Green(100);
 				setLED_Red(100);
-				osDelay(50);
+				osDelay(100);
 				setLED_Green(0);
 				setLED_Red(0);
 			}
@@ -5788,6 +5821,16 @@ static uint32_t WavProcess_HeaderUpdate(uint8_t* pHeader, uint32_t bytesWritten)
 
 void reset_DFU_trigger(void) {
 	*((int*) 0x2000020c) = 0xCAFEFEED; // Reset our trigger
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
+	if(GPIO_Pin == MAX78_INT1_Pin){
+		osThreadFlagsSet(triggerMarkTaskId, BEE_1_ALERT);
+	}
+	else if(GPIO_Pin == MAX78_INT2_Pin){
+		osThreadFlagsSet(triggerMarkTaskId, BEE_2_ALERT);
+	}
+
 }
 
 
