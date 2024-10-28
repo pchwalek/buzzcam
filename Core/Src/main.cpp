@@ -55,6 +55,8 @@
 #include "usb_device.h"
 
 #include "uwb_i2c_proto.pb.h"
+
+#include "sx126x.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -181,6 +183,8 @@ static uint16_t audioSample[AUDIO_BUFFER_LEN] = {0};
 volatile uint8_t SAI_HALF_CALLBACK = 0;
 volatile uint8_t SAI_FULL_CALLBACK = 0;
 
+volatile uint8_t lora_irq_flag = 0;
+
 FIL batteryFile;
 FIL fileWriteSyncFile;
 osTimerId_t periodicBatteryMonitorTimer_id;
@@ -248,6 +252,9 @@ void RTC_FromEpoch(time_t epoch, RTC_TimeTypeDef *time, RTC_DateTypeDef *date);
 uint64_t RTC_ToEpochMS(RTC_TimeTypeDef *time, RTC_DateTypeDef *date);
 void MX_SAI1_Init_Custom(SAI_HandleTypeDef &hsai_handle, uint8_t bit_resolution);
 
+void configLoraRadio(void);
+
+void sendLoRa_pkt(packet_t *packet);
 //static void MPU_AccessPermConfig(void);
 
 void disableExtAudioDevices(void);
@@ -1229,7 +1236,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, SD_CS_Pin|EN_UWB_REG_Pin|EN_SD_REG_2_Pin|EN_MIC_PWR_Pin
-                          |SPI1_SX1262_CS_Pin|EN_BUZZER_PWR_Pin|SX_NRESET_Pin, GPIO_PIN_RESET);
+                          |SPI2_SX1262_CS_Pin|EN_BUZZER_PWR_Pin|SX_NRESET_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, EN_SD_REG_Pin|EN_3V3_ALT_Pin|ADC_PD_RST_Pin, GPIO_PIN_RESET);
@@ -1247,7 +1254,7 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pins : SD_CS_Pin EN_UWB_REG_Pin EN_SD_REG_2_Pin EN_MIC_PWR_Pin
                            SPI1_SX1262_CS_Pin EN_BUZZER_PWR_Pin SX_NRESET_Pin */
   GPIO_InitStruct.Pin = SD_CS_Pin|EN_UWB_REG_Pin|EN_SD_REG_2_Pin|EN_MIC_PWR_Pin
-                          |SPI1_SX1262_CS_Pin|EN_BUZZER_PWR_Pin|SX_NRESET_Pin;
+                          |SPI2_SX1262_CS_Pin|EN_BUZZER_PWR_Pin|SX_NRESET_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -1318,6 +1325,7 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
+
   /*Configure GPIO pins : DWM_INT_Pin MAX78_INT2D8_Pin */
   GPIO_InitStruct.Pin = DWM_INT_Pin|MAX78_INT2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
@@ -1338,6 +1346,33 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(SD_MUX_SEL_GPIO_Port, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
+
+  HAL_GPIO_WritePin(SX_NRESET_GPIO_Port, SX_NRESET_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(SPI2_SX1262_CS_GPIO_Port, SPI2_SX1262_CS_Pin, GPIO_PIN_RESET);
+
+  GPIO_InitStruct.Pin = SX_NRESET_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(SX_NRESET_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : SPI1_SX1262_CS_Pin SPI1_BMA400_CS_Pin EN_SOLAR_CHG_Pin */
+  GPIO_InitStruct.Pin = SPI2_SX1262_CS_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(SPI2_SX1262_CS_GPIO_Port, &GPIO_InitStruct);
+
+  GPIO_InitStruct.Pin = SX_BUSY_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(SX_BUSY_GPIO_Port, &GPIO_InitStruct);
+
+  GPIO_InitStruct.Pin = SX_DIO1_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(SX_DIO1_GPIO_Port, &GPIO_InitStruct);
+
 
   GPIO_InitStruct.Pin = MAX78_INT1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
@@ -5144,6 +5179,148 @@ void disableLEDs(){
 	HAL_TIM_Base_Stop(&htim2);
 }
 
+void configLoraRadio(void){
+	volatile sx126x_status_t sx1262x_status;
+	volatile sx126x_errors_mask_t sx126x_errors_mask = SX126X_ERRORS_PA_RAMP;
+	if(SX126X_STATUS_OK != sx126x_get_device_errors( NULL, (sx126x_errors_mask_t*) &sx126x_errors_mask)) Error_Handler();
+	if(SX126X_STATUS_OK != sx126x_set_dio2_as_rf_sw_ctrl(NULL, true)) Error_Handler();
+	if(SX126X_STATUS_OK != sx126x_set_rf_freq( NULL, LORA_FREQ)) Error_Handler();
+	if(SX126X_STATUS_OK != sx126x_set_pkt_type(NULL, SX126X_PKT_TYPE_LORA )) Error_Handler();
+
+	sx126x_pkt_params_lora_t sx126x_pkt_params_lora;
+	sx126x_pkt_params_lora.preamble_len_in_symb = 13;
+	sx126x_pkt_params_lora.header_type = SX126X_LORA_PKT_EXPLICIT;
+	sx126x_pkt_params_lora.pld_len_in_bytes = 128; // max is 255 bytes
+	sx126x_pkt_params_lora.crc_is_on = 1;
+	sx126x_pkt_params_lora.invert_iq_is_on = 0;
+	if(SX126X_STATUS_OK != sx126x_set_lora_pkt_params(NULL, &sx126x_pkt_params_lora)) Error_Handler();
+
+	if(SX126X_STATUS_OK != sx126x_set_dio_irq_params( NULL,
+			SX126X_IRQ_TX_DONE | SX126X_IRQ_RX_DONE | SX126X_IRQ_TIMEOUT,
+			0,
+			0,
+			SX126X_IRQ_TX_DONE | SX126X_IRQ_RX_DONE | SX126X_IRQ_TIMEOUT)) Error_Handler();
+
+	//reference table 13-21 in datasheet
+	sx126x_pa_cfg_params_t pa_cfg; //reference table 13-21 in datasheet
+	switch(LORA_POWER_LVL){
+	case MAX_PWR:
+		// power parameters to achieve +22 dbm
+		pa_cfg.pa_duty_cycle = 0x04;
+		pa_cfg.pa_lut = 0x01;
+		pa_cfg.hp_max = 0x07;
+		pa_cfg.device_sel = 0;
+		if(SX126X_STATUS_OK != sx126x_set_pa_cfg( NULL, &pa_cfg )) Error_Handler();
+		//  - 17 to +14 dBm by step of 1 dB if low power PA is selected
+		//  - 9 to +22  dBm by step of 1 dB if high power PA is selected
+		if(SX126X_STATUS_OK != sx126x_set_tx_params( NULL, 22, SX126X_RAMP_40_US)) Error_Handler();
+		break;
+	case HIGH_PWR:
+		// power parameters to achieve +22 dbm
+		pa_cfg.pa_duty_cycle = 0x03;
+		pa_cfg.pa_lut = 0x01;
+		pa_cfg.hp_max = 0x05;
+		pa_cfg.device_sel = 0;
+		if(SX126X_STATUS_OK != sx126x_set_pa_cfg( NULL, &pa_cfg )) Error_Handler();
+		//  - 17 to +14 dBm by step of 1 dB if low power PA is selected
+		//  - 9 to +22  dBm by step of 1 dB if high power PA is selected
+		if(SX126X_STATUS_OK != sx126x_set_tx_params( NULL, 20, SX126X_RAMP_40_US)) Error_Handler();
+		break;
+	case MID_PWR:
+		// power parameters to achieve +22 dbm
+		pa_cfg.pa_duty_cycle = 0x02;
+		pa_cfg.pa_lut = 0x01;
+		pa_cfg.hp_max = 0x03;
+		pa_cfg.device_sel = 0;
+		if(SX126X_STATUS_OK != sx126x_set_pa_cfg( NULL, &pa_cfg )) Error_Handler();
+		//  - 17 to +14 dBm by step of 1 dB if low power PA is selected
+		//  - 9 to +22  dBm by step of 1 dB if high power PA is selected
+		if(SX126X_STATUS_OK != sx126x_set_tx_params( NULL, 17, SX126X_RAMP_40_US)) Error_Handler();
+		break;
+	case ULTRA_LOW_PWR:
+		// power parameters to achieve +0 dbm
+		pa_cfg.pa_duty_cycle = 0x02;
+		pa_cfg.pa_lut = 0x01;
+		pa_cfg.hp_max = 0x03;
+		pa_cfg.device_sel = 0;
+		if(SX126X_STATUS_OK != sx126x_set_pa_cfg( NULL, &pa_cfg )) Error_Handler();
+		//  - 17 to +14 dBm by step of 1 dB if low power PA is selected
+		//  - 9 to +22  dBm by step of 1 dB if high power PA is selected
+		if(SX126X_STATUS_OK != sx126x_set_tx_params( NULL, 0, SX126X_RAMP_40_US)) Error_Handler();
+		break;
+	default:
+		//  power parameters to achieve +14 dbm
+		pa_cfg.pa_duty_cycle = 0x02;
+		pa_cfg.pa_lut = 0x01;
+		pa_cfg.hp_max = 0x02;
+		pa_cfg.device_sel = 0;
+		sx1262x_status = sx126x_set_pa_cfg( NULL, &pa_cfg );
+		//  - 17 to +14 dBm by step of 1 dB if low power PA is selected
+		//  - 9 to +22  dBm by step of 1 dB if high power PA is selected
+		sx1262x_status = sx126x_set_tx_params( NULL, 14, SX126X_RAMP_40_US);
+		break;
+	}
+	sx126x_mod_params_lora_t sx126x_mod_params_lora;
+
+	// longer spreading factor gives more range at the cost of transmit time (BW)
+	// lower bandwidth gives increases range but less reliable across uncalibrated devices
+	// increased coding rate leads to larger packets for better error-correction (less bW)
+	switch(LORA_RANGE_BW){
+	case LORA_MAX_BW:
+		sx126x_mod_params_lora.sf = SX126X_LORA_SF7;
+		sx126x_mod_params_lora.bw = SX126X_LORA_BW_500;
+		sx126x_mod_params_lora.cr = SX126X_LORA_CR_4_5;
+		sx126x_mod_params_lora.ldro = 0;
+		break;
+	case LORA_SHORT_RANGE_HIGH_BW:
+		sx126x_mod_params_lora.sf = SX126X_LORA_SF7;
+		sx126x_mod_params_lora.bw = SX126X_LORA_BW_250;
+		sx126x_mod_params_lora.cr = SX126X_LORA_CR_4_5;
+		sx126x_mod_params_lora.ldro = 0;
+		break;
+	case LORA_MID_RANGE_MID_BW:
+		sx126x_mod_params_lora.sf = SX126X_LORA_SF10;
+		sx126x_mod_params_lora.bw = SX126X_LORA_BW_062;
+		sx126x_mod_params_lora.cr = SX126X_LORA_CR_4_5;
+		sx126x_mod_params_lora.ldro = 0;
+		break;
+	case LORA_LONG_RANGE_LOW_BW:
+		sx126x_mod_params_lora.sf = SX126X_LORA_SF10;
+		sx126x_mod_params_lora.bw = SX126X_LORA_BW_062;
+		sx126x_mod_params_lora.cr = SX126X_LORA_CR_4_5;
+		sx126x_mod_params_lora.ldro = 1;
+		break;
+	case LORA_MAX_RANGE:
+//		sx126x_mod_params_lora.sf = SX126X_LORA_SF12;
+//		sx126x_mod_params_lora.bw = SX126X_LORA_BW_007;
+//		sx126x_mod_params_lora.cr = SX126X_LORA_CR_4_8;
+//		sx126x_mod_params_lora.ldro = 1;
+		sx126x_mod_params_lora.sf = SX126X_LORA_SF11;
+		sx126x_mod_params_lora.bw = SX126X_LORA_BW_031;
+		sx126x_mod_params_lora.cr = SX126X_LORA_CR_4_8;
+		sx126x_mod_params_lora.ldro = 1;
+		break;
+	default:
+		// low bandiwdth, longest range
+		sx126x_mod_params_lora.sf = SX126X_LORA_SF12;
+		sx126x_mod_params_lora.bw = SX126X_LORA_BW_007;
+		sx126x_mod_params_lora.cr = SX126X_LORA_CR_4_8;
+		sx126x_mod_params_lora.ldro = 1;
+		break;
+	}
+
+	if(SX126X_STATUS_OK != sx126x_set_lora_mod_params( NULL, &sx126x_mod_params_lora)) Error_Handler();
+
+#ifndef COLLAR_MODE
+#if (LORA_POWER_LVL != ULTRA_LOW_PWR)
+	if(SX126X_STATUS_OK != sx126x_cfg_rx_boosted(NULL, true)) Error_Handler();
+#endif
+#endif
+
+	if(SX126X_STATUS_OK != sx126x_set_lora_symb_nb_timeout(NULL, 0)) Error_Handler(); //semtech example has 0 (reference 13.4.9)
+	if(SX126X_STATUS_OK != sx126x_set_standby(NULL, SX126X_STANDBY_CFG_XOSC)) Error_Handler();
+	if(SX126X_STATUS_OK != sx126x_set_rx_tx_fallback_mode(NULL, SX126X_FALLBACK_STDBY_XOSC)) Error_Handler();
+}
 
 void runAnalogConverter(void){
 
@@ -5434,6 +5611,70 @@ void EnableExtADC(bool state){
 	}else{
 		HAL_GPIO_WritePin(ADC_PD_RST_GPIO_Port, ADC_PD_RST_Pin, GPIO_PIN_RESET);
 	}
+}
+
+void sendLoRa_pkt(packet_t *packet){
+
+
+	uint8_t dataTransmitted = 0;
+	volatile sx126x_status_t sx1262x_status;
+	sx126x_chip_status_t sx126x_chip_status;
+	sx126x_irq_mask_t sx126x_irq_mask;
+
+//	packet->header.epoch = getEpoch();
+//	packet->header.ms_from_start = HAL_GetTick();
+//	packet->header.packet_index++;
+//
+//
+//	lora_irq_flag = 0;
+
+	sx126x_get_irq_status( NULL, &sx126x_irq_mask);
+	if(sx126x_irq_mask != 0) return;
+
+	/* Create a stream that will write to our buffer. */
+//	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+
+	/* Now we are ready to encode the message! */
+//	has_encoded_correctly = pb_encode_delimited(&stream, PACKET_FIELDS, packet);
+	uint8_t has_encoded_correctly = 0;
+
+	if(has_encoded_correctly){
+		setLED_Green(100);
+		sx126x_clear_irq_status( NULL, SX126X_IRQ_TX_DONE | SX126X_IRQ_RX_DONE | SX126X_IRQ_TIMEOUT);
+
+//		sx1262x_status = sx126x_write_buffer(NULL, 0, buffer, stream.bytes_written);
+
+		while(dataTransmitted != 1){
+			sx1262x_status = sx126x_get_status( NULL, &sx126x_chip_status);
+
+			if( (sx126x_chip_status.cmd_status != SX126X_CMD_STATUS_RESERVED) &&
+					(sx126x_chip_status.cmd_status != SX126X_CMD_STATUS_RFU) &&
+					(sx126x_chip_status.cmd_status != SX126X_CMD_STATUS_DATA_AVAILABLE)){
+				dataTransmitted = 1;
+			}
+
+			else if( (sx126x_chip_status.chip_mode != SX126X_CHIP_MODE_STBY_RC) ||
+					(sx126x_chip_status.chip_mode != SX126X_CHIP_MODE_STBY_XOSC)){
+				dataTransmitted = 1;
+			}
+
+			else{
+				HAL_Delay(5);
+			}
+		}
+
+		sx1262x_status = sx126x_set_tx( NULL, 100000); // timeout: 5 minutes
+
+		while(lora_irq_flag != 1);
+
+		if(lora_irq_flag){
+			lora_irq_flag = 0;
+//			sx126x_get_irq_status( const void* context, sx126x_irq_mask_t* irq )
+			sx126x_clear_irq_status( NULL, SX126X_IRQ_ALL);
+		}
+		setLED_Green(0);
+	}
+	HAL_Delay(500);
 }
 
 //#define MAX_BYTES_PER_WAV_FILE 10000000
@@ -5829,6 +6070,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 	}
 	else if(GPIO_Pin == MAX78_INT2_Pin){
 		osThreadFlagsSet(triggerMarkTaskId, BEE_2_ALERT);
+	}
+	else if(GPIO_Pin == SX_DIO1_Pin){
+		lora_irq_flag = 1;
 	}
 
 }

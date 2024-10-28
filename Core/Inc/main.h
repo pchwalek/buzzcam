@@ -67,6 +67,29 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
+
+/*     LoRa Settings     */
+#define MAX_PWR			3 // 22 dBm
+#define HIGH_PWR		2 // 20 dBm
+#define MID_PWR			1 // 17 dBm
+#define LOW_PWR			0 // 14 dBm
+#define ULTRA_LOW_PWR	-1 // 0 dBm
+
+//#define LORA_FREQ		868000000
+#define LORA_FREQ		915000000
+#define LORA_POWER_LVL	LOW_PWR
+
+#define LORA_LONG_RANGE_LOW_BW		3
+#define LORA_MID_RANGE_MID_BW		2
+#define LORA_SHORT_RANGE_HIGH_BW	1
+#define LORA_MAX_BW					0
+#define LORA_MAX_RANGE				4 // this one takes a long time to send a packet
+
+#define LORA_RANGE_BW	LORA_SHORT_RANGE_HIGH_BW
+
+#define LORA_TX_PERIOD_MS		5000
+
+
 void writeDefaultConfig(void);
 
 void SystemClock_Config(void);
@@ -320,8 +343,8 @@ extern SPI_HandleTypeDef hspi1;
 #define SD_DETECT_GPIO_Port GPIOD
 #define SAI_SCK_A_Pin GPIO_PIN_13
 #define SAI_SCK_A_GPIO_Port GPIOB
-#define GPS_INT_Pin GPIO_PIN_6
-#define GPS_INT_GPIO_Port GPIOC
+#define GPS_INT_Pin GPIO_PIN_14
+#define GPS_INT_GPIO_Port GPIOD
 #define ADC_PD_RST_Pin GPIO_PIN_15
 #define ADC_PD_RST_GPIO_Port GPIOB
 #define MAX78_INT1_Pin GPIO_PIN_13
@@ -352,8 +375,8 @@ extern SPI_HandleTypeDef hspi1;
 #define DWM_INT_GPIO_Port GPIOD
 #define EN_SD_MUX_Pin GPIO_PIN_2
 #define EN_SD_MUX_GPIO_Port GPIOD
-#define SPI1_SX1262_CS_Pin GPIO_PIN_9
-#define SPI1_SX1262_CS_GPIO_Port GPIOC
+#define SPI2_SX1262_CS_Pin GPIO_PIN_9
+#define SPI2_SX1262_CS_GPIO_Port GPIOC
 #define EN_BUZZER_PWR_Pin GPIO_PIN_7
 #define EN_BUZZER_PWR_GPIO_Port GPIOC
 #define SD_DETECT_2_Pin GPIO_PIN_3

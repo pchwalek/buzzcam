@@ -363,6 +363,7 @@ void EXTI4_IRQHandler(void)
 
 void EXTI9_5_IRQHandler(void){
 	HAL_GPIO_EXTI_IRQHandler(MAX78_INT2_Pin);
+	HAL_GPIO_EXTI_IRQHandler(SX_DIO1_Pin);
 }
 
 void EXTI15_10_IRQHandler(void)
