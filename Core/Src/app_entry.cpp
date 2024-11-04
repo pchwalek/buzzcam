@@ -592,6 +592,7 @@ static void APPE_SysEvtReadyProcessing(void * pPayload)
 //#else
 
   /* Traces channel initialization */
+#ifndef DISABLE_WIRELESS
    APPD_EnableCPU2();
 
    /* In the Context of Dynamic Concurrent mode, the Init and start of each stack must be split and executed
@@ -617,8 +618,9 @@ static void APPE_SysEvtReadyProcessing(void * pPayload)
 //   APP_DBG("4- Configure OpenThread (Channel, PANID, IPv6 stack, ...) and Start it...");
    APP_THREAD_Init_Dyn_2();
 
-    mainSystemThreadId = osThreadNew(mainSystemTask, NULL, &mainSystemTask_attributes);
 
+    mainSystemThreadId = osThreadNew(mainSystemTask, NULL, &mainSystemTask_attributes);
+#endif
 
 //   stopThread = 1;
 //	Adv_Request(APP_BLE_LP_ADV);

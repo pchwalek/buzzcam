@@ -885,6 +885,7 @@ static tBleStatus BLE_UpdateConfig(DTS_STM_Payload_t* pPayload){
  */
 tBleStatus DTS_STM_UpdateChar(uint16_t UUID, uint8_t *pPayload) {
 	tBleStatus result = BLE_STATUS_INVALID_PARAMS;
+#ifndef DISABLE_WIRELESS
 	switch (UUID) {
 	case BUZZCAM_INFO_CHAR_UUID:
 		result = BLE_UpdateSystemInfo((DTS_STM_Payload_t*) pPayload);
@@ -896,6 +897,9 @@ tBleStatus DTS_STM_UpdateChar(uint16_t UUID, uint8_t *pPayload) {
 		break;
 	}
 	return result;
+#else
+	return 1;
+#endif
 }/* end DTS_STM_UpdateChar() */
 
 

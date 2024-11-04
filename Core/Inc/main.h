@@ -415,6 +415,8 @@ extern SPI_HandleTypeDef hspi1;
 
 #define SD_SPI_HANDLE hspi1
 
+#define DISABLE_WIRELESS 1
+
 #define UPDATE_EVENT  		  0x00000001
 #define TERMINATE_EVENT  	  0x00000002
 #define COMPLETE_EVENT  	  0x00000004
@@ -516,6 +518,8 @@ extern beecam_uwb_i2c_peer_address_t rangingAddr;
 extern beecam_uwb_i2c_device_info_t local_uwbInfo;
 
 extern volatile uint8_t coapSetup;
+
+#define SFE_UBLOX_REDUCED_PROG_MEM 1
 
 void setLED_Blue(uint32_t intensity);
 void setLED_Green(uint32_t intensity);

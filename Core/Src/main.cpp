@@ -57,6 +57,9 @@
 #include "uwb_i2c_proto.pb.h"
 
 #include "sx126x.h"
+
+#include <SparkFun_u-blox_GNSS_v3.h> //http://librarymanager/All#SparkFun_u-blox_GNSS_v3
+//#include <sfe_bus.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -203,6 +206,8 @@ uint8_t uwb_buffer[256];
 beecam_uwb_i2c_peer_address_t rangingAddr = BEECAM_UWB_I2C_PEER_ADDRESS_INIT_ZERO;
 
 beecam_uwb_i2c_device_info_t local_uwbInfo = BEECAM_UWB_I2C_DEVICE_INFO_INIT_DEFAULT;
+
+SFE_UBLOX_GNSS myGNSS;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -365,16 +370,20 @@ int main(void)
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
+
+#ifndef DISABLE_WIRELESS
   /* Config code for STM32_WPAN (HSE Tuning must be done before system clock configuration) */
   MX_APPE_Config();
+#endif
 
   /* USER CODE BEGIN Init */
-  HAL_Delay(5);
+//  HAL_Delay(5);
   /* USER CODE END Init */
 
   /* Configure the system clock */
   SystemClock_Config();
 
+#ifndef DISABLE_WIRELESS
 	/**
 	* Select LSE clock
 	*/
@@ -385,6 +394,7 @@ int main(void)
 	* Select wakeup source of BLE RF
 	*/
 	LL_RCC_SetRFWKPClockSource(LL_RCC_RFWKP_CLKSOURCE_LSE);
+#endif
 
   /* Configure the peripherals common clocks */
   PeriphCommonClock_Config();
@@ -397,6 +407,7 @@ int main(void)
 //  Init_Exti( );
 //
 //  MX_IPCC_Init();
+
 
   /* USER CODE END SysInit */
 
@@ -418,13 +429,36 @@ int main(void)
   MX_RF_Init();
   /* USER CODE BEGIN 2 */
 
+  HAL_GPIO_WritePin(EN_MAX78000_GPIO_Port, EN_MAX78000_Pin, GPIO_PIN_SET);
 
+  uint32_t buffer_half_size = greatest_divisor(hsai_BlockA1.Init.AudioFrequency, AUDIO_BUFFER_HALF_LEN);
+  uint32_t buffer_size = buffer_half_size * 2;
+  HAL_SAI_Receive_DMA(&hsai_BlockA1, (uint8_t*) audioSample, buffer_size);
+
+  while(1){
+	  systemTestCode();
+  }
+
+//  disable_SD_Card_1();
+//  disable_SD_Card_2();
+//  	HAL_GPIO_WritePin(EN_MAX78000_GPIO_Port, EN_MAX78000_Pin, GPIO_PIN_RESET);
+//	HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_RESET); // powers FRAM
+//	HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_RESET); // needed for I2C pins on FRAM
+//	HAL_GPIO_WritePin(EN_UWB_REG_GPIO_Port, EN_UWB_REG_Pin, GPIO_PIN_RESET);
+//	HAL_GPIO_WritePin(EN_3V3_GPS_GPIO_Port, EN_3V3_GPS_Pin, GPIO_PIN_RESET);
+//
+//
+//
+//	HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET);
+//
+//
+//	while(1);
 
 	HAL_Delay(1); // 1ms startup delay before write/read
 	HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET); // powers FRAM
 	HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_SET); // needed for I2C pins on FRAM
 //	HAL_GPIO_WritePin(EN_UWB_REG_GPIO_Port, EN_UWB_REG_Pin, GPIO_PIN_SET);
-
+	HAL_GPIO_WritePin(EN_3V3_GPS_GPIO_Port, EN_3V3_GPS_Pin, GPIO_PIN_SET);
 //	HAL_GPIO_WritePin(EN_UWB_REG_GPIO_Port, EN_UWB_REG_Pin, GPIO_PIN_SET);
 
 //	HAL_GPIO_WritePin(EN_3V3_GPS_GPIO_Port, EN_3V3_GPS_Pin, GPIO_PIN_SET);
@@ -439,18 +473,65 @@ int main(void)
 	enable_SD_Mux();
 	mux_Select_SD_Card(1);
 
+#ifndef DISABLE_WIRELESS
 	  Init_Exti( );
 
 	  MX_IPCC_Init();
+#endif
 
 	HAL_Delay(1000);
 
-//	HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET);
-//	HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_SET);
-//
-//	HAL_Delay(10);
+//	HAL_GPIO_WritePin(EN_3V3_GPS_GPIO_Port, EN_3V3_GPS_Pin, GPIO_PIN_RESET);
 
-//	HAL_GPIO_WritePin(EN_MAX78000_GPIO_Port, EN_MAX78000_Pin, GPIO_PIN_SET);
+
+
+
+#define gnssAddress (0x42 << 1) // The default I2C address for u-blox modules is 0x42. Change this if required
+
+	  while (myGNSS.begin(&hi2c1, gnssAddress) == false) //Connect to the u-blox module using our custom port and address
+	  {
+	    HAL_Delay(1000);
+	  }
+
+	  myGNSS.setI2COutput(COM_TYPE_UBX); //Set the I2C port to output UBX only (turn off NMEA noise)
+
+//	  myGNSS.setNavigationFrequency(2); // Produce two solutions per second
+//
+//	  myGNSS.setAutoPVT(true); // Tell the GNSS to output each solution periodically
+
+	  //	Duration of the requested task. The maximum supported value is 12 days. Set to 0 to wait for a wakeup signal on a pin
+	  myGNSS.powerOff(0);
+
+//		HAL_GPIO_WritePin(EN_3V3_GPS_GPIO_Port, EN_3V3_GPS_Pin, GPIO_PIN_RESET);
+//
+//		while(1);
+
+	  volatile int32_t latitude, longitude, altitude;
+	  volatile uint32_t epoch;
+
+
+
+
+//	  while(1){
+//		  if (myGNSS.getPVT() == true)
+//		    {
+//		      latitude = myGNSS.getLatitude();
+//		      if(latitude > 0){ toggledGreen(); };
+//
+//		      longitude = myGNSS.getLongitude();
+//
+//		      altitude = myGNSS.getAltitudeMSL(); // Altitude above Mean Sea Level
+//
+//		      epoch = myGNSS.getUnixEpoch();
+//		    }
+//	  }
+
+
+
+	HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_SET);
+
+	HAL_Delay(10);
 
    readSystemStateToFRAM();
    if(infoPacket.header.system_uid != LL_FLASH_GetUDN()){
@@ -526,11 +607,15 @@ int main(void)
 	mainTaskUpdateId = osTimerNew (alertMainTask, osTimerOnce, (void *)0, NULL);
 	/* add events, ... */
 //	MX_IPCC_Init();
-  /* USER CODE END RTOS_EVENTS */
+#ifdef DISABLE_WIRELESS
+	mainSystemThreadId = osThreadNew(mainSystemTask, NULL, &mainSystemTask_attributes);
+#endif
+	/* USER CODE END RTOS_EVENTS */
 
   /* Init code for STM32_WPAN */
+#ifndef DISABLE_WIRELESS
   MX_APPE_Init();
-
+#endif
   /* Start scheduler */
   osKernelStart();
 
@@ -1659,8 +1744,10 @@ void acousticSamplingTask(void *argument){
 	set_folder_from_time(folder_name);
 
 	//	osDelay(1000);
-
+//	HAL_GPIO_WritePin(EN_3V3_GPS_GPIO_Port, EN_3V3_GPS_Pin, GPIO_PIN_SET);
+//	osDelay(1);
 	grabOrientation(folder_name);
+//	HAL_GPIO_WritePin(EN_3V3_GPS_GPIO_Port, EN_3V3_GPS_Pin, GPIO_PIN_RESET);
 //	tamperAlarm(ENABLE);
 
 	save_config(folder_name);
@@ -1774,7 +1861,6 @@ void batteryMonitorTask(void *argument){
 			PackedPayload.pPayload = (uint8_t*) buffer;
 			PackedPayload.Length = stream.bytes_written;
 			if(status) DTS_STM_UpdateChar(BUZZCAM_INFO_CHAR_UUID, (uint8_t*)&PackedPayload);
-
 		}
 
 		if((flag & TERMINATE_EVENT) == TERMINATE_EVENT){
@@ -4391,6 +4477,7 @@ void mainSystemTask(void *argument){
 	PackedPayload.Length = stream.bytes_written;
 	if(status) DTS_STM_UpdateChar(BUZZCAM_INFO_CHAR_UUID, (uint8_t*)&PackedPayload);
 
+
 //	tamperAlarm(ENABLE);
 //	if(osOK != osMessageQueuePut(txMsgQueueId, &txPacket,0, 0)){
 //		Error_Handler();
@@ -4407,18 +4494,19 @@ void mainSystemTask(void *argument){
 
 	taskENTER_CRITICAL();
 	// start GPS
-	HAL_GPIO_WritePin(EN_3V3_GPS_GPIO_Port, EN_3V3_GPS_Pin, GPIO_PIN_SET);
+//	HAL_GPIO_WritePin(EN_3V3_GPS_GPIO_Port, EN_3V3_GPS_Pin, GPIO_PIN_SET);
 
 	// start MAX78000
 	HAL_GPIO_WritePin(EN_MAX78000_GPIO_Port, EN_MAX78000_Pin, GPIO_PIN_SET);
 
 	delay_nop(1000000);
 	HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
-	HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+//	HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 //	HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 //	HAL_Delay( 10);
 
 	taskEXIT_CRITICAL();
+
 	/* read current config from SD card */
 
 	/* initiate system */
@@ -4441,11 +4529,13 @@ void mainSystemTask(void *argument){
 										&configTask_attributes);
 
 
-	if(configPacket.payload.config_packet.sensor_config.enable_gas ||
-			configPacket.payload.config_packet.sensor_config.enable_humidity ||
-			configPacket.payload.config_packet.sensor_config.enable_temperature){
-		bmeTaskHandle = osThreadNew(BME_Task, NULL, &bmeTask_attributes);
-	}
+//	if(configPacket.payload.config_packet.sensor_config.enable_gas ||
+//			configPacket.payload.config_packet.sensor_config.enable_humidity ||
+//			configPacket.payload.config_packet.sensor_config.enable_temperature){
+//		bmeTaskHandle = osThreadNew(BME_Task, NULL, &bmeTask_attributes);
+//	}
+
+	 myGNSS.powerOff(0); // getting orientatio powers back on device due to I2C activity
 
 	/* start audio recording if enablechirp_timestampd and no sensor schedule has been given*/
 	osDelay(500);
@@ -4454,6 +4544,7 @@ void mainSystemTask(void *argument){
 
 	if(configPacket.payload.config_packet.network_state.master_node ||
 			(configPacket.payload.config_packet.network_state.slave_sync == 0)){
+#ifndef DISABLE_WIRELESS
 		while(coapSetup != 1){
 			osDelay(100);
 		}
@@ -4462,6 +4553,7 @@ void mainSystemTask(void *argument){
 //			sendConfigToNodes(false);
 			if(osTimerStart (sendSlavesTimestampId, 30000) != osOK) Error_Handler();
 		}
+#endif
 
 		if(configPacket.payload.config_packet.enable_recording){
 			/* start immediately if a slave device or no schedule is given */
@@ -4885,7 +4977,6 @@ void updateSystemConfig(void *argument){
 		PackedPayload.pPayload = (uint8_t*) buffer;
 		PackedPayload.Length = stream.bytes_written;
 		if(status) ret = DTS_STM_UpdateChar(BUZZCAM_CONFIG_CHAR_UUID, (uint8_t*)&PackedPayload);
-
 	}
 	vTaskDelete(NULL);
 }
@@ -4971,7 +5062,6 @@ void triggerMarkTask(void *argument){
 			//			PackedPayload.Length = 182;
 			//			status = 1;
 			if(status) ret = DTS_STM_UpdateChar(BUZZCAM_INFO_CHAR_UUID, (uint8_t*) &PackedPayload);
-
 
 			/* trigger beep if enabled */
 			if(new_mark.beep_enabled){
@@ -5448,6 +5538,11 @@ void runAnalogConverter(void){
 #define ADC_EN3						0x1 << 2
 #define ADC_EN2						0x1 << 1
 #define ADC_EN1						0x1 << 0
+
+//	data = LDO_EN | VREF_EN | ADC_EN3 | ADC_EN1;
+//	//	data = LDO_EN | VREF_EN | ADC_EN1;
+//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_BLOCK_POWER_SAI,
+//			1, &data, 1, 100);
 
 	data = LDO_EN | VREF_EN | ADC_EN4 | ADC_EN3 | ADC_EN2 | ADC_EN1;
 	//	data = LDO_EN | VREF_EN | ADC_EN1;
@@ -6084,7 +6179,7 @@ void HAL_SAI_RxHalfCpltCallback(SAI_HandleTypeDef *hsai){
 	sampleCntr++;
 	SAI_HALF_CALLBACK = 1;
 
-	// Trigger the notification for the task
+//	 Trigger the notification for the task
 	osThreadFlagsSet(micThreadId, 0x0001U);
 }
 
