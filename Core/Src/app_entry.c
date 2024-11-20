@@ -594,6 +594,8 @@ static void APPE_SysEvtReadyProcessing(void * pPayload)
 //   APP_DBG("4- Configure OpenThread (Channel, PANID, IPv6 stack, ...) and Start it...");
    APP_THREAD_Init_Dyn_2();
 
+   mainSystemThreadId = osThreadNew(mainSystemTask, NULL, &mainSystemTask_attributes);
+
  #if ( CFG_LPM_SUPPORTED == 1)
    /* Thread stack is initialized, low power mode can be enabled */
    UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_ENABLE);

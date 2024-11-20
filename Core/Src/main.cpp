@@ -46,7 +46,7 @@
 #include <math.h>
 
 #define TFLAC_IMPLEMENTATION
-#include "tflac.h"
+//#include "tflac.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -438,7 +438,7 @@ int main(void)
   if (MX_FATFS_Init() != APP_OK) {
     Error_Handler();
   }
-  MX_I2C1_Init();
+//  MX_I2C1_Init();
   MX_SPI2_Init();
 //  MX_USART1_UART_Init();
 //  MX_USB_Device_Init();
@@ -2654,15 +2654,15 @@ void performMagCalibration(uint32_t numOfSamples){
 #define MAX_BYTES_PER_WAV_FILE 2000000000
 
 uint32_t bufferlen = 0;
-tflac_u32 bufferused = 0;
+//tflac_u32 bufferused = 0;
 FILE *input = NULL;
 FILE *output = NULL;
-tflac_u32 frames = 0;
-tflac_s16 *samples = NULL;
-void *tflac_mem = NULL;
-tflac_u32 frame_size = 1152;
-//wav_decoder w = WAV_DECODER_ZERO;
-tflac t;
+//tflac_u32 frames = 0;
+//tflac_s16 *samples = NULL;
+//void *tflac_mem = NULL;
+//tflac_u32 frame_size = 1152;
+////wav_decoder w = WAV_DECODER_ZERO;
+//tflac t;
 
 void startRecord(uint32_t recording_duration_s, char *folder_name){
 	uint64_t totalBytesWrittenToFile = 0;
@@ -2741,29 +2741,29 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 		if(!configPacket.payload.config_packet.audio_config.audio_compression.enabled){
 			WavProcess_EncInit(hsai_BlockA1.Init.AudioFrequency, pHeaderBuff);
 		}else{
-			if(COMPRESSION_TYPE_FLAC == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
-				tflac_init(&t);
-			    t.samplerate = 48000;
-			    t.channels   = 2;
-			    t.bitdepth   = 16;
-			    t.blocksize  = AUDIO_BUFFER_HALF_LEN;
-			    t.max_partition_order = 3;
-
-			    tflac_mem = malloc(tflac_size_memory(t.blocksize));
-			    if(tflac_mem == NULL) Error_Handler();
-
-			    tflac_set_constant_subframe(&t, 1);
-			    tflac_set_fixed_subframe(&t, 1);
-
-			    if(tflac_validate(&t, tflac_mem, tflac_size_memory(t.blocksize)) != 0) Error_Handler();
-
-			    bufferlen = tflac_size_frame(t.blocksize,t.channels,t.bitdepth);
-			    buffer = (uint8_t*) malloc(bufferlen);
-			    if(buffer == NULL) Error_Handler();
-
-			}else if(COMPRESSION_TYPE_OPUS == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
-				//todo: OPUS compression init
-			}
+//			if(COMPRESSION_TYPE_FLAC == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+//				tflac_init(&t);
+//			    t.samplerate = 48000;
+//			    t.channels   = 2;
+//			    t.bitdepth   = 16;
+//			    t.blocksize  = AUDIO_BUFFER_HALF_LEN;
+//			    t.max_partition_order = 3;
+//
+//			    tflac_mem = malloc(tflac_size_memory(t.blocksize));
+//			    if(tflac_mem == NULL) Error_Handler();
+//
+//			    tflac_set_constant_subframe(&t, 1);
+//			    tflac_set_fixed_subframe(&t, 1);
+//
+//			    if(tflac_validate(&t, tflac_mem, tflac_size_memory(t.blocksize)) != 0) Error_Handler();
+//
+//			    bufferlen = tflac_size_frame(t.blocksize,t.channels,t.bitdepth);
+//			    buffer = (uint8_t*) malloc(bufferlen);
+//			    if(buffer == NULL) Error_Handler();
+//
+//			}else if(COMPRESSION_TYPE_OPUS == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+//				//todo: OPUS compression init
+//			}
 		}
 
 		/* Write header file */
@@ -2793,13 +2793,13 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 					if(!configPacket.payload.config_packet.audio_config.audio_compression.enabled){
 						if(f_write(&WavFile, audioSample, buffer_half_size * 2, (UINT*)&byteswritten) != FR_OK) Error_Handler();
 					}else{
-						if(COMPRESSION_TYPE_FLAC == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
-							//todo: FLAC compression
-					        if(tflac_encode_s16i(&t, frames, samples, audioSample, bufferlen, &bufferused) != 0) Error_Handler();
-					        if(f_write(&WavFile, buffer, bufferused, (UINT*)&byteswritten) != FR_OK) Error_Handler();
-						}else if(COMPRESSION_TYPE_OPUS == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
-							//todo: OPUS compression
-						}
+//						if(COMPRESSION_TYPE_FLAC == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+//							//todo: FLAC compression
+//					        if(tflac_encode_s16i(&t, frames, samples, audioSample, bufferlen, &bufferused) != 0) Error_Handler();
+//					        if(f_write(&WavFile, buffer, bufferused, (UINT*)&byteswritten) != FR_OK) Error_Handler();
+//						}else if(COMPRESSION_TYPE_OPUS == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+//							//todo: OPUS compression
+//						}
 					}
 
 					totalBuffersWritten += 1;
@@ -2812,13 +2812,13 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 					if(!configPacket.payload.config_packet.audio_config.audio_compression.enabled){
 						if(f_write(&WavFile, &audioSample[buffer_half_size], buffer_half_size * 2, (UINT*)&byteswritten) != FR_OK) Error_Handler();
 					}else{
-						if(COMPRESSION_TYPE_FLAC == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
-							//todo: FLAC compression
-					        if(tflac_encode_s16i(&t, frames, samples, audioSample, bufferlen, &bufferused) != 0) Error_Handler();
-					        if(f_write(&WavFile, buffer, bufferused, (UINT*)&byteswritten) != FR_OK) Error_Handler();
-						}else if(COMPRESSION_TYPE_OPUS == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
-							//todo: OPUS compression
-						}
+//						if(COMPRESSION_TYPE_FLAC == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+//							//todo: FLAC compression
+//					        if(tflac_encode_s16i(&t, frames, samples, audioSample, bufferlen, &bufferused) != 0) Error_Handler();
+//					        if(f_write(&WavFile, buffer, bufferused, (UINT*)&byteswritten) != FR_OK) Error_Handler();
+//						}else if(COMPRESSION_TYPE_OPUS == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+//							//todo: OPUS compression
+//						}
 					}
 
 					totalBuffersWritten += 1;
@@ -2873,13 +2873,13 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 					sprintf(file_name, "/audio_%u.wav", file_index);
 					strcat(file_path, file_name);
 				}else{
-					if(COMPRESSION_TYPE_FLAC == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
-						sprintf(file_name, "/audio_%u.flac", file_index);
-						strcat(file_path, file_name);
-					}else if(COMPRESSION_TYPE_OPUS == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
-						sprintf(file_name, "/audio_%u.opus", file_index);
-						strcat(file_path, file_name);
-					}
+//					if(COMPRESSION_TYPE_FLAC == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+//						sprintf(file_name, "/audio_%u.flac", file_index);
+//						strcat(file_path, file_name);
+//					}else if(COMPRESSION_TYPE_OPUS == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+//						sprintf(file_name, "/audio_%u.opus", file_index);
+//						strcat(file_path, file_name);
+//					}
 				}
 
 				if(f_open(&WavFile, file_path, FA_CREATE_ALWAYS | FA_WRITE) != FR_OK){
@@ -2894,11 +2894,11 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 					}
 					totalBytesWrittenToFile += 44;
 				}else{
-					if(COMPRESSION_TYPE_FLAC == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
-						//todo: FLAC compression
-					}else if(COMPRESSION_TYPE_OPUS == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
-						//todo: OPUS compression
-					}
+//					if(COMPRESSION_TYPE_FLAC == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+//						//todo: FLAC compression
+//					}else if(COMPRESSION_TYPE_OPUS == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+//						//todo: OPUS compression
+//					}
 				}
 
 			}
@@ -3283,12 +3283,12 @@ void mainSystemTask(void *argument){
 	//	mainSystemThreadId = osThreadNew(mainSystemTask, NULL, &mainSystemTask_attributes);
 
 
-		bmeTaskHandle = osThreadNew(BME_Task, NULL, &bmeTask_attributes);
+//		bmeTaskHandle = osThreadNew(BME_Task, NULL, &bmeTask_attributes);
 
 		batteryMonitorTaskId = osThreadNew(batteryMonitorTask, NULL, &batteryMonitorTask_attributes);
 
 		osDelay(500);
-//		micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
+		micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
 
 
 //	while(1){
@@ -3772,6 +3772,28 @@ void disableLEDs(){
 	HAL_TIM_Base_Stop(&htim2);
 }
 
+#define TLV320_ADDR   (0x30 << 1)
+void writeToTLV(uin8_t page, uint8_t reg, uint8_t data){
+	volatile HAL_StatusTypeDef status;
+	uint8_t data[4] = {0};
+
+	data[1] = page;
+	data[2] = reg;
+	data[3] = data;
+
+	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_PLL_CONTROL,
+				1, data, 2, 100);
+
+	status = HAL_I2C_Master_Transmit(&hi2c3, TLV320_ADDR, data,
+	                                          2, 100);
+
+	status = HAL_I2C_Master_Transmit(&hi2c3, TLV320_ADDR, &data[2],
+	                                          2, 100);
+
+	if(status != HAL_OK){
+		Error_Handler();
+	}
+}
 
 void runAnalogConverter(void){
 
@@ -3781,278 +3803,293 @@ void runAnalogConverter(void){
 	HAL_StatusTypeDef status;
 
 
-	//	configPacket.payload.config_packet.has_audio_config=true;
-	//	configPacket.payload.config_packet.audio_config.bit_resolution=MIC_BIT_RESOLUTION_BIT_RES_16;
-	//	configPacket.payload.config_packet.audio_config.channel_1=true;
-	//	configPacket.payload.config_packet.audio_config.channel_2=true;
-	//	configPacket.payload.config_packet.audio_config.has_audio_compression=true;
-	//	configPacket.payload.config_packet.audio_config.audio_compression.compression_factor=0;
-	//	configPacket.payload.config_packet.audio_config.audio_compression.compression_type=COMPRESSION_TYPE_OPUS;
-	//	configPacket.payload.config_packet.audio_config.audio_compression.enabled=false;
-	//	configPacket.payload.config_packet.audio_config.estimated_record_time=12345678; //placeholder
-	//	configPacket.payload.config_packet.audio_config.sample_freq=MIC_SAMPLE_FREQ_SAMPLE_RATE_48000;
-
-#define ADAU1979_SAI_CTRL0			0x05
-#define I2S_FORMAT					0x0 << 6
-#define LEFT_JUSTIFIED				0x1 << 6
-#define RIGHT_JUSTIFIED_16			0x3 << 6
-#define STEREO						0x0 << 3
-#define TDM_2						0x1 << 3
-#define TDM_4						0x2 << 3
-#define TDM_8						0x3 << 3
-#define TDM_16						0x4 << 3
-#define SAMPLING_RATE_8_12_KHZ		0x0 << 0
-#define SAMPLING_RATE_16_24_KHZ		0x1 << 0
-#define SAMPLING_RATE_32_48_KHZ		0x2 << 0
-#define SAMPLING_RATE_64_96_KHZ		0x3 << 0
-#define SAMPLING_RATE_128_192_KHZ	0x4 << 0
-
-#define ADAU1979_SAI_CTRL1			0x06
-#define SDATAOUT1_OUTPUT			0x0 << 7
-#define SDATAOUT2_OUTPUT			0x1 << 7
-#define SLOT_WIDTH_32				0x0 << 5
-#define SLOT_WIDTH_24				0x1 << 5
-#define SLOT_WIDTH_16				0x2 << 5
-#define DATA_WIDTH_24				0x0 << 4
-#define DATA_WIDTH_16				0x1 << 4
-#define LRCLK_50_DUTY_CYCLE			0x0 << 3
-#define LRCLK_PULSE					0x1 << 3
-#define MSB_FIRST					0x0 << 2
-#define LSB_FIRST					0x1 << 2
-#define BCLKRATE_32_PER_CHANNEL		0x0 << 1
-#define BCLKRATE_16_PER_CHANNEL		0x1 << 1
-#define SAI_SLAVE					0x0 << 0
-#define SAI_MASTER					0x1 << 0
-
-
-	switch(configPacket.payload.config_packet.audio_config.bit_resolution){
-	case MIC_BIT_RESOLUTION_BIT_RES_8:
-		ctrl1_settings |= BCLKRATE_16_PER_CHANNEL | DATA_WIDTH_16 | SLOT_WIDTH_16;
-		break;
-	case MIC_BIT_RESOLUTION_BIT_RES_16:
-		ctrl1_settings |= BCLKRATE_16_PER_CHANNEL | DATA_WIDTH_16 | SLOT_WIDTH_16;
-		break;
-	case MIC_BIT_RESOLUTION_BIT_RES_24:
-		ctrl1_settings |= BCLKRATE_32_PER_CHANNEL | DATA_WIDTH_24 | SLOT_WIDTH_24;
-		break;
-	}
-
-	switch(configPacket.payload.config_packet.audio_config.sample_freq){
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_8000:
-		ctrl0_settings |= SAMPLING_RATE_8_12_KHZ;
-		break;
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_11025:
-		ctrl0_settings |= SAMPLING_RATE_8_12_KHZ;
-		break;
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_16000:
-		ctrl0_settings |= SAMPLING_RATE_16_24_KHZ;
-		break;
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_22500:
-		ctrl0_settings |= SAMPLING_RATE_16_24_KHZ;
-		break;
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_24000:
-		ctrl0_settings |= SAMPLING_RATE_16_24_KHZ;
-		break;
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_32000:
-		ctrl0_settings |= SAMPLING_RATE_32_48_KHZ;
-		break;
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_44100:
-		ctrl0_settings |= SAMPLING_RATE_32_48_KHZ;
-		break;
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_48000:
-		ctrl0_settings |= SAMPLING_RATE_32_48_KHZ;
-		break;
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_96000:
-		ctrl0_settings |= SAMPLING_RATE_64_96_KHZ;
-		break;
-	}
-
-#define ADAU1979_ADDR				0x11 << 1
-
-#define ADAU1979_M_POWER			0x00
-#define S_RST						0x01 << 7
-#define PWUP						0x01 << 0
-#define PWDOWN						0x00 << 0
-
-	/* RESET ADAU1979 */
-	data = S_RST;
-	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_M_POWER,
-			1, &data, 1, 100);
-	osDelay(50);
-
-
-	/* activate ADC */
-	data = PWUP;
-	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_M_POWER,
-			1, &data, 1, 100);
-
-	osDelay(50);
-
-#define ADAU1979_BLOCK_POWER_SAI	0x04
-#define LR_POL_LOW_HIGH				0x0 << 7
-#define LR_POL_HIGH_LOW				0x1 << 7
-#define BCLKEDGE_FALLING			0x0 << 6
-#define BCLKEDGE_RISING				0x1 << 6
-#define LDO_EN						0x1 << 5
-#define VREF_EN						0x1 << 4
-#define ADC_EN4						0x1 << 3
-#define ADC_EN3						0x1 << 2
-#define ADC_EN2						0x1 << 1
-#define ADC_EN1						0x1 << 0
-
-	data = LDO_EN | VREF_EN | ADC_EN4 | ADC_EN3 | ADC_EN2 | ADC_EN1;
-	//	data = LDO_EN | VREF_EN | ADC_EN1;
-	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_BLOCK_POWER_SAI,
-			1, &data, 1, 100);
-
-	/* activate ADC */
-	ctrl0_settings |= I2S_FORMAT | STEREO;
-	//	ctrl0_settings |= LEFT_JUSTIFIED | STEREO;
-	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CTRL0,
-			1, &ctrl0_settings, 1, 100);
-
-	/* TDM Configuration */
-	ctrl1_settings |= SDATAOUT1_OUTPUT | LRCLK_50_DUTY_CYCLE | MSB_FIRST | BCLKRATE_16_PER_CHANNEL | SAI_SLAVE;
-	//	ctrl1_settings |= SDATAOUT1_OUTPUT | LRCLK_PULSE | MSB_FIRST | SAI_SLAVE;
-	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CTRL1,
-			1, &ctrl1_settings, 1, 100);
-
-#define ADAU1979_SAI_CMAP12			0x07
-#define TDM_CH2_SLOT_10				0x9 << 4
-#define TDM_CH2_SLOT_3				0x3 << 4
-#define TDM_CH2_SLOT_2				0x2 << 4
-#define TDM_CH2_SLOT_1				0x1 << 4
-#define TDM_CH1_SLOT_15				0xE << 0
-#define TDM_CH1_SLOT_9				0x8 << 0
-#define TDM_CH1_SLOT_0				0x0 << 0
-#define TDM_CH1_SLOT_1				0x1
-
-#define ADAU1979_SAI_CMAP34			0x08
-#define TDM_CH4_SLOT_12				0xB << 4
-#define TDM_CH4_SLOT_3				0x3 << 4
-#define TDM_CH4_SLOT_2				0x2 << 4
-#define TDM_CH4_SLOT_1				0x1 << 4
-#define TDM_CH4_SLOT_0				0x0 << 4
-#define TDM_CH3_SLOT_16				0xF << 0
-#define TDM_CH3_SLOT_11				0xA << 0
-#define TDM_CH3_SLOT_10				0x9 << 0
-#define TDM_CH3_SLOT_2				0x2 << 0
-#define TDM_CH3_SLOT_1				0x1 << 0
-#define TDM_CH3_SLOT_0				0x0 << 0
-
-	/* TDM Config Slots */
-		data = TDM_CH1_SLOT_0 | TDM_CH2_SLOT_1;
-//	data = TDM_CH1_SLOT_0 | TDM_CH2_SLOT_2;
-
-	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CMAP12,
-			1, &data, 1, 100);
-
-
-
-	/* TDM Config Slots */
-	//	//  data = TDM_CH4_SLOT_1 | TDM_CH3_SLOT_2;
-	//	//  data = 0x7 | TDM_CH4_SLOT_12;
-	//	data = TDM_CH3_SLOT_10;
-	//  data = TDM_CH3_SLOT_1;
-	//		    data = TDM_CH3_SLOT_11 | TDM_CH4_SLOT_12;
-	//	//
-	//		status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CMAP34,
-	//				1, &data, 1, 100);
-
-	/* ONLY FOR WIND TUNNEL TESTING */
-//	data = TDM_CH3_SLOT_1 | TDM_CH4_SLOT_3;
-//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CMAP34,
-//			1, &data, 1, 100);
-
-#define ADAU1979_SAI_OVERTEMP		0x09
-#define CH4_EN_OUT					0x1 << 7
-#define CH3_EN_OUT					0x1 << 6
-#define CH2_EN_OUT					0x1 << 5
-#define CH1_EN_OUT					0x1 << 4
-#define DRV_HIZ_EN					0x1 << 3
-
-	/* TDM Channel Configuration */
-	data = CH4_EN_OUT | CH3_EN_OUT | CH2_EN_OUT | CH1_EN_OUT;
-	//	data = CH1_EN_OUT;
-	//	data = DRV_HIZ_EN | CH4_EN_OUT | CH3_EN_OUT | CH2_EN_OUT | CH1_EN_OUT;
-	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_OVERTEMP,
-			1, &data, 1, 100);
-
-#define ADAU1979_POSTADC_GAIN1		0x0A
-#define ADAU1979_POSTADC_GAIN2		0x0B
-#define ADAU1979_POSTADC_GAIN3		0x0C
-#define ADAU1979_POSTADC_GAIN4		0x0D
-#define GAIN_0_DB					0xA0
-#define GAIN_5_625_DB				145 // (60 - x * 0.375) dB
-#define GAIN_9_DB					136
-#define GAIN_15_DB					120
-#define GAIN_18_DB					112
-#define GAIN_25_5_DB				92
-#define GAIN_25_875_DB				91
-#define GAIN_60_DB					0x0
-
-	/* Gain = 60dB - (gain_register) * 0.375dB */
-
-	/* Channel 1 Gain */
-	data = (configPacket.payload.config_packet.audio_config.mic_gain * 8);
-	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_POSTADC_GAIN1,
-			1, &data, 1, 100);
-
-	/* Channel 2 Gain */
-	data = (configPacket.payload.config_packet.audio_config.mic_gain * 8);
-	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_POSTADC_GAIN2,
-			1, &data, 1, 100);
-
-	/* Channel 3 Gain */
-	data = (configPacket.payload.config_packet.audio_config.mic_gain * 8);
-	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_POSTADC_GAIN3,
-			1, &data, 1, 100);
-
-	/* Channel 4 Gain */
-	data = (configPacket.payload.config_packet.audio_config.mic_gain * 8);
-	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_POSTADC_GAIN4,
-			1, &data, 1, 100);
-
-#define ADAU1979_MISC_CONTROL		0x0E
-#define MODE_4_CHANNEL				0x0 << 6
-#define MODE_2_CHANNEL_SUM_MODE		0x1 << 6
-#define MODE_1_CHANNEL_SUM_MODE		0x2 << 6
-
-	/* 4-channel mode, normal operation, */
-//	data = MODE_4_CHANNEL;
-		data = MODE_2_CHANNEL_SUM_MODE;
-	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_MISC_CONTROL,
-			1, &data, 1, 100);
-
-#define ADAU1979_ASDC_CLIP			0x19
-#define ADAU1979_DC_HPF_CAL			0x1A
-#define DC_HPF_C4_ON				0x1 << 3
-#define DC_HPF_C3_ON				0x1 << 2
-#define DC_HPF_C2_ON				0x1 << 1
-#define DC_HPF_C1_ON				0x1 << 0
-
-	//	/* HPF on for all channels */
-	//	data = DC_HPF_C4_ON | DC_HPF_C3_ON | DC_HPF_C2_ON | DC_HPF_C1_ON;
-	//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_DC_HPF_CAL,
-	//									 1, &data, 1, 100);
-
-#define ADAU1979_PLL_CONTROL		0x01
-#define PLL_LOCK_REG				0x1 << 7
-#define PLL_NO_AUTO_MUTE			0x0 << 6
-#define PLL_INPUT_MCLK				0x0 << 4
-#define PLL_INPUT_LRCLK				0x1 << 4
-#define PLL_MCS_DIV_256				0x1 << 0
-#define PLL_MCS_DIV_384				0x2 << 0
-#define PLL_MCS_DIV_512				0x3 << 0
-#define PLL_MCS_DIV_768				0x4 << 0
-#define PLL_MCS_DIV_128				0x0 << 0
-
-	//  /* PLL Configuration (MCLK = BCLK = 256 * 22.05kHz, ADC SAMPLE RATE = 22.05 kHz)*/
-	/* PLL Configuration (MCLK = BCLK = 128 * 44.6kHz, ADC SAMPLE RATE = 44.6 kHz)*/
-	data = PLL_NO_AUTO_MUTE | PLL_INPUT_LRCLK;
-	//
 	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_PLL_CONTROL,
-			1, &data, 1, 100);
+				1, &data, 1, 100);
+
+#define LEFT_CHANNEL_ADC_EN 		(0x1 << 7)
+#define RIGHT_CHANNEL_ADC_EN 		(0x1 << 6)
+	writeToTLV(0, 81, LEFT_CHANNEL_ADC_EN | RIGHT_CHANNEL_ADC_EN);
+
+#define LEFT_CHANNEL_NOT_MUTED 		(0x0 << 7)
+#define RIGHT_CHANNEL_NOT_MUTED 	(0x0 << 6)
+	writeToTLV(0, 82, LEFT_CHANNEL_NOT_MUTED | RIGHT_CHANNEL_NOT_MUTED);
+
+#define GAIN_9_DB					(9*2)
+	writeToTLV(0, 93, GAIN_9_DB);
+	writeToTLV(0, 101, GAIN_9_DB);
+//
+//	//	configPacket.payload.config_packet.has_audio_config=true;
+//	//	configPacket.payload.config_packet.audio_config.bit_resolution=MIC_BIT_RESOLUTION_BIT_RES_16;
+//	//	configPacket.payload.config_packet.audio_config.channel_1=true;
+//	//	configPacket.payload.config_packet.audio_config.channel_2=true;
+//	//	configPacket.payload.config_packet.audio_config.has_audio_compression=true;
+//	//	configPacket.payload.config_packet.audio_config.audio_compression.compression_factor=0;
+//	//	configPacket.payload.config_packet.audio_config.audio_compression.compression_type=COMPRESSION_TYPE_OPUS;
+//	//	configPacket.payload.config_packet.audio_config.audio_compression.enabled=false;
+//	//	configPacket.payload.config_packet.audio_config.estimated_record_time=12345678; //placeholder
+//	//	configPacket.payload.config_packet.audio_config.sample_freq=MIC_SAMPLE_FREQ_SAMPLE_RATE_48000;
+//
+//#define ADAU1979_SAI_CTRL0			0x05
+//#define I2S_FORMAT					0x0 << 6
+//#define LEFT_JUSTIFIED				0x1 << 6
+//#define RIGHT_JUSTIFIED_16			0x3 << 6
+//#define STEREO						0x0 << 3
+//#define TDM_2						0x1 << 3
+//#define TDM_4						0x2 << 3
+//#define TDM_8						0x3 << 3
+//#define TDM_16						0x4 << 3
+//#define SAMPLING_RATE_8_12_KHZ		0x0 << 0
+//#define SAMPLING_RATE_16_24_KHZ		0x1 << 0
+//#define SAMPLING_RATE_32_48_KHZ		0x2 << 0
+//#define SAMPLING_RATE_64_96_KHZ		0x3 << 0
+//#define SAMPLING_RATE_128_192_KHZ	0x4 << 0
+//
+//#define ADAU1979_SAI_CTRL1			0x06
+//#define SDATAOUT1_OUTPUT			0x0 << 7
+//#define SDATAOUT2_OUTPUT			0x1 << 7
+//#define SLOT_WIDTH_32				0x0 << 5
+//#define SLOT_WIDTH_24				0x1 << 5
+//#define SLOT_WIDTH_16				0x2 << 5
+//#define DATA_WIDTH_24				0x0 << 4
+//#define DATA_WIDTH_16				0x1 << 4
+//#define LRCLK_50_DUTY_CYCLE			0x0 << 3
+//#define LRCLK_PULSE					0x1 << 3
+//#define MSB_FIRST					0x0 << 2
+//#define LSB_FIRST					0x1 << 2
+//#define BCLKRATE_32_PER_CHANNEL		0x0 << 1
+//#define BCLKRATE_16_PER_CHANNEL		0x1 << 1
+//#define SAI_SLAVE					0x0 << 0
+//#define SAI_MASTER					0x1 << 0
+//
+//
+//	switch(configPacket.payload.config_packet.audio_config.bit_resolution){
+//	case MIC_BIT_RESOLUTION_BIT_RES_8:
+//		ctrl1_settings |= BCLKRATE_16_PER_CHANNEL | DATA_WIDTH_16 | SLOT_WIDTH_16;
+//		break;
+//	case MIC_BIT_RESOLUTION_BIT_RES_16:
+//		ctrl1_settings |= BCLKRATE_16_PER_CHANNEL | DATA_WIDTH_16 | SLOT_WIDTH_16;
+//		break;
+//	case MIC_BIT_RESOLUTION_BIT_RES_24:
+//		ctrl1_settings |= BCLKRATE_32_PER_CHANNEL | DATA_WIDTH_24 | SLOT_WIDTH_24;
+//		break;
+//	}
+//
+//	switch(configPacket.payload.config_packet.audio_config.sample_freq){
+//	case MIC_SAMPLE_FREQ_SAMPLE_RATE_8000:
+//		ctrl0_settings |= SAMPLING_RATE_8_12_KHZ;
+//		break;
+//	case MIC_SAMPLE_FREQ_SAMPLE_RATE_11025:
+//		ctrl0_settings |= SAMPLING_RATE_8_12_KHZ;
+//		break;
+//	case MIC_SAMPLE_FREQ_SAMPLE_RATE_16000:
+//		ctrl0_settings |= SAMPLING_RATE_16_24_KHZ;
+//		break;
+//	case MIC_SAMPLE_FREQ_SAMPLE_RATE_22500:
+//		ctrl0_settings |= SAMPLING_RATE_16_24_KHZ;
+//		break;
+//	case MIC_SAMPLE_FREQ_SAMPLE_RATE_24000:
+//		ctrl0_settings |= SAMPLING_RATE_16_24_KHZ;
+//		break;
+//	case MIC_SAMPLE_FREQ_SAMPLE_RATE_32000:
+//		ctrl0_settings |= SAMPLING_RATE_32_48_KHZ;
+//		break;
+//	case MIC_SAMPLE_FREQ_SAMPLE_RATE_44100:
+//		ctrl0_settings |= SAMPLING_RATE_32_48_KHZ;
+//		break;
+//	case MIC_SAMPLE_FREQ_SAMPLE_RATE_48000:
+//		ctrl0_settings |= SAMPLING_RATE_32_48_KHZ;
+//		break;
+//	case MIC_SAMPLE_FREQ_SAMPLE_RATE_96000:
+//		ctrl0_settings |= SAMPLING_RATE_64_96_KHZ;
+//		break;
+//	}
+//
+//#define ADAU1979_ADDR				0x11 << 1
+//
+//#define ADAU1979_M_POWER			0x00
+//#define S_RST						0x01 << 7
+//#define PWUP						0x01 << 0
+//#define PWDOWN						0x00 << 0
+//
+//	/* RESET ADAU1979 */
+//	data = S_RST;
+//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_M_POWER,
+//			1, &data, 1, 100);
+//	osDelay(50);
+//
+//
+//	/* activate ADC */
+//	data = PWUP;
+//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_M_POWER,
+//			1, &data, 1, 100);
+//
+//	osDelay(50);
+//
+//#define ADAU1979_BLOCK_POWER_SAI	0x04
+//#define LR_POL_LOW_HIGH				0x0 << 7
+//#define LR_POL_HIGH_LOW				0x1 << 7
+//#define BCLKEDGE_FALLING			0x0 << 6
+//#define BCLKEDGE_RISING				0x1 << 6
+//#define LDO_EN						0x1 << 5
+//#define VREF_EN						0x1 << 4
+//#define ADC_EN4						0x1 << 3
+//#define ADC_EN3						0x1 << 2
+//#define ADC_EN2						0x1 << 1
+//#define ADC_EN1						0x1 << 0
+//
+//	data = LDO_EN | VREF_EN | ADC_EN4 | ADC_EN3 | ADC_EN2 | ADC_EN1;
+//	//	data = LDO_EN | VREF_EN | ADC_EN1;
+//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_BLOCK_POWER_SAI,
+//			1, &data, 1, 100);
+//
+//	/* activate ADC */
+//	ctrl0_settings |= I2S_FORMAT | STEREO;
+//	//	ctrl0_settings |= LEFT_JUSTIFIED | STEREO;
+//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CTRL0,
+//			1, &ctrl0_settings, 1, 100);
+//
+//	/* TDM Configuration */
+//	ctrl1_settings |= SDATAOUT1_OUTPUT | LRCLK_50_DUTY_CYCLE | MSB_FIRST | BCLKRATE_16_PER_CHANNEL | SAI_SLAVE;
+//	//	ctrl1_settings |= SDATAOUT1_OUTPUT | LRCLK_PULSE | MSB_FIRST | SAI_SLAVE;
+//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CTRL1,
+//			1, &ctrl1_settings, 1, 100);
+//
+//#define ADAU1979_SAI_CMAP12			0x07
+//#define TDM_CH2_SLOT_10				0x9 << 4
+//#define TDM_CH2_SLOT_3				0x3 << 4
+//#define TDM_CH2_SLOT_2				0x2 << 4
+//#define TDM_CH2_SLOT_1				0x1 << 4
+//#define TDM_CH1_SLOT_15				0xE << 0
+//#define TDM_CH1_SLOT_9				0x8 << 0
+//#define TDM_CH1_SLOT_0				0x0 << 0
+//#define TDM_CH1_SLOT_1				0x1
+//
+//#define ADAU1979_SAI_CMAP34			0x08
+//#define TDM_CH4_SLOT_12				0xB << 4
+//#define TDM_CH4_SLOT_3				0x3 << 4
+//#define TDM_CH4_SLOT_2				0x2 << 4
+//#define TDM_CH4_SLOT_1				0x1 << 4
+//#define TDM_CH4_SLOT_0				0x0 << 4
+//#define TDM_CH3_SLOT_16				0xF << 0
+//#define TDM_CH3_SLOT_11				0xA << 0
+//#define TDM_CH3_SLOT_10				0x9 << 0
+//#define TDM_CH3_SLOT_2				0x2 << 0
+//#define TDM_CH3_SLOT_1				0x1 << 0
+//#define TDM_CH3_SLOT_0				0x0 << 0
+//
+//	/* TDM Config Slots */
+//		data = TDM_CH1_SLOT_0 | TDM_CH2_SLOT_1;
+////	data = TDM_CH1_SLOT_0 | TDM_CH2_SLOT_2;
+//
+//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CMAP12,
+//			1, &data, 1, 100);
+//
+//
+//
+//	/* TDM Config Slots */
+//	//	//  data = TDM_CH4_SLOT_1 | TDM_CH3_SLOT_2;
+//	//	//  data = 0x7 | TDM_CH4_SLOT_12;
+//	//	data = TDM_CH3_SLOT_10;
+//	//  data = TDM_CH3_SLOT_1;
+//	//		    data = TDM_CH3_SLOT_11 | TDM_CH4_SLOT_12;
+//	//	//
+//	//		status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CMAP34,
+//	//				1, &data, 1, 100);
+//
+//	/* ONLY FOR WIND TUNNEL TESTING */
+////	data = TDM_CH3_SLOT_1 | TDM_CH4_SLOT_3;
+////	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CMAP34,
+////			1, &data, 1, 100);
+//
+//#define ADAU1979_SAI_OVERTEMP		0x09
+//#define CH4_EN_OUT					0x1 << 7
+//#define CH3_EN_OUT					0x1 << 6
+//#define CH2_EN_OUT					0x1 << 5
+//#define CH1_EN_OUT					0x1 << 4
+//#define DRV_HIZ_EN					0x1 << 3
+//
+//	/* TDM Channel Configuration */
+//	data = CH4_EN_OUT | CH3_EN_OUT | CH2_EN_OUT | CH1_EN_OUT;
+//	//	data = CH1_EN_OUT;
+//	//	data = DRV_HIZ_EN | CH4_EN_OUT | CH3_EN_OUT | CH2_EN_OUT | CH1_EN_OUT;
+//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_OVERTEMP,
+//			1, &data, 1, 100);
+//
+//#define ADAU1979_POSTADC_GAIN1		0x0A
+//#define ADAU1979_POSTADC_GAIN2		0x0B
+//#define ADAU1979_POSTADC_GAIN3		0x0C
+//#define ADAU1979_POSTADC_GAIN4		0x0D
+//#define GAIN_0_DB					0xA0
+//#define GAIN_5_625_DB				145 // (60 - x * 0.375) dB
+//#define GAIN_9_DB					136
+//#define GAIN_15_DB					120
+//#define GAIN_18_DB					112
+//#define GAIN_25_5_DB				92
+//#define GAIN_25_875_DB				91
+//#define GAIN_60_DB					0x0
+//
+//	/* Gain = 60dB - (gain_register) * 0.375dB */
+//
+//	/* Channel 1 Gain */
+//	data = (configPacket.payload.config_packet.audio_config.mic_gain * 8);
+//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_POSTADC_GAIN1,
+//			1, &data, 1, 100);
+//
+//	/* Channel 2 Gain */
+//	data = (configPacket.payload.config_packet.audio_config.mic_gain * 8);
+//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_POSTADC_GAIN2,
+//			1, &data, 1, 100);
+//
+//	/* Channel 3 Gain */
+//	data = (configPacket.payload.config_packet.audio_config.mic_gain * 8);
+//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_POSTADC_GAIN3,
+//			1, &data, 1, 100);
+//
+//	/* Channel 4 Gain */
+//	data = (configPacket.payload.config_packet.audio_config.mic_gain * 8);
+//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_POSTADC_GAIN4,
+//			1, &data, 1, 100);
+//
+//#define ADAU1979_MISC_CONTROL		0x0E
+//#define MODE_4_CHANNEL				0x0 << 6
+//#define MODE_2_CHANNEL_SUM_MODE		0x1 << 6
+//#define MODE_1_CHANNEL_SUM_MODE		0x2 << 6
+//
+//	/* 4-channel mode, normal operation, */
+////	data = MODE_4_CHANNEL;
+//		data = MODE_2_CHANNEL_SUM_MODE;
+//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_MISC_CONTROL,
+//			1, &data, 1, 100);
+//
+//#define ADAU1979_ASDC_CLIP			0x19
+//#define ADAU1979_DC_HPF_CAL			0x1A
+//#define DC_HPF_C4_ON				0x1 << 3
+//#define DC_HPF_C3_ON				0x1 << 2
+//#define DC_HPF_C2_ON				0x1 << 1
+//#define DC_HPF_C1_ON				0x1 << 0
+//
+//	//	/* HPF on for all channels */
+//	//	data = DC_HPF_C4_ON | DC_HPF_C3_ON | DC_HPF_C2_ON | DC_HPF_C1_ON;
+//	//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_DC_HPF_CAL,
+//	//									 1, &data, 1, 100);
+//
+//#define ADAU1979_PLL_CONTROL		0x01
+//#define PLL_LOCK_REG				0x1 << 7
+//#define PLL_NO_AUTO_MUTE			0x0 << 6
+//#define PLL_INPUT_MCLK				0x0 << 4
+//#define PLL_INPUT_LRCLK				0x1 << 4
+//#define PLL_MCS_DIV_256				0x1 << 0
+//#define PLL_MCS_DIV_384				0x2 << 0
+//#define PLL_MCS_DIV_512				0x3 << 0
+//#define PLL_MCS_DIV_768				0x4 << 0
+//#define PLL_MCS_DIV_128				0x0 << 0
+//
+//	//  /* PLL Configuration (MCLK = BCLK = 256 * 22.05kHz, ADC SAMPLE RATE = 22.05 kHz)*/
+//	/* PLL Configuration (MCLK = BCLK = 128 * 44.6kHz, ADC SAMPLE RATE = 44.6 kHz)*/
+//	data = PLL_NO_AUTO_MUTE | PLL_INPUT_LRCLK;
+//	//
+//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_PLL_CONTROL,
+//			1, &data, 1, 100);
 
 }
 

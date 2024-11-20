@@ -59,7 +59,7 @@ osThreadId_t configThreadId;
 
 const osThreadAttr_t mainSystemTask_attributes = { .name = "mainSystemTask", .attr_bits =
 		osThreadDetached, .cb_mem = NULL, .cb_size = 0, .stack_mem = NULL,
-		.stack_size = 256*8, .priority = (osPriority_t) osPriorityNormal,
+		.stack_size = 256*12, .priority = (osPriority_t) osPriorityNormal,
 		.tz_module = 0, .reserved = 0 };
 osThreadId_t mainSystemThreadId;
 
