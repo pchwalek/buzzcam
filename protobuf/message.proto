@@ -98,6 +98,13 @@ message Device{
     uint32 range = 2;
 }
 
+message Location{
+    uint64 epoch = 1; // when the last location was taken
+    float lat = 2;
+    float lon = 3;
+    float elev = 4;
+}
+
 message SystemInfoPacket{
     SimpleSensorReading simple_sensor_reading = 1;
     bool device_recording = 2;
@@ -105,8 +112,7 @@ message SystemInfoPacket{
     MarkState mark_state = 4;
     BatteryState battery_state = 5;
     repeated Device discoveredDevices = 6;
-	
-   // optional DiscoveredDevices discovered_devices = 6;
+    optional Location gps_location = 7;
 }
 
 enum MicSampleFreq {
@@ -270,6 +276,16 @@ message SpecialFunction{
     }
 }
 
+message ClassifierPacket{
+    float classifier_version = 1;
+    uint64 last_detection = 2;
+    uint32 buzz_count_total = 3;
+    uint32 species_1_count_total = 4;
+    uint32 species_2_count_total = 5;
+    uint32 buzz_count_day = 6;
+    uint32 species_1_count_day = 7;
+    uint32 species_2_count_day = 8;
+}
 
 
 message Packet {
@@ -280,7 +296,7 @@ message Packet {
         MarkPacket mark_packet = 3;
         ConfigPacket config_packet = 4;
         SpecialFunction special_function = 5;
-        
+	ClassifierPacket classifier_packet = 6;  
     }
 }
 

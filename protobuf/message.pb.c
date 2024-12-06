@@ -36,6 +36,9 @@ PB_BIND(BATTERY_STATE, battery_state_t, AUTO)
 PB_BIND(DEVICE, device_t, AUTO)
 
 
+PB_BIND(LOCATION, location_t, AUTO)
+
+
 PB_BIND(SYSTEM_INFO_PACKET, system_info_packet_t, 2)
 
 
@@ -76,6 +79,9 @@ PB_BIND(UWB_PACKET, uwb_packet_t, 2)
 
 
 PB_BIND(SPECIAL_FUNCTION, special_function_t, 2)
+
+
+PB_BIND(CLASSIFIER_PACKET, classifier_packet_t, AUTO)
 
 
 PB_BIND(PACKET, packet_t, 2)
