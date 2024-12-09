@@ -20,8 +20,11 @@ Description: Example code used to control Insta360 X3 and RS 1-inch cameras
 #define CHARACTERISTIC_SYS_CONFIG "ce72"
 #define CHARACTERISTIC_RX "ce73"
 
+#define CLASS_DELAY_UPDATE 10000
+
 packet_t message;
 
+packet_t message_classification;
 packet_t message_system_info;
 packet_t message_config;
 packet_t message_rx;
@@ -194,12 +197,11 @@ void setup() {
 
 	/* PROTOBUF SPECIFIC */
 	message_system_info.has_header = true;
-	message_system_info.header.epoch = 1213232; // unix timestamp
+	message_system_info.header.epoch = 1733749773; // unix timestamp
 	message_system_info.header.ms_from_start = millis();
 	message_system_info.header.system_uid = 0x1234; // UID
 	message_system_info.which_payload = PACKET_SYSTEM_INFO_PACKET_TAG; // packet type is system_info
 	message_system_info.payload.system_info_packet.device_recording = false;
-	message_system_info.payload.system_info_packet.number_discovered_devices = 0;
 	message_system_info.payload.system_info_packet.has_mark_state = true;
 	message_system_info.payload.system_info_packet.mark_state.mark_number = 0;
 //	message_system_info.payload.system_info_packet.mark_state.beep_enabled = false;
@@ -214,6 +216,27 @@ void setup() {
 	message_system_info.payload.system_info_packet.simple_sensor_reading.humidity = 40;
 	message_system_info.payload.system_info_packet.simple_sensor_reading.temperature = 70;
 	message_system_info.payload.system_info_packet.simple_sensor_reading.index = 3;
+
+  message_system_info.payload.system_info_packet.has_gps_location = true;
+  message_system_info.payload.system_info_packet.gps_location.lat = -41.025170;
+  message_system_info.payload.system_info_packet.gps_location.lon = -71.819385;
+  message_system_info.payload.system_info_packet.gps_location.elev = 808.0;
+  message_system_info.payload.system_info_packet.gps_location.epoch = 1733749773;
+
+	message_classification.has_header = true;
+	message_classification.header.epoch = 1733749773; // unix timestamp
+	message_classification.header.ms_from_start = millis();
+	message_classification.header.system_uid = 0x1234; // UID
+  message_classification.which_payload = PACKET_CLASSIFIER_PACKET_TAG;
+  message_classification.payload.classifier_packet.classifier_version = 1.0;
+  message_classification.payload.classifier_packet.buzz_count_day = 53;
+  message_classification.payload.classifier_packet.buzz_count_total = 3042;
+  message_classification.payload.classifier_packet.last_detection = message_classification.header.epoch - 14012;
+  message_classification.payload.classifier_packet.species_1_count_total = 1032;
+  message_classification.payload.classifier_packet.species_2_count_total = message_classification.payload.classifier_packet.buzz_count_total - message_classification.payload.classifier_packet.species_1_count_total;
+  message_classification.payload.classifier_packet.species_1_count_day = 12;
+  message_classification.payload.classifier_packet.species_2_count_day = message_classification.payload.classifier_packet.buzz_count_day - message_classification.payload.classifier_packet.species_1_count_day;
+  
 	// define stream and encode
 	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
 	pb_encode(&stream, PACKET_FIELDS, &message_system_info);
@@ -276,6 +299,25 @@ void loop() {
 		Serial.println("connecting");
 		oldDeviceConnected = deviceConnected;
 	}
+
+  if(deviceConnected && ((millis() - myTime) > CLASS_DELAY_UPDATE)) {
+    uint8_t new_species_1_count =  random(0, 3); ;
+    uint8_t new_species_2_count =  random(0, 3); ;
+
+    message_classification.payload.classifier_packet.last_detection += CLASS_DELAY_UPDATE;
+    message_classification.payload.classifier_packet.species_1_count_day += new_species_1_count;
+    message_classification.payload.classifier_packet.species_2_count_day += new_species_2_count;
+    message_classification.payload.classifier_packet.buzz_count_day += new_species_1_count + new_species_2_count;
+    message_classification.payload.classifier_packet.species_1_count_total += new_species_1_count;
+    message_classification.payload.classifier_packet.species_2_count_total += new_species_2_count;
+    message_classification.payload.classifier_packet.buzz_count_total += new_species_1_count + new_species_2_count;
+
+    pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+	  pb_encode(&stream, PACKET_FIELDS, &message_classification);
+	  pCharacteristicRx->setValue(buffer, stream.bytes_written);
+    pCharacteristicRx->notify();
+  }
+
 
 	/* this loop just goes through all the features */
 	// if (((millis() - myTime) > CAPTURE_DELAY)) {
