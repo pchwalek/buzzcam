@@ -292,6 +292,11 @@ void loop() {
 		pServer->startAdvertising(); // restart advertising
 		Serial.println("start advertising");
 		oldDeviceConnected = deviceConnected;
+
+    pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+	  pb_encode(&stream, PACKET_FIELDS, &message_system_info);
+	  pCharacteristicSysInfo->setValue(buffer, stream.bytes_written);
+    pCharacteristicSysInfo->notify();
 	}
 	// connecting
 	if (deviceConnected && !oldDeviceConnected) {
@@ -314,8 +319,8 @@ void loop() {
 
     pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
 	  pb_encode(&stream, PACKET_FIELDS, &message_classification);
-	  pCharacteristicRx->setValue(buffer, stream.bytes_written);
-    pCharacteristicRx->notify();
+	  pCharacteristicSysInfo->setValue(buffer, stream.bytes_written);
+    pCharacteristicSysInfo->notify();
   }
 
 
