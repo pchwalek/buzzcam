@@ -802,6 +802,7 @@ void HAL_SAI_MspInit(SAI_HandleTypeDef* hsai)
     PC3     ------> SAI1_SD_A
     PB13     ------> SAI1_SCK_A
     PB12     ------> SAI1_FS_A
+	PE2     ------> SAI1_MCLK_A
     */
     GPIO_InitStruct.Pin = GPIO_PIN_3;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -816,6 +817,13 @@ void HAL_SAI_MspInit(SAI_HandleTypeDef* hsai)
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     GPIO_InitStruct.Alternate = GPIO_AF13_SAI1;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = GPIO_PIN_2;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Alternate = GPIO_AF13_SAI1;
+    HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
       /* Peripheral DMA init*/
 
@@ -860,10 +868,12 @@ void HAL_SAI_MspDeInit(SAI_HandleTypeDef* hsai)
     PC3     ------> SAI1_SD_A
     PB13     ------> SAI1_SCK_A
     PB12     ------> SAI1_FS_A
+    PE2     ------> SAI1_MCLK_A
     */
     HAL_GPIO_DeInit(GPIOC, GPIO_PIN_3);
 
     HAL_GPIO_DeInit(GPIOB, SAI_SCK_A_Pin|GPIO_PIN_12);
+    HAL_GPIO_DeInit(GPIOE, GPIO_PIN_2);
 
     /* SAI1 DMA Deinit */
     HAL_DMA_DeInit(hsai->hdmarx);

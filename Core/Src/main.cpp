@@ -429,15 +429,15 @@ int main(void)
   MX_RF_Init();
   /* USER CODE BEGIN 2 */
 
-  HAL_GPIO_WritePin(EN_MAX78000_GPIO_Port, EN_MAX78000_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(EN_MAX78000_GPIO_Port, EN_MAX78000_Pin, GPIO_PIN_RESET);
 
   uint32_t buffer_half_size = greatest_divisor(hsai_BlockA1.Init.AudioFrequency, AUDIO_BUFFER_HALF_LEN);
   uint32_t buffer_size = buffer_half_size * 2;
   HAL_SAI_Receive_DMA(&hsai_BlockA1, (uint8_t*) audioSample, buffer_size);
 
-  while(1){
-	  systemTestCode();
-  }
+//  while(1){
+//	  systemTestCode();
+//  }
 
 //  disable_SD_Card_1();
 //  disable_SD_Card_2();
@@ -486,28 +486,28 @@ int main(void)
 
 
 
-#define gnssAddress (0x42 << 1) // The default I2C address for u-blox modules is 0x42. Change this if required
-
-	  while (myGNSS.begin(&hi2c1, gnssAddress) == false) //Connect to the u-blox module using our custom port and address
-	  {
-	    HAL_Delay(1000);
-	  }
-
-	  myGNSS.setI2COutput(COM_TYPE_UBX); //Set the I2C port to output UBX only (turn off NMEA noise)
-
-//	  myGNSS.setNavigationFrequency(2); // Produce two solutions per second
+//#define gnssAddress (0x42 << 1) // The default I2C address for u-blox modules is 0x42. Change this if required
 //
-//	  myGNSS.setAutoPVT(true); // Tell the GNSS to output each solution periodically
-
-	  //	Duration of the requested task. The maximum supported value is 12 days. Set to 0 to wait for a wakeup signal on a pin
-	  myGNSS.powerOff(0);
-
-//		HAL_GPIO_WritePin(EN_3V3_GPS_GPIO_Port, EN_3V3_GPS_Pin, GPIO_PIN_RESET);
+//	  while (myGNSS.begin(&hi2c1, gnssAddress) == false) //Connect to the u-blox module using our custom port and address
+//	  {
+//	    HAL_Delay(1000);
+//	  }
 //
-//		while(1);
-
-	  volatile int32_t latitude, longitude, altitude;
-	  volatile uint32_t epoch;
+//	  myGNSS.setI2COutput(COM_TYPE_UBX); //Set the I2C port to output UBX only (turn off NMEA noise)
+//
+////	  myGNSS.setNavigationFrequency(2); // Produce two solutions per second
+////
+////	  myGNSS.setAutoPVT(true); // Tell the GNSS to output each solution periodically
+//
+//	  //	Duration of the requested task. The maximum supported value is 12 days. Set to 0 to wait for a wakeup signal on a pin
+//	  myGNSS.powerOff(0);
+//
+////		HAL_GPIO_WritePin(EN_3V3_GPS_GPIO_Port, EN_3V3_GPS_Pin, GPIO_PIN_RESET);
+////
+////		while(1);
+//
+//	  volatile int32_t latitude, longitude, altitude;
+//	  volatile uint32_t epoch;
 
 
 
@@ -1063,7 +1063,7 @@ static void MX_SAI1_Init(void)
   hsai_BlockA1.Init.NoDivider = SAI_MASTERDIVIDER_ENABLE;
   hsai_BlockA1.Init.MckOverSampling = SAI_MCK_OVERSAMPLING_DISABLE;
   hsai_BlockA1.Init.FIFOThreshold = SAI_FIFOTHRESHOLD_EMPTY;
-  hsai_BlockA1.Init.AudioFrequency = SAI_AUDIO_FREQUENCY_48K;
+  hsai_BlockA1.Init.AudioFrequency = SAI_AUDIO_FREQUENCY_48K; //getSampleFreq(configPacket.payload.config_packet.audio_config.sample_freq)
   hsai_BlockA1.Init.SynchroExt = SAI_SYNCEXT_DISABLE;
   hsai_BlockA1.Init.MonoStereoMode = SAI_STEREOMODE;
   hsai_BlockA1.Init.CompandingMode = SAI_NOCOMPANDING;
@@ -4332,8 +4332,8 @@ void disableExtAudioDevices(void){
 }
 
 void enableExtAudioDevices(void){
-	EnableExtADC(true);
 	HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_SET);
+	EnableExtADC(true);
 	osDelay(50);
 }
 
@@ -4498,9 +4498,10 @@ void mainSystemTask(void *argument){
 
 	// start MAX78000
 	HAL_GPIO_WritePin(EN_MAX78000_GPIO_Port, EN_MAX78000_Pin, GPIO_PIN_SET);
-
 	delay_nop(1000000);
-	HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+	HAL_NVIC_EnableIRQ(EXTI9_5_IRQn); // interrupt line from MAX78000
+
+
 //	HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 //	HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 //	HAL_Delay( 10);
@@ -4535,7 +4536,7 @@ void mainSystemTask(void *argument){
 //		bmeTaskHandle = osThreadNew(BME_Task, NULL, &bmeTask_attributes);
 //	}
 
-	 myGNSS.powerOff(0); // getting orientatio powers back on device due to I2C activity
+//	 myGNSS.powerOff(0); // getting orientatio powers back on device due to I2C activity
 
 	/* start audio recording if enablechirp_timestampd and no sensor schedule has been given*/
 	osDelay(500);
@@ -5412,12 +5413,89 @@ void configLoraRadio(void){
 	if(SX126X_STATUS_OK != sx126x_set_rx_tx_fallback_mode(NULL, SX126X_FALLBACK_STDBY_XOSC)) Error_Handler();
 }
 
+#define TLV320_ADDR   (0x30)
+void writeToTLV(uint8_t page, uint8_t reg, uint8_t data){
+	volatile HAL_StatusTypeDef status;
+	uint8_t tx_data[4] = {0};
+
+	tx_data[1] = page;
+	tx_data[2] = reg;
+	tx_data[3] = data;
+
+	status = HAL_I2C_Master_Transmit(&hi2c3, TLV320_ADDR, tx_data,
+	                                          2, 100);
+
+	status = HAL_I2C_Master_Transmit(&hi2c3, TLV320_ADDR, &tx_data[2],
+	                                          2, 100);
+
+	if(status != HAL_OK){
+		Error_Handler();
+	}
+}
+
 void runAnalogConverter(void){
 
 	uint8_t data = 0;
 	uint8_t ctrl0_settings = 0;
 	uint8_t ctrl1_settings = 0;
 	HAL_StatusTypeDef status;
+
+//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_PLL_CONTROL,
+//				1, &data, 1, 100);
+
+
+	// TLV settings
+	// default: MCLK input, PLL disabled
+
+	/*
+	 * CHECK 1: ADC_CLIKIN = NADC * MADC * AOSR * ADC_FS (12.288 MHZ in the below case)
+	 * CHECK 2: MADC X AOSR/32 > RC
+	 * CHECK 3: MADC X AOSR >= IADC
+	 */
+	// NADC = 1
+	writeToTLV(0, 18, 1);
+
+	// MADC = 2
+	writeToTLV(0, 19, 2);
+
+	// AOSR = 128
+	writeToTLV(0, 20, 128);
+
+	// IADC = 240 for PRB_R2 filter
+#define IADC_240_INSTRUCTIONS (120)
+	writeToTLV(0, 21, IADC_240_INSTRUCTIONS);
+
+
+	//enable PRB_R2 filter
+	writeToTLV(0, 61, 0x02);
+
+	// todo: BELOW COEFFICIENTS
+	/* IIR configuration */
+	/* biquad configuration */
+
+//#define GAIN_9_DB					(9*2)
+//	writeToTLV(0, 93, GAIN_9_DB);
+//	writeToTLV(0, 101, GAIN_9_DB);
+
+	// configure differential pins as inputs to PGA
+	writeToTLV(1, 52, 0x3F);
+	writeToTLV(1, 55, 0x3F);
+
+	// configure PGA gain
+#define GAIN_9_DB					(9*2)
+	writeToTLV(1, 59, GAIN_9_DB);
+	writeToTLV(1, 60, GAIN_9_DB);
+
+
+#define LEFT_CHANNEL_ADC_EN 		(0x1 << 7)
+#define RIGHT_CHANNEL_ADC_EN 		(0x1 << 6)
+	// power up ADCs and disable soft-stepping (if gain is changed, it will be abrupt)
+	writeToTLV(0, 81, LEFT_CHANNEL_ADC_EN | RIGHT_CHANNEL_ADC_EN | 0x02);
+
+#define LEFT_CHANNEL_NOT_MUTED 		(0x0 << 7)
+#define RIGHT_CHANNEL_NOT_MUTED 	(0x0 << 6)
+	// unmute channels
+	writeToTLV(0, 82, LEFT_CHANNEL_NOT_MUTED | RIGHT_CHANNEL_NOT_MUTED);
 
 
 	//	configPacket.payload.config_packet.has_audio_config=true;
@@ -5431,277 +5509,279 @@ void runAnalogConverter(void){
 	//	configPacket.payload.config_packet.audio_config.estimated_record_time=12345678; //placeholder
 	//	configPacket.payload.config_packet.audio_config.sample_freq=MIC_SAMPLE_FREQ_SAMPLE_RATE_48000;
 
-#define ADAU1979_SAI_CTRL0			0x05
-#define I2S_FORMAT					0x0 << 6
-#define LEFT_JUSTIFIED				0x1 << 6
-#define RIGHT_JUSTIFIED_16			0x3 << 6
-#define STEREO						0x0 << 3
-#define TDM_2						0x1 << 3
-#define TDM_4						0x2 << 3
-#define TDM_8						0x3 << 3
-#define TDM_16						0x4 << 3
-#define SAMPLING_RATE_8_12_KHZ		0x0 << 0
-#define SAMPLING_RATE_16_24_KHZ		0x1 << 0
-#define SAMPLING_RATE_32_48_KHZ		0x2 << 0
-#define SAMPLING_RATE_64_96_KHZ		0x3 << 0
-#define SAMPLING_RATE_128_192_KHZ	0x4 << 0
-
-#define ADAU1979_SAI_CTRL1			0x06
-#define SDATAOUT1_OUTPUT			0x0 << 7
-#define SDATAOUT2_OUTPUT			0x1 << 7
-#define SLOT_WIDTH_32				0x0 << 5
-#define SLOT_WIDTH_24				0x1 << 5
-#define SLOT_WIDTH_16				0x2 << 5
-#define DATA_WIDTH_24				0x0 << 4
-#define DATA_WIDTH_16				0x1 << 4
-#define LRCLK_50_DUTY_CYCLE			0x0 << 3
-#define LRCLK_PULSE					0x1 << 3
-#define MSB_FIRST					0x0 << 2
-#define LSB_FIRST					0x1 << 2
-#define BCLKRATE_32_PER_CHANNEL		0x0 << 1
-#define BCLKRATE_16_PER_CHANNEL		0x1 << 1
-#define SAI_SLAVE					0x0 << 0
-#define SAI_MASTER					0x1 << 0
-
-
-	switch(configPacket.payload.config_packet.audio_config.bit_resolution){
-	case MIC_BIT_RESOLUTION_BIT_RES_8:
-		ctrl1_settings |= BCLKRATE_16_PER_CHANNEL | DATA_WIDTH_16 | SLOT_WIDTH_16;
-		break;
-	case MIC_BIT_RESOLUTION_BIT_RES_16:
-		ctrl1_settings |= BCLKRATE_16_PER_CHANNEL | DATA_WIDTH_16 | SLOT_WIDTH_16;
-		break;
-	case MIC_BIT_RESOLUTION_BIT_RES_24:
-		ctrl1_settings |= BCLKRATE_32_PER_CHANNEL | DATA_WIDTH_24 | SLOT_WIDTH_24;
-		break;
-	}
-
-	switch(configPacket.payload.config_packet.audio_config.sample_freq){
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_8000:
-		ctrl0_settings |= SAMPLING_RATE_8_12_KHZ;
-		break;
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_11025:
-		ctrl0_settings |= SAMPLING_RATE_8_12_KHZ;
-		break;
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_16000:
-		ctrl0_settings |= SAMPLING_RATE_16_24_KHZ;
-		break;
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_22500:
-		ctrl0_settings |= SAMPLING_RATE_16_24_KHZ;
-		break;
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_24000:
-		ctrl0_settings |= SAMPLING_RATE_16_24_KHZ;
-		break;
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_32000:
-		ctrl0_settings |= SAMPLING_RATE_32_48_KHZ;
-		break;
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_44100:
-		ctrl0_settings |= SAMPLING_RATE_32_48_KHZ;
-		break;
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_48000:
-		ctrl0_settings |= SAMPLING_RATE_32_48_KHZ;
-		break;
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_96000:
-		ctrl0_settings |= SAMPLING_RATE_64_96_KHZ;
-		break;
-	}
-
-#define ADAU1979_ADDR				0x11 << 1
-
-#define ADAU1979_M_POWER			0x00
-#define S_RST						0x01 << 7
-#define PWUP						0x01 << 0
-#define PWDOWN						0x00 << 0
-
-	/* RESET ADAU1979 */
-	data = S_RST;
-	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_M_POWER,
-			1, &data, 1, 100);
-	osDelay(50);
-
-
-	/* activate ADC */
-	data = PWUP;
-	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_M_POWER,
-			1, &data, 1, 100);
-
-	osDelay(50);
-
-#define ADAU1979_BLOCK_POWER_SAI	0x04
-#define LR_POL_LOW_HIGH				0x0 << 7
-#define LR_POL_HIGH_LOW				0x1 << 7
-#define BCLKEDGE_FALLING			0x0 << 6
-#define BCLKEDGE_RISING				0x1 << 6
-#define LDO_EN						0x1 << 5
-#define VREF_EN						0x1 << 4
-#define ADC_EN4						0x1 << 3
-#define ADC_EN3						0x1 << 2
-#define ADC_EN2						0x1 << 1
-#define ADC_EN1						0x1 << 0
-
-//	data = LDO_EN | VREF_EN | ADC_EN3 | ADC_EN1;
+//#define ADAU1979_SAI_CTRL0			0x05
+//#define I2S_FORMAT					0x0 << 6
+//#define LEFT_JUSTIFIED				0x1 << 6
+//#define RIGHT_JUSTIFIED_16			0x3 << 6
+//#define STEREO						0x0 << 3
+//#define TDM_2						0x1 << 3
+//#define TDM_4						0x2 << 3
+//#define TDM_8						0x3 << 3
+//#define TDM_16						0x4 << 3
+//#define SAMPLING_RATE_8_12_KHZ		0x0 << 0
+//#define SAMPLING_RATE_16_24_KHZ		0x1 << 0
+//#define SAMPLING_RATE_32_48_KHZ		0x2 << 0
+//#define SAMPLING_RATE_64_96_KHZ		0x3 << 0
+//#define SAMPLING_RATE_128_192_KHZ	0x4 << 0
+//
+//#define ADAU1979_SAI_CTRL1			0x06
+//#define SDATAOUT1_OUTPUT			0x0 << 7
+//#define SDATAOUT2_OUTPUT			0x1 << 7
+//#define SLOT_WIDTH_32				0x0 << 5
+//#define SLOT_WIDTH_24				0x1 << 5
+//#define SLOT_WIDTH_16				0x2 << 5
+//#define DATA_WIDTH_24				0x0 << 4
+//#define DATA_WIDTH_16				0x1 << 4
+//#define LRCLK_50_DUTY_CYCLE			0x0 << 3
+//#define LRCLK_PULSE					0x1 << 3
+//#define MSB_FIRST					0x0 << 2
+//#define LSB_FIRST					0x1 << 2
+//#define BCLKRATE_32_PER_CHANNEL		0x0 << 1
+//#define BCLKRATE_16_PER_CHANNEL		0x1 << 1
+//#define SAI_SLAVE					0x0 << 0
+//#define SAI_MASTER					0x1 << 0
+//
+//
+//	switch(configPacket.payload.config_packet.audio_config.bit_resolution){
+//	case MIC_BIT_RESOLUTION_BIT_RES_8:
+//		ctrl1_settings |= BCLKRATE_16_PER_CHANNEL | DATA_WIDTH_16 | SLOT_WIDTH_16;
+//		break;
+//	case MIC_BIT_RESOLUTION_BIT_RES_16:
+//		ctrl1_settings |= BCLKRATE_16_PER_CHANNEL | DATA_WIDTH_16 | SLOT_WIDTH_16;
+//		break;
+//	case MIC_BIT_RESOLUTION_BIT_RES_24:
+//		ctrl1_settings |= BCLKRATE_32_PER_CHANNEL | DATA_WIDTH_24 | SLOT_WIDTH_24;
+//		break;
+//	}
+//
+//	switch(configPacket.payload.config_packet.audio_config.sample_freq){
+//	case MIC_SAMPLE_FREQ_SAMPLE_RATE_8000:
+//		ctrl0_settings |= SAMPLING_RATE_8_12_KHZ;
+//		break;
+//	case MIC_SAMPLE_FREQ_SAMPLE_RATE_11025:
+//		ctrl0_settings |= SAMPLING_RATE_8_12_KHZ;
+//		break;
+//	case MIC_SAMPLE_FREQ_SAMPLE_RATE_16000:
+//		ctrl0_settings |= SAMPLING_RATE_16_24_KHZ;
+//		break;
+//	case MIC_SAMPLE_FREQ_SAMPLE_RATE_22500:
+//		ctrl0_settings |= SAMPLING_RATE_16_24_KHZ;
+//		break;
+//	case MIC_SAMPLE_FREQ_SAMPLE_RATE_24000:
+//		ctrl0_settings |= SAMPLING_RATE_16_24_KHZ;
+//		break;
+//	case MIC_SAMPLE_FREQ_SAMPLE_RATE_32000:
+//		ctrl0_settings |= SAMPLING_RATE_32_48_KHZ;
+//		break;
+//	case MIC_SAMPLE_FREQ_SAMPLE_RATE_44100:
+//		ctrl0_settings |= SAMPLING_RATE_32_48_KHZ;
+//		break;
+//	case MIC_SAMPLE_FREQ_SAMPLE_RATE_48000:
+//		ctrl0_settings |= SAMPLING_RATE_32_48_KHZ;
+//		break;
+//	case MIC_SAMPLE_FREQ_SAMPLE_RATE_96000:
+//		ctrl0_settings |= SAMPLING_RATE_64_96_KHZ;
+//		break;
+//	}
+//
+//#define ADAU1979_ADDR				0x11 << 1
+//
+//#define ADAU1979_M_POWER			0x00
+//#define S_RST						0x01 << 7
+//#define PWUP						0x01 << 0
+//#define PWDOWN						0x00 << 0
+//
+//	/* RESET ADAU1979 */
+//	data = S_RST;
+//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_M_POWER,
+//			1, &data, 1, 100);
+//	osDelay(50);
+//
+//
+//	/* activate ADC */
+//	data = PWUP;
+//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_M_POWER,
+//			1, &data, 1, 100);
+//
+//	osDelay(50);
+//
+//#define ADAU1979_BLOCK_POWER_SAI	0x04
+//#define LR_POL_LOW_HIGH				0x0 << 7
+//#define LR_POL_HIGH_LOW				0x1 << 7
+//#define BCLKEDGE_FALLING			0x0 << 6
+//#define BCLKEDGE_RISING				0x1 << 6
+//#define LDO_EN						0x1 << 5
+//#define VREF_EN						0x1 << 4
+//#define ADC_EN4						0x1 << 3
+//#define ADC_EN3						0x1 << 2
+//#define ADC_EN2						0x1 << 1
+//#define ADC_EN1						0x1 << 0
+//
+////	data = LDO_EN | VREF_EN | ADC_EN3 | ADC_EN1;
+////	//	data = LDO_EN | VREF_EN | ADC_EN1;
+////	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_BLOCK_POWER_SAI,
+////			1, &data, 1, 100);
+//
+//	data = LDO_EN | VREF_EN | ADC_EN4 | ADC_EN3 | ADC_EN2 | ADC_EN1;
 //	//	data = LDO_EN | VREF_EN | ADC_EN1;
 //	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_BLOCK_POWER_SAI,
 //			1, &data, 1, 100);
-
-	data = LDO_EN | VREF_EN | ADC_EN4 | ADC_EN3 | ADC_EN2 | ADC_EN1;
-	//	data = LDO_EN | VREF_EN | ADC_EN1;
-	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_BLOCK_POWER_SAI,
-			1, &data, 1, 100);
-
-	/* activate ADC */
-	ctrl0_settings |= I2S_FORMAT | STEREO;
-	//	ctrl0_settings |= LEFT_JUSTIFIED | STEREO;
-	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CTRL0,
-			1, &ctrl0_settings, 1, 100);
-
-	/* TDM Configuration */
-	ctrl1_settings |= SDATAOUT1_OUTPUT | LRCLK_50_DUTY_CYCLE | MSB_FIRST | BCLKRATE_16_PER_CHANNEL | SAI_SLAVE;
-	//	ctrl1_settings |= SDATAOUT1_OUTPUT | LRCLK_PULSE | MSB_FIRST | SAI_SLAVE;
-	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CTRL1,
-			1, &ctrl1_settings, 1, 100);
-
-#define ADAU1979_SAI_CMAP12			0x07
-#define TDM_CH2_SLOT_10				0x9 << 4
-#define TDM_CH2_SLOT_3				0x3 << 4
-#define TDM_CH2_SLOT_2				0x2 << 4
-#define TDM_CH2_SLOT_1				0x1 << 4
-#define TDM_CH1_SLOT_15				0xE << 0
-#define TDM_CH1_SLOT_9				0x8 << 0
-#define TDM_CH1_SLOT_0				0x0 << 0
-#define TDM_CH1_SLOT_1				0x1
-
-#define ADAU1979_SAI_CMAP34			0x08
-#define TDM_CH4_SLOT_12				0xB << 4
-#define TDM_CH4_SLOT_3				0x3 << 4
-#define TDM_CH4_SLOT_2				0x2 << 4
-#define TDM_CH4_SLOT_1				0x1 << 4
-#define TDM_CH4_SLOT_0				0x0 << 4
-#define TDM_CH3_SLOT_16				0xF << 0
-#define TDM_CH3_SLOT_11				0xA << 0
-#define TDM_CH3_SLOT_10				0x9 << 0
-#define TDM_CH3_SLOT_2				0x2 << 0
-#define TDM_CH3_SLOT_1				0x1 << 0
-#define TDM_CH3_SLOT_0				0x0 << 0
-
-	/* TDM Config Slots */
-	data = TDM_CH1_SLOT_0 | TDM_CH2_SLOT_1;
-	//	data = TDM_CH1_SLOT_0 | TDM_CH2_SLOT_2;
-
-	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CMAP12,
-			1, &data, 1, 100);
-
-
-
-	/* TDM Config Slots */
-	//	//  data = TDM_CH4_SLOT_1 | TDM_CH3_SLOT_2;
-	//	//  data = 0x7 | TDM_CH4_SLOT_12;
-	//	data = TDM_CH3_SLOT_10;
-	//  data = TDM_CH3_SLOT_1;
-	//		    data = TDM_CH3_SLOT_11 | TDM_CH4_SLOT_12;
-	//	//
-	//		status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CMAP34,
-	//				1, &data, 1, 100);
-
-	/* ONLY FOR WIND TUNNEL TESTING */
-	//	data = TDM_CH3_SLOT_1 | TDM_CH4_SLOT_3;
-	//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CMAP34,
-	//			1, &data, 1, 100);
-
-#define ADAU1979_SAI_OVERTEMP		0x09
-#define CH4_EN_OUT					0x1 << 7
-#define CH3_EN_OUT					0x1 << 6
-#define CH2_EN_OUT					0x1 << 5
-#define CH1_EN_OUT					0x1 << 4
-#define DRV_HIZ_EN					0x1 << 3
-
-	/* TDM Channel Configuration */
-	data = CH4_EN_OUT | CH3_EN_OUT | CH2_EN_OUT | CH1_EN_OUT;
-	//	data = CH1_EN_OUT;
-	//	data = DRV_HIZ_EN | CH4_EN_OUT | CH3_EN_OUT | CH2_EN_OUT | CH1_EN_OUT;
-	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_OVERTEMP,
-			1, &data, 1, 100);
-
-#define ADAU1979_POSTADC_GAIN1		0x0A
-#define ADAU1979_POSTADC_GAIN2		0x0B
-#define ADAU1979_POSTADC_GAIN3		0x0C
-#define ADAU1979_POSTADC_GAIN4		0x0D
-#define GAIN_0_DB					0xA0
-#define GAIN_5_625_DB				145 // (60 - x * 0.375) dB
-#define GAIN_9_DB					136
-#define GAIN_15_DB					120
-#define GAIN_18_DB					112
-#define GAIN_25_5_DB				92
-#define GAIN_25_875_DB				91
-#define GAIN_60_DB					0x0
-
-	/* Gain = 60dB - (gain_register) * 0.375dB */
-
-	/* Channel 1 Gain */
-	data = (configPacket.payload.config_packet.audio_config.mic_gain * 8);
-	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_POSTADC_GAIN1,
-			1, &data, 1, 100);
-
-	/* Channel 2 Gain */
-	data = (configPacket.payload.config_packet.audio_config.mic_gain * 8);
-	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_POSTADC_GAIN2,
-			1, &data, 1, 100);
-
-	/* Channel 3 Gain */
-	data = (configPacket.payload.config_packet.audio_config.mic_gain * 8);
-	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_POSTADC_GAIN3,
-			1, &data, 1, 100);
-
-	/* Channel 4 Gain */
-	data = (configPacket.payload.config_packet.audio_config.mic_gain * 8);
-	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_POSTADC_GAIN4,
-			1, &data, 1, 100);
-
-#define ADAU1979_MISC_CONTROL		0x0E
-#define MODE_4_CHANNEL				0x0 << 6
-#define MODE_2_CHANNEL_SUM_MODE		0x1 << 6
-#define MODE_1_CHANNEL_SUM_MODE		0x2 << 6
-
-	/* 4-channel mode, normal operation, */
-	//	data = MODE_4_CHANNEL;
-	data = MODE_2_CHANNEL_SUM_MODE;
-	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_MISC_CONTROL,
-			1, &data, 1, 100);
-
-#define ADAU1979_ASDC_CLIP			0x19
-#define ADAU1979_DC_HPF_CAL			0x1A
-#define DC_HPF_C4_ON				0x1 << 3
-#define DC_HPF_C3_ON				0x1 << 2
-#define DC_HPF_C2_ON				0x1 << 1
-#define DC_HPF_C1_ON				0x1 << 0
-
-	//	/* HPF on for all channels */
-	//	data = DC_HPF_C4_ON | DC_HPF_C3_ON | DC_HPF_C2_ON | DC_HPF_C1_ON;
-	//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_DC_HPF_CAL,
-	//									 1, &data, 1, 100);
-
-#define ADAU1979_PLL_CONTROL		0x01
-#define PLL_LOCK_REG				0x1 << 7
-#define PLL_NO_AUTO_MUTE			0x0 << 6
-#define PLL_INPUT_MCLK				0x0 << 4
-#define PLL_INPUT_LRCLK				0x1 << 4
-#define PLL_MCS_DIV_256				0x1 << 0
-#define PLL_MCS_DIV_384				0x2 << 0
-#define PLL_MCS_DIV_512				0x3 << 0
-#define PLL_MCS_DIV_768				0x4 << 0
-#define PLL_MCS_DIV_128				0x0 << 0
-
-	//  /* PLL Configuration (MCLK = BCLK = 256 * 22.05kHz, ADC SAMPLE RATE = 22.05 kHz)*/
-	/* PLL Configuration (MCLK = BCLK = 128 * 44.6kHz, ADC SAMPLE RATE = 44.6 kHz)*/
-	data = PLL_NO_AUTO_MUTE | PLL_INPUT_LRCLK;
-	//
-	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_PLL_CONTROL,
-			1, &data, 1, 100);
+//
+//	/* activate ADC */
+//	ctrl0_settings |= I2S_FORMAT | STEREO;
+//	//	ctrl0_settings |= LEFT_JUSTIFIED | STEREO;
+//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CTRL0,
+//			1, &ctrl0_settings, 1, 100);
+//
+//	/* TDM Configuration */
+//	ctrl1_settings |= SDATAOUT1_OUTPUT | LRCLK_50_DUTY_CYCLE | MSB_FIRST | BCLKRATE_16_PER_CHANNEL | SAI_SLAVE;
+//	//	ctrl1_settings |= SDATAOUT1_OUTPUT | LRCLK_PULSE | MSB_FIRST | SAI_SLAVE;
+//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CTRL1,
+//			1, &ctrl1_settings, 1, 100);
+//
+//#define ADAU1979_SAI_CMAP12			0x07
+//#define TDM_CH2_SLOT_10				0x9 << 4
+//#define TDM_CH2_SLOT_3				0x3 << 4
+//#define TDM_CH2_SLOT_2				0x2 << 4
+//#define TDM_CH2_SLOT_1				0x1 << 4
+//#define TDM_CH1_SLOT_15				0xE << 0
+//#define TDM_CH1_SLOT_9				0x8 << 0
+//#define TDM_CH1_SLOT_0				0x0 << 0
+//#define TDM_CH1_SLOT_1				0x1
+//
+//#define ADAU1979_SAI_CMAP34			0x08
+//#define TDM_CH4_SLOT_12				0xB << 4
+//#define TDM_CH4_SLOT_3				0x3 << 4
+//#define TDM_CH4_SLOT_2				0x2 << 4
+//#define TDM_CH4_SLOT_1				0x1 << 4
+//#define TDM_CH4_SLOT_0				0x0 << 4
+//#define TDM_CH3_SLOT_16				0xF << 0
+//#define TDM_CH3_SLOT_11				0xA << 0
+//#define TDM_CH3_SLOT_10				0x9 << 0
+//#define TDM_CH3_SLOT_2				0x2 << 0
+//#define TDM_CH3_SLOT_1				0x1 << 0
+//#define TDM_CH3_SLOT_0				0x0 << 0
+//
+//	/* TDM Config Slots */
+//	data = TDM_CH1_SLOT_0 | TDM_CH2_SLOT_1;
+//	//	data = TDM_CH1_SLOT_0 | TDM_CH2_SLOT_2;
+//
+//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CMAP12,
+//			1, &data, 1, 100);
+//
+//
+//
+//	/* TDM Config Slots */
+//	//	//  data = TDM_CH4_SLOT_1 | TDM_CH3_SLOT_2;
+//	//	//  data = 0x7 | TDM_CH4_SLOT_12;
+//	//	data = TDM_CH3_SLOT_10;
+//	//  data = TDM_CH3_SLOT_1;
+//	//		    data = TDM_CH3_SLOT_11 | TDM_CH4_SLOT_12;
+//	//	//
+//	//		status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CMAP34,
+//	//				1, &data, 1, 100);
+//
+//	/* ONLY FOR WIND TUNNEL TESTING */
+//	//	data = TDM_CH3_SLOT_1 | TDM_CH4_SLOT_3;
+//	//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_CMAP34,
+//	//			1, &data, 1, 100);
+//
+//#define ADAU1979_SAI_OVERTEMP		0x09
+//#define CH4_EN_OUT					0x1 << 7
+//#define CH3_EN_OUT					0x1 << 6
+//#define CH2_EN_OUT					0x1 << 5
+//#define CH1_EN_OUT					0x1 << 4
+//#define DRV_HIZ_EN					0x1 << 3
+//
+//	/* TDM Channel Configuration */
+//	data = CH4_EN_OUT | CH3_EN_OUT | CH2_EN_OUT | CH1_EN_OUT;
+//	//	data = CH1_EN_OUT;
+//	//	data = DRV_HIZ_EN | CH4_EN_OUT | CH3_EN_OUT | CH2_EN_OUT | CH1_EN_OUT;
+//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_SAI_OVERTEMP,
+//			1, &data, 1, 100);
+//
+//#define ADAU1979_POSTADC_GAIN1		0x0A
+//#define ADAU1979_POSTADC_GAIN2		0x0B
+//#define ADAU1979_POSTADC_GAIN3		0x0C
+//#define ADAU1979_POSTADC_GAIN4		0x0D
+//#define GAIN_0_DB					0xA0
+//#define GAIN_5_625_DB				145 // (60 - x * 0.375) dB
+//#define GAIN_9_DB					136
+//#define GAIN_15_DB					120
+//#define GAIN_18_DB					112
+//#define GAIN_25_5_DB				92
+//#define GAIN_25_875_DB				91
+//#define GAIN_60_DB					0x0
+//
+//	/* Gain = 60dB - (gain_register) * 0.375dB */
+//
+//	/* Channel 1 Gain */
+//	data = (configPacket.payload.config_packet.audio_config.mic_gain * 8);
+//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_POSTADC_GAIN1,
+//			1, &data, 1, 100);
+//
+//	/* Channel 2 Gain */
+//	data = (configPacket.payload.config_packet.audio_config.mic_gain * 8);
+//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_POSTADC_GAIN2,
+//			1, &data, 1, 100);
+//
+//	/* Channel 3 Gain */
+//	data = (configPacket.payload.config_packet.audio_config.mic_gain * 8);
+//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_POSTADC_GAIN3,
+//			1, &data, 1, 100);
+//
+//	/* Channel 4 Gain */
+//	data = (configPacket.payload.config_packet.audio_config.mic_gain * 8);
+//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_POSTADC_GAIN4,
+//			1, &data, 1, 100);
+//
+//#define ADAU1979_MISC_CONTROL		0x0E
+//#define MODE_4_CHANNEL				0x0 << 6
+//#define MODE_2_CHANNEL_SUM_MODE		0x1 << 6
+//#define MODE_1_CHANNEL_SUM_MODE		0x2 << 6
+//
+//	/* 4-channel mode, normal operation, */
+//	//	data = MODE_4_CHANNEL;
+//	data = MODE_2_CHANNEL_SUM_MODE;
+//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_MISC_CONTROL,
+//			1, &data, 1, 100);
+//
+//#define ADAU1979_ASDC_CLIP			0x19
+//#define ADAU1979_DC_HPF_CAL			0x1A
+//#define DC_HPF_C4_ON				0x1 << 3
+//#define DC_HPF_C3_ON				0x1 << 2
+//#define DC_HPF_C2_ON				0x1 << 1
+//#define DC_HPF_C1_ON				0x1 << 0
+//
+//	//	/* HPF on for all channels */
+//	//	data = DC_HPF_C4_ON | DC_HPF_C3_ON | DC_HPF_C2_ON | DC_HPF_C1_ON;
+//	//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_DC_HPF_CAL,
+//	//									 1, &data, 1, 100);
+//
+//#define ADAU1979_PLL_CONTROL		0x01
+//#define PLL_LOCK_REG				0x1 << 7
+//#define PLL_NO_AUTO_MUTE			0x0 << 6
+//#define PLL_INPUT_MCLK				0x0 << 4
+//#define PLL_INPUT_LRCLK				0x1 << 4
+//#define PLL_MCS_DIV_256				0x1 << 0
+//#define PLL_MCS_DIV_384				0x2 << 0
+//#define PLL_MCS_DIV_512				0x3 << 0
+//#define PLL_MCS_DIV_768				0x4 << 0
+//#define PLL_MCS_DIV_128				0x0 << 0
+//
+//	//  /* PLL Configuration (MCLK = BCLK = 256 * 22.05kHz, ADC SAMPLE RATE = 22.05 kHz)*/
+//	/* PLL Configuration (MCLK = BCLK = 128 * 44.6kHz, ADC SAMPLE RATE = 44.6 kHz)*/
+//	data = PLL_NO_AUTO_MUTE | PLL_INPUT_LRCLK;
+//	//
+//	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_PLL_CONTROL,
+//			1, &data, 1, 100);
 
 }
 
 void EnableExtADC(bool state){
 	if(state){
+		HAL_GPIO_WritePin(ADC_PD_RST_GPIO_Port, ADC_PD_RST_Pin, GPIO_PIN_RESET);
+		osDelay(1);
 		HAL_GPIO_WritePin(ADC_PD_RST_GPIO_Port, ADC_PD_RST_Pin, GPIO_PIN_SET);
 	}else{
 		HAL_GPIO_WritePin(ADC_PD_RST_GPIO_Port, ADC_PD_RST_Pin, GPIO_PIN_RESET);

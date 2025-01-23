@@ -137,62 +137,62 @@ void setup() {
 	Serial.begin(115200);
 	Serial.println("Starting BLE work!");
 
-	BLEDevice::init("BuzzCam_ABC123");
-	pServer = BLEDevice::createServer();
-	pServer->setCallbacks(new MyServerCallbacks());
+	// BLEDevice::init("BuzzCam_ABC123");
+	// pServer = BLEDevice::createServer();
+	// pServer->setCallbacks(new MyServerCallbacks());
 
-	BLEService *pService = pServer->createService(SERVICE_UUID);
-	// BLECharacteristic *pCharacteristic1 = pService->createCharacteristic(
-	//     CHARACTERISTIC_UUID1, BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_READ);
+	// BLEService *pService = pServer->createService(SERVICE_UUID);
+	// // BLECharacteristic *pCharacteristic1 = pService->createCharacteristic(
+	// //     CHARACTERISTIC_UUID1, BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_READ);
 
-	pCharacteristicSysInfo = pService->createCharacteristic(
-			CHARACTERISTIC_SYS_INFO,  BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ);
-	// pDescriptor2902 = new BLE2902();
-	// pDescriptor2902->setNotifications(true);
-	// pDescriptor2902->setIndications(true);
-	// pCharacteristicTx->addDescriptor(pDescriptor2902);
-	pCharacteristicSysInfo->setReadProperty(true);
-	pCharacteristicSysInfo->setNotifyProperty(true);
-	pCharacteristicSysInfo->setIndicateProperty(true);
+	// pCharacteristicSysInfo = pService->createCharacteristic(
+	// 		CHARACTERISTIC_SYS_INFO,  BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ);
+	// // pDescriptor2902 = new BLE2902();
+	// // pDescriptor2902->setNotifications(true);
+	// // pDescriptor2902->setIndications(true);
+	// // pCharacteristicTx->addDescriptor(pDescriptor2902);
+	// pCharacteristicSysInfo->setReadProperty(true);
+	// pCharacteristicSysInfo->setNotifyProperty(true);
+	// pCharacteristicSysInfo->setIndicateProperty(true);
 
-	pCharacteristicSysConfig = pService->createCharacteristic(
-			CHARACTERISTIC_SYS_CONFIG,  BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ);
-	// pDescriptor2902 = new BLE2902();
-	// pDescriptor2902->setNotifications(true);
-	// pDescriptor2902->setIndications(true);
-	// pCharacteristicTx->addDescriptor(pDescriptor2902);
-	pCharacteristicSysConfig->setReadProperty(true);
-	pCharacteristicSysConfig->setNotifyProperty(true);
-	pCharacteristicSysConfig->setIndicateProperty(true);
+	// pCharacteristicSysConfig = pService->createCharacteristic(
+	// 		CHARACTERISTIC_SYS_CONFIG,  BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ);
+	// // pDescriptor2902 = new BLE2902();
+	// // pDescriptor2902->setNotifications(true);
+	// // pDescriptor2902->setIndications(true);
+	// // pCharacteristicTx->addDescriptor(pDescriptor2902);
+	// pCharacteristicSysConfig->setReadProperty(true);
+	// pCharacteristicSysConfig->setNotifyProperty(true);
+	// pCharacteristicSysConfig->setIndicateProperty(true);
 
-	// system state read value
-	pCharacteristicRx = pService->createCharacteristic(
-			CHARACTERISTIC_RX, BLECharacteristic::PROPERTY_WRITE);
-	pCharacteristicRx->setReadProperty(true);
+	// // system state read value
+	// pCharacteristicRx = pService->createCharacteristic(
+	// 		CHARACTERISTIC_RX, BLECharacteristic::PROPERTY_WRITE);
+	// pCharacteristicRx->setReadProperty(true);
 
-	// Create an instance of the callback class
-	MyCallback *pCallback = new MyCallback ();
+	// // Create an instance of the callback class
+	// MyCallback *pCallback = new MyCallback ();
 
-	// Set the callback for the characteristic
-	pCharacteristicRx->setCallbacks (pCallback);
+	// // Set the callback for the characteristic
+	// pCharacteristicRx->setCallbacks (pCallback);
 
 
 
-	pService->start();
+	// pService->start();
 	// BLEAdvertising *pAdvertising = pServer->getAdvertising();  // this still
 	// is working for backward compatibility
-	BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
-	pAdvertising->addServiceUUID(SERVICE_UUID);
-	// pAdvertising->addServiceUUID(SECONDARY_SERVICE_UUID);
+	// BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+	// pAdvertising->addServiceUUID(SERVICE_UUID);
+	// // pAdvertising->addServiceUUID(SECONDARY_SERVICE_UUID);
 
-	pAdvertising->setScanResponse(true);
-	pAdvertising->setMinPreferred(
-			0x06); // functions that help with iPhone connections issue
-	pAdvertising->setMinPreferred(0x12);
+	// pAdvertising->setScanResponse(true);
+	// pAdvertising->setMinPreferred(
+	// 		0x06); // functions that help with iPhone connections issue
+	// pAdvertising->setMinPreferred(0x12);
 
-	BLEDevice::startAdvertising();
-	Serial.println(
-			"Characteristic defined! Now you can read it in your phone!");
+	// BLEDevice::startAdvertising();
+	// Serial.println(
+	// 		"Characteristic defined! Now you can read it in your phone!");
 
 
 	/* PROTOBUF SPECIFIC */
@@ -281,47 +281,47 @@ void setup() {
 }
 
 void loop() {
-	// notify changed value
-	if (deviceConnected) {
-		delay(10); // bluetooth stack will go into congestion, if too many packets
-	}
+	// // notify changed value
+	// if (deviceConnected) {
+	// 	delay(10); // bluetooth stack will go into congestion, if too many packets
+	// }
 
-	// disconnecting
-	if (!deviceConnected && oldDeviceConnected) {
-		delay(500); // give the bluetooth stack the chance to get things ready
-		pServer->startAdvertising(); // restart advertising
-		Serial.println("start advertising");
-		oldDeviceConnected = deviceConnected;
+	// // disconnecting
+	// if (!deviceConnected && oldDeviceConnected) {
+	// 	delay(500); // give the bluetooth stack the chance to get things ready
+	// 	pServer->startAdvertising(); // restart advertising
+	// 	Serial.println("start advertising");
+	// 	oldDeviceConnected = deviceConnected;
 
-    pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-	  pb_encode(&stream, PACKET_FIELDS, &message_system_info);
-	  pCharacteristicSysInfo->setValue(buffer, stream.bytes_written);
-    pCharacteristicSysInfo->notify();
-	}
-	// connecting
-	if (deviceConnected && !oldDeviceConnected) {
-		// do stuff here on connecting
-		Serial.println("connecting");
-		oldDeviceConnected = deviceConnected;
-	}
+  //   pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+	//   pb_encode(&stream, PACKET_FIELDS, &message_system_info);
+	//   pCharacteristicSysInfo->setValue(buffer, stream.bytes_written);
+  //   pCharacteristicSysInfo->notify();
+	// }
+	// // connecting
+	// if (deviceConnected && !oldDeviceConnected) {
+	// 	// do stuff here on connecting
+	// 	Serial.println("connecting");
+	// 	oldDeviceConnected = deviceConnected;
+	// }
 
-  if(deviceConnected && ((millis() - myTime) > CLASS_DELAY_UPDATE)) {
-    uint8_t new_species_1_count =  random(0, 3); ;
-    uint8_t new_species_2_count =  random(0, 3); ;
+  // if(deviceConnected && ((millis() - myTime) > CLASS_DELAY_UPDATE)) {
+  //   uint8_t new_species_1_count =  random(0, 3); ;
+  //   uint8_t new_species_2_count =  random(0, 3); ;
 
-    message_classification.payload.classifier_packet.last_detection += CLASS_DELAY_UPDATE;
-    message_classification.payload.classifier_packet.species_1_count_day += new_species_1_count;
-    message_classification.payload.classifier_packet.species_2_count_day += new_species_2_count;
-    message_classification.payload.classifier_packet.buzz_count_day += new_species_1_count + new_species_2_count;
-    message_classification.payload.classifier_packet.species_1_count_total += new_species_1_count;
-    message_classification.payload.classifier_packet.species_2_count_total += new_species_2_count;
-    message_classification.payload.classifier_packet.buzz_count_total += new_species_1_count + new_species_2_count;
+  //   message_classification.payload.classifier_packet.last_detection += CLASS_DELAY_UPDATE;
+  //   message_classification.payload.classifier_packet.species_1_count_day += new_species_1_count;
+  //   message_classification.payload.classifier_packet.species_2_count_day += new_species_2_count;
+  //   message_classification.payload.classifier_packet.buzz_count_day += new_species_1_count + new_species_2_count;
+  //   message_classification.payload.classifier_packet.species_1_count_total += new_species_1_count;
+  //   message_classification.payload.classifier_packet.species_2_count_total += new_species_2_count;
+  //   message_classification.payload.classifier_packet.buzz_count_total += new_species_1_count + new_species_2_count;
 
-    pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-	  pb_encode(&stream, PACKET_FIELDS, &message_classification);
-	  pCharacteristicSysInfo->setValue(buffer, stream.bytes_written);
-    pCharacteristicSysInfo->notify();
-  }
+  //   pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+	//   pb_encode(&stream, PACKET_FIELDS, &message_classification);
+	//   pCharacteristicSysInfo->setValue(buffer, stream.bytes_written);
+  //   pCharacteristicSysInfo->notify();
+  // }
 
 
 	/* this loop just goes through all the features */
