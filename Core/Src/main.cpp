@@ -5443,20 +5443,34 @@ void runAnalogConverter(void){
 //	status = HAL_I2C_Mem_Write(&hi2c3, ADAU1979_ADDR, ADAU1979_PLL_CONTROL,
 //				1, &data, 1, 100);
 
+	// software reset
+//	writeToTLV(0, 1, 0x01);
 
 	// TLV settings
 	// default: MCLK input, PLL disabled
+
+	// BCLK into PLL and PLL clocks system
+//	writeToTLV(0, 4, 0x07);
+
+	// turn on PLL, R = 14, P = 1
+//	writeToTLV(0, 5, 0x80 | 0x10 | 0x0E);
+
+	// J = 4
+//	writeToTLV(0, 6, 0x04);
+
 
 	/*
 	 * CHECK 1: ADC_CLIKIN = NADC * MADC * AOSR * ADC_FS (12.288 MHZ in the below case)
 	 * CHECK 2: MADC X AOSR/32 > RC
 	 * CHECK 3: MADC X AOSR >= IADC
 	 */
-	// NADC = 1
-	writeToTLV(0, 18, 1);
+//	// NADC = 1
+	writeToTLV(0, 18, 0x80 | 1);
+	// NADC = 7
+//	writeToTLV(0, 18, 7);
 
 	// MADC = 2
-	writeToTLV(0, 19, 2);
+	writeToTLV(0, 19, 0x80 | 2);
 
 	// AOSR = 128
 	writeToTLV(0, 20, 128);
@@ -5465,9 +5479,13 @@ void runAnalogConverter(void){
 #define IADC_240_INSTRUCTIONS (120)
 	writeToTLV(0, 21, IADC_240_INSTRUCTIONS);
 
+	//i2s mode, slave
+	writeToTLV(0, 27, 0x00);
 
-	//enable PRB_R2 filter
-	writeToTLV(0, 61, 0x02);
+	//enable PRB_R1 filter
+	writeToTLV(0, 61, 0x01);
+//	//enable PRB_R2 filter
+//	writeToTLV(0, 61, 0x02);
 
 	// todo: BELOW COEFFICIENTS
 	/* IIR configuration */
@@ -5480,6 +5498,8 @@ void runAnalogConverter(void){
 	// configure differential pins as inputs to PGA
 	writeToTLV(1, 52, 0x3F);
 	writeToTLV(1, 55, 0x3F);
+
+	writeToTLV(1, 51, 0x28);
 
 	// configure PGA gain
 #define GAIN_9_DB					(9*2)
