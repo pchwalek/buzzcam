@@ -116,6 +116,12 @@ const osThreadAttr_t chirpTask_attributes = { .name = "chirpTask",
 		.stack_mem = NULL, .stack_size = 256*3, .priority =
 				(osPriority_t) osPriorityAboveNormal, .tz_module = 0, .reserved = 0 };
 
+const osThreadAttr_t loraGPSTask_attributes = { .name = "loraGPSTask",
+		.attr_bits = osThreadDetached, .cb_mem = NULL, .cb_size = 0,
+		.stack_mem = NULL, .stack_size = 512*2, .priority =
+				(osPriority_t) osPriorityAboveNormal, .tz_module = 0, .reserved = 0 };
+
+
 osMutexId_t messageI2C1_LockHandle;
 const osMutexAttr_t messageI2C1_Lock_attributes = { .name = "messageI2C1_Lock" };
 

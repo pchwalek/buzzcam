@@ -5,6 +5,29 @@
 extern "C" {
 #endif
 
+/*     LoRa Settings     */
+#define MAX_PWR			3 // 22 dBm
+#define HIGH_PWR		2 // 20 dBm
+#define MID_PWR			1 // 17 dBm
+#define LOW_PWR			0 // 14 dBm
+#define ULTRA_LOW_PWR	-1 // 0 dBm
+
+//#define LORA_FREQ		868000000
+#define LORA_FREQ		915000000
+#define LORA_POWER_LVL	LOW_PWR
+
+#define LORA_LONG_RANGE_LOW_BW		3
+#define LORA_MID_RANGE_MID_BW		2
+#define LORA_SHORT_RANGE_HIGH_BW	1
+#define LORA_MAX_BW					0
+#define LORA_MAX_RANGE				4 // this one takes a long time to send a packet
+
+#define LORA_RANGE_BW	LORA_SHORT_RANGE_HIGH_BW
+
+#define LORA_TX_PERIOD_MS		5000
+#define LORA_PKT_RETRY	5
+
+
 typedef enum {
     OFF = 0,
     SD1_EN = 1,
@@ -21,6 +44,7 @@ typedef struct {
     bool isBuzzerActive;
     bool isMAX78000Active;
     bool isFRAMActive;
+    bool isUWBActive;
     SDCardState SDCardState;
 } SystemState;
 
@@ -33,6 +57,7 @@ typedef struct {
     bool isBatteryLevelSensingEnabled;
     bool isBuzzerEnabled;
     bool isMAX78000Enabled;
+    bool isUWBEnabled;
     bool isSDEnabled;
 } SystemPowerSupervisor;
 
@@ -59,6 +84,7 @@ void Control_BatteryMonitor_Power(bool enable);
 void Control_Buzzer_Power(bool enable);
 void Control_MAX78000_Power(bool enable);
 void Control_SDCard_Power(SDCardState sdcardState);
+void Control_UWB_Power(bool enable);
 
 void TurnOffAllSystems();
 
@@ -73,6 +99,7 @@ bool Is_BatteryMonitor_Enabled();
 bool Is_GPS_Enabled();
 bool Is_Buzzer_Enabled();
 bool Is_MAX78000_Enabled();
+bool Is_UWB_Enabled();
 
 #ifdef __cplusplus
 }

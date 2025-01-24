@@ -9,8 +9,8 @@
 #include "main.h"
 #include "stm32wbxx_hal_gpio.h"
 
-SystemState systemState = {false, false, false, false, false, false, false, false, false, OFF};
-SystemPowerSupervisor systemPowerSupervisor = {false, false, false, false, false, false, false, false, false};
+SystemState systemState = {false, false, false, false, false, false, false, false, false, false, OFF};
+SystemPowerSupervisor systemPowerSupervisor = {false, false, false, false, false, false, false, false, false, false};
 PowerRegime powerRegime = CRITICAL;
 
 // Controls power to the microphone regulator and FRAM
@@ -47,8 +47,12 @@ void Control_Secondary_Power(bool enable) {
 void Control_GPS_Power(bool enable) {
     HAL_GPIO_WritePin(EN_3V3_GPS_GPIO_Port, EN_3V3_GPS_Pin, enable ? GPIO_PIN_SET : GPIO_PIN_RESET);
 
-    // also need to activate secondary power for backup supply and I2C comms
-    if(!Is_Secondary_Enabled()) Control_Secondary_Power(true);
+    if(enable){
+		// also need to activate secondary power for backup supply and I2C comms
+		if(!Is_Secondary_Enabled()) Control_Secondary_Power(true);
+    }else{
+    	Control_Secondary_Power(false);
+    }
 }
 
 // Controls power to enable the battery monitoring circuit.
@@ -64,6 +68,11 @@ void Control_Buzzer_Power(bool enable) {
 // Controls power to MAX78000.
 void Control_MAX78000_Power(bool enable) {
     HAL_GPIO_WritePin(EN_MAX78000_GPIO_Port, EN_MAX78000_Pin, enable ? GPIO_PIN_SET : GPIO_PIN_RESET);
+}
+
+// Controls power to MAX78000.
+void Control_UWB_Power(bool enable) {
+    HAL_GPIO_WritePin(EN_UWB_REG_GPIO_Port, EN_UWB_REG_Pin, enable ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 
 // Controls power to SD Cards.
@@ -85,7 +94,10 @@ void Control_SDCard_Power(SDCardState sdcardState) {
 	}
 }
 
-
+// Checks if the UWB regulator is enabled.
+bool Is_UWB_Enabled() {
+    return HAL_GPIO_ReadPin(EN_UWB_REG_GPIO_Port, EN_UWB_REG_Pin) == GPIO_PIN_SET;
+}
 
 // Checks if the microphone regulator is enabled.
 bool Is_Microphone_Enabled() {
@@ -148,6 +160,9 @@ void CheckSystemStates() {
     }
     if (Is_MAX78000_Enabled()){
     	// Take some action if MAX78000 is enabled
+    }
+    if (Is_UWB_Enabled()){
+    	// Take some action if UWB is enabled
     }
 }
 

@@ -146,7 +146,7 @@ sx126x_hal_status_t sx126x_hal_read( const void* context, const uint8_t* command
 
 //	HAL_SPI_TransmitReceive(&hspi1, command, rx_data, command_length + data_length, 100);
 
-	HAL_GPIO_WritePin(SPI2_SX1262_CS_GPIO_Port, SPI12_SX1262_CS_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(SPI2_SX1262_CS_GPIO_Port, SPI2_SX1262_CS_Pin, GPIO_PIN_SET);
 
 //	memcpy(data, &rx_data[command_length], data_length);
 

@@ -115,6 +115,8 @@
 #define FRAM_MAG_CAL_SIZE				sizeof(MagCal)
 
 #define FRAM_SIZE		16000
+
+#define gnssAddress (0x42 << 1) // The default I2C address for u-blox modules is 0x42. Change this if required
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -151,6 +153,7 @@ osThreadId_t fileWriteSyncTaskId;      // Task ID for file write synchronization
 osThreadId_t triggerMarkTaskId;        // Task ID for trigger marking
 osThreadId_t uwbMessageTaskId;         // Task ID for UWB messaging
 osThreadId_t ledSequencerId;           // Task ID for LED sequencing
+osThreadId_t loraGPSId;           // Task ID for task for lora and GPS
 
 // OS Thread Handle
 osThreadId_t chirpTaskHandle;
@@ -215,6 +218,7 @@ beecam_uwb_i2c_device_info_t local_uwbInfo = BEECAM_UWB_I2C_DEVICE_INFO_INIT_DEF
 
 // GPS (Global Positioning System) Interface
 SFE_UBLOX_GNSS myGNSS;  // GNSS interface for UBLOX GPS
+GPSFix currentFix;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -236,6 +240,11 @@ static void MX_RF_Init(void);
 void StartDefaultTask(void *argument);
 
 /* USER CODE BEGIN PFP */
+// Function prototypes for device and operation modes
+void configLoraRadio(void);
+void setLoraAlarm(void);
+void sleepModeLoraRadio(sx126x_sleep_cfgs_t sleep_cfgs);
+
 // Alarm-related functions
 void tamperAlarm(bool state);  // Controls the tamper alarm state
 
@@ -266,6 +275,12 @@ static uint32_t WavProcess_HeaderInit(uint8_t* pHeader, WAVE_FormatTypeDef* pWav
 static uint32_t WavProcess_EncInit(uint32_t Freq, uint8_t *pHeader); // Initializes WAV encoding process
 static uint32_t WavProcess_HeaderUpdate(uint8_t* pHeader, uint32_t bytesWritten); // Updates WAV header
 static void WavUpdateHeaderSize(uint64_t totalBytesWritten);    // Updates header size after WAV recording
+
+// Function prototypes related to GPS
+void turnOnGPSandInit(void);
+bool setTimepulseGPS(void);
+void disableTimepulseGPS(void);
+GPSFixStatus getGPSFix(GPSFix *currentFix, uint32_t timeout_ms);
 
 // RTC (Real-Time Clock) utility functions
 void RTC_FromEpoch(time_t epoch, RTC_TimeTypeDef *time, RTC_DateTypeDef *date); // Converts epoch to RTC time and date
@@ -345,6 +360,9 @@ void sendSlavesTimestamp(void *argument); // Sends timestamp data to slaves
 
 // LED Sequencer task
 void ledSequencer(void *argument);       // Controls LED sequences
+
+// lora and GPS task
+void loraGPSTask(void *argument);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -541,26 +559,29 @@ int main(void)
 
 //	HAL_GPIO_WritePin(EN_3V3_GPS_GPIO_Port, EN_3V3_GPS_Pin, GPIO_PIN_RESET);
 
+//	if(systemPowerSupervisor.isGPSEnabled){
+//		turnOnGPSandInit();
+//		// try to get a fix on boot
+//		if(GPS_FIX_SUCCESS == getGPSFix(&currentFix, 30000)){
+//			updateRTC(currentFix.gps_epoch);
+//		}
+//		standbyGPSMode();
+//	}
 
 
-	systemState.isGPSActive = true;
-	Control_GPS_Power(true);
-	HAL_Delay(5);
-#define gnssAddress (0x42 << 1) // The default I2C address for u-blox modules is 0x42. Change this if required
-
-	  while (myGNSS.begin(&hi2c1, gnssAddress) == false) //Connect to the u-blox module using our custom port and address
-	  {
-	    HAL_Delay(1000);
-	  }
-//
-//	  myGNSS.setI2COutput(COM_TYPE_UBX); //Set the I2C port to output UBX only (turn off NMEA noise)
-//
-////	  myGNSS.setNavigationFrequency(2); // Produce two solutions per second
+//	  while (myGNSS.begin(&hi2c1, gnssAddress) == false) //Connect to the u-blox module using our custom port and address
+//	  {
+//	    HAL_Delay(1000);
+//	  }
 ////
-////	  myGNSS.setAutoPVT(true); // Tell the GNSS to output each solution periodically
-//
-//	  //	Duration of the requested task. The maximum supported value is 12 days. Set to 0 to wait for a wakeup signal on a pin
-	  myGNSS.powerOff(0);
+////	  myGNSS.setI2COutput(COM_TYPE_UBX); //Set the I2C port to output UBX only (turn off NMEA noise)
+////
+//////	  myGNSS.setNavigationFrequency(2); // Produce two solutions per second
+//////
+//////	  myGNSS.setAutoPVT(true); // Tell the GNSS to output each solution periodically
+////
+////	  //	Duration of the requested task. The maximum supported value is 12 days. Set to 0 to wait for a wakeup signal on a pin
+//	  myGNSS.powerOff(0);
 //
 ////		HAL_GPIO_WritePin(EN_3V3_GPS_GPIO_Port, EN_3V3_GPS_Pin, GPIO_PIN_RESET);
 ////
@@ -1464,10 +1485,15 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(SD_DETECT_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : GPS_INT_Pin MAX78_INT1_Pin ZPFL_TRIG_Pin */
-  GPIO_InitStruct.Pin = GPS_INT_Pin|MAX78_INT1_Pin|ZPFL_TRIG_Pin;
+  GPIO_InitStruct.Pin = MAX78_INT1_Pin|ZPFL_TRIG_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  GPIO_InitStruct.Pin = GPS_INT_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPS_INT_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PB0 */
   GPIO_InitStruct.Pin = GPIO_PIN_0;
@@ -1577,9 +1603,10 @@ static void MX_GPIO_Init(void)
 
 	HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
 	HAL_NVIC_SetPriority(EXTI9_5_IRQn, 5, 0);
-
+	HAL_NVIC_SetPriority(EXTI1_IRQn, 5, 0);
 //	HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
 
+	HAL_NVIC_DisableIRQ(EXTI1_IRQn);
 	HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
 	HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
 
@@ -1854,7 +1881,7 @@ void acousticSamplingTask(void *argument){
 		chirpTaskHandle = osThreadNew(chirpTask, NULL, &chirpTask_attributes);
 	}
 
-	tone(4000, 100);
+//	tone(4000, 100);
 //	if(configPacket.payload.config_packet.audio_config.free_run_mode){
 		startRecord(0, folder_name); // run forever
 //	}else{
@@ -2482,6 +2509,107 @@ void uwbMessageTask(void* argument){
 
 
 	}
+}
+
+void turnOnGPSandInit(){
+	Control_GPS_Power(true);
+	systemState.isGPSActive = true;
+
+	osDelay(100); //startup delay (todo: need to tune this)
+
+	osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
+	while (myGNSS.begin(&hi2c1, gnssAddress) == false) //Connect to the u-blox module using our custom port and address
+	{
+		osMutexRelease(messageI2C1_LockHandle);
+		osDelay(1000);
+		osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
+	}
+
+	myGNSS.setI2COutput(COM_TYPE_UBX); //Set the I2C port to output UBX only (turn off NMEA noise)
+	osMutexRelease(messageI2C1_LockHandle);
+}
+
+bool setTimepulseGPS(){
+	bool status;
+	osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
+	  // The Configuration Interface supports two Time Pulse pins TP1 and TP2.
+	  // Here we are configuring TP1, but identical keys exist for TP2 (if your module supports it). See CFG-TP in u-blox_config_keys.h for more details.
+
+	  // We can configure the time pulse pin to produce a defined frequency or period
+	  // Here is how to set the period:
+
+	  myGNSS.newCfgValset(VAL_LAYER_RAM); // Create a new Configuration Interface VALSET message. Apply the changes in RAM only (not BBR).
+
+	  // Let's say that we want our 1 pulse every 30 seconds to be as accurate as possible. So, let's tell the module
+	  // to generate no signal while it is _locking_ to GNSS time. We want the signal to start only when the module is
+	  // _locked_ to GNSS time.
+	  myGNSS.addCfgValset(UBLOX_CFG_TP_PERIOD_TP1, 0); // Set the period to zero
+	  myGNSS.addCfgValset(UBLOX_CFG_TP_LEN_TP1, 0); // Set the pulse length to zero
+
+	  // When the module is _locked_ to GNSS time, make it generate a 1 second pulse every 30 seconds
+	  myGNSS.addCfgValset(UBLOX_CFG_TP_PERIOD_LOCK_TP1, 5000000); // Set the period to 5,000,000 us
+	  myGNSS.addCfgValset(UBLOX_CFG_TP_LEN_LOCK_TP1, 1000000); // Set the pulse length to 1,000,000 us
+
+	  myGNSS.addCfgValset(UBLOX_CFG_TP_TP1_ENA, 1); // Make sure the enable flag is set to enable the time pulse. (Set to 0 to disable.)
+	  myGNSS.addCfgValset(UBLOX_CFG_TP_USE_LOCKED_TP1, 1); // Tell the module to use PERIOD while locking and PERIOD_LOCK when locked to GNSS time
+	  myGNSS.addCfgValset(UBLOX_CFG_TP_PULSE_DEF, 0); // Tell the module that we want to set the period (not the frequency). PERIOD = 0. FREQ = 1.
+	  myGNSS.addCfgValset(UBLOX_CFG_TP_PULSE_LENGTH_DEF, 1); // Tell the module to set the pulse length (not the pulse ratio / duty). RATIO = 0. LENGTH = 1.
+	  myGNSS.addCfgValset(UBLOX_CFG_TP_POL_TP1, 1); // Tell the module that we want the rising edge at the top of second. Falling Edge = 0. Rising Edge = 1.
+
+	  // Now set the time pulse parameters
+	  if (myGNSS.sendCfgValset() == false)
+	  {
+		 status = false;
+	  }
+	  status = true;
+	  osMutexRelease(messageI2C1_LockHandle);
+	  return status;
+}
+
+void disableTimepulseGPS(){
+	osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
+	myGNSS.newCfgValset(VAL_LAYER_RAM); // Create a new Configuration Interface VALSET message. Apply the changes in RAM only (not BBR).
+	myGNSS.addCfgValset(UBLOX_CFG_TP_TP1_ENA, 1); // Make sure the enable flag is set to enable the time pulse. (Set to 0 to disable.)
+
+	// Now set the time pulse parameters
+	if (myGNSS.sendCfgValset(1000) == false)
+	{
+	  Error_Handler();
+	}
+	osMutexRelease(messageI2C1_LockHandle);
+}
+
+bool standbyGPSMode(){
+	osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
+	bool status = myGNSS.powerOff(345600000);
+//	bool status = true;
+	osMutexRelease(messageI2C1_LockHandle);
+	return status;
+//	return  // 4 day default but querying will immediately wakeup system
+}
+
+GPSFixStatus getGPSFix(GPSFix *currentFix, uint32_t timeout_ms){
+	uint32_t start_ms = HAL_GetTick();
+	while( (HAL_GetTick() - start_ms) < timeout_ms ){
+		  if (myGNSS.getPVT(timeout_ms) == true)
+			{
+			  currentFix->latitude = myGNSS.getLatitude();
+
+			  currentFix->longitude = myGNSS.getLongitude();
+
+			  if( (currentFix->latitude == 0) && (currentFix->longitude == 0)) continue;
+
+			  currentFix->altitude = myGNSS.getAltitudeMSL(); // Altitude above Mean Sea Level
+
+			  currentFix->gps_epoch = myGNSS.getUnixEpoch();
+
+			  return GPS_FIX_SUCCESS;
+
+			  break;
+			}
+	  }
+
+	return GPS_FIX_TIMEOUT;
 }
 
 
@@ -4614,7 +4742,7 @@ void mainSystemTask(void *argument){
 	color.duration = 1500;
 	osMessageQueuePut(ledSeqQueueId, &color, 0, 0);
 
-	taskENTER_CRITICAL();
+//	taskENTER_CRITICAL();
 	// start GPS
 //	HAL_GPIO_WritePin(EN_3V3_GPS_GPIO_Port, EN_3V3_GPS_Pin, GPIO_PIN_SET);
 
@@ -4628,7 +4756,7 @@ void mainSystemTask(void *argument){
 //	HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 //	HAL_Delay( 10);
 
-	taskEXIT_CRITICAL();
+//	taskEXIT_CRITICAL();
 
 	/* read current config from SD card */
 
@@ -4645,6 +4773,7 @@ void mainSystemTask(void *argument){
 	triggerMarkTaskId = osThreadNew(triggerMarkTask, NULL, &triggerMarkTask_attributes);
 //	uwbMessageTaskId = osThreadNew(uwbMessageTask, NULL, &uwbMessageTask_attributes);
 	ledSequencerId = osThreadNew(ledSequencer, NULL, &ledSequencerTask_attributes);
+	loraGPSId = osThreadNew(loraGPSTask, NULL, &loraGPSTask_attributes);
 	fileWriteSyncTaskId = osThreadNew(fileWriteSyncTask, NULL, &timestampTask_attributes);
 
 	configThreadId = osThreadNew(updateSystemConfig,
@@ -4652,11 +4781,11 @@ void mainSystemTask(void *argument){
 										&configTask_attributes);
 
 
-//	if(configPacket.payload.config_packet.sensor_config.enable_gas ||
-//			configPacket.payload.config_packet.sensor_config.enable_humidity ||
-//			configPacket.payload.config_packet.sensor_config.enable_temperature){
-//		bmeTaskHandle = osThreadNew(BME_Task, NULL, &bmeTask_attributes);
-//	}
+	if(configPacket.payload.config_packet.sensor_config.enable_gas ||
+			configPacket.payload.config_packet.sensor_config.enable_humidity ||
+			configPacket.payload.config_packet.sensor_config.enable_temperature){
+		bmeTaskHandle = osThreadNew(BME_Task, NULL, &bmeTask_attributes);
+	}
 
 //	 myGNSS.powerOff(0); // getting orientatio powers back on device due to I2C activity
 
@@ -4946,6 +5075,277 @@ void alertMainTask(void *argument){
 
 void sendSlavesTimestamp(void *argument){
 	sendTimeToNodes();
+}
+
+void loraGPSTask(void *argument){
+	uint8_t loraPktRetry = 0;
+	uint32_t flag;
+	uint8_t gpsMsgRetry = 0;
+	volatile uint32_t timestamp = 0;
+
+	// turn on GPS if not already on
+	if(systemPowerSupervisor.isGPSEnabled &&
+			!systemState.isGPSActive){
+
+		turnOnGPSandInit();
+//		// try to get a fix on boot
+//		if(GPS_FIX_SUCCESS == getGPSFix(&currentFix, 30000)){
+//			updateRTC(currentFix.gps_epoch);
+//		}
+		standbyGPSMode();
+	}
+
+	if(systemState.isGPSActive){
+		gpsMsgRetry = 0;
+		if(!setTimepulseGPS()){
+			gpsMsgRetry++;
+			if(gpsMsgRetry > 5){
+				osDelay(1);
+				Error_Handler();
+			}
+		}
+		HAL_NVIC_SetPriority(EXTI1_IRQn, 5, 0);
+		HAL_NVIC_EnableIRQ(EXTI1_IRQn);
+	}
+
+	// turn on LoRa if not already on
+	if(systemPowerSupervisor.isLoRaEnabled && !systemState.isLoRaActive){
+		if(!Is_Secondary_Enabled()) Control_Secondary_Power(true);
+		configLoraRadio();
+		sleepModeLoraRadio(SX126X_SLEEP_CFG_WARM_START);
+//		setLoraAlarm();
+		HAL_NVIC_SetPriority(EXTI9_5_IRQn, 5, 0);
+		HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+		//todo: is LoRa normally in low power mode if not doing anything?
+
+		systemState.isLoRaActive = true;
+	}
+	// disable LoRa
+	else if (!systemPowerSupervisor.isLoRaEnabled && systemState.isLoRaActive){
+		systemState.isLoRaActive = false;
+
+		// accelerometer shares interrupt line
+		if(!systemState.isAccelerometerActive) HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
+//		HAL_RTC_DeactivateAlarm(&hrtc, RTC_ALARM_B);
+		//todo: is LoRa normally in low power mode if not doing anything?
+		Control_Secondary_Power(false);
+	}
+
+	while(1){
+		flag = osThreadFlagsWait(0x0001U | TERMINATE_EVENT |
+				GPS_GRAB_SAMPLE | GPS_TIMEPULSE_FLAG |
+				LORA_SEND_PKT | LORA_IRQ_FLAG, osFlagsWaitAny, osWaitForever);
+
+//		if(flag == osFlagsErrorResource){
+//			continue;
+//		}
+
+		if((flag & GPS_GRAB_SAMPLE) == GPS_GRAB_SAMPLE){
+			setTimepulseGPS();
+			HAL_NVIC_SetPriority(EXTI1_IRQn, 5, 0);
+			HAL_NVIC_EnableIRQ(EXTI1_IRQn);
+		}
+
+		if((flag & GPS_TIMEPULSE_FLAG) == GPS_TIMEPULSE_FLAG){
+			if(myGNSS.getTimeValid(100)){
+				timestamp = myGNSS.getUnixEpoch();
+//				updateRTC(myGNSS.getUnixEpoch());
+			}
+//
+//			disableTimepulseGPS();
+//			standbyGPSMode();
+//			HAL_NVIC_DisableIRQ(EXTI1_IRQn);
+		}
+
+		if((flag & LORA_SEND_PKT) == LORA_SEND_PKT){
+			sendLoRa_pkt(&infoPacket);
+		}
+
+		if((flag & LORA_IRQ_FLAG) == LORA_IRQ_FLAG){
+			if(systemState.isLoRaActive){
+				sx126x_chip_status_t sx126x_chip_status;
+				if(SX126X_STATUS_OK != sx126x_get_status( NULL, (sx126x_chip_status_t*) &sx126x_chip_status)) Error_Handler();
+				if(sx126x_chip_status.cmd_status == SX126X_CMD_STATUS_CMD_TX_DONE){
+
+					sleepModeLoraRadio(SX126X_SLEEP_CFG_WARM_START);
+					loraPktRetry = 0;
+				}else if((sx126x_chip_status.cmd_status == SX126X_CMD_STATUS_CMD_TIMEOUT) ||
+						(sx126x_chip_status.cmd_status == SX126X_CMD_STATUS_CMD_PROCESS_ERROR) ||
+						(sx126x_chip_status.cmd_status == SX126X_CMD_STATUS_CMD_EXEC_FAILURE)){
+					sendLoRa_pkt(&infoPacket);
+					loraPktRetry++;
+					if(loraPktRetry > LORA_PKT_RETRY){
+						Error_Handler();
+					}
+
+				}
+			}
+
+		}
+
+		if((flag & TERMINATE_EVENT) == TERMINATE_EVENT){
+			/* turn off GPS or put in standby mode */
+			HAL_NVIC_DisableIRQ(EXTI1_IRQn);
+			standbyGPSMode(); // in case we can't fully shut off GPS power, put in software standby
+			systemState.isGPSActive = false;
+			Control_GPS_Power(false);
+
+
+
+			vTaskDelete( NULL );
+		}
+	}
+}
+
+
+void sleepModeLoraRadio(sx126x_sleep_cfgs_t sleep_cfgs){
+
+	if(SX126X_STATUS_OK != sx126x_set_sleep( NULL, sleep_cfgs)) Error_Handler();
+
+}
+
+void configLoraRadio(void){
+	volatile sx126x_status_t sx1262x_status;
+	volatile sx126x_errors_mask_t sx126x_errors_mask = SX126X_ERRORS_PA_RAMP;
+	if(SX126X_STATUS_OK != sx126x_get_device_errors( NULL, (sx126x_errors_mask_t*) &sx126x_errors_mask)) Error_Handler();
+	if(SX126X_STATUS_OK != sx126x_set_dio2_as_rf_sw_ctrl(NULL, true)) Error_Handler();
+	if(SX126X_STATUS_OK != sx126x_set_rf_freq( NULL, LORA_FREQ)) Error_Handler();
+	if(SX126X_STATUS_OK != sx126x_set_pkt_type(NULL, SX126X_PKT_TYPE_LORA )) Error_Handler();
+
+	sx126x_pkt_params_lora_t sx126x_pkt_params_lora;
+	sx126x_pkt_params_lora.preamble_len_in_symb = 13;
+	sx126x_pkt_params_lora.header_type = SX126X_LORA_PKT_EXPLICIT;
+	sx126x_pkt_params_lora.pld_len_in_bytes = 128; // max is 255 bytes
+	sx126x_pkt_params_lora.crc_is_on = 1;
+	sx126x_pkt_params_lora.invert_iq_is_on = 0;
+	if(SX126X_STATUS_OK != sx126x_set_lora_pkt_params(NULL, &sx126x_pkt_params_lora)) Error_Handler();
+
+	if(SX126X_STATUS_OK != sx126x_set_dio_irq_params( NULL,
+			SX126X_IRQ_TX_DONE | SX126X_IRQ_RX_DONE | SX126X_IRQ_TIMEOUT,
+			SX126X_IRQ_TX_DONE | SX126X_IRQ_RX_DONE | SX126X_IRQ_TIMEOUT,
+			0,
+			0)) Error_Handler();
+
+	//reference table 13-21 in datasheet
+	sx126x_pa_cfg_params_t pa_cfg; //reference table 13-21 in datasheet
+	switch(LORA_POWER_LVL){
+	case MAX_PWR:
+		// power parameters to achieve +22 dbm
+		pa_cfg.pa_duty_cycle = 0x04;
+		pa_cfg.pa_lut = 0x01;
+		pa_cfg.hp_max = 0x07;
+		pa_cfg.device_sel = 0;
+		if(SX126X_STATUS_OK != sx126x_set_pa_cfg( NULL, &pa_cfg )) Error_Handler();
+		//  - 17 to +14 dBm by step of 1 dB if low power PA is selected
+		//  - 9 to +22  dBm by step of 1 dB if high power PA is selected
+		if(SX126X_STATUS_OK != sx126x_set_tx_params( NULL, 22, SX126X_RAMP_40_US)) Error_Handler();
+		break;
+	case HIGH_PWR:
+		// power parameters to achieve +22 dbm
+		pa_cfg.pa_duty_cycle = 0x03;
+		pa_cfg.pa_lut = 0x01;
+		pa_cfg.hp_max = 0x05;
+		pa_cfg.device_sel = 0;
+		if(SX126X_STATUS_OK != sx126x_set_pa_cfg( NULL, &pa_cfg )) Error_Handler();
+		//  - 17 to +14 dBm by step of 1 dB if low power PA is selected
+		//  - 9 to +22  dBm by step of 1 dB if high power PA is selected
+		if(SX126X_STATUS_OK != sx126x_set_tx_params( NULL, 20, SX126X_RAMP_40_US)) Error_Handler();
+		break;
+	case MID_PWR:
+		// power parameters to achieve +22 dbm
+		pa_cfg.pa_duty_cycle = 0x02;
+		pa_cfg.pa_lut = 0x01;
+		pa_cfg.hp_max = 0x03;
+		pa_cfg.device_sel = 0;
+		if(SX126X_STATUS_OK != sx126x_set_pa_cfg( NULL, &pa_cfg )) Error_Handler();
+		//  - 17 to +14 dBm by step of 1 dB if low power PA is selected
+		//  - 9 to +22  dBm by step of 1 dB if high power PA is selected
+		if(SX126X_STATUS_OK != sx126x_set_tx_params( NULL, 17, SX126X_RAMP_40_US)) Error_Handler();
+		break;
+	case ULTRA_LOW_PWR:
+		// power parameters to achieve +0 dbm
+		pa_cfg.pa_duty_cycle = 0x02;
+		pa_cfg.pa_lut = 0x01;
+		pa_cfg.hp_max = 0x03;
+		pa_cfg.device_sel = 0;
+		if(SX126X_STATUS_OK != sx126x_set_pa_cfg( NULL, &pa_cfg )) Error_Handler();
+		//  - 17 to +14 dBm by step of 1 dB if low power PA is selected
+		//  - 9 to +22  dBm by step of 1 dB if high power PA is selected
+		if(SX126X_STATUS_OK != sx126x_set_tx_params( NULL, 0, SX126X_RAMP_40_US)) Error_Handler();
+		break;
+	default:
+		//  power parameters to achieve +14 dbm
+		pa_cfg.pa_duty_cycle = 0x02;
+		pa_cfg.pa_lut = 0x01;
+		pa_cfg.hp_max = 0x02;
+		pa_cfg.device_sel = 0;
+		sx1262x_status = sx126x_set_pa_cfg( NULL, &pa_cfg );
+		//  - 17 to +14 dBm by step of 1 dB if low power PA is selected
+		//  - 9 to +22  dBm by step of 1 dB if high power PA is selected
+		sx1262x_status = sx126x_set_tx_params( NULL, 14, SX126X_RAMP_40_US);
+		break;
+	}
+	sx126x_mod_params_lora_t sx126x_mod_params_lora;
+
+	// longer spreading factor gives more range at the cost of transmit time (BW)
+	// lower bandwidth gives increases range but less reliable across uncalibrated devices
+	// increased coding rate leads to larger packets for better error-correction (less bW)
+	switch(LORA_RANGE_BW){
+	case LORA_MAX_BW:
+		sx126x_mod_params_lora.sf = SX126X_LORA_SF7;
+		sx126x_mod_params_lora.bw = SX126X_LORA_BW_500;
+		sx126x_mod_params_lora.cr = SX126X_LORA_CR_4_5;
+		sx126x_mod_params_lora.ldro = 0;
+		break;
+	case LORA_SHORT_RANGE_HIGH_BW:
+		sx126x_mod_params_lora.sf = SX126X_LORA_SF7;
+		sx126x_mod_params_lora.bw = SX126X_LORA_BW_250;
+		sx126x_mod_params_lora.cr = SX126X_LORA_CR_4_5;
+		sx126x_mod_params_lora.ldro = 0;
+		break;
+	case LORA_MID_RANGE_MID_BW:
+		sx126x_mod_params_lora.sf = SX126X_LORA_SF10;
+		sx126x_mod_params_lora.bw = SX126X_LORA_BW_062;
+		sx126x_mod_params_lora.cr = SX126X_LORA_CR_4_5;
+		sx126x_mod_params_lora.ldro = 0;
+		break;
+	case LORA_LONG_RANGE_LOW_BW:
+		sx126x_mod_params_lora.sf = SX126X_LORA_SF10;
+		sx126x_mod_params_lora.bw = SX126X_LORA_BW_062;
+		sx126x_mod_params_lora.cr = SX126X_LORA_CR_4_5;
+		sx126x_mod_params_lora.ldro = 1;
+		break;
+	case LORA_MAX_RANGE:
+//		sx126x_mod_params_lora.sf = SX126X_LORA_SF12;
+//		sx126x_mod_params_lora.bw = SX126X_LORA_BW_007;
+//		sx126x_mod_params_lora.cr = SX126X_LORA_CR_4_8;
+//		sx126x_mod_params_lora.ldro = 1;
+		sx126x_mod_params_lora.sf = SX126X_LORA_SF11;
+		sx126x_mod_params_lora.bw = SX126X_LORA_BW_031;
+		sx126x_mod_params_lora.cr = SX126X_LORA_CR_4_8;
+		sx126x_mod_params_lora.ldro = 1;
+		break;
+	default:
+		// low bandiwdth, longest range
+		sx126x_mod_params_lora.sf = SX126X_LORA_SF12;
+		sx126x_mod_params_lora.bw = SX126X_LORA_BW_007;
+		sx126x_mod_params_lora.cr = SX126X_LORA_CR_4_8;
+		sx126x_mod_params_lora.ldro = 1;
+		break;
+	}
+
+	if(SX126X_STATUS_OK != sx126x_set_lora_mod_params( NULL, &sx126x_mod_params_lora)) Error_Handler();
+
+//#ifndef COLLAR_MODE
+//#if (LORA_POWER_LVL != ULTRA_LOW_PWR)
+//	if(SX126X_STATUS_OK != sx126x_cfg_rx_boosted(NULL, true)) Error_Handler();
+//#endif
+//#endif
+
+	if(SX126X_STATUS_OK != sx126x_set_lora_symb_nb_timeout(NULL, 0)) Error_Handler(); //semtech example has 0 (reference 13.4.9)
+	if(SX126X_STATUS_OK != sx126x_set_standby(NULL, SX126X_STANDBY_CFG_XOSC)) Error_Handler();
+	if(SX126X_STATUS_OK != sx126x_set_rx_tx_fallback_mode(NULL, SX126X_FALLBACK_STDBY_XOSC)) Error_Handler();
+
 }
 
 void ledSequencer(void *argument){
@@ -5392,148 +5792,6 @@ void disableLEDs(){
 	HAL_TIM_Base_Stop(&htim2);
 }
 
-void configLoraRadio(void){
-	volatile sx126x_status_t sx1262x_status;
-	volatile sx126x_errors_mask_t sx126x_errors_mask = SX126X_ERRORS_PA_RAMP;
-	if(SX126X_STATUS_OK != sx126x_get_device_errors( NULL, (sx126x_errors_mask_t*) &sx126x_errors_mask)) Error_Handler();
-	if(SX126X_STATUS_OK != sx126x_set_dio2_as_rf_sw_ctrl(NULL, true)) Error_Handler();
-	if(SX126X_STATUS_OK != sx126x_set_rf_freq( NULL, LORA_FREQ)) Error_Handler();
-	if(SX126X_STATUS_OK != sx126x_set_pkt_type(NULL, SX126X_PKT_TYPE_LORA )) Error_Handler();
-
-	sx126x_pkt_params_lora_t sx126x_pkt_params_lora;
-	sx126x_pkt_params_lora.preamble_len_in_symb = 13;
-	sx126x_pkt_params_lora.header_type = SX126X_LORA_PKT_EXPLICIT;
-	sx126x_pkt_params_lora.pld_len_in_bytes = 128; // max is 255 bytes
-	sx126x_pkt_params_lora.crc_is_on = 1;
-	sx126x_pkt_params_lora.invert_iq_is_on = 0;
-	if(SX126X_STATUS_OK != sx126x_set_lora_pkt_params(NULL, &sx126x_pkt_params_lora)) Error_Handler();
-
-	if(SX126X_STATUS_OK != sx126x_set_dio_irq_params( NULL,
-			SX126X_IRQ_TX_DONE | SX126X_IRQ_RX_DONE | SX126X_IRQ_TIMEOUT,
-			0,
-			0,
-			SX126X_IRQ_TX_DONE | SX126X_IRQ_RX_DONE | SX126X_IRQ_TIMEOUT)) Error_Handler();
-
-	//reference table 13-21 in datasheet
-	sx126x_pa_cfg_params_t pa_cfg; //reference table 13-21 in datasheet
-	switch(LORA_POWER_LVL){
-	case MAX_PWR:
-		// power parameters to achieve +22 dbm
-		pa_cfg.pa_duty_cycle = 0x04;
-		pa_cfg.pa_lut = 0x01;
-		pa_cfg.hp_max = 0x07;
-		pa_cfg.device_sel = 0;
-		if(SX126X_STATUS_OK != sx126x_set_pa_cfg( NULL, &pa_cfg )) Error_Handler();
-		//  - 17 to +14 dBm by step of 1 dB if low power PA is selected
-		//  - 9 to +22  dBm by step of 1 dB if high power PA is selected
-		if(SX126X_STATUS_OK != sx126x_set_tx_params( NULL, 22, SX126X_RAMP_40_US)) Error_Handler();
-		break;
-	case HIGH_PWR:
-		// power parameters to achieve +22 dbm
-		pa_cfg.pa_duty_cycle = 0x03;
-		pa_cfg.pa_lut = 0x01;
-		pa_cfg.hp_max = 0x05;
-		pa_cfg.device_sel = 0;
-		if(SX126X_STATUS_OK != sx126x_set_pa_cfg( NULL, &pa_cfg )) Error_Handler();
-		//  - 17 to +14 dBm by step of 1 dB if low power PA is selected
-		//  - 9 to +22  dBm by step of 1 dB if high power PA is selected
-		if(SX126X_STATUS_OK != sx126x_set_tx_params( NULL, 20, SX126X_RAMP_40_US)) Error_Handler();
-		break;
-	case MID_PWR:
-		// power parameters to achieve +22 dbm
-		pa_cfg.pa_duty_cycle = 0x02;
-		pa_cfg.pa_lut = 0x01;
-		pa_cfg.hp_max = 0x03;
-		pa_cfg.device_sel = 0;
-		if(SX126X_STATUS_OK != sx126x_set_pa_cfg( NULL, &pa_cfg )) Error_Handler();
-		//  - 17 to +14 dBm by step of 1 dB if low power PA is selected
-		//  - 9 to +22  dBm by step of 1 dB if high power PA is selected
-		if(SX126X_STATUS_OK != sx126x_set_tx_params( NULL, 17, SX126X_RAMP_40_US)) Error_Handler();
-		break;
-	case ULTRA_LOW_PWR:
-		// power parameters to achieve +0 dbm
-		pa_cfg.pa_duty_cycle = 0x02;
-		pa_cfg.pa_lut = 0x01;
-		pa_cfg.hp_max = 0x03;
-		pa_cfg.device_sel = 0;
-		if(SX126X_STATUS_OK != sx126x_set_pa_cfg( NULL, &pa_cfg )) Error_Handler();
-		//  - 17 to +14 dBm by step of 1 dB if low power PA is selected
-		//  - 9 to +22  dBm by step of 1 dB if high power PA is selected
-		if(SX126X_STATUS_OK != sx126x_set_tx_params( NULL, 0, SX126X_RAMP_40_US)) Error_Handler();
-		break;
-	default:
-		//  power parameters to achieve +14 dbm
-		pa_cfg.pa_duty_cycle = 0x02;
-		pa_cfg.pa_lut = 0x01;
-		pa_cfg.hp_max = 0x02;
-		pa_cfg.device_sel = 0;
-		sx1262x_status = sx126x_set_pa_cfg( NULL, &pa_cfg );
-		//  - 17 to +14 dBm by step of 1 dB if low power PA is selected
-		//  - 9 to +22  dBm by step of 1 dB if high power PA is selected
-		sx1262x_status = sx126x_set_tx_params( NULL, 14, SX126X_RAMP_40_US);
-		break;
-	}
-	sx126x_mod_params_lora_t sx126x_mod_params_lora;
-
-	// longer spreading factor gives more range at the cost of transmit time (BW)
-	// lower bandwidth gives increases range but less reliable across uncalibrated devices
-	// increased coding rate leads to larger packets for better error-correction (less bW)
-	switch(LORA_RANGE_BW){
-	case LORA_MAX_BW:
-		sx126x_mod_params_lora.sf = SX126X_LORA_SF7;
-		sx126x_mod_params_lora.bw = SX126X_LORA_BW_500;
-		sx126x_mod_params_lora.cr = SX126X_LORA_CR_4_5;
-		sx126x_mod_params_lora.ldro = 0;
-		break;
-	case LORA_SHORT_RANGE_HIGH_BW:
-		sx126x_mod_params_lora.sf = SX126X_LORA_SF7;
-		sx126x_mod_params_lora.bw = SX126X_LORA_BW_250;
-		sx126x_mod_params_lora.cr = SX126X_LORA_CR_4_5;
-		sx126x_mod_params_lora.ldro = 0;
-		break;
-	case LORA_MID_RANGE_MID_BW:
-		sx126x_mod_params_lora.sf = SX126X_LORA_SF10;
-		sx126x_mod_params_lora.bw = SX126X_LORA_BW_062;
-		sx126x_mod_params_lora.cr = SX126X_LORA_CR_4_5;
-		sx126x_mod_params_lora.ldro = 0;
-		break;
-	case LORA_LONG_RANGE_LOW_BW:
-		sx126x_mod_params_lora.sf = SX126X_LORA_SF10;
-		sx126x_mod_params_lora.bw = SX126X_LORA_BW_062;
-		sx126x_mod_params_lora.cr = SX126X_LORA_CR_4_5;
-		sx126x_mod_params_lora.ldro = 1;
-		break;
-	case LORA_MAX_RANGE:
-//		sx126x_mod_params_lora.sf = SX126X_LORA_SF12;
-//		sx126x_mod_params_lora.bw = SX126X_LORA_BW_007;
-//		sx126x_mod_params_lora.cr = SX126X_LORA_CR_4_8;
-//		sx126x_mod_params_lora.ldro = 1;
-		sx126x_mod_params_lora.sf = SX126X_LORA_SF11;
-		sx126x_mod_params_lora.bw = SX126X_LORA_BW_031;
-		sx126x_mod_params_lora.cr = SX126X_LORA_CR_4_8;
-		sx126x_mod_params_lora.ldro = 1;
-		break;
-	default:
-		// low bandiwdth, longest range
-		sx126x_mod_params_lora.sf = SX126X_LORA_SF12;
-		sx126x_mod_params_lora.bw = SX126X_LORA_BW_007;
-		sx126x_mod_params_lora.cr = SX126X_LORA_CR_4_8;
-		sx126x_mod_params_lora.ldro = 1;
-		break;
-	}
-
-	if(SX126X_STATUS_OK != sx126x_set_lora_mod_params( NULL, &sx126x_mod_params_lora)) Error_Handler();
-
-#ifndef COLLAR_MODE
-#if (LORA_POWER_LVL != ULTRA_LOW_PWR)
-	if(SX126X_STATUS_OK != sx126x_cfg_rx_boosted(NULL, true)) Error_Handler();
-#endif
-#endif
-
-	if(SX126X_STATUS_OK != sx126x_set_lora_symb_nb_timeout(NULL, 0)) Error_Handler(); //semtech example has 0 (reference 13.4.9)
-	if(SX126X_STATUS_OK != sx126x_set_standby(NULL, SX126X_STANDBY_CFG_XOSC)) Error_Handler();
-	if(SX126X_STATUS_OK != sx126x_set_rx_tx_fallback_mode(NULL, SX126X_FALLBACK_STDBY_XOSC)) Error_Handler();
-}
 
 #define TLV320_ADDR   (0x30)
 void writeToTLV(uint8_t page, uint8_t reg, uint8_t data){
@@ -5932,28 +6190,23 @@ void EnableExtADC(bool state){
 
 void sendLoRa_pkt(packet_t *packet){
 
-
 	uint8_t dataTransmitted = 0;
 	volatile sx126x_status_t sx1262x_status;
 	sx126x_chip_status_t sx126x_chip_status;
 	sx126x_irq_mask_t sx126x_irq_mask;
 
-//	packet->header.epoch = getEpoch();
-//	packet->header.ms_from_start = HAL_GetTick();
-//	packet->header.packet_index++;
-//
-//
-//	lora_irq_flag = 0;
+	packet->header.epoch = getEpoch();
+	packet->header.ms_from_start = HAL_GetTick();
 
 	sx126x_get_irq_status( NULL, &sx126x_irq_mask);
 	if(sx126x_irq_mask != 0) return;
 
 	/* Create a stream that will write to our buffer. */
-//	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
 
 	/* Now we are ready to encode the message! */
-//	has_encoded_correctly = pb_encode_delimited(&stream, PACKET_FIELDS, packet);
 	uint8_t has_encoded_correctly = 0;
+	has_encoded_correctly = pb_encode_delimited(&stream, PACKET_FIELDS, packet);
 
 	if(has_encoded_correctly){
 		setLED_Green(100);
@@ -5980,7 +6233,7 @@ void sendLoRa_pkt(packet_t *packet){
 			}
 		}
 
-		sx1262x_status = sx126x_set_tx( NULL, 100000); // timeout: 5 minutes
+		sx1262x_status = sx126x_set_tx( NULL, 10000); // timeout: 10000ms
 
 		while(lora_irq_flag != 1);
 
@@ -5991,7 +6244,6 @@ void sendLoRa_pkt(packet_t *packet){
 		}
 		setLED_Green(0);
 	}
-	HAL_Delay(500);
 }
 
 //#define MAX_BYTES_PER_WAV_FILE 10000000
@@ -6389,12 +6641,13 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 		osThreadFlagsSet(triggerMarkTaskId, BEE_2_ALERT);
 	}
 	else if(GPIO_Pin == SX_DIO1_Pin){
-		lora_irq_flag = 1;
+		osThreadFlagsSet(loraGPSId, LORA_IRQ_FLAG);
+	}
+	else if(GPIO_Pin == TIMEPULSE_Pin){
+		osThreadFlagsSet(loraGPSId, GPS_TIMEPULSE_FLAG);
 	}
 
 }
-
-
 //volatile uint32_t byteswritten = 0;
 void HAL_SAI_RxHalfCpltCallback(SAI_HandleTypeDef *hsai){
 	//	 f_write(&WavFile, audioSample, AUDIO_BUFFER_HALF_LEN, (void*)&byteswritten);
@@ -6419,20 +6672,41 @@ void i2c_error_check(I2C_HandleTypeDef *hi2c){
 	return;
 }
 
-void updateRTC_MS(uint64_t receivedTime){
+//void updateRTC_MS(uint64_t receivedTime){
+//
+//	receivedTime = receivedTime / 1000;
+//
+//	// (1) convert received UNIX time to time struct
+//	RTC_TimeTypeDef time = {0};
+//	RTC_DateTypeDef date = {0};
+//	RTC_FromEpoch(receivedTime, &time, &date);
+//
+//	// (2) set time
+//	taskENTER_CRITICAL();
+//	HAL_RTC_SetTime(&hrtc, &time, RTC_FORMAT_BIN);
+//	HAL_RTC_SetDate(&hrtc, &date, RTC_FORMAT_BIN);
+//	taskEXIT_CRITICAL();
+//
+//}
 
-	receivedTime = receivedTime / 1000;
+void updateRTC_MS(uint64_t receivedTime_ms){
+
+	updateRTC(receivedTime_ms / 1000);
+
+}
+
+void updateRTC(uint64_t receivedTime_s){
 
 	// (1) convert received UNIX time to time struct
 	RTC_TimeTypeDef time = {0};
 	RTC_DateTypeDef date = {0};
-	RTC_FromEpoch(receivedTime, &time, &date);
+	RTC_FromEpoch(receivedTime_s, &time, &date);
 
 	// (2) set time
-	taskENTER_CRITICAL();
+	//	taskENTER_CRITICAL();
 	HAL_RTC_SetTime(&hrtc, &time, RTC_FORMAT_BIN);
 	HAL_RTC_SetDate(&hrtc, &date, RTC_FORMAT_BIN);
-	taskEXIT_CRITICAL();
+	//	taskEXIT_CRITICAL();
 
 }
 

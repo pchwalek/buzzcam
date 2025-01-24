@@ -147,6 +147,19 @@ typedef struct{
 	beecam_uwb_i2c_downlink_normal_distribution_t normal_distribution;
 } uwb_range_packet_multi_t;
 
+typedef enum {
+    GPS_FIX_SUCCESS = 0,  // Indicating successful GPS fix
+    GPS_FIX_TIMEOUT = 1,   // Indicating GPS fix timeout
+	GPS_FIX_ERROR = 2
+} GPSFixStatus;
+
+typedef struct {
+    int32_t latitude;   // Latitude in degrees * 10^7
+    int32_t longitude;  // Longitude in degrees * 10^7
+    int32_t altitude;   // Altitude in meters
+    uint32_t gps_epoch; // GPS time of week in seconds since start of GPS week
+} GPSFix;
+
 enum regAddr
 {
 	TEMP_OUT_L        = 0x05, // D
@@ -428,6 +441,10 @@ extern SPI_HandleTypeDef hspi1;
 #define BEE_1_ALERT	      	  0x00000008
 #define BEE_2_ALERT	      	  0x00000010
 
+#define LORA_IRQ_FLAG		  0x00000100
+#define LORA_SEND_PKT		  0x00000200
+#define GPS_GRAB_SAMPLE		  0x00000400
+#define GPS_TIMEPULSE_FLAG	  0x00000800
 
 #define CONFIG_UPDATED_EVENT  0x00000001
 #define CAMERA_EVENT		  0x00000004
@@ -491,6 +508,7 @@ extern osThreadId_t fileWriteSyncTaskId;
 extern osThreadId_t triggerMarkTaskId;
 extern osThreadId_t uwbMessageTaskId;
 extern osThreadId_t ledSequencerId;
+extern osThreadId_t loraGPSId;
 extern osThreadId_t buzzDetectorTaskId;
 
 extern osTimerId_t periodicBatteryMonitorTimer_id;
@@ -513,11 +531,13 @@ extern const osThreadAttr_t buzzDetectorTask_attributes;
 extern const osThreadAttr_t chirpTask_attributes;
 extern const osThreadAttr_t uwbMessageTask_attributes;
 extern const osThreadAttr_t ledSequencerTask_attributes;
+extern const osThreadAttr_t loraGPSTask_attributes;
 
 extern beecam_uwb_i2c_peer_address_t rangingAddr;
 extern beecam_uwb_i2c_device_info_t local_uwbInfo;
 
 extern ADC_HandleTypeDef hadc1;
+extern SPI_HandleTypeDef hspi2;
 
 extern volatile uint8_t coapSetup;
 
@@ -534,9 +554,11 @@ void i2c_error_check(I2C_HandleTypeDef *hi2c);
 
 void uint64ToString(uint64_t num, char* str);
 
-void updateRTC(uint32_t receivedTime);
+void updateRTC(uint64_t receivedTime_s);
 void updateRTC_MS(uint64_t receivedTime);
 uint64_t getEpoch(void);
+
+bool standbyGPSMode();
 
 char * ftoa(double f, char * buf, int precision);
 

@@ -403,4 +403,9 @@ void ADC1_IRQHandler(void)
 
   /* USER CODE END ADC1_IRQn 1 */
 }
+
+void EXTI1_IRQHandler(void){
+	HAL_GPIO_EXTI_IRQHandler(TIMEPULSE_Pin);
+}
+
 /* USER CODE END 1 */
