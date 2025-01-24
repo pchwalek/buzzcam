@@ -517,6 +517,8 @@ extern const osThreadAttr_t ledSequencerTask_attributes;
 extern beecam_uwb_i2c_peer_address_t rangingAddr;
 extern beecam_uwb_i2c_device_info_t local_uwbInfo;
 
+extern ADC_HandleTypeDef hadc1;
+
 extern volatile uint8_t coapSetup;
 
 #define SFE_UBLOX_REDUCED_PROG_MEM 1
@@ -540,6 +542,10 @@ char * ftoa(double f, char * buf, int precision);
 
 uint8_t check_file_exists(const char* path);
 
+void MX_I2C1_Init(void);
+void MX_I2C1_Deinit(void);
+void MX_I2C3_Init(void);
+void MX_I2C3_Deinit(void);
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

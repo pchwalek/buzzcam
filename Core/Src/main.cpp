@@ -60,6 +60,8 @@
 
 #include <SparkFun_u-blox_GNSS_v3.h> //http://librarymanager/All#SparkFun_u-blox_GNSS_v3
 //#include <sfe_bus.h>
+
+#include "support.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -140,74 +142,79 @@ TIM_HandleTypeDef htim16;
 osThreadId_t defaultTaskHandle;
 
 /* USER CODE BEGIN PV */
+// RTC Alarm configuration
 RTC_AlarmTypeDef sAlarm = {0};
 
-osThreadId_t batteryMonitorTaskId;
-osThreadId_t fileWriteSyncTaskId;
-osThreadId_t triggerMarkTaskId;
-osThreadId_t uwbMessageTaskId;
-osThreadId_t ledSequencerId;
+// OS Thread Identifiers
+osThreadId_t batteryMonitorTaskId;     // Task ID for battery monitoring
+osThreadId_t fileWriteSyncTaskId;      // Task ID for file write synchronization
+osThreadId_t triggerMarkTaskId;        // Task ID for trigger marking
+osThreadId_t uwbMessageTaskId;         // Task ID for UWB messaging
+osThreadId_t ledSequencerId;           // Task ID for LED sequencing
 
+// OS Thread Handle
 osThreadId_t chirpTaskHandle;
-const osThreadAttr_t defaultTask_attributes = { .name = "defaultTask",
-		.attr_bits = osThreadDetached, .cb_mem = NULL, .cb_size = 0,
-		.stack_mem = NULL, .stack_size = 256*2, .priority =
-				(osPriority_t) osPriorityLow, .tz_module = 0, .reserved = 0 };
 
-uint16_t redVal = 0;
-uint16_t greenVal = 0;
-uint16_t blueVal = 0;
+// Default task attributes for RTOS
+const osThreadAttr_t defaultTask_attributes = {
+    .name = "defaultTask",
+    .attr_bits = osThreadDetached,
+    .cb_mem = NULL,
+    .cb_size = 0,
+    .stack_mem = NULL,
+    .stack_size = 256 * 2,            // Stack size in bytes
+    .priority = (osPriority_t) osPriorityLow, // Task priority
+    .tz_module = 0,
+    .reserved = 0
+};
 
-FATFS SDFatFs; /* File system object for SD card logical drive */
-FIL MyFile; /* File object */
-FIL	WavFile;
-DIR dir;
-FIL file;
-FIL marker_file;
-UINT bytes_written;
-char SDPath[4]; /* SD card logical drive path */
+// LED color values
+uint16_t redVal = 0;    // Red LED brightness/value
+uint16_t greenVal = 0;  // Green LED brightness/value
+uint16_t blueVal = 0;   // Blue LED brightness/value
 
+// File system and file handling
+FATFS SDFatFs;               // File system object for SD card logical drive
+FIL MyFile;                  // File object for general use
+FIL WavFile;                 // File object for WAV files
+DIR dir;                     // Directory object
+FIL file;                    // General file object
+FIL marker_file;             // Marker file object
+FIL batteryFile;             // File object for battery data
+FIL fileWriteSyncFile;       // File object for file write synchronization
+UINT bytes_written;          // Number of bytes written
+char SDPath[4];              // SD card logical drive path
 
-//FX_MEDIA        sd_disk;
-//FX_FILE         fx_file;
-//FX_FILE			WavFile;
+// Audio handling
+WAVE_FormatTypeDef WaveFormat;  // WAV file format data
+uint8_t pHeaderBuff[44];        // Buffer for WAV file header
+uint32_t byteswritten = 0;      // Total bytes written to a file
+volatile uint32_t sampleCntr = 0; // Sample counter for audio processing
+static uint16_t audioSample[AUDIO_BUFFER_LEN] = {0}; // Audio sample buffer
 
-//uint32_t media_memory[512 / sizeof(uint32_t)];
+// Interrupt and Callback Flags
+volatile uint8_t SAI_HALF_CALLBACK = 0;  // Flag for half SAI buffer callback
+volatile uint8_t SAI_FULL_CALLBACK = 0;  // Flag for full SAI buffer callback
+volatile uint8_t lora_irq_flag = 0;      // Flag for LoRa interrupt
 
-WAVE_FormatTypeDef WaveFormat;
+// Timer Identifiers
+osTimerId_t periodicBatteryMonitorTimer_id;  // Timer ID for periodic battery monitoring
 
-uint8_t pHeaderBuff[44];
+// UWB (Ultra-Wideband) Communication
+#define UWB_I2C_ADDR (0x71 << 1)             // I2C address for UWB device
+#define UWB_I2C_GENERAL_MEM_ADDR (0xAB)      // General memory address for UWB
+#define UWB_READ_BYTES (256)                 // Number of bytes to read
+// #define UWB_WRITE_BYTES (256)              // (Commented out) Number of bytes to write
+packet_t rxPacket = PACKET_INIT_ZERO;        // RX packet for UWB communication
+packet_t txPacket = PACKET_INIT_ZERO;        // TX packet for UWB communication
+uint8_t uwb_buffer[256];                     // Buffer for UWB data
+beecam_uwb_i2c_uplink_t uwb_i2c_uplink_packet = BEECAM_UWB_I2C_UPLINK_INIT_ZERO; // Uplink packet definition
+beecam_uwb_i2c_downlink_t uwb_i2c_downlink_packet = BEECAM_UWB_I2C_DOWNLINK_INIT_ZERO; // Downlink packet definition
+beecam_uwb_i2c_peer_address_t rangingAddr = BEECAM_UWB_I2C_PEER_ADDRESS_INIT_ZERO; // Peer address for ranging
+beecam_uwb_i2c_device_info_t local_uwbInfo = BEECAM_UWB_I2C_DEVICE_INFO_INIT_DEFAULT; // Local UWB device information
 
-uint32_t byteswritten = 0;
-volatile uint32_t sampleCntr = 0;
-
-static uint16_t audioSample[AUDIO_BUFFER_LEN] = {0};
-
-volatile uint8_t SAI_HALF_CALLBACK = 0;
-volatile uint8_t SAI_FULL_CALLBACK = 0;
-
-volatile uint8_t lora_irq_flag = 0;
-
-FIL batteryFile;
-FIL fileWriteSyncFile;
-osTimerId_t periodicBatteryMonitorTimer_id;
-
-packet_t rxPacket = PACKET_INIT_ZERO;
-packet_t txPacket = PACKET_INIT_ZERO;
-
-#define UWB_I2C_ADDR				(0x71 << 1)
-#define UWB_I2C_GENERAL_MEM_ADDR	(0xAB)
-#define UWB_READ_BYTES				(256)
-//#define UWB_WRITE_BYTES				(256)
-beecam_uwb_i2c_uplink_t uwb_i2c_uplink_packet = BEECAM_UWB_I2C_UPLINK_INIT_ZERO;
-beecam_uwb_i2c_downlink_t uwb_i2c_downlink_packet = BEECAM_UWB_I2C_DOWNLINK_INIT_ZERO;
-uint8_t uwb_buffer[256];
-
-beecam_uwb_i2c_peer_address_t rangingAddr = BEECAM_UWB_I2C_PEER_ADDRESS_INIT_ZERO;
-
-beecam_uwb_i2c_device_info_t local_uwbInfo = BEECAM_UWB_I2C_DEVICE_INFO_INIT_DEFAULT;
-
-SFE_UBLOX_GNSS myGNSS;
+// GPS (Global Positioning System) Interface
+SFE_UBLOX_GNSS myGNSS;  // GNSS interface for UBLOX GPS
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -215,142 +222,183 @@ void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
-static void MX_I2C3_Init(void);
+//static void MX_I2C3_Init(void);
 static void MX_IPCC_Init(void);
 static void MX_RTC_Init(void);
 static void MX_SAI1_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM16_Init(void);
-static void MX_I2C1_Init(void);
+//static void MX_I2C1_Init(void);
 static void MX_SPI2_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_RF_Init(void);
 void StartDefaultTask(void *argument);
 
 /* USER CODE BEGIN PFP */
-void tamperAlarm(bool state);
+// Alarm-related functions
+void tamperAlarm(bool state);  // Controls the tamper alarm state
 
-void chirp(void);
-void chirp_timestamp(void);
-void MX_USB_Device_Init(void);
+// Chirp functions
+void chirp(void);              // Initiates a chirp signal
+void chirp_timestamp(void);    // Logs the timestamp of a chirp event
 
-void writeSystemStateToFRAM(void);
-void writeSystemInfoToFRAM(void);
-void writeSystemConfigToFRAM(void);
-void readSystemStateToFRAM(void);
+// USB Initialization
+void MX_USB_Device_Init(void); // Initializes USB device
 
-void EnableExtADC(bool state);
-void runAnalogConverter(void);
+// System state functions for FRAM (Ferroelectric RAM)
+void writeSystemStateToFRAM(void);  // Writes the current system state to FRAM
+void writeSystemInfoToFRAM(void);   // Writes system information to FRAM
+void writeSystemConfigToFRAM(void); // Writes system configuration to FRAM
+void readSystemStateToFRAM(void);   // Reads system state from FRAM
 
-static void Reset_Device( void );
+// External ADC and Analog Converter functions
+void EnableExtADC(bool state); // Enables or disables the external ADC
+void runAnalogConverter(void); // Runs the analog to digital conversion process
 
-void systemTestCode(void);
+// Device management functions
+static void Reset_Device(void);     // Resets the device
+void systemTestCode(void);          // Runs system test routines
 
-void WAV_RECORD_TEST(void);
-static uint32_t WavProcess_HeaderInit(uint8_t* pHeader, WAVE_FormatTypeDef* pWaveFormatStruct);
-static uint32_t WavProcess_EncInit(uint32_t Freq, uint8_t *pHeader);
-static uint32_t WavProcess_HeaderUpdate(uint8_t* pHeader, uint32_t bytesWritten);
-static void WavUpdateHeaderSize(uint64_t totalBytesWritten);
+// WAV file processing functions
+void WAV_RECORD_TEST(void);                                     // Test function for WAV recording
+static uint32_t WavProcess_HeaderInit(uint8_t* pHeader, WAVE_FormatTypeDef* pWaveFormatStruct); // Initializes WAV header
+static uint32_t WavProcess_EncInit(uint32_t Freq, uint8_t *pHeader); // Initializes WAV encoding process
+static uint32_t WavProcess_HeaderUpdate(uint8_t* pHeader, uint32_t bytesWritten); // Updates WAV header
+static void WavUpdateHeaderSize(uint64_t totalBytesWritten);    // Updates header size after WAV recording
 
-void RTC_FromEpoch(time_t epoch, RTC_TimeTypeDef *time, RTC_DateTypeDef *date);
-uint64_t RTC_ToEpochMS(RTC_TimeTypeDef *time, RTC_DateTypeDef *date);
-void MX_SAI1_Init_Custom(SAI_HandleTypeDef &hsai_handle, uint8_t bit_resolution);
+// RTC (Real-Time Clock) utility functions
+void RTC_FromEpoch(time_t epoch, RTC_TimeTypeDef *time, RTC_DateTypeDef *date); // Converts epoch to RTC time and date
+uint64_t RTC_ToEpochMS(RTC_TimeTypeDef *time, RTC_DateTypeDef *date);           // Converts RTC time and date to epoch
 
-void configLoraRadio(void);
+// SAI (Synchronous Audio Interface) Initialization
+void MX_SAI1_Init_Custom(SAI_HandleTypeDef &hsai_handle, uint8_t bit_resolution); // Custom initialization for SAI1
 
-void sendLoRa_pkt(packet_t *packet);
-//static void MPU_AccessPermConfig(void);
+// LoRa Radio Configuration and Communication
+void configLoraRadio(void);                      // Configures the LoRa radio
+void sendLoRa_pkt(packet_t *packet);             // Sends a packet via LoRa
 
-void disableExtAudioDevices(void);
-void enableExtAudioDevices(void);
-uint32_t greatest_divisor(int audioFrequency, int half_buffer_size);
+// External audio device management
+void disableExtAudioDevices(void);               // Disables external audio devices
+void enableExtAudioDevices(void);                // Enables external audio devices
 
-void exit_audio(void);
-void unmount_sd_card(void);
+// Miscellaneous functions
+uint32_t greatest_divisor(int audioFrequency, int half_buffer_size); // Calculates the greatest common divisor
 
-void delay_nop(uint32_t count);
+// Shutdown and exit functions
+void exit_audio(void);            // Exits audio operations safely
+void unmount_sd_card(void);       // Unmounts the SD card
 
-void set_folder_from_time(char* folder_name);
-void getFormattedTime(RTC_HandleTypeDef *hrtc, char *formattedTime);
+// Delay function using no-operation
+void delay_nop(uint32_t count);   // Delays by executing NOPs
 
-void disableAudioPeripherals(void);
+// Utility functions for file and time management
+void set_folder_from_time(char* folder_name);               // Sets folder name based on time
+void getFormattedTime(RTC_HandleTypeDef *hrtc, char *formattedTime); // Gets formatted time string
 
-void startRecord(uint32_t recording_duration_s, char *folder_name);
+// Disable audio peripherals
+void disableAudioPeripherals(void); // Disables all audio peripherals
 
-WORD getFatTime(const RTC_TimeTypeDef *time, const RTC_DateTypeDef *date);
-FRESULT updateFileTimestamp(char* path, RTC_HandleTypeDef *hrtc);
+// Record start function
+void startRecord(uint32_t recording_duration_s, char *folder_name); // Starts a recording session
 
-uint32_t uint64_to_str(uint64_t num, char *str);
+// FAT file system time utility
+WORD getFatTime(const RTC_TimeTypeDef *time, const RTC_DateTypeDef *date);  // Gets FAT time from RTC time and date
+FRESULT updateFileTimestamp(char* path, RTC_HandleTypeDef *hrtc); // Updates file timestamp with current RTC time
 
-void triggerSound(void);
+// Conversion and formatting
+uint32_t uint64_to_str(uint64_t num, char *str); // Converts a uint64_t to a string
 
-void grabInertialSample(float *pitch, float *roll, float *heading);
-void computePitchRoll(float x_acc, float y_acc, float z_acc, float* pitch, float* roll);
-void computeHeading(float x_mag, float y_mag, float z_mag, float pitch, float roll, float* heading);
-//float computeHeading(float mx, float my);
+// Trigger sound generation
+void triggerSound(void);         // Triggers a sound output
 
-void readFRAM(uint8_t word_addr, uint8_t byte_addr, uint8_t *data, uint32_t size);
-void writeFRAM(uint8_t word_addr, uint8_t byte_addr, uint8_t *data, uint32_t size);
+// Inertial measurement and computation
+void grabInertialSample(float *pitch, float *roll, float *heading); // Grabs inertial samples for pitch, roll, heading
+void computePitchRoll(float x_acc, float y_acc, float z_acc, float* pitch, float* roll); // Computes pitch and roll
+void computeHeading(float x_mag, float y_mag, float z_mag, float pitch, float roll, float* heading); // Computes heading
 
-void performMagCalibration(uint32_t numOfSamples);
+// FRAM reading and writing
+void readFRAM(uint8_t word_addr, uint8_t byte_addr, uint8_t *data, uint32_t size); // Reads data from FRAM
+void writeFRAM(uint8_t word_addr, uint8_t byte_addr, uint8_t *data, uint32_t size); // Writes data to FRAM
 
-void tone(uint32_t freq, uint32_t duration_ms);
+// Magnetometer calibration
+void performMagCalibration(uint32_t numOfSamples); // Performs magnetometer calibration
 
-const char* getMicGainName(mic_gain_t gain);
-const char* getBoolName(uint8_t val);
+// Sound generation
+void tone(uint32_t freq, uint32_t duration_ms); // Generates a tone at a frequency for a duration
 
-void uwbMessageTask(void* argument);
+// Name retrieval for parameters
+const char* getMicGainName(mic_gain_t gain);       // Gets microphone gain name
+const char* getBoolName(uint8_t val);              // Converts boolean to string representation
 
-const char* getSampleFreqName(mic_sample_freq sample_freq);
-const char* getBitResName(mic_bit_resolution bit_res);
-const char* getCompressionName(compression_type comp_type);
-const uint32_t getSampleFreq(mic_sample_freq sample_freq);
+// UWB message task
+void uwbMessageTask(void* argument);               // Task handling UWB messages
 
-void sendSlavesTimestamp(void *argument);
+// Sample and bit resolution retrieval
+const char* getSampleFreqName(mic_sample_freq sample_freq); // Gets name for sample frequency
+const char* getBitResName(mic_bit_resolution bit_res);      // Gets name for bit resolution
+const char* getCompressionName(compression_type comp_type); // Gets name for compression type
+const uint32_t getSampleFreq(mic_sample_freq sample_freq);  // Gets sample frequency as a value
 
-void ledSequencer(void *argument);
+// Timestamp communication tasks
+void sendSlavesTimestamp(void *argument); // Sends timestamp data to slaves
+
+// LED Sequencer task
+void ledSequencer(void *argument);       // Controls LED sequences
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-static DTS_STM_Payload_t PackedPayload;
+// Static Payload Struct
+static DTS_STM_Payload_t PackedPayload;   // Struct for packed data payloads
 
+// Packet Structures for Communication
+packet_t configPacket = PACKET_INIT_ZERO; // Packet structure for configuration messages
+packet_t infoPacket = PACKET_INIT_ZERO;   // Packet structure for info messages
 
-packet_t configPacket = PACKET_INIT_ZERO;
-packet_t infoPacket = PACKET_INIT_ZERO;
-uint8_t buffer[500]; //needed for BLE
-size_t message_length;
-bool status;
+// Buffer and Message Handling
+uint8_t buffer[500];        // Buffer for BLE communication
+size_t message_length;      // Length of the message currently being processed
+bool status;                // General status flag, perhaps indicating success/failure
 
-volatile uint8_t coapSetup = 0;
+// CoAP (Constrained Application Protocol) Setup Status
+volatile uint8_t coapSetup = 0;  // Flag to track CoAP setup status
 
-void enable_SD_Card_1(void);
-void enable_SD_Card_2(void);
-void disable_SD_Card_1(void);
-void disable_SD_Card_2(void);
-void enable_SD_Mux(void);
-void disable_SD_Mux(void);
-void mux_Select_SD_Card(uint8_t number);
+// SD Card Management Functions
+void enable_SD_Card_1(void);      // Enables the first SD Card
+void enable_SD_Card_2(void);      // Enables the second SD Card
+void disable_SD_Card_1(void);     // Disables the first SD Card
+void disable_SD_Card_2(void);     // Disables the second SD Card
+void enable_SD_Mux(void);         // Enables SD Card multiplexer
+void disable_SD_Mux(void);        // Disables SD Card multiplexer
+void mux_Select_SD_Card(uint8_t number); // Selects SD Card via multiplexer by card number
 
-static void Reset_Device( void );
+// Device Management Functions
+static void Reset_Device(void);   // Resets the device
 
-void grabOrientation(char *folder_name);
+// Orientation Handling
+void grabOrientation(char *folder_name); // Grabs orientation data and stores in a folder
 
-void chirpTask(void *argument);
-void chirp_timer_callback(void *argument);
-void toneSweep(uint8_t reverse);
-static void save_config(char* folder_name);
+// Chirp Task and Callbacks
+void chirpTask(void *argument);       // Task function for handling chirps
+void chirp_timer_callback(void *argument); // Timer callback function associated with chirps
+void toneSweep(uint8_t reverse);      // Executes a tone sweep; parameter indicates direction
 
-void batteryMonitorTask(void *argument);
+// Configuration Management
+static void save_config(char* folder_name); // Saves current configuration to specified folder
 
-void fileWriteSyncTask(void *argument);
+// Battery Monitoring
+void batteryMonitorTask(void *argument);  // Task for monitoring battery status
+void triggerBatteryMonitorSample(void *argument); // Triggers a sample for battery monitoring
 
-void triggerBatteryMonitorSample(void *argument);
+// File Synchronization Tasks
+void fileWriteSyncTask(void *argument); // Task for synchronizing file writes
 
-void reset_DFU_trigger(void);
+// Device Firmware Update (DFU) Functions
+void reset_DFU_trigger(void); // Resets trigger for Device Firmware Update process
 
-fileWriteSync_t fileWriteSyncUWB;
+// File Write Synchronization Struct
+fileWriteSync_t fileWriteSyncUWB; // Data structure for synchronizing UWB file writes
 /* USER CODE END 0 */
 
 /**
@@ -399,8 +447,6 @@ int main(void)
   /* Configure the peripherals common clocks */
   PeriphCommonClock_Config();
 
-
-
   /* USER CODE BEGIN SysInit */
 	//  tflac_detect_cpu();
 
@@ -414,7 +460,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-  MX_I2C3_Init();
+//  MX_I2C3_Init();
   MX_RTC_Init();
   MX_SAI1_Init();
   MX_SPI1_Init();
@@ -423,17 +469,25 @@ int main(void)
   if (MX_FATFS_Init() != APP_OK) {
     Error_Handler();
   }
-  MX_I2C1_Init();
+//  MX_I2C1_Init();
   MX_SPI2_Init();
   MX_ADC1_Init();
   MX_RF_Init();
   /* USER CODE BEGIN 2 */
+//  volatile float testVarFlt;
 
-  HAL_GPIO_WritePin(EN_MAX78000_GPIO_Port, EN_MAX78000_Pin, GPIO_PIN_RESET);
+  TurnOffAllSystems();
+//  while(1){
+//	  testVarFlt = getBattVltg();
+//	  testVarFlt = calculate_battery_percentage(testVarFlt);
+//  }
+  updateSystemPowerSupervisor(&systemPowerSupervisor, &powerRegime);
 
-  uint32_t buffer_half_size = greatest_divisor(hsai_BlockA1.Init.AudioFrequency, AUDIO_BUFFER_HALF_LEN);
-  uint32_t buffer_size = buffer_half_size * 2;
-  HAL_SAI_Receive_DMA(&hsai_BlockA1, (uint8_t*) audioSample, buffer_size);
+//  HAL_GPIO_WritePin(EN_MAX78000_GPIO_Port, EN_MAX78000_Pin, GPIO_PIN_RESET);
+//  HAL_GPIO_WritePin(EN_MAX78000_GPIO_Port, EN_MAX78000_Pin, GPIO_PIN_RESET);
+//  uint32_t buffer_half_size = greatest_divisor(hsai_BlockA1.Init.AudioFrequency, AUDIO_BUFFER_HALF_LEN);
+//  uint32_t buffer_size = buffer_half_size * 2;
+//  HAL_SAI_Receive_DMA(&hsai_BlockA1, (uint8_t*) audioSample, buffer_size);
 
 //  while(1){
 //	  systemTestCode();
@@ -455,23 +509,27 @@ int main(void)
 //	while(1);
 
 	HAL_Delay(1); // 1ms startup delay before write/read
-	HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET); // powers FRAM
-	HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_SET); // needed for I2C pins on FRAM
+//	HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET); // powers FRAM
+//	HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_SET); // needed for I2C pins on FRAM
 //	HAL_GPIO_WritePin(EN_UWB_REG_GPIO_Port, EN_UWB_REG_Pin, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(EN_3V3_GPS_GPIO_Port, EN_3V3_GPS_Pin, GPIO_PIN_SET);
+//	HAL_GPIO_WritePin(EN_3V3_GPS_GPIO_Port, EN_3V3_GPS_Pin, GPIO_PIN_SET);
 //	HAL_GPIO_WritePin(EN_UWB_REG_GPIO_Port, EN_UWB_REG_Pin, GPIO_PIN_SET);
 
 //	HAL_GPIO_WritePin(EN_3V3_GPS_GPIO_Port, EN_3V3_GPS_Pin, GPIO_PIN_SET);
-	HAL_Delay(10);
+//	HAL_Delay(10);
 
 	systemTestCode();
 
+	if(powerRegime == CRITICAL){
+		/* this is where the system shouldnt be fully initialized because
+		*   the battery is too low
+		*/
+	}
 
-	// enable SD card 1
-	enable_SD_Card_1();
-	disable_SD_Card_2();
-	enable_SD_Mux();
-	mux_Select_SD_Card(1);
+	if(systemPowerSupervisor.isSDEnabled){
+		systemState.SDCardState = SD1_EN;
+		Control_SDCard_Power(systemState.SDCardState);
+	}
 
 #ifndef DISABLE_WIRELESS
 	  Init_Exti( );
@@ -485,13 +543,15 @@ int main(void)
 
 
 
+	systemState.isGPSActive = true;
+	Control_GPS_Power(true);
+	HAL_Delay(5);
+#define gnssAddress (0x42 << 1) // The default I2C address for u-blox modules is 0x42. Change this if required
 
-//#define gnssAddress (0x42 << 1) // The default I2C address for u-blox modules is 0x42. Change this if required
-//
-//	  while (myGNSS.begin(&hi2c1, gnssAddress) == false) //Connect to the u-blox module using our custom port and address
-//	  {
-//	    HAL_Delay(1000);
-//	  }
+	  while (myGNSS.begin(&hi2c1, gnssAddress) == false) //Connect to the u-blox module using our custom port and address
+	  {
+	    HAL_Delay(1000);
+	  }
 //
 //	  myGNSS.setI2COutput(COM_TYPE_UBX); //Set the I2C port to output UBX only (turn off NMEA noise)
 //
@@ -500,7 +560,7 @@ int main(void)
 ////	  myGNSS.setAutoPVT(true); // Tell the GNSS to output each solution periodically
 //
 //	  //	Duration of the requested task. The maximum supported value is 12 days. Set to 0 to wait for a wakeup signal on a pin
-//	  myGNSS.powerOff(0);
+	  myGNSS.powerOff(0);
 //
 ////		HAL_GPIO_WritePin(EN_3V3_GPS_GPIO_Port, EN_3V3_GPS_Pin, GPIO_PIN_RESET);
 ////
@@ -526,10 +586,11 @@ int main(void)
 //		    }
 //	  }
 
+	systemState.isFRAMActive = true;
+	Control_Microphone_FRAM_Power(true);
 
-
-	HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_SET);
+//	HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET);
+//	HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_SET);
 
 	HAL_Delay(10);
 
@@ -543,6 +604,9 @@ int main(void)
 		   infoPacket.payload.system_info_packet.discovered_devices[i].uid = 0;
 	   }
    }
+
+	systemState.isFRAMActive = false;
+	Control_Microphone_FRAM_Power(false);
 //	writeDefaultConfig();
 
 
@@ -749,13 +813,13 @@ static void MX_ADC1_Init(void)
   /** Common config
   */
   hadc1.Instance = ADC1;
-  hadc1.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV8;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV16;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
   hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   hadc1.Init.LowPowerAutoWait = DISABLE;
-  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.ContinuousConvMode = ENABLE;
   hadc1.Init.NbrOfConversion = 1;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
@@ -763,6 +827,11 @@ static void MX_ADC1_Init(void)
   hadc1.Init.DMAContinuousRequests = DISABLE;
   hadc1.Init.Overrun = ADC_OVR_DATA_PRESERVED;
   hadc1.Init.OversamplingMode = DISABLE;
+//  hadc1.Init.OversamplingMode = ENABLE;
+//  hadc1.Init.Oversampling.Ratio = ADC_OVERSAMPLING_RATIO_256;
+//  hadc1.Init.Oversampling.RightBitShift = ADC_RIGHTBITSHIFT_8;
+//  hadc1.Init.Oversampling.TriggeredMode = ADC_TRIGGEREDMODE_SINGLE_TRIGGER;
+//  hadc1.Init.Oversampling.OversamplingStopReset = ADC_REGOVERSAMPLING_CONTINUED_MODE;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
   {
     Error_Handler();
@@ -772,7 +841,7 @@ static void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_3;
   sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_2CYCLES_5;
+  sConfig.SamplingTime = ADC_SAMPLETIME_47CYCLES_5;
   sConfig.SingleDiff = ADC_SINGLE_ENDED;
   sConfig.OffsetNumber = ADC_OFFSET_NONE;
   sConfig.Offset = 0;
@@ -781,7 +850,8 @@ static void MX_ADC1_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN ADC1_Init 2 */
-
+  HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
+  HAL_Delay(10);
   /* USER CODE END ADC1_Init 2 */
 
 }
@@ -791,7 +861,8 @@ static void MX_ADC1_Init(void)
   * @param None
   * @retval None
   */
-static void MX_I2C1_Init(void)
+
+void MX_I2C1_Init(void)
 {
 
   /* USER CODE BEGIN I2C1_Init 0 */
@@ -834,12 +905,22 @@ static void MX_I2C1_Init(void)
 
 }
 
+void MX_I2C1_Deinit(void)
+{
+
+  if ( (hi2c1.Instance != NULL) && (HAL_I2C_DeInit(&hi2c1) != HAL_OK))
+  {
+    Error_Handler();
+  }
+
+}
+
 /**
   * @brief I2C3 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_I2C3_Init(void)
+void MX_I2C3_Init(void)
 {
 
   /* USER CODE BEGIN I2C3_Init 0 */
@@ -881,6 +962,18 @@ static void MX_I2C3_Init(void)
   /* USER CODE END I2C3_Init 2 */
 
 }
+
+
+void MX_I2C3_Deinit(void)
+{
+
+  if ( (hi2c3.Instance != NULL) && (HAL_I2C_DeInit(&hi2c3) != HAL_OK))
+  {
+    Error_Handler();
+  }
+
+}
+
 
 /**
   * @brief IPCC Initialization Function
@@ -1433,7 +1526,7 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 
   HAL_GPIO_WritePin(SX_NRESET_GPIO_Port, SX_NRESET_Pin, GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(SPI2_SX1262_CS_GPIO_Port, SPI2_SX1262_CS_Pin, GPIO_PIN_RESET);
+//  HAL_GPIO_WritePin(SPI2_SX1262_CS_GPIO_Port, SPI2_SX1262_CS_Pin, GPIO_PIN_RESET);
 
   GPIO_InitStruct.Pin = SX_NRESET_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
@@ -1546,35 +1639,35 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 	}
 }
 
-void enable_SD_Card_1(void){
-	HAL_GPIO_WritePin(EN_SD_REG_GPIO_Port, EN_SD_REG_Pin, GPIO_PIN_SET);
-}
-void enable_SD_Card_2(void){
-	HAL_GPIO_WritePin(EN_SD_REG_2_GPIO_Port, EN_SD_REG_2_Pin, GPIO_PIN_SET);
-}
+//void enable_SD_Card_1(void){
+//	HAL_GPIO_WritePin(EN_SD_REG_GPIO_Port, EN_SD_REG_Pin, GPIO_PIN_SET);
+//}
+//void enable_SD_Card_2(void){
+//	HAL_GPIO_WritePin(EN_SD_REG_2_GPIO_Port, EN_SD_REG_2_Pin, GPIO_PIN_SET);
+//}
+//
+//void disable_SD_Card_1(void){
+//	HAL_GPIO_WritePin(EN_SD_REG_GPIO_Port, EN_SD_REG_Pin, GPIO_PIN_RESET);
+//}
+//
+//void disable_SD_Card_2(void){
+//	HAL_GPIO_WritePin(EN_SD_REG_2_GPIO_Port, EN_SD_REG_2_Pin, GPIO_PIN_RESET);
+//}
 
-void disable_SD_Card_1(void){
-	HAL_GPIO_WritePin(EN_SD_REG_GPIO_Port, EN_SD_REG_Pin, GPIO_PIN_RESET);
-}
-
-void disable_SD_Card_2(void){
-	HAL_GPIO_WritePin(EN_SD_REG_2_GPIO_Port, EN_SD_REG_2_Pin, GPIO_PIN_RESET);
-}
-
-void enable_SD_Mux(void){
-	HAL_GPIO_WritePin(EN_SD_MUX_GPIO_Port, EN_SD_MUX_Pin, GPIO_PIN_RESET); // enable mux
-}
-
-void disable_SD_Mux(void){
-	HAL_GPIO_WritePin(EN_SD_MUX_GPIO_Port, EN_SD_MUX_Pin, GPIO_PIN_SET); // enable mux
-}
-void mux_Select_SD_Card(uint8_t number){
-	if(number == 1){
-		HAL_GPIO_WritePin(SD_MUX_SEL_GPIO_Port, SD_MUX_SEL_Pin, GPIO_PIN_RESET); // sd card 1 selected
-	}else{
-		HAL_GPIO_WritePin(SD_MUX_SEL_GPIO_Port, SD_MUX_SEL_Pin, GPIO_PIN_SET); // sd card 2 selected
-	}
-}
+//void enable_SD_Mux(void){
+//	HAL_GPIO_WritePin(EN_SD_MUX_GPIO_Port, EN_SD_MUX_Pin, GPIO_PIN_RESET); // enable mux
+//}
+//
+//void disable_SD_Mux(void){
+//	HAL_GPIO_WritePin(EN_SD_MUX_GPIO_Port, EN_SD_MUX_Pin, GPIO_PIN_SET); // enable mux
+//}
+//void mux_Select_SD_Card(uint8_t number){
+//	if(number == 1){
+//		HAL_GPIO_WritePin(SD_MUX_SEL_GPIO_Port, SD_MUX_SEL_Pin, GPIO_PIN_RESET); // sd card 1 selected
+//	}else{
+//		HAL_GPIO_WritePin(SD_MUX_SEL_GPIO_Port, SD_MUX_SEL_Pin, GPIO_PIN_SET); // sd card 2 selected
+//	}
+//}
 
 static void Reset_IPCC( void )
 {
@@ -1746,6 +1839,7 @@ void acousticSamplingTask(void *argument){
 	//	osDelay(1000);
 //	HAL_GPIO_WritePin(EN_3V3_GPS_GPIO_Port, EN_3V3_GPS_Pin, GPIO_PIN_SET);
 //	osDelay(1);
+
 	grabOrientation(folder_name);
 //	HAL_GPIO_WritePin(EN_3V3_GPS_GPIO_Port, EN_3V3_GPS_Pin, GPIO_PIN_RESET);
 //	tamperAlarm(ENABLE);
@@ -1760,6 +1854,7 @@ void acousticSamplingTask(void *argument){
 		chirpTaskHandle = osThreadNew(chirpTask, NULL, &chirpTask_attributes);
 	}
 
+	tone(4000, 100);
 //	if(configPacket.payload.config_packet.audio_config.free_run_mode){
 		startRecord(0, folder_name); // run forever
 //	}else{
@@ -1804,63 +1899,67 @@ void batteryMonitorTask(void *argument){
 
 		if((flag & UPDATE_EVENT) == UPDATE_EVENT){
 
-			do{
-				res = f_open(&batteryFile, file_name, FA_OPEN_APPEND | FA_WRITE | FA_READ);
-				if((res != FR_TIMEOUT) && (res != FR_OK)){
+			if(systemPowerSupervisor.isBatteryLevelSensingEnabled){
+
+				do{
+					res = f_open(&batteryFile, file_name, FA_OPEN_APPEND | FA_WRITE | FA_READ);
+					if((res != FR_TIMEOUT) && (res != FR_OK)){
+						Error_Handler();
+					}
+				}while( ((res == FR_TIMEOUT) || (osDelay(10) == osOK)) &&
+						(res != FR_OK));
+
+				if(res != FR_OK){
 					Error_Handler();
 				}
-			}while( ((res == FR_TIMEOUT) || (osDelay(10) == osOK)) &&
-					(res != FR_OK));
 
-			if(res != FR_OK){
-				Error_Handler();
-			}
+				battChgFlag = HAL_GPIO_ReadPin(BATT_CHG_GPIO_Port, BATT_CHG_Pin);
 
-			battChgFlag = HAL_GPIO_ReadPin(BATT_CHG_GPIO_Port, BATT_CHG_Pin);
+				systemState.isBatteryLevelSensingActive = true;
+				Control_BatteryMonitor_Power(true);
+				osDelay(100); // give time for voltage to settle
 
-			HAL_GPIO_WritePin(EN_BATT_MON_GPIO_Port, EN_BATT_MON_Pin, GPIO_PIN_SET);
-			osDelay(100); // give time for voltage to settle
+	//			timestamp = getEpoch();
+				HAL_ADC_Start_IT(&hadc1);
 
-//			timestamp = getEpoch();
-			HAL_ADC_Start_IT(&hadc1);
+				flag = osThreadFlagsWait(COMPLETE_EVENT, osFlagsWaitAny, osWaitForever);
 
-			flag = osThreadFlagsWait(COMPLETE_EVENT, osFlagsWaitAny, osWaitForever);
+				battVltg = ((((float) HAL_ADC_GetValue(&hadc1))) * 3.3 * 2) / 4096.0;
+				HAL_ADC_Stop_IT(&hadc1);
 
-			battVltg = ((((float) HAL_ADC_GetValue(&hadc1))) * 3.3 * 2) / 4096.0;
-			HAL_ADC_Stop_IT(&hadc1);
-
-			HAL_GPIO_WritePin(EN_BATT_MON_GPIO_Port, EN_BATT_MON_Pin, GPIO_PIN_RESET);
+				systemState.isBatteryLevelSensingActive = false;
+				Control_BatteryMonitor_Power(false);
 
 
+				idx_tracker += uint64_to_str(getEpoch(), &str[0]);
+				snprintf(&str[idx_tracker], sizeof(str)-idx_tracker, ",%.3f,%u\n", battVltg, battChgFlag);
 
-			idx_tracker += uint64_to_str(getEpoch(), &str[0]);
-			snprintf(&str[idx_tracker], sizeof(str)-idx_tracker, ",%.3f,%u\n", battVltg, battChgFlag);
 
+				f_write(&batteryFile, str, strlen(str), NULL);
+				memset(str, '\0', sizeof(str));
+				idx_tracker = 0;
 
-			f_write(&batteryFile, str, strlen(str), NULL);
-			memset(str, '\0', sizeof(str));
-			idx_tracker = 0;
+				// Close the file
+				res = f_close(&batteryFile);
+				if(res != FR_OK){
+					Error_Handler();
+				}
 
-			// Close the file
-			res = f_close(&batteryFile);
-			if(res != FR_OK){
-				Error_Handler();
-			}
+				/* update characteristic */
+				infoPacket.payload.system_info_packet.has_battery_state = true;
+				infoPacket.payload.system_info_packet.battery_state.charging=battChgFlag;
+				infoPacket.payload.system_info_packet.battery_state.has_percentage=true;
+				infoPacket.payload.system_info_packet.battery_state.percentage=0;
+				infoPacket.payload.system_info_packet.battery_state.voltage=floorf(battVltg * 1000) / 1000;
 
-			/* update characteristic */
-			infoPacket.payload.system_info_packet.has_battery_state = true;
-			infoPacket.payload.system_info_packet.battery_state.charging=battChgFlag;
-			infoPacket.payload.system_info_packet.battery_state.has_percentage=true;
-			infoPacket.payload.system_info_packet.battery_state.percentage=0;
-			infoPacket.payload.system_info_packet.battery_state.voltage=floorf(battVltg * 1000) / 1000;
-
-			/* Create a stream that will write to our buffer. */
-			pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-			/* Now we are ready to encode the message! */
-			status = pb_encode(&stream, PACKET_FIELDS, &infoPacket);
-			PackedPayload.pPayload = (uint8_t*) buffer;
-			PackedPayload.Length = stream.bytes_written;
-			if(status) DTS_STM_UpdateChar(BUZZCAM_INFO_CHAR_UUID, (uint8_t*)&PackedPayload);
+				/* Create a stream that will write to our buffer. */
+				pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+				/* Now we are ready to encode the message! */
+				status = pb_encode(&stream, PACKET_FIELDS, &infoPacket);
+				PackedPayload.pPayload = (uint8_t*) buffer;
+				PackedPayload.Length = stream.bytes_written;
+				if(status) DTS_STM_UpdateChar(BUZZCAM_INFO_CHAR_UUID, (uint8_t*)&PackedPayload);
+				}
 		}
 
 		if((flag & TERMINATE_EVENT) == TERMINATE_EVENT){
@@ -2966,52 +3065,63 @@ uint8_t check_file_exists(const char* path) {
 
 void grabOrientation(char *folder_name){
 
-	FIL orientationFile;
-	FRESULT res;
+	if(systemPowerSupervisor.isAccelerometerEnabled){
 
-	float pitch, roll, heading;
-	grabInertialSample(&pitch, &roll, &heading);
-	double timestamp = getEpoch();
-	// Create a character array large enough to hold the resulting string
-	char str[100] = {0};
+		// if accelerometer is active doing something, skip
+		if(systemState.isAccelerometerActive) return;
+
+		systemState.isAccelerometerActive = true;
+		Control_Secondary_Power(true);
+
+		FIL orientationFile;
+		FRESULT res;
+
+		float pitch, roll, heading;
+		grabInertialSample(&pitch, &roll, &heading);
+		double timestamp = getEpoch();
+		// Create a character array large enough to hold the resulting string
+		char str[100] = {0};
 
 
-	char file_name[20] = "/orientation.csv";
-	char file_path[42] = {0};
+		char file_name[20] = "/orientation.csv";
+		char file_path[42] = {0};
 
-	strcpy(file_path, folder_name);
-	strcat(file_path, file_name);
+		strcpy(file_path, folder_name);
+		strcat(file_path, file_name);
 
-	if(check_file_exists(file_path) == FR_NO_FILE){
-		if(f_open(&orientationFile, file_path, FA_CREATE_ALWAYS | FA_WRITE | FA_OPEN_APPEND) == FR_OK){
-			strcpy(str, "timestamp, pitch, roll, heading\n");
-			f_write(&orientationFile, str, strlen(str), NULL);
+		if(check_file_exists(file_path) == FR_NO_FILE){
+			if(f_open(&orientationFile, file_path, FA_CREATE_ALWAYS | FA_WRITE | FA_OPEN_APPEND) == FR_OK){
+				strcpy(str, "timestamp, pitch, roll, heading\n");
+				f_write(&orientationFile, str, strlen(str), NULL);
+			}else{
+				Error_Handler();
+			}
+
 		}else{
+			res = f_open(&orientationFile, file_path, FA_CREATE_ALWAYS | FA_WRITE | FA_OPEN_APPEND);
+			if(res != FR_OK){
+				Error_Handler();
+			}
+
+		}
+
+		memset(str, '\0', sizeof(str));
+		// Use snprintf to format the string as "timestamp,pitch,roll,heading\n"
+		snprintf(str, sizeof(str), "%.1f,%.3f,%.3f,%.3f\n", timestamp, pitch, roll, heading);
+
+		if(f_write(&orientationFile, str, strlen(str), NULL) != FR_OK){
 			Error_Handler();
 		}
 
-	}else{
-		res = f_open(&orientationFile, file_path, FA_CREATE_ALWAYS | FA_WRITE | FA_OPEN_APPEND);
-		if(res != FR_OK){
-			Error_Handler();
-		}
+		// Flush the cached data to the SD card
+		f_sync(&orientationFile);
 
+		// Close the file
+		f_close(&orientationFile);
+
+		systemState.isAccelerometerActive = false;
+		Control_Secondary_Power(false);
 	}
-
-	memset(str, '\0', sizeof(str));
-	// Use snprintf to format the string as "timestamp,pitch,roll,heading\n"
-	snprintf(str, sizeof(str), "%.1f,%.3f,%.3f,%.3f\n", timestamp, pitch, roll, heading);
-
-	if(f_write(&orientationFile, str, strlen(str), NULL) != FR_OK){
-		Error_Handler();
-	}
-
-	// Flush the cached data to the SD card
-	f_sync(&orientationFile);
-
-	// Close the file
-	f_close(&orientationFile);
-
 
 }
 
@@ -3128,39 +3238,43 @@ void chirp_timestamp(void){
 }
 
 void toneSweep(uint8_t reverse){
-	HAL_GPIO_WritePin(GPIOD, EN_BUZZER_PWR_Pin, GPIO_PIN_SET);
+	if(systemPowerSupervisor.isBuzzerEnabled){
+		systemState.isBuzzerActive = true;
+		Control_Buzzer_Power(true);
 
-	HAL_TIM_Base_Start(&htim16);
-	HAL_TIM_PWM_Start(&htim16, TIM_CHANNEL_1);
+		HAL_TIM_Base_Start(&htim16);
+		HAL_TIM_PWM_Start(&htim16, TIM_CHANNEL_1);
 
-	uint16_t index;
-	if(reverse){
-		index = 0;
-	}else{
-		index = 800;
-	}
-	while(1){
-
-		htim16.Instance->ARR = index;
-		htim16.Instance->CCR1 = index >> 1;
-
-		osDelay(20);
-
+		uint16_t index;
 		if(reverse){
-			index+=2;
+			index = 0;
 		}else{
-			index-=2;
+			index = 800;
+		}
+		while(1){
+
+			htim16.Instance->ARR = index;
+			htim16.Instance->CCR1 = index >> 1;
+
+			osDelay(20);
+
+			if(reverse){
+				index+=2;
+			}else{
+				index-=2;
+			}
+
+			if((index == 800) || (index==0)) {
+				/* stop buzzer pwm */
+				HAL_TIM_PWM_Stop(&htim16, TIM_CHANNEL_1);
+				osDelay(10);
+				break;
+			}
 		}
 
-		if((index == 800) || (index==0)) {
-			/* stop buzzer pwm */
-			HAL_TIM_PWM_Stop(&htim16, TIM_CHANNEL_1);
-			osDelay(10);
-			break;
-		}
+		systemState.isBuzzerActive = false;
+		Control_Buzzer_Power(false);
 	}
-
-	HAL_GPIO_WritePin(GPIOD, EN_BUZZER_PWR_Pin, GPIO_PIN_RESET);
 
 }
 
@@ -3174,35 +3288,39 @@ void chirp_timer_callback(void *argument){
 // 4600 - 6800 are pretty loud
 // 10000 is loud-ish
 void tone(uint32_t freq, uint32_t duration_ms){
-	HAL_GPIO_WritePin(GPIOD, EN_BUZZER_PWR_Pin, GPIO_PIN_SET);
+	if(systemPowerSupervisor.isBuzzerEnabled){
+		systemState.isBuzzerActive = true;
+		Control_Buzzer_Power(true);
 
-	//	while(osSemaphoreGetCount(messageSPI1_LockBinarySemId) != 0){
-	//			osDelay(1);
-	//		}
-	//    if(osSemaphoreRelease(messageSPI1_LockBinarySemId) != osOK){
-	//    	Error_Handler();
-	//    }
-	//	HAL_Delay(100);
-	//    if(osSemaphoreAcquire(messageSPI1_LockBinarySemId, 500) != osOK){
-	//    	Error_Handler();
-	//    }
+		//	while(osSemaphoreGetCount(messageSPI1_LockBinarySemId) != 0){
+		//			osDelay(1);
+		//		}
+		//    if(osSemaphoreRelease(messageSPI1_LockBinarySemId) != osOK){
+		//    	Error_Handler();
+		//    }
+		//	HAL_Delay(100);
+		//    if(osSemaphoreAcquire(messageSPI1_LockBinarySemId, 500) != osOK){
+		//    	Error_Handler();
+		//    }
 
-	//	HAL_Delay(1);
+		//	HAL_Delay(1);
 
-	uint32_t divider = 1000000 / freq;
+		uint32_t divider = 1000000 / freq;
 
-	HAL_TIM_Base_Start(&htim16);
+		HAL_TIM_Base_Start(&htim16);
 
-	htim16.Instance->ARR = divider;
-	htim16.Instance->CCR1 = divider >> 1;
+		htim16.Instance->ARR = divider;
+		htim16.Instance->CCR1 = divider >> 1;
 
-	HAL_TIM_PWM_Start(&htim16, TIM_CHANNEL_1);
+		HAL_TIM_PWM_Start(&htim16, TIM_CHANNEL_1);
 
-	osDelay(duration_ms);
+		osDelay(duration_ms);
 
 
-	HAL_TIM_PWM_Stop(&htim16, TIM_CHANNEL_1);
-	HAL_GPIO_WritePin(GPIOD, EN_BUZZER_PWR_Pin, GPIO_PIN_RESET);
+		HAL_TIM_PWM_Stop(&htim16, TIM_CHANNEL_1);
+		systemState.isBuzzerActive = false;
+		Control_Buzzer_Power(false);
+	}
 }
 
 // Example function to determine if the current time is within a given schedule's start and stop time
@@ -4327,12 +4445,16 @@ void disableAudioPeripherals(void){
 }
 
 void disableExtAudioDevices(void){
+	systemState.isMicrophoneActive = false;
 	EnableExtADC(false);
-	HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_RESET);
+//	HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_RESET);
+	Control_Microphone_FRAM_Power(false);
 }
 
 void enableExtAudioDevices(void){
-	HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_SET);
+	systemState.isMicrophoneActive = true;
+	Control_Microphone_FRAM_Power(true);
+	osDelay(2);
 	EnableExtADC(true);
 	osDelay(50);
 }
@@ -4497,9 +4619,9 @@ void mainSystemTask(void *argument){
 //	HAL_GPIO_WritePin(EN_3V3_GPS_GPIO_Port, EN_3V3_GPS_Pin, GPIO_PIN_SET);
 
 	// start MAX78000
-	HAL_GPIO_WritePin(EN_MAX78000_GPIO_Port, EN_MAX78000_Pin, GPIO_PIN_SET);
-	delay_nop(1000000);
-	HAL_NVIC_EnableIRQ(EXTI9_5_IRQn); // interrupt line from MAX78000
+//	HAL_GPIO_WritePin(EN_MAX78000_GPIO_Port, EN_MAX78000_Pin, GPIO_PIN_SET);
+//	delay_nop(1000000);
+//	HAL_NVIC_EnableIRQ(EXTI9_5_IRQn); // interrupt line from MAX78000
 
 
 //	HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);

@@ -18,6 +18,7 @@
 #include "task.h"
 #include "math.h"
 #include "app_fatfs.h"
+#include "support.h"
 //#include "fram.h"
 
 //#include "config/FieldAir_HandSanitizer/FieldAir_HandSanitizer.h"
@@ -169,7 +170,9 @@ void BME_Task(void *argument) {
 	//todo: remove the bottom and fix the top
 	sensorSettings.sample_period_ms = 5000;
 
-
+	systemState.isEnvironmentalSensorActive = true;
+	Control_Secondary_Power(true);
+	osDelay(2);
 
 	uint32_t timeSinceLastStateSave = 0;
 
@@ -353,6 +356,9 @@ void BME_Task(void *argument) {
 			osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
 			bme.soft_reset();
 			osMutexRelease(messageI2C1_LockHandle);
+
+			systemState.isEnvironmentalSensorActive = false;
+			Control_Secondary_Power(false);
 
 			bmeTaskHandle = 0x0;
 			osThreadExit();

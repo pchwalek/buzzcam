@@ -133,7 +133,9 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
     HAL_GPIO_Init(BATT_VLTG_GPIO_Port, &GPIO_InitStruct);
 
   /* USER CODE BEGIN ADC1_MspInit 1 */
-
+    /* ADC1 interrupt Init */
+    HAL_NVIC_SetPriority(ADC1_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(ADC1_IRQn);
   /* USER CODE END ADC1_MspInit 1 */
 
   }
@@ -162,7 +164,8 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* hadc)
     HAL_GPIO_DeInit(BATT_VLTG_GPIO_Port, BATT_VLTG_Pin);
 
   /* USER CODE BEGIN ADC1_MspDeInit 1 */
-
+    /* ADC1 interrupt Init */
+    HAL_NVIC_DisableIRQ(ADC1_IRQn);
   /* USER CODE END ADC1_MspDeInit 1 */
   }
 
