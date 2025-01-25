@@ -71,7 +71,7 @@ osThreadId_t sampleThreadId;
 
 const osThreadAttr_t micTask_attributes = { .name = "micTask", .attr_bits =
 		osThreadDetached, .cb_mem = NULL, .cb_size = 0, .stack_mem = NULL,
-		.stack_size = 256*12, .priority = (osPriority_t) osPriorityNormal,
+		.stack_size = 256*12, .priority = (osPriority_t) osPriorityNormal1,
 		.tz_module = 0, .reserved = 0 };
 osThreadId_t micThreadId;
 
@@ -118,8 +118,8 @@ const osThreadAttr_t chirpTask_attributes = { .name = "chirpTask",
 
 const osThreadAttr_t loraGPSTask_attributes = { .name = "loraGPSTask",
 		.attr_bits = osThreadDetached, .cb_mem = NULL, .cb_size = 0,
-		.stack_mem = NULL, .stack_size = 512*2, .priority =
-				(osPriority_t) osPriorityAboveNormal, .tz_module = 0, .reserved = 0 };
+		.stack_mem = NULL, .stack_size = 512*3, .priority =
+				(osPriority_t) osPriorityNormal, .tz_module = 0, .reserved = 0 };
 
 
 osMutexId_t messageI2C1_LockHandle;

@@ -277,7 +277,6 @@ static uint32_t WavProcess_HeaderUpdate(uint8_t* pHeader, uint32_t bytesWritten)
 static void WavUpdateHeaderSize(uint64_t totalBytesWritten);    // Updates header size after WAV recording
 
 // Function prototypes related to GPS
-void turnOnGPSandInit(void);
 bool setTimepulseGPS(void);
 void disableTimepulseGPS(void);
 GPSFixStatus getGPSFix(GPSFix *currentFix, uint32_t timeout_ms);
@@ -308,7 +307,7 @@ void unmount_sd_card(void);       // Unmounts the SD card
 void delay_nop(uint32_t count);   // Delays by executing NOPs
 
 // Utility functions for file and time management
-void set_folder_from_time(char* folder_name);               // Sets folder name based on time
+bool set_folder_from_time(char* folder_name);               // Sets folder name based on time
 void getFormattedTime(RTC_HandleTypeDef *hrtc, char *formattedTime); // Gets formatted time string
 
 // Disable audio peripherals
@@ -1149,8 +1148,9 @@ static void MX_RTC_Init(void)
 	//    Error_Handler();
 	//  }
 #endif
-	HAL_NVIC_SetPriority(RTC_Alarm_IRQn, 5, 0);
-	HAL_NVIC_EnableIRQ(RTC_Alarm_IRQn);
+
+      // Handle error
+
   /* USER CODE END RTC_Init 2 */
 
 }
@@ -1450,6 +1450,10 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(SD_MUX_SEL_GPIO_Port, SD_MUX_SEL_Pin, GPIO_PIN_RESET);
 
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPS_INT_GPIO_Port, GPS_INT_Pin, GPIO_PIN_RESET);
+
+
   /*Configure GPIO pins : SD_CS_Pin EN_UWB_REG_Pin EN_SD_REG_2_Pin EN_MIC_PWR_Pin
                            SPI1_SX1262_CS_Pin EN_BUZZER_PWR_Pin SX_NRESET_Pin */
   GPIO_InitStruct.Pin = SD_CS_Pin|EN_UWB_REG_Pin|EN_SD_REG_2_Pin|EN_MIC_PWR_Pin
@@ -1491,7 +1495,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   GPIO_InitStruct.Pin = GPS_INT_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPS_INT_GPIO_Port, &GPIO_InitStruct);
 
@@ -2511,9 +2515,14 @@ void uwbMessageTask(void* argument){
 	}
 }
 
+void wakeupGPS(){
+  HAL_GPIO_WritePin(GPS_INT_GPIO_Port, GPS_INT_Pin, GPIO_PIN_SET);
+  osDelay(1);
+  HAL_GPIO_WritePin(GPS_INT_GPIO_Port, GPS_INT_Pin, GPIO_PIN_RESET);
+}
+
 void turnOnGPSandInit(){
-	Control_GPS_Power(true);
-	systemState.isGPSActive = true;
+	if(Is_GPS_Enabled()) Control_GPS_Power(true);
 
 	osDelay(100); //startup delay (todo: need to tune this)
 
@@ -2581,7 +2590,8 @@ void disableTimepulseGPS(){
 
 bool standbyGPSMode(){
 	osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
-	bool status = myGNSS.powerOff(345600000);
+//	bool status = myGNSS.powerOff(345600000);
+	bool status = myGNSS.powerOffWithInterrupt(345600000, VAL_RXM_PMREQ_WAKEUPSOURCE_EXTINT0,false, 100);
 //	bool status = true;
 	osMutexRelease(messageI2C1_LockHandle);
 	return status;
@@ -3081,6 +3091,10 @@ void readInterrupt(uint8_t *rxData){
 	HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) INT1_SRC_A, 1, rxData, 1, 100);
 }
 
+
+
+
+
 void tamperAlarm(bool state){
 	uint8_t txData;
 	volatile HAL_StatusTypeDef status;
@@ -3134,17 +3148,22 @@ void tamperAlarm(bool state){
 	}
 }
 
-void set_folder_from_time(char* folder_name){
+bool set_folder_from_time(char* folder_name){
 	//	char folder_name[20];
 	getFormattedTime(&hrtc, folder_name);
 
 	FILINFO fno;
-	FRESULT res;
+	volatile FRESULT res;
 
 	//	if(res != FR_OK){
 	//		Error_Handler();
 	//	}else{
 	res = f_mkdir(folder_name);
+	if(res == FR_OK){
+		return true;
+	}else{
+		return false;
+	}
 	//		if(FR_OK == f_opendir(&dir, folder_name)){
 	//			f_chdir(folder_name);
 	//			return;
@@ -3166,7 +3185,7 @@ void set_folder_from_time(char* folder_name){
 	//			f_sync(&file);
 	//		}else Error_Handler();
 
-	return;
+//	return;
 	//	}
 }
 
@@ -3199,7 +3218,7 @@ void grabOrientation(char *folder_name){
 		if(systemState.isAccelerometerActive) return;
 
 		systemState.isAccelerometerActive = true;
-		Control_Secondary_Power(true);
+		if(!Is_Secondary_Enabled()) Control_Secondary_Power(true);
 
 		FIL orientationFile;
 		FRESULT res;
@@ -3836,14 +3855,14 @@ void grabInertialSample(float *pitch, float *roll, float *heading){
 
 	// new data available
 	status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_OFFSET_X_REG_L, 1,magData, 6, 100);
-	osMutexRelease(messageI2C1_LockHandle);
+//	osMutexRelease(messageI2C1_LockHandle);
 	//	  readFRAM(FRAM_MAG_CAL_WORD_ADDR, FRAM_MAG_CAL_BYTE_ADDR, mag_cal_vals, FRAM_MAG_CAL_SIZE);
 	//	  writeFRAM(FRAM_MAG_CAL_WORD_ADDR, FRAM_MAG_CAL_BYTE_ADDR, mag_cal_vals, FRAM_MAG_CAL_SIZE);
 	//	mag_cal_vals[0] = -379;
 	//	mag_cal_vals[1] = 218;
 	//	mag_cal_vals[2] = 159;
 	//	status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_OFFSET_X_REG_L, 1, (uint8_t*) mag_cal_vals, 6, 100);
-	osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
+//	osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
 	status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_STATUS_REG, 1,&rxData, 1, 100);
 	osMutexRelease(messageI2C1_LockHandle);
 	if( (rxData & 0x08) == 0x08){
@@ -4008,7 +4027,7 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 	uint64_t totalBytesWrittenToFile = 0;
 	uint64_t totalBuffersWritten = 0;
 
-	HAL_StatusTypeDef hal_status;
+	volatile HAL_StatusTypeDef hal_status;
 
 	uint32_t buffer_size;
 	uint32_t buffer_half_size;
@@ -4773,7 +4792,7 @@ void mainSystemTask(void *argument){
 	triggerMarkTaskId = osThreadNew(triggerMarkTask, NULL, &triggerMarkTask_attributes);
 //	uwbMessageTaskId = osThreadNew(uwbMessageTask, NULL, &uwbMessageTask_attributes);
 	ledSequencerId = osThreadNew(ledSequencer, NULL, &ledSequencerTask_attributes);
-	loraGPSId = osThreadNew(loraGPSTask, NULL, &loraGPSTask_attributes);
+//	loraGPSId = osThreadNew(loraGPSTask, NULL, &loraGPSTask_attributes);
 	fileWriteSyncTaskId = osThreadNew(fileWriteSyncTask, NULL, &timestampTask_attributes);
 
 	configThreadId = osThreadNew(updateSystemConfig,
@@ -5086,7 +5105,7 @@ void loraGPSTask(void *argument){
 	// turn on GPS if not already on
 	if(systemPowerSupervisor.isGPSEnabled &&
 			!systemState.isGPSActive){
-
+		systemState.isGPSActive = true;
 		turnOnGPSandInit();
 //		// try to get a fix on boot
 //		if(GPS_FIX_SUCCESS == getGPSFix(&currentFix, 30000)){
@@ -5095,7 +5114,10 @@ void loraGPSTask(void *argument){
 		standbyGPSMode();
 	}
 
-	if(systemState.isGPSActive){
+	// after initialization
+	if(systemPowerSupervisor.isGPSEnabled &&
+			systemState.isGPSActive){
+		wakeupGPS();
 		gpsMsgRetry = 0;
 		if(!setTimepulseGPS()){
 			gpsMsgRetry++;
@@ -5118,6 +5140,21 @@ void loraGPSTask(void *argument){
 		HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 		//todo: is LoRa normally in low power mode if not doing anything?
 
+		RTC_AlarmTypeDef sAlarm = {0};
+		sAlarm.AlarmTime.Hours = 0;
+		sAlarm.AlarmTime.Minutes = 0;
+		sAlarm.AlarmTime.Seconds = 0;  // Trigger when seconds count reaches 0
+		// Mask the hour, minute, and day, so the alarm triggers every minute
+		sAlarm.AlarmMask = RTC_ALARMMASK_DATEWEEKDAY|RTC_ALARMMASK_HOURS|RTC_ALARMMASK_MINUTES;
+		sAlarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
+		sAlarm.Alarm = RTC_ALARM_B;
+		if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN) != HAL_OK)
+		{
+			Error_Handler();
+		}
+
+		HAL_NVIC_SetPriority(RTC_Alarm_IRQn, 5, 0);
+		HAL_NVIC_EnableIRQ(RTC_Alarm_IRQn);
 		systemState.isLoRaActive = true;
 	}
 	// disable LoRa
@@ -5128,6 +5165,8 @@ void loraGPSTask(void *argument){
 		if(!systemState.isAccelerometerActive) HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
 //		HAL_RTC_DeactivateAlarm(&hrtc, RTC_ALARM_B);
 		//todo: is LoRa normally in low power mode if not doing anything?
+
+		HAL_NVIC_DisableIRQ(RTC_Alarm_IRQn);
 		Control_Secondary_Power(false);
 	}
 
@@ -5141,20 +5180,24 @@ void loraGPSTask(void *argument){
 //		}
 
 		if((flag & GPS_GRAB_SAMPLE) == GPS_GRAB_SAMPLE){
+			wakeupGPS();
 			setTimepulseGPS();
 			HAL_NVIC_SetPriority(EXTI1_IRQn, 5, 0);
 			HAL_NVIC_EnableIRQ(EXTI1_IRQn);
 		}
 
 		if((flag & GPS_TIMEPULSE_FLAG) == GPS_TIMEPULSE_FLAG){
+	    	osMutexAcquire(messageI2C1_LockHandle, osWaitForever); // this should never be necessary since no device should be communicating at this point
 			if(myGNSS.getTimeValid(100)){
 				timestamp = myGNSS.getUnixEpoch();
 //				updateRTC(myGNSS.getUnixEpoch());
+				osMutexRelease(messageI2C1_LockHandle);
+				disableTimepulseGPS();
+				standbyGPSMode();
+				HAL_NVIC_DisableIRQ(EXTI1_IRQn);
+			}else{
+		    	osMutexRelease(messageI2C1_LockHandle);
 			}
-//
-//			disableTimepulseGPS();
-//			standbyGPSMode();
-//			HAL_NVIC_DisableIRQ(EXTI1_IRQn);
 		}
 
 		if((flag & LORA_SEND_PKT) == LORA_SEND_PKT){
@@ -5190,7 +5233,14 @@ void loraGPSTask(void *argument){
 			systemState.isGPSActive = false;
 			Control_GPS_Power(false);
 
+			HAL_NVIC_DisableIRQ(RTC_Alarm_IRQn);
+			systemState.isLoRaActive = false;
+			// accelerometer shares interrupt line
+			if(!systemState.isAccelerometerActive) HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
+			HAL_NVIC_DisableIRQ(RTC_Alarm_IRQn);
+			Control_Secondary_Power(false);
 
+			HAL_RTC_DeactivateAlarm(&hrtc, RTC_ALARM_A);
 
 			vTaskDelete( NULL );
 		}
@@ -6648,6 +6698,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 	}
 
 }
+
+
 //volatile uint32_t byteswritten = 0;
 void HAL_SAI_RxHalfCpltCallback(SAI_HandleTypeDef *hsai){
 	//	 f_write(&WavFile, audioSample, AUDIO_BUFFER_HALF_LEN, (void*)&byteswritten);
@@ -6787,7 +6839,14 @@ uint64_t RTC_ToEpochMS(RTC_TimeTypeDef *time, RTC_DateTypeDef *date) {
 
 void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc)
 {
-	osThreadFlagsSet(mainSystemThreadId, UPDATE_EVENT);
+//	osThreadFlagsSet(mainSystemThreadId, UPDATE_EVENT);
+
+}
+
+void HAL_RTCEx_AlarmBEventCallback(RTC_HandleTypeDef *hrtc) {
+
+	osThreadFlagsSet(loraGPSId, LORA_SEND_PKT);
+
 }
 
 /* USER CODE END 4 */

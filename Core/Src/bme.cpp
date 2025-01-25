@@ -171,7 +171,7 @@ void BME_Task(void *argument) {
 	sensorSettings.sample_period_ms = 5000;
 
 	systemState.isEnvironmentalSensorActive = true;
-	Control_Secondary_Power(true);
+	if(!Is_Secondary_Enabled()) Control_Secondary_Power(true);
 	osDelay(2);
 
 	uint32_t timeSinceLastStateSave = 0;
@@ -231,7 +231,7 @@ void BME_Task(void *argument) {
     	}
 	}
 
-	FRESULT res;
+	volatile FRESULT res;
 	volatile uint8_t negativeNumber = 0;
 
 	do{

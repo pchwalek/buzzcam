@@ -31,14 +31,24 @@ void Control_Secondary_Power(bool enable) {
 
     if(enable){
     	HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET);
+    	if(!Is_GPS_Enabled()) Control_GPS_Power(true); // required since I2C1 won't work
     	HAL_Delay(1);
+    	osMutexAcquire(messageI2C1_LockHandle, osWaitForever); // this should never be necessary since no device should be communicating at this point
     	MX_I2C1_Init();
+    	osMutexRelease(messageI2C1_LockHandle);
+    	if(!systemPowerSupervisor.isGPSEnabled){
+			turnOnGPSandInit();
+			standbyGPSMode();
+    	}
     }else if(!systemState.isEnvironmentalSensorActive &&
     		!systemState.isAccelerometerActive &&
 			!systemState.isLoRaActive &&
 			!systemState.isGPSActive){
     	HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_RESET);
+    	if(Is_GPS_Enabled()) Control_GPS_Power(false); // gps isn't active
+    	osMutexAcquire(messageI2C1_LockHandle, osWaitForever); // this should never be necessary since no device should be communicating at this point
     	MX_I2C1_Deinit();
+    	osMutexRelease(messageI2C1_LockHandle);
     }
 
 }
@@ -51,7 +61,7 @@ void Control_GPS_Power(bool enable) {
 		// also need to activate secondary power for backup supply and I2C comms
 		if(!Is_Secondary_Enabled()) Control_Secondary_Power(true);
     }else{
-    	Control_Secondary_Power(false);
+    	if(Is_Secondary_Enabled()) Control_Secondary_Power(false);
     }
 }
 

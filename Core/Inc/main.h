@@ -559,6 +559,7 @@ void updateRTC_MS(uint64_t receivedTime);
 uint64_t getEpoch(void);
 
 bool standbyGPSMode();
+void turnOnGPSandInit();
 
 char * ftoa(double f, char * buf, int precision);
 
