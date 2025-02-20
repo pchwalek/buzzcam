@@ -149,8 +149,9 @@ typedef struct{
 
 typedef enum {
     GPS_FIX_SUCCESS = 0,  // Indicating successful GPS fix
-    GPS_FIX_TIMEOUT = 1,   // Indicating GPS fix timeout
-	GPS_FIX_ERROR = 2
+	GPS_NO_FIX = 	  1,
+    GPS_FIX_TIMEOUT = 2,   // Indicating GPS fix timeout
+	GPS_FIX_ERROR = 3
 } GPSFixStatus;
 
 typedef struct {
@@ -158,6 +159,7 @@ typedef struct {
     int32_t longitude;  // Longitude in degrees * 10^7
     int32_t altitude;   // Altitude in meters
     uint32_t gps_epoch; // GPS time of week in seconds since start of GPS week
+    uint8_t fixType;
 } GPSFix;
 
 enum regAddr
@@ -328,6 +330,7 @@ typedef enum {
 	LIS2MDL_OUTZ_H_REG = 0x6D,
 } lis2mdl_register_t;
 
+
 extern I2C_HandleTypeDef hi2c1;
 extern RTC_HandleTypeDef hrtc;
 extern SPI_HandleTypeDef hspi1;
@@ -428,7 +431,7 @@ extern SPI_HandleTypeDef hspi1;
 
 #define SD_SPI_HANDLE hspi1
 
-#define DISABLE_WIRELESS 1
+#define DISABLE_WIRELESS 0
 
 #define UPDATE_EVENT  		  0x00000001
 #define TERMINATE_EVENT  	  0x00000002

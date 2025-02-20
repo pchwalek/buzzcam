@@ -267,7 +267,7 @@ void runAnalogConverter(void); // Runs the analog to digital conversion process
 
 // Device management functions
 static void Reset_Device(void);     // Resets the device
-void systemTestCode(void);          // Runs system test routines
+void ledStartUpBlinkSequence(void);          // Runs system test routines
 
 // WAV file processing functions
 void WAV_RECORD_TEST(void);                                     // Test function for WAV recording
@@ -279,7 +279,7 @@ static void WavUpdateHeaderSize(uint64_t totalBytesWritten);    // Updates heade
 // Function prototypes related to GPS
 bool setTimepulseGPS(void);
 void disableTimepulseGPS(void);
-GPSFixStatus getGPSFix(GPSFix *currentFix, uint32_t timeout_ms);
+GPSFixStatus getGPSFix(GPSFix *currentFix);
 
 // RTC (Real-Time Clock) utility functions
 void RTC_FromEpoch(time_t epoch, RTC_TimeTypeDef *time, RTC_DateTypeDef *date); // Converts epoch to RTC time and date
@@ -416,6 +416,7 @@ void reset_DFU_trigger(void); // Resets trigger for Device Firmware Update proce
 
 // File Write Synchronization Struct
 fileWriteSync_t fileWriteSyncUWB; // Data structure for synchronizing UWB file writes
+
 /* USER CODE END 0 */
 
 /**
@@ -436,7 +437,7 @@ int main(void)
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
-#ifndef DISABLE_WIRELESS
+#if DISABLE_WIRELESS == 0
   /* Config code for STM32_WPAN (HSE Tuning must be done before system clock configuration) */
   MX_APPE_Config();
 #endif
@@ -448,7 +449,7 @@ int main(void)
   /* Configure the system clock */
   SystemClock_Config();
 
-#ifndef DISABLE_WIRELESS
+#if DISABLE_WIRELESS == 0
 	/**
 	* Select LSE clock
 	*/
@@ -476,6 +477,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+
   MX_DMA_Init();
 //  MX_I2C3_Init();
   MX_RTC_Init();
@@ -493,12 +495,20 @@ int main(void)
   /* USER CODE BEGIN 2 */
 //  volatile float testVarFlt;
 
+#if DISABLE_WIRELESS == 0
+	  Init_Exti( );
+
+	  MX_IPCC_Init();
+#endif
+
   TurnOffAllSystems();
+
 //  while(1){
 //	  testVarFlt = getBattVltg();
 //	  testVarFlt = calculate_battery_percentage(testVarFlt);
 //  }
   updateSystemPowerSupervisor(&systemPowerSupervisor, &powerRegime);
+
 
 //  HAL_GPIO_WritePin(EN_MAX78000_GPIO_Port, EN_MAX78000_Pin, GPIO_PIN_RESET);
 //  HAL_GPIO_WritePin(EN_MAX78000_GPIO_Port, EN_MAX78000_Pin, GPIO_PIN_RESET);
@@ -535,7 +545,7 @@ int main(void)
 //	HAL_GPIO_WritePin(EN_3V3_GPS_GPIO_Port, EN_3V3_GPS_Pin, GPIO_PIN_SET);
 //	HAL_Delay(10);
 
-	systemTestCode();
+	ledStartUpBlinkSequence();
 
 	if(powerRegime == CRITICAL){
 		/* this is where the system shouldnt be fully initialized because
@@ -548,13 +558,12 @@ int main(void)
 		Control_SDCard_Power(systemState.SDCardState);
 	}
 
-#ifndef DISABLE_WIRELESS
-	  Init_Exti( );
+	if(systemPowerSupervisor.isMAX78000Enabled){
+		systemState.isMAX78000Active = true;
+		Control_MAX78000_Power(true);
+	}
 
-	  MX_IPCC_Init();
-#endif
-
-	HAL_Delay(1000);
+//	HAL_Delay(1000);
 
 //	HAL_GPIO_WritePin(EN_3V3_GPS_GPIO_Port, EN_3V3_GPS_Pin, GPIO_PIN_RESET);
 
@@ -691,13 +700,13 @@ int main(void)
 	mainTaskUpdateId = osTimerNew (alertMainTask, osTimerOnce, (void *)0, NULL);
 	/* add events, ... */
 //	MX_IPCC_Init();
-#ifdef DISABLE_WIRELESS
+#if DISABLE_WIRELESS == 1
 	mainSystemThreadId = osThreadNew(mainSystemTask, NULL, &mainSystemTask_attributes);
 #endif
 	/* USER CODE END RTOS_EVENTS */
 
   /* Init code for STM32_WPAN */
-#ifndef DISABLE_WIRELESS
+#if DISABLE_WIRELESS == 0
   MX_APPE_Init();
 #endif
   /* Start scheduler */
@@ -846,12 +855,12 @@ static void MX_ADC1_Init(void)
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc1.Init.DMAContinuousRequests = DISABLE;
   hadc1.Init.Overrun = ADC_OVR_DATA_PRESERVED;
-  hadc1.Init.OversamplingMode = DISABLE;
-//  hadc1.Init.OversamplingMode = ENABLE;
-//  hadc1.Init.Oversampling.Ratio = ADC_OVERSAMPLING_RATIO_256;
-//  hadc1.Init.Oversampling.RightBitShift = ADC_RIGHTBITSHIFT_8;
-//  hadc1.Init.Oversampling.TriggeredMode = ADC_TRIGGEREDMODE_SINGLE_TRIGGER;
-//  hadc1.Init.Oversampling.OversamplingStopReset = ADC_REGOVERSAMPLING_CONTINUED_MODE;
+//  hadc1.Init.OversamplingMode = DISABLE;
+  hadc1.Init.OversamplingMode = ENABLE;
+  hadc1.Init.Oversampling.Ratio = ADC_OVERSAMPLING_RATIO_256;
+  hadc1.Init.Oversampling.RightBitShift = ADC_RIGHTBITSHIFT_8;
+  hadc1.Init.Oversampling.TriggeredMode = ADC_TRIGGEREDMODE_SINGLE_TRIGGER;
+  hadc1.Init.Oversampling.OversamplingStopReset = ADC_REGOVERSAMPLING_CONTINUED_MODE;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
   {
     Error_Handler();
@@ -2535,6 +2544,11 @@ void turnOnGPSandInit(){
 	}
 
 	myGNSS.setI2COutput(COM_TYPE_UBX); //Set the I2C port to output UBX only (turn off NMEA noise)
+
+	myGNSS.setNavigationFrequency(4);  //Produce four solutions per second
+	myGNSS.setAutoPVT(true); //Tell the GPS to "send" each solution
+	myGNSS.saveConfiguration();        //Save the current settings to flash and BBR
+
 	osMutexRelease(messageI2C1_LockHandle);
 }
 
@@ -2598,26 +2612,60 @@ bool standbyGPSMode(){
 //	return  // 4 day default but querying will immediately wakeup system
 }
 
-GPSFixStatus getGPSFix(GPSFix *currentFix, uint32_t timeout_ms){
+GPSFixStatus getGPSFix(GPSFix *currentFix){
 	uint32_t start_ms = HAL_GetTick();
-	while( (HAL_GetTick() - start_ms) < timeout_ms ){
-		  if (myGNSS.getPVT(timeout_ms) == true)
-			{
-			  currentFix->latitude = myGNSS.getLatitude();
+//	while( (HAL_GetTick() - start_ms) < timeout_ms ){
+//		  if (myGNSS.getPVT(timeout_ms) == true)
+//			{
+//			  currentFix->latitude = myGNSS.getLatitude();
+//
+//			  currentFix->longitude = myGNSS.getLongitude();
+//
+//			  if( (currentFix->latitude == 0) && (currentFix->longitude == 0)) continue;
+//
+//			  currentFix->altitude = myGNSS.getAltitudeMSL(); // Altitude above Mean Sea Level
+//
+//			  currentFix->gps_epoch = myGNSS.getUnixEpoch();
+//
+//			  return GPS_FIX_SUCCESS;
+//
+//			  break;
+//			}
+//	  }
 
-			  currentFix->longitude = myGNSS.getLongitude();
+	if (myGNSS.getPVT() && (myGNSS.getInvalidLlh() == false)){
+	//		if (myGNSS.getPVT(250)){
+	//		if( myGNSS.getPVT()){
 
-			  if( (currentFix->latitude == 0) && (currentFix->longitude == 0)) continue;
+	//			if(myGNSS.getFixType() != 0){
+	//				Error_Handler();
+	//			}
+	//			currentFix->gps_epoch = myGNSS.getUnixEpoch();
+	//			fixType = myGNSS.getFixType();
+	//			// if fix is 3D, lat, lon, and altitude are available
+	//		    if(fixType == 3) {  // 3D fi
+			    	currentFix->latitude = myGNSS.getLatitude();
 
-			  currentFix->altitude = myGNSS.getAltitudeMSL(); // Altitude above Mean Sea Level
+			    	currentFix->longitude = myGNSS.getLongitude();
 
-			  currentFix->gps_epoch = myGNSS.getUnixEpoch();
+			    	if(currentFix->longitude == currentFix->latitude){
+			    		return GPS_NO_FIX;
+			    	}
 
-			  return GPS_FIX_SUCCESS;
+					currentFix->gps_epoch = myGNSS.getUnixEpoch();
 
-			  break;
+			    	currentFix->altitude = myGNSS.getAltitudeMSL(); // Altitude above Mean Sea Level
+
+			    	currentFix->fixType = myGNSS.getFixType();
+
+			    	return GPS_FIX_SUCCESS;
+
+
+	//		else if(fixType != 0){
+	//		    	return GPS_FIX_TIMEOUT;
+	//		    }
+
 			}
-	  }
 
 	return GPS_FIX_TIMEOUT;
 }
@@ -3272,7 +3320,7 @@ void grabOrientation(char *folder_name){
 
 }
 
-void systemTestCode(void){
+void ledStartUpBlinkSequence(void){
 
 	//	uint32_t freq = 5000;
 	//
@@ -4815,7 +4863,7 @@ void mainSystemTask(void *argument){
 
 	if(configPacket.payload.config_packet.network_state.master_node ||
 			(configPacket.payload.config_packet.network_state.slave_sync == 0)){
-#ifndef DISABLE_WIRELESS
+#if DISABLE_WIRELESS == 0
 		while(coapSetup != 1){
 			osDelay(100);
 		}
@@ -5119,15 +5167,15 @@ void loraGPSTask(void *argument){
 			systemState.isGPSActive){
 		wakeupGPS();
 		gpsMsgRetry = 0;
-		if(!setTimepulseGPS()){
-			gpsMsgRetry++;
-			if(gpsMsgRetry > 5){
-				osDelay(1);
-				Error_Handler();
-			}
-		}
-		HAL_NVIC_SetPriority(EXTI1_IRQn, 5, 0);
-		HAL_NVIC_EnableIRQ(EXTI1_IRQn);
+//		if(!setTimepulseGPS()){
+//			gpsMsgRetry++;
+//			if(gpsMsgRetry > 5){
+//				osDelay(1);
+//				Error_Handler();
+//			}
+//		}
+//		HAL_NVIC_SetPriority(EXTI1_IRQn, 5, 0);
+//		HAL_NVIC_EnableIRQ(EXTI1_IRQn);
 	}
 
 	// turn on LoRa if not already on
@@ -5181,24 +5229,49 @@ void loraGPSTask(void *argument){
 
 		if((flag & GPS_GRAB_SAMPLE) == GPS_GRAB_SAMPLE){
 			wakeupGPS();
-			setTimepulseGPS();
-			HAL_NVIC_SetPriority(EXTI1_IRQn, 5, 0);
-			HAL_NVIC_EnableIRQ(EXTI1_IRQn);
+
+			uint64_t startTime = HAL_GetTick();
+
+			while( (HAL_GetTick() - startTime) < (60) ){ // wait for 5 minutes (300 seconds)
+				osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
+				if(GPS_FIX_SUCCESS == getGPSFix(&currentFix)){
+
+
+					infoPacket.payload.system_info_packet.has_gps_location = true;
+					infoPacket.payload.system_info_packet.gps_location.epoch = currentFix.gps_epoch;
+					infoPacket.payload.system_info_packet.gps_location.lat = currentFix.latitude;
+					infoPacket.payload.system_info_packet.gps_location.lon = currentFix.longitude;
+					infoPacket.payload.system_info_packet.gps_location.elev = currentFix.altitude;
+
+					updateRTC(infoPacket.payload.system_info_packet.gps_location.epoch);
+
+					osMutexRelease(messageI2C1_LockHandle);
+					break;
+				}else{
+					osMutexRelease(messageI2C1_LockHandle);
+				}
+				osDelay(50);
+			}
+
+			standbyGPSMode();
+//			setTimepulseGPS();
+//			HAL_NVIC_SetPriority(EXTI1_IRQn, 5, 0);
+//			HAL_NVIC_EnableIRQ(EXTI1_IRQn);
 		}
 
-		if((flag & GPS_TIMEPULSE_FLAG) == GPS_TIMEPULSE_FLAG){
-	    	osMutexAcquire(messageI2C1_LockHandle, osWaitForever); // this should never be necessary since no device should be communicating at this point
-			if(myGNSS.getTimeValid(100)){
-				timestamp = myGNSS.getUnixEpoch();
-//				updateRTC(myGNSS.getUnixEpoch());
-				osMutexRelease(messageI2C1_LockHandle);
-				disableTimepulseGPS();
-				standbyGPSMode();
-				HAL_NVIC_DisableIRQ(EXTI1_IRQn);
-			}else{
-		    	osMutexRelease(messageI2C1_LockHandle);
-			}
-		}
+//		if((flag & GPS_TIMEPULSE_FLAG) == GPS_TIMEPULSE_FLAG){
+//	    	osMutexAcquire(messageI2C1_LockHandle, osWaitForever); // this should never be necessary since no device should be communicating at this point
+//			if(myGNSS.getTimeValid(100)){
+//				timestamp = myGNSS.getUnixEpoch();
+////				updateRTC(myGNSS.getUnixEpoch());
+//				osMutexRelease(messageI2C1_LockHandle);
+//				disableTimepulseGPS();
+//				standbyGPSMode();
+////				HAL_NVIC_DisableIRQ(EXTI1_IRQn);
+//			}else{
+//		    	osMutexRelease(messageI2C1_LockHandle);
+//			}
+//		}
 
 		if((flag & LORA_SEND_PKT) == LORA_SEND_PKT){
 			sendLoRa_pkt(&infoPacket);
@@ -5228,7 +5301,7 @@ void loraGPSTask(void *argument){
 
 		if((flag & TERMINATE_EVENT) == TERMINATE_EVENT){
 			/* turn off GPS or put in standby mode */
-			HAL_NVIC_DisableIRQ(EXTI1_IRQn);
+//			HAL_NVIC_DisableIRQ(EXTI1_IRQn);
 			standbyGPSMode(); // in case we can't fully shut off GPS power, put in software standby
 			systemState.isGPSActive = false;
 			Control_GPS_Power(false);

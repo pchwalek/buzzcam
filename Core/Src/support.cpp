@@ -300,7 +300,7 @@ float getBattVltg(void){
 //
 //	battVltg = battVltg / BATTERY_ADC_SAMPLES;
 	HAL_ADC_PollForConversion(&hadc1, 100);
-	battVltg = (( HAL_ADC_GetValue(&hadc1) * 3.3 /4096) * 2);
+	battVltg = (( HAL_ADC_GetValue(&hadc1) * 3.3 /4096) * 2) + .03;
 	HAL_ADC_Stop(&hadc1);
 	Control_BatteryMonitor_Power(false);
 //	packet.payload.system_info_packet.has_battery_state = true;

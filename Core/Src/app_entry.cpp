@@ -592,7 +592,7 @@ static void APPE_SysEvtReadyProcessing(void * pPayload)
 //#else
 
   /* Traces channel initialization */
-#ifndef DISABLE_WIRELESS
+#if DISABLE_WIRELESS == 0
    APPD_EnableCPU2();
 
    /* In the Context of Dynamic Concurrent mode, the Init and start of each stack must be split and executed
