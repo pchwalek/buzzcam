@@ -4779,6 +4779,21 @@ void mainSystemTask(void *argument){
 	infoPacket.payload.system_info_packet.sdcard_state.detected = true;
 	infoPacket.payload.system_info_packet.sdcard_state.space_remaining = ((uint64_t) free_clusters) * 256 * 512 / (1048576);
 
+
+	// turn on GPS if not already on
+	if(systemPowerSupervisor.isGPSEnabled &&
+			!systemState.isGPSActive){
+		systemState.isGPSActive = true;
+		turnOnGPSandInit();
+//		// try to get a fix on boot
+//		if(GPS_FIX_SUCCESS == getGPSFix(&currentFix, 30000)){
+//			updateRTC(currentFix.gps_epoch);
+//		}
+		grabFix(60000 * 10);
+		standbyGPSMode();
+	}
+
+
 	// WARNING: calculation doesnt work for 24-bit
 	infoPacket.payload.system_info_packet.sdcard_state.estimated_remaining_recording_time =
 			(infoPacket.payload.system_info_packet.sdcard_state.space_remaining * 1048576) /
@@ -5041,35 +5056,35 @@ void loraGPSTask(void *argument){
 	uint8_t gpsMsgRetry = 0;
 	volatile uint32_t timestamp = 0;
 
-	// turn on GPS if not already on
-	if(systemPowerSupervisor.isGPSEnabled &&
-			!systemState.isGPSActive){
-		systemState.isGPSActive = true;
-		turnOnGPSandInit();
-//		// try to get a fix on boot
-//		if(GPS_FIX_SUCCESS == getGPSFix(&currentFix, 30000)){
-//			updateRTC(currentFix.gps_epoch);
-//		}
-		standbyGPSMode();
-
-		grabFix(60000);
-	}
-
-	// after initialization
-	if(systemPowerSupervisor.isGPSEnabled &&
-			systemState.isGPSActive){
-		wakeupGPS();
-		gpsMsgRetry = 0;
-//		if(!setTimepulseGPS()){
-//			gpsMsgRetry++;
-//			if(gpsMsgRetry > 5){
-//				osDelay(1);
-//				Error_Handler();
-//			}
-//		}
-//		HAL_NVIC_SetPriority(EXTI1_IRQn, 5, 0);
-//		HAL_NVIC_EnableIRQ(EXTI1_IRQn);
-	}
+//	// turn on GPS if not already on
+//	if(systemPowerSupervisor.isGPSEnabled &&
+//			!systemState.isGPSActive){
+//		systemState.isGPSActive = true;
+//		turnOnGPSandInit();
+////		// try to get a fix on boot
+////		if(GPS_FIX_SUCCESS == getGPSFix(&currentFix, 30000)){
+////			updateRTC(currentFix.gps_epoch);
+////		}
+//		standbyGPSMode();
+//
+//		grabFix(60000);
+//	}
+//
+//	// after initialization
+//	if(systemPowerSupervisor.isGPSEnabled &&
+//			systemState.isGPSActive){
+//		wakeupGPS();
+//		gpsMsgRetry = 0;
+////		if(!setTimepulseGPS()){
+////			gpsMsgRetry++;
+////			if(gpsMsgRetry > 5){
+////				osDelay(1);
+////				Error_Handler();
+////			}
+////		}
+////		HAL_NVIC_SetPriority(EXTI1_IRQn, 5, 0);
+////		HAL_NVIC_EnableIRQ(EXTI1_IRQn);
+//	}
 
 	// turn on LoRa if not already on
 	if(systemPowerSupervisor.isLoRaEnabled && !systemState.isLoRaActive){
