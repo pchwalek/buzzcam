@@ -279,6 +279,7 @@ static void WavUpdateHeaderSize(uint64_t totalBytesWritten);    // Updates heade
 // Function prototypes related to GPS
 bool setTimepulseGPS(void);
 void disableTimepulseGPS(void);
+void grabFix(uint64_t timeout_ms);
 GPSFixStatus getGPSFix(GPSFix *currentFix);
 
 // RTC (Real-Time Clock) utility functions
@@ -5023,116 +5024,6 @@ void mainSystemTask(void *argument){
 	vTaskDelete(NULL);
 }
 
-//void micTask(void *argument){
-//	audio_config_t audio_config;
-//	memcpy((uint8_t*) &audio_config,(uint8_t*)argument,sizeof(audio_config_t));
-//
-//	audio_config.bit_resolution=MIC_BIT_RESOLUTION_BIT_RES_16;
-//	audio_config.channel_1=true;
-//	audio_config.channel_2=true;
-//	audio_config.has_audio_compression=true;
-//	audio_config.audio_compression.compression_factor=0;
-//	audio_config.audio_compression.compression_type=COMPRESSION_TYPE_OPUS;
-//	audio_config.audio_compression.enabled=false;
-//	audio_config.estimated_record_time=12345678; //placeholder
-//	audio_config.sample_freq=MIC_SAMPLE_FREQ_SAMPLE_RATE_48000;
-//
-//	/* Turn on microphone and ADC */
-//	HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_SET);
-//
-//	/* initialize SD card */
-//	HAL_GPIO_WritePin(EN_SD_REG_GPIO_Port, EN_SD_REG_Pin, GPIO_PIN_SET);
-//	HAL_GPIO_WritePin(EN_SD_REG_2_GPIO_Port, EN_SD_REG_2_Pin, GPIO_PIN_SET);
-//
-//	osDelay(1000);
-//	//	  /* start mux */
-//	HAL_GPIO_WritePin(EN_SD_MUX_GPIO_Port, EN_SD_MUX_Pin, GPIO_PIN_RESET); // enable mux
-//	HAL_GPIO_WritePin(SD_MUX_SEL_GPIO_Port, SD_MUX_SEL_Pin, GPIO_PIN_RESET);// sd card 1 selected
-//	//	  HAL_GPIO_WritePin(SD_MUX_SEL_GPIO_Port, SD_MUX_SEL_Pin, GPIO_PIN_SET);// sd card 2 selected
-//
-//	EnableExtADC(true);
-//	osDelay(200);
-//	runAnalogConverter();
-//
-//	// SD CS is PC1 for v1 design
-//	// SD reg is PC11 for v1 design
-//
-//	HAL_Delay(50);
-//
-//	char folder_name[20] = "folder";
-//	//  char file_name[60];;
-//
-//	int folder_number = 0;
-//	FILINFO fno;
-//	FRESULT res;
-//
-//	//https://wiki.st.com/stm32mcu/wiki/Introduction_to_FILEX#Migration_from_FatFS_to_FileX
-//	//https://learn.microsoft.com/en-us/azure/rtos/filex/chapter5
-//	/* check if volume exists and can be opened */
-//	//  	if(FX_PTR_ERROR == fx_media_open(&sd_disk, "exFAT_DISK", fx_stm32_sd_driver, (VOID *)FX_NULL, (VOID *) media_memory, sizeof(media_memory))){
-//
-//	//	    HAL_GPIO_WritePin(SD_CS_GPIO_Port, SD_CS_Pin, GPIO_PIN_SET);
-//
-//	//	  	uint8_t random_data[4];
-//	//	  	random_data[0] = 0xDE;
-//	//		random_data[1] = 0xAD;
-//	//		random_data[2] = 0xBE;
-//	//		random_data[3] = 0xEF;
-//	//	  	while(1){
-//	//	  	    HAL_SPI_Transmit(&hspi1, random_data, 4, 100);
-//	//	  	}
-//	//	  	while(1){
-//	//	    res = f_mount(&SDFatFs, "", 1);
-//	//	    osDelay(100);
-//	//	  	}
-//
-//	res = f_mount(&SDFatFs, "", 1);
-//	if(res != FR_OK){
-//		Error_Handler();
-//	}else{
-//		sprintf(folder_name, "/audio_%d", folder_number);
-//		while(1){
-//			res = f_stat(folder_name,&fno);
-//			if(res == FR_OK){ //file exists so iterate on number
-//				folder_number++;
-//				sprintf(folder_name, "/audio_%d", folder_number);
-//			}else{
-//				res = f_mkdir(folder_name);
-//				if(FR_OK == f_opendir(&dir, folder_name)){
-//					f_chdir(folder_name);
-//					break;
-//				}else{
-//					Error_Handler();
-//				}
-//			}
-//		}
-//
-//		/* set to recently created directory */
-//		res = f_open(&file, "test.txt", FA_WRITE | FA_CREATE_ALWAYS);
-//		if(res == FR_OK){
-//			res = f_write(&file, "Hello, world!", 13, &bytes_written);
-//		}else Error_Handler();
-//		if (res == FR_OK)
-//		{
-//			// Close the file
-//			f_close(&file);
-//
-//			// Flush the cached data to the SD card
-//			f_sync(&file);
-//		}else Error_Handler();
-//
-//		WAV_RECORD_TEST();
-//	}
-//
-//
-//
-//	/* exit */
-//	while(1){
-//		osDelay(100);
-//	}
-//	//turn off microphone and ADC
-//	HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_RESET);
-//}
 
 void alertMainTask(void *argument){
 	osThreadFlagsSet(mainSystemThreadId, CONFIG_UPDATED_EVENT);
@@ -5160,6 +5051,8 @@ void loraGPSTask(void *argument){
 //			updateRTC(currentFix.gps_epoch);
 //		}
 		standbyGPSMode();
+
+		grabFix(60000);
 	}
 
 	// after initialization
@@ -5218,6 +5111,7 @@ void loraGPSTask(void *argument){
 		Control_Secondary_Power(false);
 	}
 
+
 	while(1){
 		flag = osThreadFlagsWait(0x0001U | TERMINATE_EVENT |
 				GPS_GRAB_SAMPLE | GPS_TIMEPULSE_FLAG |
@@ -5228,32 +5122,8 @@ void loraGPSTask(void *argument){
 //		}
 
 		if((flag & GPS_GRAB_SAMPLE) == GPS_GRAB_SAMPLE){
-			wakeupGPS();
+			grabFix(60000);
 
-			uint64_t startTime = HAL_GetTick();
-
-			while( (HAL_GetTick() - startTime) < (60) ){ // wait for 5 minutes (300 seconds)
-				osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
-				if(GPS_FIX_SUCCESS == getGPSFix(&currentFix)){
-
-
-					infoPacket.payload.system_info_packet.has_gps_location = true;
-					infoPacket.payload.system_info_packet.gps_location.epoch = currentFix.gps_epoch;
-					infoPacket.payload.system_info_packet.gps_location.lat = currentFix.latitude;
-					infoPacket.payload.system_info_packet.gps_location.lon = currentFix.longitude;
-					infoPacket.payload.system_info_packet.gps_location.elev = currentFix.altitude;
-
-					updateRTC(infoPacket.payload.system_info_packet.gps_location.epoch);
-
-					osMutexRelease(messageI2C1_LockHandle);
-					break;
-				}else{
-					osMutexRelease(messageI2C1_LockHandle);
-				}
-				osDelay(50);
-			}
-
-			standbyGPSMode();
 //			setTimepulseGPS();
 //			HAL_NVIC_SetPriority(EXTI1_IRQn, 5, 0);
 //			HAL_NVIC_EnableIRQ(EXTI1_IRQn);
@@ -5320,6 +5190,36 @@ void loraGPSTask(void *argument){
 	}
 }
 
+void grabFix(uint64_t timeout_ms){
+	wakeupGPS();
+
+	osDelay(100);
+
+	uint64_t startTime = HAL_GetTick();
+
+	while( (HAL_GetTick() - startTime) < (timeout_ms) ){ // wait for 5 minutes (300 seconds)
+		osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
+		setLED_Green(100);
+		if(GPS_FIX_SUCCESS == getGPSFix(&currentFix)){
+			toggledGreen();
+			infoPacket.payload.system_info_packet.has_gps_location = true;
+			infoPacket.payload.system_info_packet.gps_location.epoch = currentFix.gps_epoch;
+			infoPacket.payload.system_info_packet.gps_location.lat = currentFix.latitude;
+			infoPacket.payload.system_info_packet.gps_location.lon = currentFix.longitude;
+			infoPacket.payload.system_info_packet.gps_location.elev = currentFix.altitude;
+
+			updateRTC(infoPacket.payload.system_info_packet.gps_location.epoch);
+
+			osMutexRelease(messageI2C1_LockHandle);
+			break;
+		}else{
+			osMutexRelease(messageI2C1_LockHandle);
+		}
+		osDelay(50);
+	}
+	setLED_Green(0);
+	standbyGPSMode();
+}
 
 void sleepModeLoraRadio(sx126x_sleep_cfgs_t sleep_cfgs){
 
@@ -6313,6 +6213,8 @@ void EnableExtADC(bool state){
 
 void sendLoRa_pkt(packet_t *packet){
 
+	if(!systemPowerSupervisor.isLoRaEnabled || !systemState.isLoRaActive) return;
+
 	uint8_t dataTransmitted = 0;
 	volatile sx126x_status_t sx1262x_status;
 	sx126x_chip_status_t sx126x_chip_status;
@@ -6333,6 +6235,7 @@ void sendLoRa_pkt(packet_t *packet){
 
 	if(has_encoded_correctly){
 		setLED_Green(100);
+		setLED_Red(100);
 		sx126x_clear_irq_status( NULL, SX126X_IRQ_TX_DONE | SX126X_IRQ_RX_DONE | SX126X_IRQ_TIMEOUT);
 
 //		sx1262x_status = sx126x_write_buffer(NULL, 0, buffer, stream.bytes_written);
@@ -6366,213 +6269,10 @@ void sendLoRa_pkt(packet_t *packet){
 			sx126x_clear_irq_status( NULL, SX126X_IRQ_ALL);
 		}
 		setLED_Green(0);
+		setLED_Red(0);
 	}
 }
 
-//#define MAX_BYTES_PER_WAV_FILE 10000000
-
-//void WAV_RECORD_TEST(void){
-//
-//
-//	uint64_t totalBytesWritten = 0;
-//	HAL_StatusTypeDef hal_status;
-//
-//
-//	char file_name[20] = "wav_";
-//	uint32_t file_index = 0;
-//
-//	sprintf(file_name, "wav_%u.wav", file_index);
-//
-//	/* Create a new file */
-//	//	if(FX_SUCCESS != fx_file_create(&sd_disk, file_name)){
-//	//		Error_Handler();
-//	//	}
-//
-//	//	if(FX_SUCCESS == fx_file_open(&sd_disk, &WavFile, file_name, FX_OPEN_FOR_WRITE))
-//	//			{
-//	if(f_open(&WavFile, file_name, FA_CREATE_ALWAYS | FA_WRITE) == FR_OK)
-//	{
-//		//		status =  fx_file_seek(&WavFile, 0);
-//		f_lseek(&WavFile,0);
-//		//		if(status != FX_SUCCESS) Error_Handler();
-//
-//		/* Initialize header file */
-//		WavProcess_EncInit(hsai_BlockA1.Init.AudioFrequency, pHeaderBuff);
-//
-//		/* Write header file */
-//		//		if(FX_SUCCESS ==  fx_file_write(&WavFile, pHeaderBuff, 44))
-//		if(f_write(&WavFile, pHeaderBuff, 44, (UINT*)&byteswritten) == FR_OK)
-//		{
-//			totalBytesWritten += 44;
-//
-//			////	         uint32_t testCntr = 0;
-//
-//			//        	 HAL_SAI_Receive_DMA(&hsai_BlockA1, (uint8_t*) audioSample, AUDIO_BUFFER_LEN);
-//			//        	  HAL_I2S_Receive_DMA(&hi2s1, audioSample, AUDIO_BUFFER_LEN);
-//
-//			HAL_SAI_Receive(&hsai_BlockA1, (uint8_t*) audioSample, AUDIO_BUFFER_LEN, 2000);
-//
-//			//        	  uint8_t data;
-//			//        	  do{
-//			//        	  status = HAL_I2C_Mem_Read(&hi2c2, ADAU1979_ADDR, ADAU1979_PLL_CONTROL,
-//			//        	                                       1, &data, 1, 100);
-//			//        	  HAL_Delay(100);
-//			//        	  }while( (data & PLL_LOCK_REG) != PLL_LOCK_REG);
-//
-//			//        	  while(1);
-//
-//			//	    	hal_status = HAL_SAI_Receive_DMA(&hsai_BlockA1, (uint8_t*) audioSample, AUDIO_BUFFER_LEN);
-//			//	    	hal_status = HAL_SAI_Receive_IT(&hsai_BlockA1, (uint8_t*) audioSample, AUDIO_BUFFER_LEN);
-//			//	    	HAL_Delay(1000);
-//			hal_status = HAL_SAI_Receive_DMA(&hsai_BlockA1, (uint8_t*) audioSample, AUDIO_BUFFER_LEN);
-//
-//			//			 while(1);
-//
-//			// 24000 samples @ 10 channels of audio = 2400 samples of audio
-//			//   this effectively means one buffer can store 75 ms of audio at 32kHz sampling freq
-//
-//			/* note: ref hsai_BlockA1.Init.AudioFrequency for exact audio frequency */
-//
-//			// run forever until power is shut off
-//			while(1){
-//				while(sampleCntr < ((100 * 2)/4)){
-//					//	        	 HAL_SAI_Receive(&hsai_BlockA1,  (uint8_t*) audioSample, AUDIO_BUFFER_LEN * 2, 1000);
-//
-//
-//					//	        	 f_write(&WavFile, testVar, 2048*4, (void*)&byteswritten);
-//					//	        	 testCntr++;
-//					//
-//					//	        	 if(testCntr>20){
-//					//	        		 break;
-//					//	        	 }
-//
-//					//	 	    	HAL_SAI_Receive(&hsai_BlockA1, (uint8_t*) audioSample, AUDIO_BUFFER_LEN, 2000);
-//					//	 	    	sampleCntr++;
-//					//	 	    	if(FX_SUCCESS != fx_file_write(&WavFile, audioSample, 2*AUDIO_BUFFER_HALF_LEN * 2)){
-//					//	 	    		        			 Error_Handler();
-//					//	 	    		        		 }
-//					//     	    	totalBytesWritten += AUDIO_BUFFER_HALF_LEN * 2 * 2;
-//
-//					// Wait for a notification
-//					osThreadFlagsWait(0x0001U, osFlagsWaitAny, osWaitForever);
-//
-//					if(SAI_HALF_CALLBACK){
-//						SAI_HALF_CALLBACK = 0;
-//
-//						//						if(FX_SUCCESS != fx_file_write(&WavFile, audioSample, AUDIO_BUFFER_HALF_LEN * 2)){
-//						//							Error_Handler();
-//						//						}
-//						f_write(&WavFile, audioSample, AUDIO_BUFFER_HALF_LEN * 2, (UINT*)&byteswritten);
-//						totalBytesWritten += AUDIO_BUFFER_HALF_LEN * 2;
-//
-//					}
-//					if(SAI_FULL_CALLBACK){
-//						SAI_FULL_CALLBACK = 0;
-//						//
-//						//						if(FX_SUCCESS != fx_file_write(&WavFile, &audioSample[AUDIO_BUFFER_HALF_LEN], AUDIO_BUFFER_HALF_LEN * 2)){
-//						//							Error_Handler();
-//						//						}
-//						f_write(&WavFile, &audioSample[AUDIO_BUFFER_HALF_LEN], AUDIO_BUFFER_HALF_LEN * 2, (UINT*)&byteswritten);
-//						totalBytesWritten += AUDIO_BUFFER_HALF_LEN * 2;
-//
-//					}
-//
-//
-//				}
-//
-//
-//				sampleCntr = 0;
-//				WavUpdateHeaderSize(totalBytesWritten);
-//
-//				if(totalBytesWritten > MAX_BYTES_PER_WAV_FILE){
-//
-//					// Close the file
-//					f_close(&WavFile);
-//
-//					// Flush the cached data to the SD card
-//					f_sync(&WavFile);
-//
-//					//					fx_file_close(&WavFile);
-//					totalBytesWritten = 0;
-//					WavProcess_EncInit(hsai_BlockA1.Init.AudioFrequency, pHeaderBuff);
-//					file_index++;
-//					sprintf(file_name, "wav_%u.wav", file_index);
-//					if(f_open(&WavFile, file_name, FA_CREATE_ALWAYS | FA_WRITE) != FR_OK){
-//						Error_Handler();
-//					}
-//					//					if(FX_SUCCESS != fx_file_create(&sd_disk, file_name)){
-//					//						Error_Handler();
-//					//					}
-//					//					if(FX_SUCCESS != fx_file_open(&sd_disk, &WavFile, file_name, FX_OPEN_FOR_WRITE)){
-//					//						Error_Handler();
-//					//					}
-//					//					fx_file_seek(&WavFile, 0);
-//					f_lseek(&WavFile,0);
-//
-//					if(f_write(&WavFile, pHeaderBuff, 44, (UINT*)&byteswritten) != FR_OK){
-//						//					if(FX_SUCCESS !=  fx_file_write(&WavFile, pHeaderBuff, 44)){
-//						Error_Handler();
-//					}
-//					totalBytesWritten += 44;
-//
-//				}
-//
-//			}
-//			HAL_SAI_DMAStop(&hsai_BlockA1);
-//			//	         HAL_I2S_DMAStop(&hi2s1);
-//
-//			//			if(FX_SUCCESS == fx_file_seek(&WavFile, 0))
-//			//			{
-//			if(f_lseek(&WavFile, 0) == FR_OK)
-//			{
-//				/* Update the wav file header save it into wav file */
-//				WavProcess_HeaderUpdate(pHeaderBuff, totalBytesWritten);
-//
-//				//				if(FX_SUCCESS != fx_file_write(&WavFile, pHeaderBuff, 44))
-//				//				{
-//				//					Error_Handler();
-//				//				}
-//				if(f_write(&WavFile, pHeaderBuff, 44, (UINT*) &byteswritten) == FR_OK)
-//				{
-//
-//				}
-//			}
-//			//			status = HAL_SAI_Receive(&hsai_BlockA1, (uint8_t*) audioSample, AUDIO_BUFFER_LEN * 2, 4000);
-//			//			status = HAL_SAI_Receive(&hsai_BlockA1, (uint8_t*) audioSample, AUDIO_BUFFER_LEN * 2, 4000);
-//			//        	f_write(&WavFile, audioSample, AUDIO_BUFFER_LEN * 2, (void*)&byteswritten);
-//			//			status = HAL_SAI_Receive(&hsai_BlockA1, (uint8_t*) audioSample, AUDIO_BUFFER_LEN * 2, 4000);
-//			//        	f_write(&WavFile, audioSample, AUDIO_BUFFER_LEN * 2, (void*)&byteswritten);
-//			//			status = HAL_SAI_Receive(&hsai_BlockA1, (uint8_t*) audioSample, AUDIO_BUFFER_LEN * 2, 4000);
-//			//        	f_write(&WavFile, audioSample, AUDIO_BUFFER_LEN * 2, (void*)&byteswritten);
-//			//			status = HAL_SAI_Receive(&hsai_BlockA1, (uint8_t*) audioSample, AUDIO_BUFFER_LEN * 2, 4000);
-//			//        	f_write(&WavFile, audioSample, AUDIO_BUFFER_LEN * 2, (void*)&byteswritten);
-//			//			status = HAL_SAI_Receive(&hsai_BlockA1, (uint8_t*) audioSample, AUDIO_BUFFER_LEN * 2, 4000);
-//			//        	f_write(&WavFile, audioSample, AUDIO_BUFFER_LEN * 2, (void*)&byteswritten);
-//
-//			//			fx_file_close(&WavFile);
-//
-//			// Close the file
-//			f_close(&WavFile);
-//
-//			// Flush the cached data to the SD card
-//			f_sync(&WavFile);
-//
-//			//			f_close(&WavFile);
-//
-//			/* flush data */
-//			//			status = fx_media_flush(&sd_disk);
-//			//			if(status != FX_SUCCESS) Error_Handler();
-//
-//			//			  HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin, GPIO_PIN_RESET);
-//			//	         LED_Cycle(1000);
-//			return;
-//
-//			//      }
-//		}else Error_Handler();
-//	}else{
-//		Error_Handler();
-//	}
-//}
 
 uint64_t current_offset;
 static void WavUpdateHeaderSize(uint64_t totalBytesWritten){
