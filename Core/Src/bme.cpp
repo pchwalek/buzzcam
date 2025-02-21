@@ -267,7 +267,7 @@ void BME_Task(void *argument) {
 			for(int i = 0; i<bme.outputs.nOutputs; i++){
 //				setLED_Green(1000);
 //				memcpy(&bmeData[bmeIdx++], &bme.outputs.output[i], sizeof(bsecData));
-				bmeData[bmeIdx].timestamp_unix = getEpoch();
+				bmeData[bmeIdx].timestamp_unix = getEpoch_ms();
 				bmeData[bmeIdx].timestamp_sensor = bme.outputs.output[i].time_stamp;
 				bmeData[bmeIdx].timestamp_ms_from_start = HAL_GetTick();
 				bmeData[bmeIdx].signal = bme.outputs.output[i].signal;

@@ -236,6 +236,39 @@ bool updateSystemPowerSupervisor(SystemPowerSupervisor* supervisor, PowerRegime*
         supervisor->isSDEnabled = false;
     }
 
+
+#if ENABLE_GPS == 0
+    supervisor->isGPSEnabled = false;
+#endif
+
+#if ENABLE_ACCELEROMETER == 0
+    supervisor->isAccelerometerEnabled = false;
+#endif
+
+#if ENABLE_ENVIRONMENTAL == 0
+    supervisor->isEnvironmentalSensorEnabled = false;
+#endif
+
+#if ENABLE_LORA == 0
+    supervisor->isLoRaEnabled = false;
+#endif
+
+#if ENABLE_MICROPHONE == 0
+    supervisor->isMicrophoneEnabled = false;
+#endif
+
+#if ENABLE_LED == 0
+    supervisor->isLEDEnabled = false;
+#endif
+
+#if ENABLE_MAX == 0
+    supervisor->isMAX78000Enabled = false;
+#endif
+
+#if ENABLE_BUZZ == 0
+    supervisor->isBuzzerEnabled = false;
+#endif
+
 //	if(*regime != FULL) returnVar = true;
 //	*regime = FULL;
 //	supervisor->isLoRaEnabled = true;

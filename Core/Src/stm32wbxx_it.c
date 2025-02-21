@@ -346,9 +346,9 @@ void RTC_WKUP_IRQHandler(void)
   HW_TS_RTC_Wakeup_Handler();
 }
 
-//void RTC_Alarm_IRQHandler(void) {
-//    HAL_RTC_AlarmIRQHandler(&hrtc);
-//}
+void RTC_Alarm_IRQHandler(void) {
+    HAL_RTC_AlarmIRQHandler(&hrtc);
+}
 
 void RTC_IRQHandler(void)
 {

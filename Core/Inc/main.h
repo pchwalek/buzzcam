@@ -77,7 +77,7 @@ void Error_Handler(void);
 
 //#define LORA_FREQ		868000000
 #define LORA_FREQ		915000000
-#define LORA_POWER_LVL	LOW_PWR
+#define LORA_POWER_LVL	HIGH_PWR
 
 #define LORA_LONG_RANGE_LOW_BW		3
 #define LORA_MID_RANGE_MID_BW		2
@@ -85,7 +85,7 @@ void Error_Handler(void);
 #define LORA_MAX_BW					0
 #define LORA_MAX_RANGE				4 // this one takes a long time to send a packet
 
-#define LORA_RANGE_BW	LORA_SHORT_RANGE_HIGH_BW
+#define LORA_RANGE_BW	LORA_LONG_RANGE_LOW_BW
 
 #define LORA_TX_PERIOD_MS		5000
 
@@ -433,6 +433,17 @@ extern SPI_HandleTypeDef hspi1;
 
 #define DISABLE_WIRELESS 0
 
+#define SIMULATE_GPS 	1
+
+#define ENABLE_GPS				1
+#define ENABLE_ACCELEROMETER	1
+#define ENABLE_ENVIRONMENTAL	1
+#define ENABLE_LORA				1
+#define ENABLE_MICROPHONE		1
+#define ENABLE_LED				1
+#define ENABLE_MAX				1
+#define ENABLE_BUZZ				1
+
 #define UPDATE_EVENT  		  0x00000001
 #define TERMINATE_EVENT  	  0x00000002
 #define COMPLETE_EVENT  	  0x00000004
@@ -559,6 +570,7 @@ void uint64ToString(uint64_t num, char* str);
 
 void updateRTC(uint64_t receivedTime_s);
 void updateRTC_MS(uint64_t receivedTime);
+uint64_t getEpoch_ms(void);
 uint64_t getEpoch(void);
 
 bool standbyGPSMode();

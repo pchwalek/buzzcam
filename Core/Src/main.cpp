@@ -145,7 +145,7 @@ osThreadId_t defaultTaskHandle;
 
 /* USER CODE BEGIN PV */
 // RTC Alarm configuration
-RTC_AlarmTypeDef sAlarm = {0};
+RTC_AlarmTypeDef sAlarm = { 0 };
 
 // OS Thread Identifiers
 osThreadId_t batteryMonitorTaskId;     // Task ID for battery monitoring
@@ -159,17 +159,11 @@ osThreadId_t loraGPSId;           // Task ID for task for lora and GPS
 osThreadId_t chirpTaskHandle;
 
 // Default task attributes for RTOS
-const osThreadAttr_t defaultTask_attributes = {
-    .name = "defaultTask",
-    .attr_bits = osThreadDetached,
-    .cb_mem = NULL,
-    .cb_size = 0,
-    .stack_mem = NULL,
-    .stack_size = 256 * 2,            // Stack size in bytes
-    .priority = (osPriority_t) osPriorityLow, // Task priority
-    .tz_module = 0,
-    .reserved = 0
-};
+const osThreadAttr_t defaultTask_attributes = { .name = "defaultTask",
+		.attr_bits = osThreadDetached, .cb_mem = NULL, .cb_size = 0,
+		.stack_mem = NULL, .stack_size = 256 * 2,         // Stack size in bytes
+		.priority = (osPriority_t) osPriorityLow, // Task priority
+		.tz_module = 0, .reserved = 0 };
 
 // LED color values
 uint16_t redVal = 0;    // Red LED brightness/value
@@ -193,7 +187,7 @@ WAVE_FormatTypeDef WaveFormat;  // WAV file format data
 uint8_t pHeaderBuff[44];        // Buffer for WAV file header
 uint32_t byteswritten = 0;      // Total bytes written to a file
 volatile uint32_t sampleCntr = 0; // Sample counter for audio processing
-static uint16_t audioSample[AUDIO_BUFFER_LEN] = {0}; // Audio sample buffer
+static uint16_t audioSample[AUDIO_BUFFER_LEN] = { 0 }; // Audio sample buffer
 
 // Interrupt and Callback Flags
 volatile uint8_t SAI_HALF_CALLBACK = 0;  // Flag for half SAI buffer callback
@@ -201,7 +195,7 @@ volatile uint8_t SAI_FULL_CALLBACK = 0;  // Flag for full SAI buffer callback
 volatile uint8_t lora_irq_flag = 0;      // Flag for LoRa interrupt
 
 // Timer Identifiers
-osTimerId_t periodicBatteryMonitorTimer_id;  // Timer ID for periodic battery monitoring
+osTimerId_t periodicBatteryMonitorTimer_id; // Timer ID for periodic battery monitoring
 
 // UWB (Ultra-Wideband) Communication
 #define UWB_I2C_ADDR (0x71 << 1)             // I2C address for UWB device
@@ -212,9 +206,12 @@ packet_t rxPacket = PACKET_INIT_ZERO;        // RX packet for UWB communication
 packet_t txPacket = PACKET_INIT_ZERO;        // TX packet for UWB communication
 uint8_t uwb_buffer[256];                     // Buffer for UWB data
 beecam_uwb_i2c_uplink_t uwb_i2c_uplink_packet = BEECAM_UWB_I2C_UPLINK_INIT_ZERO; // Uplink packet definition
-beecam_uwb_i2c_downlink_t uwb_i2c_downlink_packet = BEECAM_UWB_I2C_DOWNLINK_INIT_ZERO; // Downlink packet definition
-beecam_uwb_i2c_peer_address_t rangingAddr = BEECAM_UWB_I2C_PEER_ADDRESS_INIT_ZERO; // Peer address for ranging
-beecam_uwb_i2c_device_info_t local_uwbInfo = BEECAM_UWB_I2C_DEVICE_INFO_INIT_DEFAULT; // Local UWB device information
+beecam_uwb_i2c_downlink_t uwb_i2c_downlink_packet =
+		BEECAM_UWB_I2C_DOWNLINK_INIT_ZERO; // Downlink packet definition
+beecam_uwb_i2c_peer_address_t rangingAddr =
+		BEECAM_UWB_I2C_PEER_ADDRESS_INIT_ZERO; // Peer address for ranging
+beecam_uwb_i2c_device_info_t local_uwbInfo =
+		BEECAM_UWB_I2C_DEVICE_INFO_INIT_DEFAULT; // Local UWB device information
 
 // GPS (Global Positioning System) Interface
 SFE_UBLOX_GNSS myGNSS;  // GNSS interface for UBLOX GPS
@@ -270,11 +267,13 @@ static void Reset_Device(void);     // Resets the device
 void ledStartUpBlinkSequence(void);          // Runs system test routines
 
 // WAV file processing functions
-void WAV_RECORD_TEST(void);                                     // Test function for WAV recording
-static uint32_t WavProcess_HeaderInit(uint8_t* pHeader, WAVE_FormatTypeDef* pWaveFormatStruct); // Initializes WAV header
+void WAV_RECORD_TEST(void);                   // Test function for WAV recording
+static uint32_t WavProcess_HeaderInit(uint8_t *pHeader,
+		WAVE_FormatTypeDef *pWaveFormatStruct); // Initializes WAV header
 static uint32_t WavProcess_EncInit(uint32_t Freq, uint8_t *pHeader); // Initializes WAV encoding process
-static uint32_t WavProcess_HeaderUpdate(uint8_t* pHeader, uint32_t bytesWritten); // Updates WAV header
-static void WavUpdateHeaderSize(uint64_t totalBytesWritten);    // Updates header size after WAV recording
+static uint32_t WavProcess_HeaderUpdate(uint8_t *pHeader,
+		uint32_t bytesWritten); // Updates WAV header
+static void WavUpdateHeaderSize(uint64_t totalBytesWritten); // Updates header size after WAV recording
 
 // Function prototypes related to GPS
 bool setTimepulseGPS(void);
@@ -284,18 +283,20 @@ GPSFixStatus getGPSFix(GPSFix *currentFix);
 
 // RTC (Real-Time Clock) utility functions
 void RTC_FromEpoch(time_t epoch, RTC_TimeTypeDef *time, RTC_DateTypeDef *date); // Converts epoch to RTC time and date
-uint64_t RTC_ToEpochMS(RTC_TimeTypeDef *time, RTC_DateTypeDef *date);           // Converts RTC time and date to epoch
+uint64_t RTC_ToEpochMS(RTC_TimeTypeDef *time, RTC_DateTypeDef *date); // Converts RTC time and date to epoch
+uint32_t RTC_ToEpoch(RTC_TimeTypeDef *time, RTC_DateTypeDef *date);
 
 // SAI (Synchronous Audio Interface) Initialization
-void MX_SAI1_Init_Custom(SAI_HandleTypeDef &hsai_handle, uint8_t bit_resolution); // Custom initialization for SAI1
+void MX_SAI1_Init_Custom(SAI_HandleTypeDef &hsai_handle,
+		uint8_t bit_resolution); // Custom initialization for SAI1
 
 // LoRa Radio Configuration and Communication
 void configLoraRadio(void);                      // Configures the LoRa radio
 void sendLoRa_pkt(packet_t *packet);             // Sends a packet via LoRa
 
 // External audio device management
-void disableExtAudioDevices(void);               // Disables external audio devices
-void enableExtAudioDevices(void);                // Enables external audio devices
+void disableExtAudioDevices(void);            // Disables external audio devices
+void enableExtAudioDevices(void);              // Enables external audio devices
 
 // Miscellaneous functions
 uint32_t greatest_divisor(int audioFrequency, int half_buffer_size); // Calculates the greatest common divisor
@@ -308,7 +309,7 @@ void unmount_sd_card(void);       // Unmounts the SD card
 void delay_nop(uint32_t count);   // Delays by executing NOPs
 
 // Utility functions for file and time management
-bool set_folder_from_time(char* folder_name);               // Sets folder name based on time
+bool set_folder_from_time(char *folder_name);  // Sets folder name based on time
 void getFormattedTime(RTC_HandleTypeDef *hrtc, char *formattedTime); // Gets formatted time string
 
 // Disable audio peripherals
@@ -318,8 +319,8 @@ void disableAudioPeripherals(void); // Disables all audio peripherals
 void startRecord(uint32_t recording_duration_s, char *folder_name); // Starts a recording session
 
 // FAT file system time utility
-WORD getFatTime(const RTC_TimeTypeDef *time, const RTC_DateTypeDef *date);  // Gets FAT time from RTC time and date
-FRESULT updateFileTimestamp(char* path, RTC_HandleTypeDef *hrtc); // Updates file timestamp with current RTC time
+WORD getFatTime(const RTC_TimeTypeDef *time, const RTC_DateTypeDef *date); // Gets FAT time from RTC time and date
+FRESULT updateFileTimestamp(char *path, RTC_HandleTypeDef *hrtc); // Updates file timestamp with current RTC time
 
 // Conversion and formatting
 uint32_t uint64_to_str(uint64_t num, char *str); // Converts a uint64_t to a string
@@ -329,12 +330,16 @@ void triggerSound(void);         // Triggers a sound output
 
 // Inertial measurement and computation
 void grabInertialSample(float *pitch, float *roll, float *heading); // Grabs inertial samples for pitch, roll, heading
-void computePitchRoll(float x_acc, float y_acc, float z_acc, float* pitch, float* roll); // Computes pitch and roll
-void computeHeading(float x_mag, float y_mag, float z_mag, float pitch, float roll, float* heading); // Computes heading
+void computePitchRoll(float x_acc, float y_acc, float z_acc, float *pitch,
+		float *roll); // Computes pitch and roll
+void computeHeading(float x_mag, float y_mag, float z_mag, float pitch,
+		float roll, float *heading); // Computes heading
 
 // FRAM reading and writing
-void readFRAM(uint8_t word_addr, uint8_t byte_addr, uint8_t *data, uint32_t size); // Reads data from FRAM
-void writeFRAM(uint8_t word_addr, uint8_t byte_addr, uint8_t *data, uint32_t size); // Writes data to FRAM
+void readFRAM(uint8_t word_addr, uint8_t byte_addr, uint8_t *data,
+		uint32_t size); // Reads data from FRAM
+void writeFRAM(uint8_t word_addr, uint8_t byte_addr, uint8_t *data,
+		uint32_t size); // Writes data to FRAM
 
 // Magnetometer calibration
 void performMagCalibration(uint32_t numOfSamples); // Performs magnetometer calibration
@@ -344,16 +349,16 @@ void tone(uint32_t freq, uint32_t duration_ms); // Generates a tone at a frequen
 
 // Name retrieval for parameters
 const char* getMicGainName(mic_gain_t gain);       // Gets microphone gain name
-const char* getBoolName(uint8_t val);              // Converts boolean to string representation
+const char* getBoolName(uint8_t val); // Converts boolean to string representation
 
 // UWB message task
-void uwbMessageTask(void* argument);               // Task handling UWB messages
+void uwbMessageTask(void *argument);               // Task handling UWB messages
 
 // Sample and bit resolution retrieval
 const char* getSampleFreqName(mic_sample_freq sample_freq); // Gets name for sample frequency
-const char* getBitResName(mic_bit_resolution bit_res);      // Gets name for bit resolution
+const char* getBitResName(mic_bit_resolution bit_res); // Gets name for bit resolution
 const char* getCompressionName(compression_type comp_type); // Gets name for compression type
-const uint32_t getSampleFreq(mic_sample_freq sample_freq);  // Gets sample frequency as a value
+const uint32_t getSampleFreq(mic_sample_freq sample_freq); // Gets sample frequency as a value
 
 // Timestamp communication tasks
 void sendSlavesTimestamp(void *argument); // Sends timestamp data to slaves
@@ -377,7 +382,7 @@ packet_t infoPacket = PACKET_INIT_ZERO;   // Packet structure for info messages
 // Buffer and Message Handling
 uint8_t buffer[500];        // Buffer for BLE communication
 size_t message_length;      // Length of the message currently being processed
-bool status;                // General status flag, perhaps indicating success/failure
+bool status;          // General status flag, perhaps indicating success/failure
 
 // CoAP (Constrained Application Protocol) Setup Status
 volatile uint8_t coapSetup = 0;  // Flag to track CoAP setup status
@@ -400,10 +405,10 @@ void grabOrientation(char *folder_name); // Grabs orientation data and stores in
 // Chirp Task and Callbacks
 void chirpTask(void *argument);       // Task function for handling chirps
 void chirp_timer_callback(void *argument); // Timer callback function associated with chirps
-void toneSweep(uint8_t reverse);      // Executes a tone sweep; parameter indicates direction
+void toneSweep(uint8_t reverse); // Executes a tone sweep; parameter indicates direction
 
 // Configuration Management
-static void save_config(char* folder_name); // Saves current configuration to specified folder
+static void save_config(char *folder_name); // Saves current configuration to specified folder
 
 // Battery Monitoring
 void batteryMonitorTask(void *argument);  // Task for monitoring battery status
@@ -421,95 +426,95 @@ fileWriteSync_t fileWriteSyncUWB; // Data structure for synchronizing UWB file w
 /* USER CODE END 0 */
 
 /**
-  * @brief  The application entry point.
-  * @retval int
-  */
-int main(void)
-{
+ * @brief  The application entry point.
+ * @retval int
+ */
 
-  /* USER CODE BEGIN 1 */
+int main(void) {
+
+	/* USER CODE BEGIN 1 */
 	reset_DFU_trigger();
 	__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_OPTVERR);
 	Reset_Device();
-  /* USER CODE END 1 */
+	/* USER CODE END 1 */
 
-  /* MCU Configuration--------------------------------------------------------*/
+	/* MCU Configuration--------------------------------------------------------*/
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+	HAL_Init();
 
 #if DISABLE_WIRELESS == 0
-  /* Config code for STM32_WPAN (HSE Tuning must be done before system clock configuration) */
-  MX_APPE_Config();
+	/* Config code for STM32_WPAN (HSE Tuning must be done before system clock configuration) */
+	MX_APPE_Config();
 #endif
 
-  /* USER CODE BEGIN Init */
+	/* USER CODE BEGIN Init */
 //  HAL_Delay(5);
-  /* USER CODE END Init */
+	/* USER CODE END Init */
 
-  /* Configure the system clock */
-  SystemClock_Config();
+	/* Configure the system clock */
+	SystemClock_Config();
 
 #if DISABLE_WIRELESS == 0
 	/**
-	* Select LSE clock
-	*/
+	 * Select LSE clock
+	 */
 	LL_RCC_LSE_Enable();
-	while(!LL_RCC_LSE_IsReady());
+	while (!LL_RCC_LSE_IsReady())
+		;
 
 	/**
-	* Select wakeup source of BLE RF
-	*/
+	 * Select wakeup source of BLE RF
+	 */
 	LL_RCC_SetRFWKPClockSource(LL_RCC_RFWKP_CLKSOURCE_LSE);
 #endif
 
-  /* Configure the peripherals common clocks */
-  PeriphCommonClock_Config();
+	/* Configure the peripherals common clocks */
+	PeriphCommonClock_Config();
 
-  /* USER CODE BEGIN SysInit */
+	/* USER CODE BEGIN SysInit */
 	//  tflac_detect_cpu();
-
 //  Init_Exti( );
 //
 //  MX_IPCC_Init();
 
+	/* USER CODE END SysInit */
 
-  /* USER CODE END SysInit */
+	/* Initialize all configured peripherals */
+	MX_GPIO_Init();
 
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-
-  MX_DMA_Init();
+	MX_DMA_Init();
 //  MX_I2C3_Init();
-  MX_RTC_Init();
-  MX_SAI1_Init();
-  MX_SPI1_Init();
-  MX_TIM2_Init();
-  MX_TIM16_Init();
-  if (MX_FATFS_Init() != APP_OK) {
-    Error_Handler();
-  }
+	MX_RTC_Init();
+	MX_SAI1_Init();
+	MX_SPI1_Init();
+	MX_TIM2_Init();
+	MX_TIM16_Init();
+	if (MX_FATFS_Init() != APP_OK) {
+		Error_Handler();
+	}
 //  MX_I2C1_Init();
-  MX_SPI2_Init();
-  MX_ADC1_Init();
-  MX_RF_Init();
-  /* USER CODE BEGIN 2 */
+	MX_SPI2_Init();
+	MX_ADC1_Init();
+	MX_RF_Init();
+	/* USER CODE BEGIN 2 */
 //  volatile float testVarFlt;
-
 #if DISABLE_WIRELESS == 0
-	  Init_Exti( );
+	Init_Exti();
 
-	  MX_IPCC_Init();
+	MX_IPCC_Init();
 #endif
 
-  TurnOffAllSystems();
+	TurnOffAllSystems();
 
 //  while(1){
 //	  testVarFlt = getBattVltg();
 //	  testVarFlt = calculate_battery_percentage(testVarFlt);
 //  }
-  updateSystemPowerSupervisor(&systemPowerSupervisor, &powerRegime);
+	updateSystemPowerSupervisor(&systemPowerSupervisor, &powerRegime);
 
+
+	HAL_Delay(1000);
 
 //  HAL_GPIO_WritePin(EN_MAX78000_GPIO_Port, EN_MAX78000_Pin, GPIO_PIN_RESET);
 //  HAL_GPIO_WritePin(EN_MAX78000_GPIO_Port, EN_MAX78000_Pin, GPIO_PIN_RESET);
@@ -548,23 +553,21 @@ int main(void)
 
 	ledStartUpBlinkSequence();
 
-	if(powerRegime == CRITICAL){
+	if (powerRegime == CRITICAL) {
 		/* this is where the system shouldnt be fully initialized because
-		*   the battery is too low
-		*/
+		 *   the battery is too low
+		 */
 	}
 
-	if(systemPowerSupervisor.isSDEnabled){
+	if (systemPowerSupervisor.isSDEnabled) {
 		systemState.SDCardState = SD1_EN;
 		Control_SDCard_Power(systemState.SDCardState);
 	}
 
-	if(systemPowerSupervisor.isMAX78000Enabled){
+	if (systemPowerSupervisor.isMAX78000Enabled) {
 		systemState.isMAX78000Active = true;
 		Control_MAX78000_Power(true);
 	}
-
-//	HAL_Delay(1000);
 
 //	HAL_GPIO_WritePin(EN_3V3_GPS_GPIO_Port, EN_3V3_GPS_Pin, GPIO_PIN_RESET);
 
@@ -576,7 +579,6 @@ int main(void)
 //		}
 //		standbyGPSMode();
 //	}
-
 
 //	  while (myGNSS.begin(&hi2c1, gnssAddress) == false) //Connect to the u-blox module using our custom port and address
 //	  {
@@ -599,9 +601,6 @@ int main(void)
 //	  volatile int32_t latitude, longitude, altitude;
 //	  volatile uint32_t epoch;
 
-
-
-
 //	  while(1){
 //		  if (myGNSS.getPVT() == true)
 //		    {
@@ -619,448 +618,411 @@ int main(void)
 	systemState.isFRAMActive = true;
 	Control_Microphone_FRAM_Power(true);
 
-//	HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET);
-//	HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_SET);
-
 	HAL_Delay(10);
 
-   readSystemStateToFRAM();
-   if(infoPacket.header.system_uid != LL_FLASH_GetUDN()){
-	   writeDefaultConfig();
-   }else{
-	   infoPacket.payload.system_info_packet.discovered_devices_count = 0;
-	   for(int i = 0; i<20; i++){
-		   infoPacket.payload.system_info_packet.discovered_devices[i].range = 0;
-		   infoPacket.payload.system_info_packet.discovered_devices[i].uid = 0;
-	   }
-   }
+	readSystemStateToFRAM();
+	if (infoPacket.header.system_uid != LL_FLASH_GetUDN()) {
+		writeDefaultConfig();
+	} else {
+		infoPacket.payload.system_info_packet.discovered_devices_count = 0;
+		for (int i = 0; i < 20; i++) {
+			infoPacket.payload.system_info_packet.discovered_devices[i].range =
+					0;
+			infoPacket.payload.system_info_packet.discovered_devices[i].uid = 0;
+		}
+	}
 
 	systemState.isFRAMActive = false;
 	Control_Microphone_FRAM_Power(false);
 //	writeDefaultConfig();
 
+	/* USER CODE END 2 */
 
-  /* USER CODE END 2 */
+	/* Init scheduler */
+	osKernelInitialize();
 
-  /* Init scheduler */
-  osKernelInitialize();
-
-  /* USER CODE BEGIN RTOS_MUTEX */
+	/* USER CODE BEGIN RTOS_MUTEX */
 	/* add mutexes, ... */
 	messageI2C1_LockHandle = osMutexNew(&messageI2C1_Lock_attributes);
 
-
-	//	osSemaphoreDef(myBinarySem);
-
-	messageSPI1_LockBinarySemId = osSemaphoreNew(1, 0, &messageSPI1_Lock_attributes);
-
-	//	messageSPI1_LockBinarySemId = osSemaphoreCreate(osSemaphore(myBinarySem), 1);
-	//	messageSPI1_LockHandle = osMutexNew(&messageSPI1_Lock_attributes);
-	//	osMutexAcquire(messageSPI1_LockHandle, osWaitForever);
-
-	//	osSemaphoreWait(messageSPI1_LockBinarySemId, osWaitForever);
+	messageSPI1_LockBinarySemId = osSemaphoreNew(1, 0,
+			&messageSPI1_Lock_attributes);
 
 	txMsg_LockBinarySemId = osSemaphoreNew(1, 1, &txMsg_Lock_attributes);
 	rxMsg_LockBinarySemId = osSemaphoreNew(1, 1, &rxMsg_Lock_attributes);
 
-  /* USER CODE END RTOS_MUTEX */
+	/* USER CODE END RTOS_MUTEX */
 
-  /* USER CODE BEGIN RTOS_SEMAPHORES */
+	/* USER CODE BEGIN RTOS_SEMAPHORES */
 	/* add semaphores, ... */
-  /* USER CODE END RTOS_SEMAPHORES */
+	/* USER CODE END RTOS_SEMAPHORES */
 
-  /* USER CODE BEGIN RTOS_TIMERS */
+	/* USER CODE BEGIN RTOS_TIMERS */
 	/* start timers, add new ones, ... */
-  /* USER CODE END RTOS_TIMERS */
+	/* USER CODE END RTOS_TIMERS */
 
-  /* USER CODE BEGIN RTOS_QUEUES */
+	/* USER CODE BEGIN RTOS_QUEUES */
 
+	markPacketQueueId = osMessageQueueNew(2, sizeof(mark_packet_t), NULL);
+	ledSeqQueueId = osMessageQueueNew(4, sizeof(colorConfig), NULL);
 
-	markPacketQueueId = osMessageQueueNew (2, sizeof(mark_packet_t), NULL);
-	ledSeqQueueId = osMessageQueueNew (4, sizeof(colorConfig), NULL);
-//	txMsgQueueId = osMessageQueueNew (4, sizeof(packet_t *), NULL);
-//	rxMsgQueueId = osMessageQueueNew (4, sizeof(packet_t *), NULL);
-
-	configChangeQueueId = osMessageQueueNew (4, sizeof(configChange), NULL);
+	configChangeQueueId = osMessageQueueNew(4, sizeof(configChange), NULL);
 //	timeSyncQueueId = osMessageQueueNew(2, sizeof(timestampSync_t), NULL);
 	fileWriteQueueId = osMessageQueueNew(10, sizeof(fileWriteSync_t), NULL);
 
-  /* USER CODE END RTOS_QUEUES */
+	/* USER CODE END RTOS_QUEUES */
 
-  /* Create the thread(s) */
-  /* creation of defaultTask */
-  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+	/* Create the thread(s) */
+	/* creation of defaultTask */
+	defaultTaskHandle = osThreadNew(StartDefaultTask, NULL,
+			&defaultTask_attributes);
 
-  /* USER CODE BEGIN RTOS_THREADS */
+	/* USER CODE BEGIN RTOS_THREADS */
 //	mainSystemThreadId = osThreadNew(mainSystemTask, NULL, &mainSystemTask_attributes);
+	/* USER CODE END RTOS_THREADS */
 
-  /* USER CODE END RTOS_THREADS */
-
-  /* USER CODE BEGIN RTOS_EVENTS */
-	sendSlavesTimestampId = osTimerNew (sendSlavesTimestamp, osTimerPeriodic, (void *)0, NULL);
-	mainTaskUpdateId = osTimerNew (alertMainTask, osTimerOnce, (void *)0, NULL);
+	/* USER CODE BEGIN RTOS_EVENTS */
+	sendSlavesTimestampId = osTimerNew(sendSlavesTimestamp, osTimerPeriodic,
+			(void*) 0, NULL);
+	mainTaskUpdateId = osTimerNew(alertMainTask, osTimerOnce, (void*) 0, NULL);
 	/* add events, ... */
 //	MX_IPCC_Init();
 #if DISABLE_WIRELESS == 1
 	mainSystemThreadId = osThreadNew(mainSystemTask, NULL, &mainSystemTask_attributes);
+	/* Init code for STM32_WPAN */
+	MX_APPE_Init();
 #endif
 	/* USER CODE END RTOS_EVENTS */
 
-  /* Init code for STM32_WPAN */
-#if DISABLE_WIRELESS == 0
-  MX_APPE_Init();
-#endif
-  /* Start scheduler */
-  osKernelStart();
+	/* Start scheduler */
+	osKernelStart();
 
-  /* We should never get here as control is now taken by the scheduler */
+	/* We should never get here as control is now taken by the scheduler */
 
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-	while (1)
-	{
-    /* USER CODE END WHILE */
+	/* Infinite loop */
+	/* USER CODE BEGIN WHILE */
+	while (1) {
+		/* USER CODE END WHILE */
 
-    /* USER CODE BEGIN 3 */
+		/* USER CODE BEGIN 3 */
 	}
-  /* USER CODE END 3 */
+	/* USER CODE END 3 */
 }
 
 /**
-  * @brief System Clock Configuration
-  * @retval None
-  */
-void SystemClock_Config(void)
-{
-  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+ * @brief System Clock Configuration
+ * @retval None
+ */
+void SystemClock_Config(void) {
+	RCC_OscInitTypeDef RCC_OscInitStruct = { 0 };
+	RCC_ClkInitTypeDef RCC_ClkInitStruct = { 0 };
 
-  /** Configure LSE Drive Capability
-  */
-  HAL_PWR_EnableBkUpAccess();
-  __HAL_RCC_LSEDRIVE_CONFIG(RCC_LSEDRIVE_MEDIUMHIGH);
+	/** Configure LSE Drive Capability
+	 */
+	HAL_PWR_EnableBkUpAccess();
+	__HAL_RCC_LSEDRIVE_CONFIG(RCC_LSEDRIVE_MEDIUMHIGH);
 
-  /** Configure the main internal regulator output voltage
-  */
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+	/** Configure the main internal regulator output voltage
+	 */
+	__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
-  /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_HSE
-                              |RCC_OSCILLATORTYPE_LSE|RCC_OSCILLATORTYPE_MSI;
-  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-  RCC_OscInitStruct.LSEState = RCC_LSE_ON;
-  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.MSIState = RCC_MSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.MSICalibrationValue = RCC_MSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_9;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_MSI;
-  RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV5;
-  RCC_OscInitStruct.PLL.PLLN = 64;
-  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV25;
-  RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
-  RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    Error_Handler();
-  }
+	/** Initializes the RCC Oscillators according to the specified parameters
+	 * in the RCC_OscInitTypeDef structure.
+	 */
+	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI
+			| RCC_OSCILLATORTYPE_HSE | RCC_OSCILLATORTYPE_LSE
+			| RCC_OSCILLATORTYPE_MSI;
+	RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+	RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+	RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+	RCC_OscInitStruct.MSIState = RCC_MSI_ON;
+	RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+	RCC_OscInitStruct.MSICalibrationValue = RCC_MSICALIBRATION_DEFAULT;
+	RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_9;
+	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+	RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_MSI;
+	RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV5;
+	RCC_OscInitStruct.PLL.PLLN = 64;
+	RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV25;
+	RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
+	RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
+	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
+		Error_Handler();
+	}
 
-  /** Configure the SYSCLKSource, HCLK, PCLK1 and PCLK2 clocks dividers
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK4|RCC_CLOCKTYPE_HCLK2
-                              |RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSE;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
-  RCC_ClkInitStruct.AHBCLK2Divider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.AHBCLK4Divider = RCC_SYSCLK_DIV1;
+	/** Configure the SYSCLKSource, HCLK, PCLK1 and PCLK2 clocks dividers
+	 */
+	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK4 | RCC_CLOCKTYPE_HCLK2
+			| RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1
+			| RCC_CLOCKTYPE_PCLK2;
+	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSE;
+	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+	RCC_ClkInitStruct.AHBCLK2Divider = RCC_SYSCLK_DIV1;
+	RCC_ClkInitStruct.AHBCLK4Divider = RCC_SYSCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
-  {
-    Error_Handler();
-  }
+	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK) {
+		Error_Handler();
+	}
 
-  /** Enable MSI Auto calibration
-  */
-  HAL_RCCEx_EnableMSIPLLMode();
+	/** Enable MSI Auto calibration
+	 */
+	HAL_RCCEx_EnableMSIPLLMode();
 }
 
 /**
-  * @brief Peripherals Common Clock Configuration
-  * @retval None
-  */
-void PeriphCommonClock_Config(void)
-{
-  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+ * @brief Peripherals Common Clock Configuration
+ * @retval None
+ */
+void PeriphCommonClock_Config(void) {
+	RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = { 0 };
 
-  /** Initializes the peripherals clock
-  */
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SMPS|RCC_PERIPHCLK_RFWAKEUP
-                              |RCC_PERIPHCLK_USB|RCC_PERIPHCLK_ADC;
-  PeriphClkInitStruct.PLLSAI1.PLLN = 20;
-  PeriphClkInitStruct.PLLSAI1.PLLP = RCC_PLLP_DIV8;
-  PeriphClkInitStruct.PLLSAI1.PLLQ = RCC_PLLQ_DIV2;
-  PeriphClkInitStruct.PLLSAI1.PLLR = RCC_PLLR_DIV2;
-  PeriphClkInitStruct.PLLSAI1.PLLSAI1ClockOut = RCC_PLLSAI1_USBCLK|RCC_PLLSAI1_ADCCLK;
-  PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_PLLSAI1;
-  PeriphClkInitStruct.AdcClockSelection = RCC_ADCCLKSOURCE_PLLSAI1;
-  PeriphClkInitStruct.RFWakeUpClockSelection = RCC_RFWKPCLKSOURCE_LSE;
-  PeriphClkInitStruct.SmpsClockSelection = RCC_SMPSCLKSOURCE_HSE;
-  PeriphClkInitStruct.SmpsDivSelection = RCC_SMPSCLKDIV_RANGE0;
+	/** Initializes the peripherals clock
+	 */
+	PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SMPS
+			| RCC_PERIPHCLK_RFWAKEUP | RCC_PERIPHCLK_USB | RCC_PERIPHCLK_ADC;
+	PeriphClkInitStruct.PLLSAI1.PLLN = 20;
+	PeriphClkInitStruct.PLLSAI1.PLLP = RCC_PLLP_DIV8;
+	PeriphClkInitStruct.PLLSAI1.PLLQ = RCC_PLLQ_DIV2;
+	PeriphClkInitStruct.PLLSAI1.PLLR = RCC_PLLR_DIV2;
+	PeriphClkInitStruct.PLLSAI1.PLLSAI1ClockOut = RCC_PLLSAI1_USBCLK
+			| RCC_PLLSAI1_ADCCLK;
+	PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_PLLSAI1;
+	PeriphClkInitStruct.AdcClockSelection = RCC_ADCCLKSOURCE_PLLSAI1;
+	PeriphClkInitStruct.RFWakeUpClockSelection = RCC_RFWKPCLKSOURCE_LSE;
+	PeriphClkInitStruct.SmpsClockSelection = RCC_SMPSCLKSOURCE_HSE;
+	PeriphClkInitStruct.SmpsDivSelection = RCC_SMPSCLKDIV_RANGE0;
 
-  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN Smps */
+	if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
+		Error_Handler();
+	}
+	/* USER CODE BEGIN Smps */
 
-  /* USER CODE END Smps */
+	/* USER CODE END Smps */
 }
 
 /**
-  * @brief ADC1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_ADC1_Init(void)
-{
+ * @brief ADC1 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_ADC1_Init(void) {
 
-  /* USER CODE BEGIN ADC1_Init 0 */
+	/* USER CODE BEGIN ADC1_Init 0 */
 
-  /* USER CODE END ADC1_Init 0 */
+	/* USER CODE END ADC1_Init 0 */
 
-  ADC_ChannelConfTypeDef sConfig = {0};
+	ADC_ChannelConfTypeDef sConfig = { 0 };
 
-  /* USER CODE BEGIN ADC1_Init 1 */
+	/* USER CODE BEGIN ADC1_Init 1 */
 
-  /* USER CODE END ADC1_Init 1 */
+	/* USER CODE END ADC1_Init 1 */
 
-  /** Common config
-  */
-  hadc1.Instance = ADC1;
-  hadc1.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV16;
-  hadc1.Init.Resolution = ADC_RESOLUTION_12B;
-  hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
-  hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
-  hadc1.Init.LowPowerAutoWait = DISABLE;
-  hadc1.Init.ContinuousConvMode = ENABLE;
-  hadc1.Init.NbrOfConversion = 1;
-  hadc1.Init.DiscontinuousConvMode = DISABLE;
-  hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
-  hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
-  hadc1.Init.DMAContinuousRequests = DISABLE;
-  hadc1.Init.Overrun = ADC_OVR_DATA_PRESERVED;
+	/** Common config
+	 */
+	hadc1.Instance = ADC1;
+	hadc1.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV16;
+	hadc1.Init.Resolution = ADC_RESOLUTION_12B;
+	hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+	hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
+	hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+	hadc1.Init.LowPowerAutoWait = DISABLE;
+	hadc1.Init.ContinuousConvMode = ENABLE;
+	hadc1.Init.NbrOfConversion = 1;
+	hadc1.Init.DiscontinuousConvMode = DISABLE;
+	hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+	hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+	hadc1.Init.DMAContinuousRequests = DISABLE;
+	hadc1.Init.Overrun = ADC_OVR_DATA_PRESERVED;
 //  hadc1.Init.OversamplingMode = DISABLE;
-  hadc1.Init.OversamplingMode = ENABLE;
-  hadc1.Init.Oversampling.Ratio = ADC_OVERSAMPLING_RATIO_256;
-  hadc1.Init.Oversampling.RightBitShift = ADC_RIGHTBITSHIFT_8;
-  hadc1.Init.Oversampling.TriggeredMode = ADC_TRIGGEREDMODE_SINGLE_TRIGGER;
-  hadc1.Init.Oversampling.OversamplingStopReset = ADC_REGOVERSAMPLING_CONTINUED_MODE;
-  if (HAL_ADC_Init(&hadc1) != HAL_OK)
-  {
-    Error_Handler();
-  }
+	hadc1.Init.OversamplingMode = ENABLE;
+	hadc1.Init.Oversampling.Ratio = ADC_OVERSAMPLING_RATIO_256;
+	hadc1.Init.Oversampling.RightBitShift = ADC_RIGHTBITSHIFT_8;
+	hadc1.Init.Oversampling.TriggeredMode = ADC_TRIGGEREDMODE_SINGLE_TRIGGER;
+	hadc1.Init.Oversampling.OversamplingStopReset =
+			ADC_REGOVERSAMPLING_CONTINUED_MODE;
+	if (HAL_ADC_Init(&hadc1) != HAL_OK) {
+		Error_Handler();
+	}
 
-  /** Configure Regular Channel
-  */
-  sConfig.Channel = ADC_CHANNEL_3;
-  sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_47CYCLES_5;
-  sConfig.SingleDiff = ADC_SINGLE_ENDED;
-  sConfig.OffsetNumber = ADC_OFFSET_NONE;
-  sConfig.Offset = 0;
-  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN ADC1_Init 2 */
-  HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
-  HAL_Delay(10);
-  /* USER CODE END ADC1_Init 2 */
-
-}
-
-/**
-  * @brief I2C1 Initialization Function
-  * @param None
-  * @retval None
-  */
-
-void MX_I2C1_Init(void)
-{
-
-  /* USER CODE BEGIN I2C1_Init 0 */
-
-  /* USER CODE END I2C1_Init 0 */
-
-  /* USER CODE BEGIN I2C1_Init 1 */
-
-  /* USER CODE END I2C1_Init 1 */
-  hi2c1.Instance = I2C1;
-  hi2c1.Init.Timing = 0x00B07CB4;
-  hi2c1.Init.OwnAddress1 = 0;
-  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  hi2c1.Init.OwnAddress2 = 0;
-  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
-  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure Analogue filter
-  */
-  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure Digital filter
-  */
-  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN I2C1_Init 2 */
-
-  /* USER CODE END I2C1_Init 2 */
-
-}
-
-void MX_I2C1_Deinit(void)
-{
-
-  if ( (hi2c1.Instance != NULL) && (HAL_I2C_DeInit(&hi2c1) != HAL_OK))
-  {
-    Error_Handler();
-  }
+	/** Configure Regular Channel
+	 */
+	sConfig.Channel = ADC_CHANNEL_3;
+	sConfig.Rank = ADC_REGULAR_RANK_1;
+	sConfig.SamplingTime = ADC_SAMPLETIME_47CYCLES_5;
+	sConfig.SingleDiff = ADC_SINGLE_ENDED;
+	sConfig.OffsetNumber = ADC_OFFSET_NONE;
+	sConfig.Offset = 0;
+	if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK) {
+		Error_Handler();
+	}
+	/* USER CODE BEGIN ADC1_Init 2 */
+	HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
+	HAL_Delay(10);
+	/* USER CODE END ADC1_Init 2 */
 
 }
 
 /**
-  * @brief I2C3 Initialization Function
-  * @param None
-  * @retval None
-  */
-void MX_I2C3_Init(void)
-{
+ * @brief I2C1 Initialization Function
+ * @param None
+ * @retval None
+ */
 
-  /* USER CODE BEGIN I2C3_Init 0 */
+void MX_I2C1_Init(void) {
 
-  /* USER CODE END I2C3_Init 0 */
+	/* USER CODE BEGIN I2C1_Init 0 */
 
-  /* USER CODE BEGIN I2C3_Init 1 */
+	/* USER CODE END I2C1_Init 0 */
 
-  /* USER CODE END I2C3_Init 1 */
-  hi2c3.Instance = I2C3;
-  hi2c3.Init.Timing = 0x00B07CB4;
-  hi2c3.Init.OwnAddress1 = 0;
-  hi2c3.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c3.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  hi2c3.Init.OwnAddress2 = 0;
-  hi2c3.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
-  hi2c3.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-  hi2c3.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-  if (HAL_I2C_Init(&hi2c3) != HAL_OK)
-  {
-    Error_Handler();
-  }
+	/* USER CODE BEGIN I2C1_Init 1 */
 
-  /** Configure Analogue filter
-  */
-  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c3, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
-  {
-    Error_Handler();
-  }
+	/* USER CODE END I2C1_Init 1 */
+	hi2c1.Instance = I2C1;
+	hi2c1.Init.Timing = 0x00B07CB4;
+	hi2c1.Init.OwnAddress1 = 0;
+	hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+	hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+	hi2c1.Init.OwnAddress2 = 0;
+	hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+	hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+	hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+	if (HAL_I2C_Init(&hi2c1) != HAL_OK) {
+		Error_Handler();
+	}
 
-  /** Configure Digital filter
-  */
-  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c3, 0) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN I2C3_Init 2 */
+	/** Configure Analogue filter
+	 */
+	if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE)
+			!= HAL_OK) {
+		Error_Handler();
+	}
 
-  /* USER CODE END I2C3_Init 2 */
+	/** Configure Digital filter
+	 */
+	if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK) {
+		Error_Handler();
+	}
+	/* USER CODE BEGIN I2C1_Init 2 */
+
+	/* USER CODE END I2C1_Init 2 */
 
 }
 
+void MX_I2C1_Deinit(void) {
 
-void MX_I2C3_Deinit(void)
-{
-
-  if ( (hi2c3.Instance != NULL) && (HAL_I2C_DeInit(&hi2c3) != HAL_OK))
-  {
-    Error_Handler();
-  }
-
-}
-
-
-/**
-  * @brief IPCC Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_IPCC_Init(void)
-{
-
-  /* USER CODE BEGIN IPCC_Init 0 */
-
-  /* USER CODE END IPCC_Init 0 */
-
-  /* USER CODE BEGIN IPCC_Init 1 */
-
-  /* USER CODE END IPCC_Init 1 */
-  hipcc.Instance = IPCC;
-  if (HAL_IPCC_Init(&hipcc) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN IPCC_Init 2 */
-
-  /* USER CODE END IPCC_Init 2 */
+	if ((hi2c1.Instance != NULL) && (HAL_I2C_DeInit(&hi2c1) != HAL_OK)) {
+		Error_Handler();
+	}
 
 }
 
 /**
-  * @brief RF Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_RF_Init(void)
-{
+ * @brief I2C3 Initialization Function
+ * @param None
+ * @retval None
+ */
+void MX_I2C3_Init(void) {
 
-  /* USER CODE BEGIN RF_Init 0 */
+	/* USER CODE BEGIN I2C3_Init 0 */
 
-  /* USER CODE END RF_Init 0 */
+	/* USER CODE END I2C3_Init 0 */
 
-  /* USER CODE BEGIN RF_Init 1 */
+	/* USER CODE BEGIN I2C3_Init 1 */
 
-  /* USER CODE END RF_Init 1 */
-  /* USER CODE BEGIN RF_Init 2 */
+	/* USER CODE END I2C3_Init 1 */
+	hi2c3.Instance = I2C3;
+	hi2c3.Init.Timing = 0x00B07CB4;
+	hi2c3.Init.OwnAddress1 = 0;
+	hi2c3.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+	hi2c3.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+	hi2c3.Init.OwnAddress2 = 0;
+	hi2c3.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+	hi2c3.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+	hi2c3.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+	if (HAL_I2C_Init(&hi2c3) != HAL_OK) {
+		Error_Handler();
+	}
 
-  /* USER CODE END RF_Init 2 */
+	/** Configure Analogue filter
+	 */
+	if (HAL_I2CEx_ConfigAnalogFilter(&hi2c3, I2C_ANALOGFILTER_ENABLE)
+			!= HAL_OK) {
+		Error_Handler();
+	}
+
+	/** Configure Digital filter
+	 */
+	if (HAL_I2CEx_ConfigDigitalFilter(&hi2c3, 0) != HAL_OK) {
+		Error_Handler();
+	}
+	/* USER CODE BEGIN I2C3_Init 2 */
+
+	/* USER CODE END I2C3_Init 2 */
+
+}
+
+void MX_I2C3_Deinit(void) {
+
+	if ((hi2c3.Instance != NULL) && (HAL_I2C_DeInit(&hi2c3) != HAL_OK)) {
+		Error_Handler();
+	}
 
 }
 
 /**
-  * @brief RTC Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_RTC_Init(void)
-{
+ * @brief IPCC Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_IPCC_Init(void) {
 
-  /* USER CODE BEGIN RTC_Init 0 */
+	/* USER CODE BEGIN IPCC_Init 0 */
+
+	/* USER CODE END IPCC_Init 0 */
+
+	/* USER CODE BEGIN IPCC_Init 1 */
+
+	/* USER CODE END IPCC_Init 1 */
+	hipcc.Instance = IPCC;
+	if (HAL_IPCC_Init(&hipcc) != HAL_OK) {
+		Error_Handler();
+	}
+	/* USER CODE BEGIN IPCC_Init 2 */
+
+	/* USER CODE END IPCC_Init 2 */
+
+}
+
+/**
+ * @brief RF Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_RF_Init(void) {
+
+	/* USER CODE BEGIN RF_Init 0 */
+
+	/* USER CODE END RF_Init 0 */
+
+	/* USER CODE BEGIN RF_Init 1 */
+
+	/* USER CODE END RF_Init 1 */
+	/* USER CODE BEGIN RF_Init 2 */
+
+	/* USER CODE END RF_Init 2 */
+
+}
+
+/**
+ * @brief RTC Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_RTC_Init(void) {
+
+	/* USER CODE BEGIN RTC_Init 0 */
 #ifndef RTC_NO_REINIT
   /* USER CODE END RTC_Init 0 */
 
@@ -1070,27 +1032,26 @@ static void MX_RTC_Init(void)
 
   /* USER CODE BEGIN RTC_Init 1 */
 #else
-	RTC_TimeTypeDef sTime = {0};
-	RTC_DateTypeDef sDate = {0};
+	RTC_TimeTypeDef sTime = { 0 };
+	RTC_DateTypeDef sDate = { 0 };
 #endif
-  /* USER CODE END RTC_Init 1 */
+	/* USER CODE END RTC_Init 1 */
 
-  /** Initialize RTC Only
-  */
-  hrtc.Instance = RTC;
-  hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
-  hrtc.Init.AsynchPrediv = CFG_RTC_ASYNCH_PRESCALER;
-  hrtc.Init.SynchPrediv = CFG_RTC_SYNCH_PRESCALER;
-  hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
-  hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
-  hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
-  hrtc.Init.OutPutRemap = RTC_OUTPUT_REMAP_NONE;
-  if (HAL_RTC_Init(&hrtc) != HAL_OK)
-  {
-    Error_Handler();
-  }
+	/** Initialize RTC Only
+	 */
+	hrtc.Instance = RTC;
+	hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
+	hrtc.Init.AsynchPrediv = CFG_RTC_ASYNCH_PRESCALER;
+	hrtc.Init.SynchPrediv = CFG_RTC_SYNCH_PRESCALER;
+	hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
+	hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
+	hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
+	hrtc.Init.OutPutRemap = RTC_OUTPUT_REMAP_NONE;
+	if (HAL_RTC_Init(&hrtc) != HAL_OK) {
+		Error_Handler();
+	}
 
-  /* USER CODE BEGIN Check_RTC_BKUP */
+	/* USER CODE BEGIN Check_RTC_BKUP */
 #ifndef RTC_NO_REINIT
   /* USER CODE END Check_RTC_BKUP */
 
@@ -1128,14 +1089,14 @@ static void MX_RTC_Init(void)
   sAlarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_DATE;
   sAlarm.AlarmDateWeekDay = 0x1;
   sAlarm.Alarm = RTC_ALARM_A;
-  if (HAL_RTC_SetAlarm(&hrtc, &sAlarm, RTC_FORMAT_BCD) != HAL_OK)
+  if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BCD) != HAL_OK)
   {
     Error_Handler();
   }
 
   /** Enable the Alarm B
   */
-  sAlarm.Alarm = RTC_ALARM_B;
+//  sAlarm.Alarm = RTC_ALARM_B;
   /* USER CODE BEGIN RTC_Init 2 */
 #else
 	//  sTime.Hours = 21;
@@ -1159,448 +1120,439 @@ static void MX_RTC_Init(void)
 	//  }
 #endif
 
-      // Handle error
+	// Handle error
 
-  /* USER CODE END RTC_Init 2 */
-
-}
-
-/**
-  * @brief SAI1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_SAI1_Init(void)
-{
-
-  /* USER CODE BEGIN SAI1_Init 0 */
-
-  /* USER CODE END SAI1_Init 0 */
-
-  /* USER CODE BEGIN SAI1_Init 1 */
-
-  /* USER CODE END SAI1_Init 1 */
-  hsai_BlockA1.Instance = SAI1_Block_A;
-  hsai_BlockA1.Init.AudioMode = SAI_MODEMASTER_RX;
-  hsai_BlockA1.Init.Synchro = SAI_ASYNCHRONOUS;
-  hsai_BlockA1.Init.OutputDrive = SAI_OUTPUTDRIVE_DISABLE;
-  hsai_BlockA1.Init.NoDivider = SAI_MASTERDIVIDER_ENABLE;
-  hsai_BlockA1.Init.MckOverSampling = SAI_MCK_OVERSAMPLING_DISABLE;
-  hsai_BlockA1.Init.FIFOThreshold = SAI_FIFOTHRESHOLD_EMPTY;
-  hsai_BlockA1.Init.AudioFrequency = SAI_AUDIO_FREQUENCY_48K; //getSampleFreq(configPacket.payload.config_packet.audio_config.sample_freq)
-  hsai_BlockA1.Init.SynchroExt = SAI_SYNCEXT_DISABLE;
-  hsai_BlockA1.Init.MonoStereoMode = SAI_STEREOMODE;
-  hsai_BlockA1.Init.CompandingMode = SAI_NOCOMPANDING;
-  if (HAL_SAI_InitProtocol(&hsai_BlockA1, SAI_I2S_STANDARD, SAI_PROTOCOL_DATASIZE_16BIT, 2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN SAI1_Init 2 */
-
-  /* USER CODE END SAI1_Init 2 */
+	/* USER CODE END RTC_Init 2 */
 
 }
 
 /**
-  * @brief SPI1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_SPI1_Init(void)
-{
+ * @brief SAI1 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_SAI1_Init(void) {
 
-  /* USER CODE BEGIN SPI1_Init 0 */
+	/* USER CODE BEGIN SAI1_Init 0 */
 
-  /* USER CODE END SPI1_Init 0 */
+	/* USER CODE END SAI1_Init 0 */
 
-  /* USER CODE BEGIN SPI1_Init 1 */
+	/* USER CODE BEGIN SAI1_Init 1 */
 
-  /* USER CODE END SPI1_Init 1 */
-  /* SPI1 parameter configuration*/
-  hspi1.Instance = SPI1;
-  hspi1.Init.Mode = SPI_MODE_MASTER;
-  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128;
-  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
-  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-  hspi1.Init.CRCPolynomial = 7;
-  hspi1.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
-  hspi1.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
-  if (HAL_SPI_Init(&hspi1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN SPI1_Init 2 */
+	/* USER CODE END SAI1_Init 1 */
+	hsai_BlockA1.Instance = SAI1_Block_A;
+	hsai_BlockA1.Init.AudioMode = SAI_MODEMASTER_RX;
+	hsai_BlockA1.Init.Synchro = SAI_ASYNCHRONOUS;
+	hsai_BlockA1.Init.OutputDrive = SAI_OUTPUTDRIVE_DISABLE;
+	hsai_BlockA1.Init.NoDivider = SAI_MASTERDIVIDER_ENABLE;
+	hsai_BlockA1.Init.MckOverSampling = SAI_MCK_OVERSAMPLING_DISABLE;
+	hsai_BlockA1.Init.FIFOThreshold = SAI_FIFOTHRESHOLD_EMPTY;
+	hsai_BlockA1.Init.AudioFrequency = SAI_AUDIO_FREQUENCY_48K; //getSampleFreq(configPacket.payload.config_packet.audio_config.sample_freq)
+	hsai_BlockA1.Init.SynchroExt = SAI_SYNCEXT_DISABLE;
+	hsai_BlockA1.Init.MonoStereoMode = SAI_STEREOMODE;
+	hsai_BlockA1.Init.CompandingMode = SAI_NOCOMPANDING;
+	if (HAL_SAI_InitProtocol(&hsai_BlockA1, SAI_I2S_STANDARD,
+			SAI_PROTOCOL_DATASIZE_16BIT, 2) != HAL_OK) {
+		Error_Handler();
+	}
+	/* USER CODE BEGIN SAI1_Init 2 */
+
+	/* USER CODE END SAI1_Init 2 */
+
+}
+
+/**
+ * @brief SPI1 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_SPI1_Init(void) {
+
+	/* USER CODE BEGIN SPI1_Init 0 */
+
+	/* USER CODE END SPI1_Init 0 */
+
+	/* USER CODE BEGIN SPI1_Init 1 */
+
+	/* USER CODE END SPI1_Init 1 */
+	/* SPI1 parameter configuration*/
+	hspi1.Instance = SPI1;
+	hspi1.Init.Mode = SPI_MODE_MASTER;
+	hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+	hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+	hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+	hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+	hspi1.Init.NSS = SPI_NSS_SOFT;
+	hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128;
+	hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+	hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+	hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+	hspi1.Init.CRCPolynomial = 7;
+	hspi1.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
+	hspi1.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
+	if (HAL_SPI_Init(&hspi1) != HAL_OK) {
+		Error_Handler();
+	}
+	/* USER CODE BEGIN SPI1_Init 2 */
 	HAL_NVIC_SetPriority(SPI1_IRQn, 5, 0);
 	HAL_NVIC_EnableIRQ(SPI1_IRQn);
-  /* USER CODE END SPI1_Init 2 */
+	/* USER CODE END SPI1_Init 2 */
 
 }
 
 /**
-  * @brief SPI2 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_SPI2_Init(void)
-{
+ * @brief SPI2 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_SPI2_Init(void) {
 
-  /* USER CODE BEGIN SPI2_Init 0 */
+	/* USER CODE BEGIN SPI2_Init 0 */
 
-  /* USER CODE END SPI2_Init 0 */
+	/* USER CODE END SPI2_Init 0 */
 
-  /* USER CODE BEGIN SPI2_Init 1 */
+	/* USER CODE BEGIN SPI2_Init 1 */
 
-  /* USER CODE END SPI2_Init 1 */
-  /* SPI2 parameter configuration*/
-  hspi2.Instance = SPI2;
-  hspi2.Init.Mode = SPI_MODE_MASTER;
-  hspi2.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi2.Init.DataSize = SPI_DATASIZE_4BIT;
-  hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi2.Init.NSS = SPI_NSS_SOFT;
-  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
-  hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
-  hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-  hspi2.Init.CRCPolynomial = 7;
-  hspi2.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
-  hspi2.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
-  if (HAL_SPI_Init(&hspi2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN SPI2_Init 2 */
+	/* USER CODE END SPI2_Init 1 */
+	/* SPI2 parameter configuration*/
+	hspi2.Instance = SPI2;
+	hspi2.Init.Mode = SPI_MODE_MASTER;
+	hspi2.Init.Direction = SPI_DIRECTION_2LINES;
+	hspi2.Init.DataSize = SPI_DATASIZE_4BIT;
+	hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
+	hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
+	hspi2.Init.NSS = SPI_NSS_SOFT;
+	hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+	hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
+	hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
+	hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+	hspi2.Init.CRCPolynomial = 7;
+	hspi2.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
+	hspi2.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
+	if (HAL_SPI_Init(&hspi2) != HAL_OK) {
+		Error_Handler();
+	}
+	/* USER CODE BEGIN SPI2_Init 2 */
 
-  /* USER CODE END SPI2_Init 2 */
+	/* USER CODE END SPI2_Init 2 */
 
 }
 
 /**
-  * @brief TIM2 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM2_Init(void)
-{
+ * @brief TIM2 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_TIM2_Init(void) {
 
-  /* USER CODE BEGIN TIM2_Init 0 */
+	/* USER CODE BEGIN TIM2_Init 0 */
 
-  /* USER CODE END TIM2_Init 0 */
+	/* USER CODE END TIM2_Init 0 */
 
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-  TIM_OC_InitTypeDef sConfigOC = {0};
+	TIM_MasterConfigTypeDef sMasterConfig = { 0 };
+	TIM_OC_InitTypeDef sConfigOC = { 0 };
 
-  /* USER CODE BEGIN TIM2_Init 1 */
+	/* USER CODE BEGIN TIM2_Init 1 */
 
-  /* USER CODE END TIM2_Init 1 */
-  htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 31;
-  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 999;
-  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 500;
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM2_Init 2 */
+	/* USER CODE END TIM2_Init 1 */
+	htim2.Instance = TIM2;
+	htim2.Init.Prescaler = 31;
+	htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+	htim2.Init.Period = 999;
+	htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+	htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+	if (HAL_TIM_PWM_Init(&htim2) != HAL_OK) {
+		Error_Handler();
+	}
+	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+	if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig)
+			!= HAL_OK) {
+		Error_Handler();
+	}
+	sConfigOC.OCMode = TIM_OCMODE_PWM1;
+	sConfigOC.Pulse = 500;
+	sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+	if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1)
+			!= HAL_OK) {
+		Error_Handler();
+	}
+	if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_3)
+			!= HAL_OK) {
+		Error_Handler();
+	}
+	if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_4)
+			!= HAL_OK) {
+		Error_Handler();
+	}
+	/* USER CODE BEGIN TIM2_Init 2 */
 
-  /* USER CODE END TIM2_Init 2 */
-  HAL_TIM_MspPostInit(&htim2);
+	/* USER CODE END TIM2_Init 2 */
+	HAL_TIM_MspPostInit(&htim2);
 
 }
 
 /**
-  * @brief TIM16 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM16_Init(void)
-{
+ * @brief TIM16 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_TIM16_Init(void) {
 
-  /* USER CODE BEGIN TIM16_Init 0 */
+	/* USER CODE BEGIN TIM16_Init 0 */
 
-  /* USER CODE END TIM16_Init 0 */
+	/* USER CODE END TIM16_Init 0 */
 
-  TIM_OC_InitTypeDef sConfigOC = {0};
-  TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
+	TIM_OC_InitTypeDef sConfigOC = { 0 };
+	TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = { 0 };
 
-  /* USER CODE BEGIN TIM16_Init 1 */
+	/* USER CODE BEGIN TIM16_Init 1 */
 
-  /* USER CODE END TIM16_Init 1 */
-  htim16.Instance = TIM16;
-  htim16.Init.Prescaler = 31;
-  htim16.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim16.Init.Period = 99;
-  htim16.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim16.Init.RepetitionCounter = 0;
-  htim16.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_Base_Init(&htim16) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_TIM_PWM_Init(&htim16) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 49;
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-  sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
-  sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
-  if (HAL_TIM_PWM_ConfigChannel(&htim16, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
-  sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
-  sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
-  sBreakDeadTimeConfig.DeadTime = 0;
-  sBreakDeadTimeConfig.BreakState = TIM_BREAK_DISABLE;
-  sBreakDeadTimeConfig.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
-  sBreakDeadTimeConfig.BreakFilter = 0;
-  sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
-  if (HAL_TIMEx_ConfigBreakDeadTime(&htim16, &sBreakDeadTimeConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM16_Init 2 */
+	/* USER CODE END TIM16_Init 1 */
+	htim16.Instance = TIM16;
+	htim16.Init.Prescaler = 31;
+	htim16.Init.CounterMode = TIM_COUNTERMODE_UP;
+	htim16.Init.Period = 99;
+	htim16.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+	htim16.Init.RepetitionCounter = 0;
+	htim16.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+	if (HAL_TIM_Base_Init(&htim16) != HAL_OK) {
+		Error_Handler();
+	}
+	if (HAL_TIM_PWM_Init(&htim16) != HAL_OK) {
+		Error_Handler();
+	}
+	sConfigOC.OCMode = TIM_OCMODE_PWM1;
+	sConfigOC.Pulse = 49;
+	sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+	sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
+	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+	sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
+	sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+	if (HAL_TIM_PWM_ConfigChannel(&htim16, &sConfigOC, TIM_CHANNEL_1)
+			!= HAL_OK) {
+		Error_Handler();
+	}
+	sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
+	sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
+	sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
+	sBreakDeadTimeConfig.DeadTime = 0;
+	sBreakDeadTimeConfig.BreakState = TIM_BREAK_DISABLE;
+	sBreakDeadTimeConfig.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
+	sBreakDeadTimeConfig.BreakFilter = 0;
+	sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
+	if (HAL_TIMEx_ConfigBreakDeadTime(&htim16, &sBreakDeadTimeConfig)
+			!= HAL_OK) {
+		Error_Handler();
+	}
+	/* USER CODE BEGIN TIM16_Init 2 */
 
-  /* USER CODE END TIM16_Init 2 */
-  HAL_TIM_MspPostInit(&htim16);
+	/* USER CODE END TIM16_Init 2 */
+	HAL_TIM_MspPostInit(&htim16);
 
 }
 
 /**
-  * Enable DMA controller clock
-  */
-static void MX_DMA_Init(void)
-{
+ * Enable DMA controller clock
+ */
+static void MX_DMA_Init(void) {
 
-  /* DMA controller clock enable */
-  __HAL_RCC_DMAMUX1_CLK_ENABLE();
-  __HAL_RCC_DMA1_CLK_ENABLE();
+	/* DMA controller clock enable */
+	__HAL_RCC_DMAMUX1_CLK_ENABLE();
+	__HAL_RCC_DMA1_CLK_ENABLE();
 
-  /* DMA interrupt init */
-  /* DMA1_Channel1_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
-  /* DMA1_Channel2_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
-  /* DMA1_Channel3_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel3_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);
+	/* DMA interrupt init */
+	/* DMA1_Channel1_IRQn interrupt configuration */
+	HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 5, 0);
+	HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
+	/* DMA1_Channel2_IRQn interrupt configuration */
+	HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, 5, 0);
+	HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
+	/* DMA1_Channel3_IRQn interrupt configuration */
+	HAL_NVIC_SetPriority(DMA1_Channel3_IRQn, 5, 0);
+	HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);
 
 }
 
 /**
-  * @brief GPIO Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_GPIO_Init(void)
-{
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
-/* USER CODE BEGIN MX_GPIO_Init_1 */
-/* USER CODE END MX_GPIO_Init_1 */
+ * @brief GPIO Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_GPIO_Init(void) {
+	GPIO_InitTypeDef GPIO_InitStruct = { 0 };
+	/* USER CODE BEGIN MX_GPIO_Init_1 */
+	/* USER CODE END MX_GPIO_Init_1 */
 
-  /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
-  __HAL_RCC_GPIOE_CLK_ENABLE();
+	/* GPIO Ports Clock Enable */
+	__HAL_RCC_GPIOC_CLK_ENABLE();
+	__HAL_RCC_GPIOB_CLK_ENABLE();
+	__HAL_RCC_GPIOA_CLK_ENABLE();
+	__HAL_RCC_GPIOD_CLK_ENABLE();
+	__HAL_RCC_GPIOE_CLK_ENABLE();
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, SD_CS_Pin|EN_UWB_REG_Pin|EN_SD_REG_2_Pin|EN_MIC_PWR_Pin
-                          |SPI2_SX1262_CS_Pin|EN_BUZZER_PWR_Pin|SX_NRESET_Pin, GPIO_PIN_RESET);
+	/*Configure GPIO pin Output Level */
+	HAL_GPIO_WritePin(GPIOC,
+			SD_CS_Pin | EN_UWB_REG_Pin | EN_SD_REG_2_Pin | EN_MIC_PWR_Pin
+					| SPI2_SX1262_CS_Pin | EN_BUZZER_PWR_Pin | SX_NRESET_Pin,
+			GPIO_PIN_RESET);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, EN_SD_REG_Pin|EN_3V3_ALT_Pin|ADC_PD_RST_Pin, GPIO_PIN_RESET);
+	/*Configure GPIO pin Output Level */
+	HAL_GPIO_WritePin(GPIOB, EN_SD_REG_Pin | EN_3V3_ALT_Pin | ADC_PD_RST_Pin,
+			GPIO_PIN_RESET);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(DWM_WAKEUP_GPIO_Port, DWM_WAKEUP_Pin, GPIO_PIN_RESET);
+	/*Configure GPIO pin Output Level */
+	HAL_GPIO_WritePin(DWM_WAKEUP_GPIO_Port, DWM_WAKEUP_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOD, EN_BATT_MON_Pin|DWM_CS_Pin|EN_SD_MUX_Pin|EN_MAX78000_Pin
-                          |EN_3V3_GPS_Pin|SX_DIO1_Pin|SX_BUSY_Pin, GPIO_PIN_RESET);
+	/*Configure GPIO pin Output Level */
+	HAL_GPIO_WritePin(GPIOD,
+			EN_BATT_MON_Pin | DWM_CS_Pin | EN_SD_MUX_Pin | EN_MAX78000_Pin
+					| EN_3V3_GPS_Pin | SX_DIO1_Pin | SX_BUSY_Pin,
+			GPIO_PIN_RESET);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(SD_MUX_SEL_GPIO_Port, SD_MUX_SEL_Pin, GPIO_PIN_RESET);
+	/*Configure GPIO pin Output Level */
+	HAL_GPIO_WritePin(SD_MUX_SEL_GPIO_Port, SD_MUX_SEL_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPS_INT_GPIO_Port, GPS_INT_Pin, GPIO_PIN_RESET);
+	/*Configure GPIO pin Output Level */
+	HAL_GPIO_WritePin(GPS_INT_GPIO_Port, GPS_INT_Pin, GPIO_PIN_RESET);
 
+	/*Configure GPIO pins : SD_CS_Pin EN_UWB_REG_Pin EN_SD_REG_2_Pin EN_MIC_PWR_Pin
+	 SPI1_SX1262_CS_Pin EN_BUZZER_PWR_Pin SX_NRESET_Pin */
+	GPIO_InitStruct.Pin = SD_CS_Pin | EN_UWB_REG_Pin | EN_SD_REG_2_Pin
+			| EN_MIC_PWR_Pin | SPI2_SX1262_CS_Pin | EN_BUZZER_PWR_Pin
+			| SX_NRESET_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : SD_CS_Pin EN_UWB_REG_Pin EN_SD_REG_2_Pin EN_MIC_PWR_Pin
-                           SPI1_SX1262_CS_Pin EN_BUZZER_PWR_Pin SX_NRESET_Pin */
-  GPIO_InitStruct.Pin = SD_CS_Pin|EN_UWB_REG_Pin|EN_SD_REG_2_Pin|EN_MIC_PWR_Pin
-                          |SPI2_SX1262_CS_Pin|EN_BUZZER_PWR_Pin|SX_NRESET_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+	/*Configure GPIO pin : BATT_CHG_Pin */
+	GPIO_InitStruct.Pin = BATT_CHG_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(BATT_CHG_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : BATT_CHG_Pin */
-  GPIO_InitStruct.Pin = BATT_CHG_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(BATT_CHG_GPIO_Port, &GPIO_InitStruct);
+	/*Configure GPIO pins : EN_SD_REG_Pin EN_3V3_ALT_Pin ADC_PD_RST_Pin */
+	GPIO_InitStruct.Pin = EN_SD_REG_Pin | EN_3V3_ALT_Pin | ADC_PD_RST_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : EN_SD_REG_Pin EN_3V3_ALT_Pin ADC_PD_RST_Pin */
-  GPIO_InitStruct.Pin = EN_SD_REG_Pin|EN_3V3_ALT_Pin|ADC_PD_RST_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+	/*Configure GPIO pins : INT1_IMU_XL_Pin INT_MAG_Pin */
+	GPIO_InitStruct.Pin = INT1_IMU_XL_Pin | INT_MAG_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : INT1_IMU_XL_Pin INT_MAG_Pin */
-  GPIO_InitStruct.Pin = INT1_IMU_XL_Pin|INT_MAG_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+	/*Configure GPIO pin : SD_DETECT_Pin */
+	GPIO_InitStruct.Pin = SD_DETECT_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(SD_DETECT_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : SD_DETECT_Pin */
-  GPIO_InitStruct.Pin = SD_DETECT_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(SD_DETECT_GPIO_Port, &GPIO_InitStruct);
+	/*Configure GPIO pins : GPS_INT_Pin MAX78_INT1_Pin ZPFL_TRIG_Pin */
+	GPIO_InitStruct.Pin = MAX78_INT1_Pin | ZPFL_TRIG_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+	GPIO_InitStruct.Pull = GPIO_PULLUP;
+	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : GPS_INT_Pin MAX78_INT1_Pin ZPFL_TRIG_Pin */
-  GPIO_InitStruct.Pin = MAX78_INT1_Pin|ZPFL_TRIG_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+	GPIO_InitStruct.Pin = GPS_INT_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(GPS_INT_GPIO_Port, &GPIO_InitStruct);
 
-  GPIO_InitStruct.Pin = GPS_INT_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPS_INT_GPIO_Port, &GPIO_InitStruct);
+	/*Configure GPIO pin : PB0 */
+	GPIO_InitStruct.Pin = GPIO_PIN_0;
+	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PB0 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+	/*Configure GPIO pin : P1_00_Pin */
+	GPIO_InitStruct.Pin = P1_00_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(P1_00_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : P1_00_Pin */
-  GPIO_InitStruct.Pin = P1_00_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(P1_00_GPIO_Port, &GPIO_InitStruct);
+	/*Configure GPIO pin : DWM_WAKEUP_Pin */
+	GPIO_InitStruct.Pin = DWM_WAKEUP_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(DWM_WAKEUP_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : DWM_WAKEUP_Pin */
-  GPIO_InitStruct.Pin = DWM_WAKEUP_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(DWM_WAKEUP_GPIO_Port, &GPIO_InitStruct);
+	/*Configure GPIO pin : TIMEPULSE_Pin */
+	GPIO_InitStruct.Pin = TIMEPULSE_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(TIMEPULSE_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : TIMEPULSE_Pin */
-  GPIO_InitStruct.Pin = TIMEPULSE_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(TIMEPULSE_GPIO_Port, &GPIO_InitStruct);
+	/*Configure GPIO pins : EN_BATT_MON_Pin DWM_CS_Pin EN_SD_MUX_Pin MAX78_INT2_Pin
+	 EN_3V3_GPS_Pin SX_DIO1_Pin SX_BUSY_Pin */
+	GPIO_InitStruct.Pin = EN_BATT_MON_Pin | DWM_CS_Pin | EN_SD_MUX_Pin
+			| EN_MAX78000_Pin | EN_3V3_GPS_Pin | SX_BUSY_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : EN_BATT_MON_Pin DWM_CS_Pin EN_SD_MUX_Pin MAX78_INT2_Pin
-                           EN_3V3_GPS_Pin SX_DIO1_Pin SX_BUSY_Pin */
-  GPIO_InitStruct.Pin = EN_BATT_MON_Pin|DWM_CS_Pin|EN_SD_MUX_Pin|EN_MAX78000_Pin
-                          |EN_3V3_GPS_Pin|SX_DIO1_Pin|SX_BUSY_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+	/*Configure GPIO pins : DWM_INT_Pin MAX78_INT2D8_Pin */
+	GPIO_InitStruct.Pin = DWM_INT_Pin | MAX78_INT2_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+	GPIO_InitStruct.Pull = GPIO_PULLUP;
+	HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
+	/*Configure GPIO pin : SD_DETECT_2_Pin */
+	GPIO_InitStruct.Pin = SD_DETECT_2_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(SD_DETECT_2_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : DWM_INT_Pin MAX78_INT2D8_Pin */
-  GPIO_InitStruct.Pin = DWM_INT_Pin|MAX78_INT2_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+	/*Configure GPIO pin : SD_MUX_SEL_Pin */
+	GPIO_InitStruct.Pin = SD_MUX_SEL_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(SD_MUX_SEL_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : SD_DETECT_2_Pin */
-  GPIO_InitStruct.Pin = SD_DETECT_2_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(SD_DETECT_2_GPIO_Port, &GPIO_InitStruct);
+	/* USER CODE BEGIN MX_GPIO_Init_2 */
 
-  /*Configure GPIO pin : SD_MUX_SEL_Pin */
-  GPIO_InitStruct.Pin = SD_MUX_SEL_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(SD_MUX_SEL_GPIO_Port, &GPIO_InitStruct);
-
-/* USER CODE BEGIN MX_GPIO_Init_2 */
-
-  HAL_GPIO_WritePin(SX_NRESET_GPIO_Port, SX_NRESET_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(SX_NRESET_GPIO_Port, SX_NRESET_Pin, GPIO_PIN_RESET);
 //  HAL_GPIO_WritePin(SPI2_SX1262_CS_GPIO_Port, SPI2_SX1262_CS_Pin, GPIO_PIN_RESET);
 
-  GPIO_InitStruct.Pin = SX_NRESET_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(SX_NRESET_GPIO_Port, &GPIO_InitStruct);
+	GPIO_InitStruct.Pin = SX_NRESET_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(SX_NRESET_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : SPI1_SX1262_CS_Pin SPI1_BMA400_CS_Pin EN_SOLAR_CHG_Pin */
-  GPIO_InitStruct.Pin = SPI2_SX1262_CS_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(SPI2_SX1262_CS_GPIO_Port, &GPIO_InitStruct);
+	/*Configure GPIO pins : SPI1_SX1262_CS_Pin SPI1_BMA400_CS_Pin EN_SOLAR_CHG_Pin */
+	GPIO_InitStruct.Pin = SPI2_SX1262_CS_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(SPI2_SX1262_CS_GPIO_Port, &GPIO_InitStruct);
 
-  GPIO_InitStruct.Pin = SX_BUSY_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(SX_BUSY_GPIO_Port, &GPIO_InitStruct);
+	GPIO_InitStruct.Pin = SX_BUSY_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(SX_BUSY_GPIO_Port, &GPIO_InitStruct);
 
-  GPIO_InitStruct.Pin = SX_DIO1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(SX_DIO1_GPIO_Port, &GPIO_InitStruct);
+	GPIO_InitStruct.Pin = SX_DIO1_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(SX_DIO1_GPIO_Port, &GPIO_InitStruct);
 
+	GPIO_InitStruct.Pin = MAX78_INT1_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+	GPIO_InitStruct.Pull = GPIO_PULLUP;
+	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  GPIO_InitStruct.Pin = MAX78_INT1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-  GPIO_InitStruct.Pin = MAX78_INT2_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+	GPIO_InitStruct.Pin = MAX78_INT2_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+	GPIO_InitStruct.Pull = GPIO_PULLUP;
+	HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
 	GPIO_InitStruct.Pin = UWB_ALERT_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
@@ -1624,37 +1576,36 @@ static void MX_GPIO_Init(void)
 	HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
 	HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
 
-
-
-/* USER CODE END MX_GPIO_Init_2 */
+	/* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
 
-
-void readFRAM(uint8_t word_addr, uint8_t byte_addr, uint8_t *data, uint32_t size){
+void readFRAM(uint8_t word_addr, uint8_t byte_addr, uint8_t *data,
+		uint32_t size) {
 	HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET); // powers FRAM
 	HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_SET); // needed for I2C pins on FRAM
 
 	HAL_Delay(1); // 1ms startup delay before write/read
 
-	status = HAL_I2C_Mem_Read(&hi2c3, word_addr, byte_addr, 1, data, size, 1000);
+	status = HAL_I2C_Mem_Read(&hi2c3, word_addr, byte_addr, 1, data, size,
+			1000);
 }
 
-void writeFRAM(uint8_t word_addr, uint8_t byte_addr, uint8_t *data, uint32_t size){
+void writeFRAM(uint8_t word_addr, uint8_t byte_addr, uint8_t *data,
+		uint32_t size) {
 	HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET); // powers FRAM
 	HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_SET); // needed for I2C pins on FRAM
 
 	HAL_Delay(1); // 1ms startup delay before write/read
 
-	status = HAL_I2C_Mem_Write(&hi2c3, word_addr, byte_addr, 1, data, size, 1000);
+	status = HAL_I2C_Mem_Write(&hi2c3, word_addr, byte_addr, 1, data, size,
+			1000);
 }
 
 // Callback function for SPI transmit complete
-void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
-{
-	if (hspi->Instance == SPI1)
-	{
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
+	if (hspi->Instance == SPI1) {
 		// Code to execute after transmit is complete
 		osSemaphoreRelease(messageSPI1_LockBinarySemId);
 
@@ -1662,19 +1613,15 @@ void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
 }
 
 // Callback function for SPI receive complete
-void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
-{
-	if (hspi->Instance == SPI1)
-	{
+void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi) {
+	if (hspi->Instance == SPI1) {
 		// Code to execute after receive is complete
 		osSemaphoreRelease(messageSPI1_LockBinarySemId);
 	}
 }
 
-void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
-{
-	if (hspi->Instance == SPI1)
-	{
+void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
+	if (hspi->Instance == SPI1) {
 		// Code to execute after receive is complete
 		osSemaphoreRelease(messageSPI1_LockBinarySemId);
 	}
@@ -1710,47 +1657,45 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 //	}
 //}
 
-static void Reset_IPCC( void )
-{
+static void Reset_IPCC(void) {
 	LL_AHB3_GRP1_EnableClock(LL_AHB3_GRP1_PERIPH_IPCC);
 
 	LL_C1_IPCC_ClearFlag_CHx(
-			IPCC,
-			LL_IPCC_CHANNEL_1 | LL_IPCC_CHANNEL_2 | LL_IPCC_CHANNEL_3 | LL_IPCC_CHANNEL_4
-			| LL_IPCC_CHANNEL_5 | LL_IPCC_CHANNEL_6);
+	IPCC,
+			LL_IPCC_CHANNEL_1 | LL_IPCC_CHANNEL_2 | LL_IPCC_CHANNEL_3
+					| LL_IPCC_CHANNEL_4 | LL_IPCC_CHANNEL_5 | LL_IPCC_CHANNEL_6);
 
 	LL_C2_IPCC_ClearFlag_CHx(
-			IPCC,
-			LL_IPCC_CHANNEL_1 | LL_IPCC_CHANNEL_2 | LL_IPCC_CHANNEL_3 | LL_IPCC_CHANNEL_4
-			| LL_IPCC_CHANNEL_5 | LL_IPCC_CHANNEL_6);
+	IPCC,
+			LL_IPCC_CHANNEL_1 | LL_IPCC_CHANNEL_2 | LL_IPCC_CHANNEL_3
+					| LL_IPCC_CHANNEL_4 | LL_IPCC_CHANNEL_5 | LL_IPCC_CHANNEL_6);
 
 	LL_C1_IPCC_DisableTransmitChannel(
-			IPCC,
-			LL_IPCC_CHANNEL_1 | LL_IPCC_CHANNEL_2 | LL_IPCC_CHANNEL_3 | LL_IPCC_CHANNEL_4
-			| LL_IPCC_CHANNEL_5 | LL_IPCC_CHANNEL_6);
+	IPCC,
+			LL_IPCC_CHANNEL_1 | LL_IPCC_CHANNEL_2 | LL_IPCC_CHANNEL_3
+					| LL_IPCC_CHANNEL_4 | LL_IPCC_CHANNEL_5 | LL_IPCC_CHANNEL_6);
 
 	LL_C2_IPCC_DisableTransmitChannel(
-			IPCC,
-			LL_IPCC_CHANNEL_1 | LL_IPCC_CHANNEL_2 | LL_IPCC_CHANNEL_3 | LL_IPCC_CHANNEL_4
-			| LL_IPCC_CHANNEL_5 | LL_IPCC_CHANNEL_6);
+	IPCC,
+			LL_IPCC_CHANNEL_1 | LL_IPCC_CHANNEL_2 | LL_IPCC_CHANNEL_3
+					| LL_IPCC_CHANNEL_4 | LL_IPCC_CHANNEL_5 | LL_IPCC_CHANNEL_6);
 
 	LL_C1_IPCC_DisableReceiveChannel(
-			IPCC,
-			LL_IPCC_CHANNEL_1 | LL_IPCC_CHANNEL_2 | LL_IPCC_CHANNEL_3 | LL_IPCC_CHANNEL_4
-			| LL_IPCC_CHANNEL_5 | LL_IPCC_CHANNEL_6);
+	IPCC,
+			LL_IPCC_CHANNEL_1 | LL_IPCC_CHANNEL_2 | LL_IPCC_CHANNEL_3
+					| LL_IPCC_CHANNEL_4 | LL_IPCC_CHANNEL_5 | LL_IPCC_CHANNEL_6);
 
 	LL_C2_IPCC_DisableReceiveChannel(
-			IPCC,
-			LL_IPCC_CHANNEL_1 | LL_IPCC_CHANNEL_2 | LL_IPCC_CHANNEL_3 | LL_IPCC_CHANNEL_4
-			| LL_IPCC_CHANNEL_5 | LL_IPCC_CHANNEL_6);
+	IPCC,
+			LL_IPCC_CHANNEL_1 | LL_IPCC_CHANNEL_2 | LL_IPCC_CHANNEL_3
+					| LL_IPCC_CHANNEL_4 | LL_IPCC_CHANNEL_5 | LL_IPCC_CHANNEL_6);
 
 	return;
 }
 
-static void Reset_BackupDomain( void )
-{
-	if ((LL_RCC_IsActiveFlag_PINRST() != FALSE) && (LL_RCC_IsActiveFlag_SFTRST() == FALSE))
-	{
+static void Reset_BackupDomain(void) {
+	if ((LL_RCC_IsActiveFlag_PINRST() != FALSE)
+			&& (LL_RCC_IsActiveFlag_SFTRST() == FALSE)) {
 		HAL_PWR_EnableBkUpAccess(); /**< Enable access to the RTC registers */
 
 		/**
@@ -1766,8 +1711,7 @@ static void Reset_BackupDomain( void )
 	return;
 }
 
-static void Reset_Device( void )
-{
+static void Reset_Device(void) {
 #if ( CFG_HW_RESET_BY_FW == 1 )
 	Reset_BackupDomain();
 
@@ -1777,28 +1721,27 @@ static void Reset_Device( void )
 	return;
 }
 
-void acousticSamplingTask(void *argument){
+void acousticSamplingTask(void *argument) {
 
-	if(configPacket.payload.config_packet.network_state.master_node) sendConfigToNodes(true);
+	if (configPacket.payload.config_packet.network_state.master_node)
+		sendConfigToNodes(true);
 
 	/* Setup Audio Interface */
 	disableAudioPeripherals();
 	//	unmount_sd_card();
 
-	if((!configPacket.payload.config_packet.audio_config.channel_1) &&
-			(!configPacket.payload.config_packet.audio_config.channel_2)){
+	if ((!configPacket.payload.config_packet.audio_config.channel_1)
+			&& (!configPacket.payload.config_packet.audio_config.channel_2)) {
 		osThreadExit();
-	}
-	else if(configPacket.payload.config_packet.audio_config.channel_1 ==
-			configPacket.payload.config_packet.audio_config.channel_2){
+	} else if (configPacket.payload.config_packet.audio_config.channel_1
+			== configPacket.payload.config_packet.audio_config.channel_2) {
 		hsai_BlockA1.Init.MonoStereoMode = SAI_STEREOMODE;
-	}
-	else{
+	} else {
 		hsai_BlockA1.Init.MonoStereoMode = SAI_STEREOMODE; // although in mono mode, still using stereo frames because that's what ADC supports
 	}
 
 	uint8_t bit_resolution = 0;
-	switch(configPacket.payload.config_packet.audio_config.bit_resolution){
+	switch (configPacket.payload.config_packet.audio_config.bit_resolution) {
 	case MIC_BIT_RESOLUTION_BIT_RES_8:
 		bit_resolution = SAI_PROTOCOL_DATASIZE_16BIT;
 		break;
@@ -1810,7 +1753,7 @@ void acousticSamplingTask(void *argument){
 		break;
 	}
 
-	switch(configPacket.payload.config_packet.audio_config.sample_freq){
+	switch (configPacket.payload.config_packet.audio_config.sample_freq) {
 	case MIC_SAMPLE_FREQ_SAMPLE_RATE_8000:
 		hsai_BlockA1.Init.AudioFrequency = SAI_AUDIO_FREQUENCY_8K;
 		break;
@@ -1872,7 +1815,7 @@ void acousticSamplingTask(void *argument){
 
 	/* Audio capture start */
 
-	char folder_name[30] = {0};
+	char folder_name[30] = { 0 };
 
 	// create folder on mounted SD card
 	set_folder_from_time(folder_name);
@@ -1890,23 +1833,21 @@ void acousticSamplingTask(void *argument){
 	//	toneSweep(1);
 	//	toneSweep(0);
 
-	if(configPacket.payload.config_packet.audio_config.chirp_enable &&
-			configPacket.payload.config_packet.network_state.master_node){
+	if (configPacket.payload.config_packet.audio_config.chirp_enable
+			&& configPacket.payload.config_packet.network_state.master_node) {
 		chirpTaskHandle = osThreadNew(chirpTask, NULL, &chirpTask_attributes);
 	}
 
 //	tone(4000, 100);
 //	if(configPacket.payload.config_packet.audio_config.free_run_mode){
-		startRecord(0, folder_name); // run forever
+	startRecord(0, folder_name); // run forever
 //	}else{
-		// start data collection
+			// start data collection
 //		startRecord(15, folder_name);
 //	}
 }
 
-
-
-void batteryMonitorTask(void *argument){
+void batteryMonitorTask(void *argument) {
 	const char file_name[20] = "battery.csv";
 	uint32_t flag = 0;
 	uint8_t battChgFlag = 0;
@@ -1918,8 +1859,9 @@ void batteryMonitorTask(void *argument){
 //	double timestamp = 0;
 
 	// add header
-	if(check_file_exists(file_name) == FR_NO_FILE){
-		if(f_open(&batteryFile, file_name, FA_CREATE_NEW | FA_WRITE) == FR_OK){
+	if (check_file_exists(file_name) == FR_NO_FILE) {
+		if (f_open(&batteryFile, file_name, FA_CREATE_NEW | FA_WRITE)
+				== FR_OK) {
 			strcpy(str, "timestamp, voltage, charging\n");
 			f_write(&batteryFile, str, strlen(str), NULL);
 			// Flush the cached data to the SD card
@@ -1931,50 +1873,55 @@ void batteryMonitorTask(void *argument){
 		}
 	}
 
-	periodicBatteryMonitorTimer_id = osTimerNew(triggerBatteryMonitorSample, osTimerPeriodic,
+	periodicBatteryMonitorTimer_id = osTimerNew(triggerBatteryMonitorSample,
+			osTimerPeriodic,
 			NULL, NULL);
 	osTimerStart(periodicBatteryMonitorTimer_id, 60000);
 
-	while(1){
-		flag = osThreadFlagsWait(UPDATE_EVENT | TERMINATE_EVENT, osFlagsWaitAny, osWaitForever);
+	while (1) {
+		flag = osThreadFlagsWait(UPDATE_EVENT | TERMINATE_EVENT, osFlagsWaitAny,
+				osWaitForever);
 
-		if((flag & UPDATE_EVENT) == UPDATE_EVENT){
+		if ((flag & UPDATE_EVENT) == UPDATE_EVENT) {
 
-			if(systemPowerSupervisor.isBatteryLevelSensingEnabled){
+			if (systemPowerSupervisor.isBatteryLevelSensingEnabled) {
 
-				do{
-					res = f_open(&batteryFile, file_name, FA_OPEN_APPEND | FA_WRITE | FA_READ);
-					if((res != FR_TIMEOUT) && (res != FR_OK)){
+				do {
+					res = f_open(&batteryFile, file_name,
+							FA_OPEN_APPEND | FA_WRITE | FA_READ);
+					if ((res != FR_TIMEOUT) && (res != FR_OK)) {
 						Error_Handler();
 					}
-				}while( ((res == FR_TIMEOUT) || (osDelay(10) == osOK)) &&
-						(res != FR_OK));
+				} while (((res == FR_TIMEOUT) || (osDelay(10) == osOK))
+						&& (res != FR_OK));
 
-				if(res != FR_OK){
+				if (res != FR_OK) {
 					Error_Handler();
 				}
 
-				battChgFlag = HAL_GPIO_ReadPin(BATT_CHG_GPIO_Port, BATT_CHG_Pin);
+				battChgFlag = HAL_GPIO_ReadPin(BATT_CHG_GPIO_Port,
+						BATT_CHG_Pin);
 
 				systemState.isBatteryLevelSensingActive = true;
 				Control_BatteryMonitor_Power(true);
 				osDelay(100); // give time for voltage to settle
 
-	//			timestamp = getEpoch();
+				//			timestamp = getEpoch();
 				HAL_ADC_Start_IT(&hadc1);
 
-				flag = osThreadFlagsWait(COMPLETE_EVENT, osFlagsWaitAny, osWaitForever);
+				flag = osThreadFlagsWait(COMPLETE_EVENT, osFlagsWaitAny,
+						osWaitForever);
 
-				battVltg = ((((float) HAL_ADC_GetValue(&hadc1))) * 3.3 * 2) / 4096.0;
+				battVltg = ((((float) HAL_ADC_GetValue(&hadc1))) * 3.3 * 2)
+						/ 4096.0;
 				HAL_ADC_Stop_IT(&hadc1);
 
 				systemState.isBatteryLevelSensingActive = false;
 				Control_BatteryMonitor_Power(false);
 
-
-				idx_tracker += uint64_to_str(getEpoch(), &str[0]);
-				snprintf(&str[idx_tracker], sizeof(str)-idx_tracker, ",%.3f,%u\n", battVltg, battChgFlag);
-
+				idx_tracker += uint64_to_str(getEpoch_ms(), &str[0]);
+				snprintf(&str[idx_tracker], sizeof(str) - idx_tracker,
+						",%.3f,%u\n", battVltg, battChgFlag);
 
 				f_write(&batteryFile, str, strlen(str), NULL);
 				memset(str, '\0', sizeof(str));
@@ -1982,28 +1929,35 @@ void batteryMonitorTask(void *argument){
 
 				// Close the file
 				res = f_close(&batteryFile);
-				if(res != FR_OK){
+				if (res != FR_OK) {
 					Error_Handler();
 				}
 
 				/* update characteristic */
 				infoPacket.payload.system_info_packet.has_battery_state = true;
-				infoPacket.payload.system_info_packet.battery_state.charging=battChgFlag;
-				infoPacket.payload.system_info_packet.battery_state.has_percentage=true;
-				infoPacket.payload.system_info_packet.battery_state.percentage=0;
-				infoPacket.payload.system_info_packet.battery_state.voltage=floorf(battVltg * 1000) / 1000;
+				infoPacket.payload.system_info_packet.battery_state.charging =
+						battChgFlag;
+				infoPacket.payload.system_info_packet.battery_state.has_percentage =
+						true;
+				infoPacket.payload.system_info_packet.battery_state.percentage =
+						0;
+				infoPacket.payload.system_info_packet.battery_state.voltage =
+						floorf(battVltg * 1000) / 1000;
 
 				/* Create a stream that will write to our buffer. */
-				pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+				pb_ostream_t stream = pb_ostream_from_buffer(buffer,
+						sizeof(buffer));
 				/* Now we are ready to encode the message! */
 				status = pb_encode(&stream, PACKET_FIELDS, &infoPacket);
 				PackedPayload.pPayload = (uint8_t*) buffer;
 				PackedPayload.Length = stream.bytes_written;
-				if(status) DTS_STM_UpdateChar(BUZZCAM_INFO_CHAR_UUID, (uint8_t*)&PackedPayload);
-				}
+				if (status)
+					DTS_STM_UpdateChar(BUZZCAM_INFO_CHAR_UUID,
+							(uint8_t*) &PackedPayload);
+			}
 		}
 
-		if((flag & TERMINATE_EVENT) == TERMINATE_EVENT){
+		if ((flag & TERMINATE_EVENT) == TERMINATE_EVENT) {
 			vTaskDelete(NULL);
 		}
 
@@ -2011,53 +1965,63 @@ void batteryMonitorTask(void *argument){
 
 }
 
-char hexToAscii(uint8_t val){
+char hexToAscii(uint8_t val) {
 	// only look at first 4 bits
 	val = val & (0x0F);
-	if(val<10) return val+48;
-	else return val+87;
+	if (val < 10)
+		return val + 48;
+	else
+		return val + 87;
 }
 
-void fileWriteSyncTask(void *argument){
+void fileWriteSyncTask(void *argument) {
 	const char file_name[20] = "logs.csv";
 //	uint32_t flag = 0;
 //	uint8_t battChgFlag = 0;
 
 	volatile FRESULT res;
 
-	char str[120] = {0};
+	char str[120] = { 0 };
 
 	uint32_t idx_tracker;
 
 	uint32_t idx = 0;
 	fileWriteSync_t fileWriteSyncMsg;
 
-	timestampSync_t*  timestampSync;
-	uwb_range_packet_multi_t* uwb_multi_range_pkt;
-	beecam_uwb_i2c_downlink_ptp_result_t* uwb_p2p_rslt;
-	beecam_uwb_i2c_device_info_t* uwb_info;
-	chirp_event_t* chirpEvent;
+	timestampSync_t *timestampSync;
+	uwb_range_packet_multi_t *uwb_multi_range_pkt;
+	beecam_uwb_i2c_downlink_ptp_result_t *uwb_p2p_rslt;
+	beecam_uwb_i2c_device_info_t *uwb_info;
+	chirp_event_t *chirpEvent;
 
 	// add header
-	if(check_file_exists(file_name) == FR_NO_FILE){
-		if(f_open(&fileWriteSyncFile, file_name, FA_CREATE_NEW | FA_WRITE) == FR_OK){
-			snprintf(str, sizeof(str), "index,%d,slave epoch,master epoch\n", TIMESTAMP_MSG);
+	if (check_file_exists(file_name) == FR_NO_FILE) {
+		if (f_open(&fileWriteSyncFile, file_name, FA_CREATE_NEW | FA_WRITE)
+				== FR_OK) {
+			snprintf(str, sizeof(str), "index,%d,slave epoch,master epoch\n",
+					TIMESTAMP_MSG);
 			f_write(&fileWriteSyncFile, str, strlen(str), NULL);
 			memset(str, '\0', sizeof(str));
 
-			snprintf(str, sizeof(str), "index,%d,epoch,delay,mean,n_samples,std_dev,UID\n", UWB_MULTI_P2P_MSG);
+			snprintf(str, sizeof(str),
+					"index,%d,epoch,delay,mean,n_samples,std_dev,UID\n",
+					UWB_MULTI_P2P_MSG);
 			f_write(&fileWriteSyncFile, str, strlen(str), NULL);
 			memset(str, '\0', sizeof(str));
 
-			snprintf(str, sizeof(str), "index,%d,epoch,delay,raw_rx,raw_tx,uwb_addr_0,uwb_addr_1,range_mm,n_samples\n", UWB_TWR_MSG);
+			snprintf(str, sizeof(str),
+					"index,%d,epoch,delay,raw_rx,raw_tx,uwb_addr_0,uwb_addr_1,range_mm,n_samples\n",
+					UWB_TWR_MSG);
 			f_write(&fileWriteSyncFile, str, strlen(str), NULL);
 			memset(str, '\0', sizeof(str));
 
-			snprintf(str, sizeof(str), "index,%d,epoch,uwb_addr_0,uwb_addr_1\n", UWB_INFO_MSG);
+			snprintf(str, sizeof(str), "index,%d,epoch,uwb_addr_0,uwb_addr_1\n",
+					UWB_INFO_MSG);
 			f_write(&fileWriteSyncFile, str, strlen(str), NULL);
 			memset(str, '\0', sizeof(str));
 
-			snprintf(str, sizeof(str), "index,%d,epoch,ms_from_start,counter\n", MASTER_CHIRP_MSG);
+			snprintf(str, sizeof(str), "index,%d,epoch,ms_from_start,counter\n",
+					MASTER_CHIRP_MSG);
 			f_write(&fileWriteSyncFile, str, strlen(str), NULL);
 			memset(str, '\0', sizeof(str));
 
@@ -2066,59 +2030,70 @@ void fileWriteSyncTask(void *argument){
 			// Close the file
 			f_close(&fileWriteSyncFile);
 
-
 		}
 	}
 
+	while (1) {
+		osMessageQueueGet(fileWriteQueueId, &fileWriteSyncMsg, 0,
+				osWaitForever);
 
-	while(1){
-		osMessageQueueGet(fileWriteQueueId, &fileWriteSyncMsg, 0, osWaitForever);
-
-		do{
-			res = f_open(&fileWriteSyncFile, file_name, FA_OPEN_APPEND | FA_WRITE | FA_READ);
-			if((res != FR_TIMEOUT) && (res != FR_OK) && (res != FR_TOO_MANY_OPEN_FILES)){
+		do {
+			res = f_open(&fileWriteSyncFile, file_name,
+					FA_OPEN_APPEND | FA_WRITE | FA_READ);
+			if ((res != FR_TIMEOUT) && (res != FR_OK)
+					&& (res != FR_TOO_MANY_OPEN_FILES)) {
 				Error_Handler();
 			}
-		}while( ((res == FR_TIMEOUT) || (osDelay(10) == osOK)) &&
-				(res != FR_OK) );
+		} while (((res == FR_TIMEOUT) || (osDelay(10) == osOK))
+				&& (res != FR_OK));
 
-
-		if(fileWriteSyncMsg.msgType == TIMESTAMP_MSG){
-			if(fileWriteSyncMsg.msgLength != sizeof(timestampSync_t)) Error_Handler();
-			timestampSync = (timestampSync_t *) fileWriteSyncMsg.data;
+		if (fileWriteSyncMsg.msgType == TIMESTAMP_MSG) {
+			if (fileWriteSyncMsg.msgLength != sizeof(timestampSync_t))
+				Error_Handler();
+			timestampSync = (timestampSync_t*) fileWriteSyncMsg.data;
 
 			snprintf(str, sizeof(str), "%lu,%d,", idx++,
 					fileWriteSyncMsg.msgType);
 
 			idx_tracker = strlen(str);
-			idx_tracker += uint64_to_str(timestampSync->slave_epoch, &str[idx_tracker]);
+			idx_tracker += uint64_to_str(timestampSync->slave_epoch,
+					&str[idx_tracker]);
 			str[idx_tracker++] = ',';
-			idx_tracker += uint64_to_str(timestampSync->master_epoch, &str[idx_tracker]);
+			idx_tracker += uint64_to_str(timestampSync->master_epoch,
+					&str[idx_tracker]);
 			str[idx_tracker++] = '\n';
 
-
-		}else if(fileWriteSyncMsg.msgType == UWB_MULTI_P2P_MSG){
-			if(fileWriteSyncMsg.msgLength != sizeof(uwb_range_packet_multi_t)) Error_Handler();
-			uwb_multi_range_pkt = (uwb_range_packet_multi_t *) fileWriteSyncMsg.data;
+		} else if (fileWriteSyncMsg.msgType == UWB_MULTI_P2P_MSG) {
+			if (fileWriteSyncMsg.msgLength != sizeof(uwb_range_packet_multi_t))
+				Error_Handler();
+			uwb_multi_range_pkt =
+					(uwb_range_packet_multi_t*) fileWriteSyncMsg.data;
 
 			snprintf(str, sizeof(str), "%lu,%d,", idx++,
 					fileWriteSyncMsg.msgType);
 
 			idx_tracker = strlen(str);
-			idx_tracker += uint64_to_str(fileWriteSyncMsg.msgTime, &str[idx_tracker]);
+			idx_tracker += uint64_to_str(fileWriteSyncMsg.msgTime,
+					&str[idx_tracker]);
 			str[idx_tracker++] = ',';
-			idx_tracker += uint64_to_str(uwb_multi_range_pkt->normal_distribution.delay, &str[idx_tracker]);
+			idx_tracker += uint64_to_str(
+					uwb_multi_range_pkt->normal_distribution.delay,
+					&str[idx_tracker]);
 			str[idx_tracker++] = ',';
 
-			snprintf(&str[idx_tracker], sizeof(str)-idx_tracker, "%.3f,%lu,%.3f,%ld\n",
+			snprintf(&str[idx_tracker], sizeof(str) - idx_tracker,
+					"%.3f,%lu,%.3f,%ld\n",
 					uwb_multi_range_pkt->normal_distribution.mean,
 					uwb_multi_range_pkt->normal_distribution.n_samples,
 					uwb_multi_range_pkt->normal_distribution.stddev,
 					uwb_multi_range_pkt->system_uid);
 
-		}else if(fileWriteSyncMsg.msgType == UWB_TWR_MSG){
-			if(fileWriteSyncMsg.msgLength != sizeof(beecam_uwb_i2c_downlink_ptp_result_t)) Error_Handler();
-			uwb_p2p_rslt = (beecam_uwb_i2c_downlink_ptp_result_t *) fileWriteSyncMsg.data;
+		} else if (fileWriteSyncMsg.msgType == UWB_TWR_MSG) {
+			if (fileWriteSyncMsg.msgLength
+					!= sizeof(beecam_uwb_i2c_downlink_ptp_result_t))
+				Error_Handler();
+			uwb_p2p_rslt =
+					(beecam_uwb_i2c_downlink_ptp_result_t*) fileWriteSyncMsg.data;
 
 //			snprintf(str, sizeof(str), "%lu,%d,%llu,%llu,%02X,%02X,%ld,%llu,%llu\n", idx++,
 //					fileWriteSyncMsg.msgType,
@@ -2130,164 +2105,214 @@ void fileWriteSyncTask(void *argument){
 //					uwb_p2p_rslt->raw_rx_timestamp,
 //					uwb_p2p_rslt->raw_tx_timestamp);
 
-			snprintf(str, sizeof(str), "%lu,%d,", idx++, fileWriteSyncMsg.msgType);
+			snprintf(str, sizeof(str), "%lu,%d,", idx++,
+					fileWriteSyncMsg.msgType);
 
 			idx_tracker = strlen(str);
-			idx_tracker += uint64_to_str(fileWriteSyncMsg.msgTime, &str[idx_tracker]);
+			idx_tracker += uint64_to_str(fileWriteSyncMsg.msgTime,
+					&str[idx_tracker]);
 			str[idx_tracker++] = ',';
-			idx_tracker += uint64_to_str(uwb_p2p_rslt->delay, &str[idx_tracker]);
+			idx_tracker += uint64_to_str(uwb_p2p_rslt->delay,
+					&str[idx_tracker]);
 			str[idx_tracker++] = ',';
-			idx_tracker += uint64_to_str(uwb_p2p_rslt->raw_rx_timestamp, &str[idx_tracker]);
+			idx_tracker += uint64_to_str(uwb_p2p_rslt->raw_rx_timestamp,
+					&str[idx_tracker]);
 			str[idx_tracker++] = ',';
-			idx_tracker += uint64_to_str(uwb_p2p_rslt->raw_tx_timestamp, &str[idx_tracker]);
+			idx_tracker += uint64_to_str(uwb_p2p_rslt->raw_tx_timestamp,
+					&str[idx_tracker]);
 			str[idx_tracker++] = ',';
-			str[idx_tracker++] = hexToAscii(uwb_p2p_rslt->peer_address.address.bytes[0]>>4);
-			str[idx_tracker++] = hexToAscii(uwb_p2p_rslt->peer_address.address.bytes[0]);
+			str[idx_tracker++] = hexToAscii(
+					uwb_p2p_rslt->peer_address.address.bytes[0] >> 4);
+			str[idx_tracker++] = hexToAscii(
+					uwb_p2p_rslt->peer_address.address.bytes[0]);
 			str[idx_tracker++] = ',';
-			str[idx_tracker++] = hexToAscii(uwb_p2p_rslt->peer_address.address.bytes[1]>>4);
-			str[idx_tracker++] = hexToAscii(uwb_p2p_rslt->peer_address.address.bytes[1]);
+			str[idx_tracker++] = hexToAscii(
+					uwb_p2p_rslt->peer_address.address.bytes[1] >> 4);
+			str[idx_tracker++] = hexToAscii(
+					uwb_p2p_rslt->peer_address.address.bytes[1]);
 
-			snprintf(&str[idx_tracker], sizeof(str)-idx_tracker, "%lu\n",
+			snprintf(&str[idx_tracker], sizeof(str) - idx_tracker, "%lu\n",
 					uwb_p2p_rslt->range_mm);
 
 //			idx_tracker = strlen(str);
 //			idx_tracker += uint64_to_str(uwb_normal_distribution->n_samples, &str[idx_tracker]);
 //			str[++idx_tracker] = '\n';
 
-
-		}else if(fileWriteSyncMsg.msgType == UWB_INFO_MSG){
-			if(fileWriteSyncMsg.msgLength != sizeof(beecam_uwb_i2c_device_info_t)) Error_Handler();
-			uwb_info = (beecam_uwb_i2c_device_info_t *) fileWriteSyncMsg.data;
+		} else if (fileWriteSyncMsg.msgType == UWB_INFO_MSG) {
+			if (fileWriteSyncMsg.msgLength
+					!= sizeof(beecam_uwb_i2c_device_info_t))
+				Error_Handler();
+			uwb_info = (beecam_uwb_i2c_device_info_t*) fileWriteSyncMsg.data;
 
 			snprintf(str, sizeof(str), "%lu,%d,", idx++,
 					fileWriteSyncMsg.msgType);
 
 			idx_tracker = strlen(str);
-			idx_tracker += uint64_to_str(fileWriteSyncMsg.msgTime, &str[idx_tracker]);
+			idx_tracker += uint64_to_str(fileWriteSyncMsg.msgTime,
+					&str[idx_tracker]);
 			str[idx_tracker++] = ',';
-			str[idx_tracker++] = hexToAscii(uwb_info->uwb.address.address.bytes[0]>>4);
-			str[idx_tracker++] = hexToAscii(uwb_info->uwb.address.address.bytes[0]);
+			str[idx_tracker++] = hexToAscii(
+					uwb_info->uwb.address.address.bytes[0] >> 4);
+			str[idx_tracker++] = hexToAscii(
+					uwb_info->uwb.address.address.bytes[0]);
 			str[idx_tracker++] = ',';
-			str[idx_tracker++] = hexToAscii(uwb_info->uwb.address.address.bytes[1]>>4);
-			str[idx_tracker++] = hexToAscii(uwb_info->uwb.address.address.bytes[1]);
+			str[idx_tracker++] = hexToAscii(
+					uwb_info->uwb.address.address.bytes[1] >> 4);
+			str[idx_tracker++] = hexToAscii(
+					uwb_info->uwb.address.address.bytes[1]);
 			str[idx_tracker++] = '\n';
-		}else if(fileWriteSyncMsg.msgType == MASTER_CHIRP_MSG){
-			if(fileWriteSyncMsg.msgLength != sizeof(chirp_event_t)) Error_Handler();
-			chirpEvent = (chirp_event_t *) fileWriteSyncMsg.data;
+		} else if (fileWriteSyncMsg.msgType == MASTER_CHIRP_MSG) {
+			if (fileWriteSyncMsg.msgLength != sizeof(chirp_event_t))
+				Error_Handler();
+			chirpEvent = (chirp_event_t*) fileWriteSyncMsg.data;
 
 			snprintf(str, sizeof(str), "%lu,%d,", idx++,
-								fileWriteSyncMsg.msgType);
+					fileWriteSyncMsg.msgType);
 
 			idx_tracker = strlen(str);
 			idx_tracker += uint64_to_str(chirpEvent->epoch, &str[idx_tracker]);
 			str[idx_tracker++] = ',';
 
-			snprintf(&str[idx_tracker], sizeof(str)-idx_tracker, "%lu,%lu\n",
-									chirpEvent->ms_from_start,
-									chirpEvent->counter);
+			snprintf(&str[idx_tracker], sizeof(str) - idx_tracker, "%lu,%lu\n",
+					chirpEvent->ms_from_start, chirpEvent->counter);
 		}
 
-		if(sizeof(str) < idx_tracker) Error_Handler();
+		if (sizeof(str) < idx_tracker)
+			Error_Handler();
 		f_write(&fileWriteSyncFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 		idx_tracker = 0;
 
 		/* keep checking buffer for 100ms timeout before closing the file */
-		while(osOK == osMessageQueueGet(fileWriteQueueId, &fileWriteSyncMsg, 0, 100)){
-			if(fileWriteSyncMsg.msgType == TIMESTAMP_MSG){
-				if(fileWriteSyncMsg.msgLength != sizeof(timestampSync_t)) Error_Handler();
-				timestampSync = (timestampSync_t *) fileWriteSyncMsg.data;
+		while (osOK
+				== osMessageQueueGet(fileWriteQueueId, &fileWriteSyncMsg, 0,
+						100)) {
+			if (fileWriteSyncMsg.msgType == TIMESTAMP_MSG) {
+				if (fileWriteSyncMsg.msgLength != sizeof(timestampSync_t))
+					Error_Handler();
+				timestampSync = (timestampSync_t*) fileWriteSyncMsg.data;
 
 				snprintf(str, sizeof(str), "%lu,%d,", idx++,
 						fileWriteSyncMsg.msgType);
 
 				idx_tracker = strlen(str);
-				idx_tracker += uint64_to_str(timestampSync->slave_epoch, &str[idx_tracker]);
+				idx_tracker += uint64_to_str(timestampSync->slave_epoch,
+						&str[idx_tracker]);
 				str[idx_tracker++] = ',';
-				idx_tracker += uint64_to_str(timestampSync->master_epoch, &str[idx_tracker]);
+				idx_tracker += uint64_to_str(timestampSync->master_epoch,
+						&str[idx_tracker]);
 				str[idx_tracker++] = '\n';
 
-			}else if(fileWriteSyncMsg.msgType == UWB_MULTI_P2P_MSG){
-				if(fileWriteSyncMsg.msgLength != sizeof(uwb_range_packet_multi_t)) Error_Handler();
-				uwb_multi_range_pkt = (uwb_range_packet_multi_t *) fileWriteSyncMsg.data;
+			} else if (fileWriteSyncMsg.msgType == UWB_MULTI_P2P_MSG) {
+				if (fileWriteSyncMsg.msgLength
+						!= sizeof(uwb_range_packet_multi_t))
+					Error_Handler();
+				uwb_multi_range_pkt =
+						(uwb_range_packet_multi_t*) fileWriteSyncMsg.data;
 
 				snprintf(str, sizeof(str), "%lu,%d,", idx++,
 						fileWriteSyncMsg.msgType);
 
 				idx_tracker = strlen(str);
-				idx_tracker += uint64_to_str(fileWriteSyncMsg.msgTime, &str[idx_tracker]);
+				idx_tracker += uint64_to_str(fileWriteSyncMsg.msgTime,
+						&str[idx_tracker]);
 				str[idx_tracker++] = ',';
-				idx_tracker += uint64_to_str(uwb_multi_range_pkt->normal_distribution.delay, &str[idx_tracker]);
+				idx_tracker += uint64_to_str(
+						uwb_multi_range_pkt->normal_distribution.delay,
+						&str[idx_tracker]);
 				str[idx_tracker++] = ',';
 
-				snprintf(&str[idx_tracker], sizeof(str)-idx_tracker, "%.3f,%lu,%.3f,%ld\n",
+				snprintf(&str[idx_tracker], sizeof(str) - idx_tracker,
+						"%.3f,%lu,%.3f,%ld\n",
 						uwb_multi_range_pkt->normal_distribution.mean,
 						uwb_multi_range_pkt->normal_distribution.n_samples,
 						uwb_multi_range_pkt->normal_distribution.stddev,
 						uwb_multi_range_pkt->system_uid);
 
-			}else if(fileWriteSyncMsg.msgType == UWB_TWR_MSG){
-				if(fileWriteSyncMsg.msgLength != sizeof(beecam_uwb_i2c_downlink_ptp_result_t)) Error_Handler();
-				uwb_p2p_rslt = (beecam_uwb_i2c_downlink_ptp_result_t *) fileWriteSyncMsg.data;
+			} else if (fileWriteSyncMsg.msgType == UWB_TWR_MSG) {
+				if (fileWriteSyncMsg.msgLength
+						!= sizeof(beecam_uwb_i2c_downlink_ptp_result_t))
+					Error_Handler();
+				uwb_p2p_rslt =
+						(beecam_uwb_i2c_downlink_ptp_result_t*) fileWriteSyncMsg.data;
 
-				snprintf(str, sizeof(str), "%lu,%d,", idx++, fileWriteSyncMsg.msgType);
+				snprintf(str, sizeof(str), "%lu,%d,", idx++,
+						fileWriteSyncMsg.msgType);
 
 				idx_tracker = strlen(str);
-				idx_tracker += uint64_to_str(fileWriteSyncMsg.msgTime, &str[idx_tracker]);
+				idx_tracker += uint64_to_str(fileWriteSyncMsg.msgTime,
+						&str[idx_tracker]);
 				str[idx_tracker++] = ',';
-				idx_tracker += uint64_to_str(uwb_p2p_rslt->delay, &str[idx_tracker]);
+				idx_tracker += uint64_to_str(uwb_p2p_rslt->delay,
+						&str[idx_tracker]);
 				str[idx_tracker++] = ',';
-				idx_tracker += uint64_to_str(uwb_p2p_rslt->raw_rx_timestamp, &str[idx_tracker]);
+				idx_tracker += uint64_to_str(uwb_p2p_rslt->raw_rx_timestamp,
+						&str[idx_tracker]);
 				str[idx_tracker++] = ',';
-				idx_tracker += uint64_to_str(uwb_p2p_rslt->raw_tx_timestamp, &str[idx_tracker]);
+				idx_tracker += uint64_to_str(uwb_p2p_rslt->raw_tx_timestamp,
+						&str[idx_tracker]);
 				str[idx_tracker++] = ',';
-				str[idx_tracker++] = hexToAscii(uwb_p2p_rslt->peer_address.address.bytes[0]>>4);
-				str[idx_tracker++] = hexToAscii(uwb_p2p_rslt->peer_address.address.bytes[0]);
+				str[idx_tracker++] = hexToAscii(
+						uwb_p2p_rslt->peer_address.address.bytes[0] >> 4);
+				str[idx_tracker++] = hexToAscii(
+						uwb_p2p_rslt->peer_address.address.bytes[0]);
 				str[idx_tracker++] = ',';
-				str[idx_tracker++] = hexToAscii(uwb_p2p_rslt->peer_address.address.bytes[1]>>4);
-				str[idx_tracker++] = hexToAscii(uwb_p2p_rslt->peer_address.address.bytes[1]);
+				str[idx_tracker++] = hexToAscii(
+						uwb_p2p_rslt->peer_address.address.bytes[1] >> 4);
+				str[idx_tracker++] = hexToAscii(
+						uwb_p2p_rslt->peer_address.address.bytes[1]);
 
-				snprintf(&str[idx_tracker], sizeof(str)-idx_tracker, "%lu\n",
+				snprintf(&str[idx_tracker], sizeof(str) - idx_tracker, "%lu\n",
 						uwb_p2p_rslt->range_mm);
 
 //				idx_tracker = strlen(str);
 //				idx_tracker += uint64_to_str(uwb_p2p_rslt->, &str[idx_tracker]);
 //				str[++idx_tracker] = '\n';
 
-
-			}else if(fileWriteSyncMsg.msgType == UWB_INFO_MSG){
-				if(fileWriteSyncMsg.msgLength != sizeof(beecam_uwb_i2c_device_info_t)) Error_Handler();
-				uwb_info = (beecam_uwb_i2c_device_info_t *) fileWriteSyncMsg.data;
+			} else if (fileWriteSyncMsg.msgType == UWB_INFO_MSG) {
+				if (fileWriteSyncMsg.msgLength
+						!= sizeof(beecam_uwb_i2c_device_info_t))
+					Error_Handler();
+				uwb_info =
+						(beecam_uwb_i2c_device_info_t*) fileWriteSyncMsg.data;
 
 				snprintf(str, sizeof(str), "%lu,%d,", idx++,
 						fileWriteSyncMsg.msgType);
 
 				idx_tracker = strlen(str);
-				idx_tracker += uint64_to_str(fileWriteSyncMsg.msgTime, &str[idx_tracker]);
+				idx_tracker += uint64_to_str(fileWriteSyncMsg.msgTime,
+						&str[idx_tracker]);
 				str[idx_tracker++] = ',';
-				str[idx_tracker++] = hexToAscii(uwb_info->uwb.address.address.bytes[0]>>4);
-				str[idx_tracker++] = hexToAscii(uwb_info->uwb.address.address.bytes[0]);
+				str[idx_tracker++] = hexToAscii(
+						uwb_info->uwb.address.address.bytes[0] >> 4);
+				str[idx_tracker++] = hexToAscii(
+						uwb_info->uwb.address.address.bytes[0]);
 				str[idx_tracker++] = ',';
-				str[idx_tracker++] = hexToAscii(uwb_info->uwb.address.address.bytes[1]>>4);
-				str[idx_tracker++] = hexToAscii(uwb_info->uwb.address.address.bytes[1]);
+				str[idx_tracker++] = hexToAscii(
+						uwb_info->uwb.address.address.bytes[1] >> 4);
+				str[idx_tracker++] = hexToAscii(
+						uwb_info->uwb.address.address.bytes[1]);
 				str[idx_tracker++] = '\n';
-			}else if(fileWriteSyncMsg.msgType == MASTER_CHIRP_MSG){
-				if(fileWriteSyncMsg.msgLength != sizeof(chirp_event_t)) Error_Handler();
-				chirpEvent = (chirp_event_t *) fileWriteSyncMsg.data;
+			} else if (fileWriteSyncMsg.msgType == MASTER_CHIRP_MSG) {
+				if (fileWriteSyncMsg.msgLength != sizeof(chirp_event_t))
+					Error_Handler();
+				chirpEvent = (chirp_event_t*) fileWriteSyncMsg.data;
 
 				snprintf(str, sizeof(str), "%lu,%d,", idx++,
-									fileWriteSyncMsg.msgType);
+						fileWriteSyncMsg.msgType);
 
 				idx_tracker = strlen(str);
-				idx_tracker += uint64_to_str(chirpEvent->epoch, &str[idx_tracker]);
+				idx_tracker += uint64_to_str(chirpEvent->epoch,
+						&str[idx_tracker]);
 				str[idx_tracker++] = ',';
 
-				snprintf(&str[idx_tracker], sizeof(str)-idx_tracker, "%lu,%lu\n",
-										chirpEvent->ms_from_start,
-										chirpEvent->counter);
+				snprintf(&str[idx_tracker], sizeof(str) - idx_tracker,
+						"%lu,%lu\n", chirpEvent->ms_from_start,
+						chirpEvent->counter);
 			}
 
-			if(sizeof(str) < idx_tracker) Error_Handler();
+			if (sizeof(str) < idx_tracker)
+				Error_Handler();
 			f_write(&fileWriteSyncFile, str, strlen(str), NULL);
 			memset(str, '\0', sizeof(str));
 			idx_tracker = 0;
@@ -2295,26 +2320,27 @@ void fileWriteSyncTask(void *argument){
 
 		// Close the file
 		res = f_close(&fileWriteSyncFile);
-		if(res != FR_OK){
+		if (res != FR_OK) {
 			Error_Handler();
 		}
-
-
 
 	}
 
 }
 
-static void sendDataToUWB(uint8_t* buf, uint16_t length){
+static void sendDataToUWB(uint8_t *buf, uint16_t length) {
 	HAL_StatusTypeDef hal_status = HAL_OK;
 	do {
 		osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
-		if((hal_status == HAL_BUSY) || (hal_status == HAL_TIMEOUT)) osDelay(50);
-		hal_status = HAL_I2C_Mem_Write(&hi2c1, UWB_I2C_ADDR, UWB_I2C_GENERAL_MEM_ADDR, 1, buf, length, 100);
+		if ((hal_status == HAL_BUSY) || (hal_status == HAL_TIMEOUT))
+			osDelay(50);
+		hal_status = HAL_I2C_Mem_Write(&hi2c1, UWB_I2C_ADDR,
+				UWB_I2C_GENERAL_MEM_ADDR, 1, buf, length, 100);
 		osMutexRelease(messageI2C1_LockHandle);
-	}while( (hal_status != HAL_ERROR) && ( (hal_status == HAL_BUSY) || (hal_status == HAL_TIMEOUT)));
+	} while ((hal_status != HAL_ERROR)
+			&& ((hal_status == HAL_BUSY) || (hal_status == HAL_TIMEOUT)));
 
-	if(hal_status == HAL_ERROR){
+	if (hal_status == HAL_ERROR) {
 		Error_Handler();
 	}
 
@@ -2322,7 +2348,7 @@ static void sendDataToUWB(uint8_t* buf, uint16_t length){
 }
 
 uwb_range_packet_multi_t range_packet_multi;
-void uwbMessageTask(void* argument){
+void uwbMessageTask(void *argument) {
 	uint32_t flags;
 
 	uint8_t uwb_ready = 0;
@@ -2336,143 +2362,176 @@ void uwbMessageTask(void* argument){
 
 //	osDelay(5000);
 
-	while(1){
-		flags = osThreadFlagsWait(TERMINATE_EVENT | UWB_MESSAGE_ALERT | UWB_START_RANGING | UWB_GET_INFO, osFlagsWaitAny, osWaitForever);
+	while (1) {
+		flags = osThreadFlagsWait(
+				TERMINATE_EVENT | UWB_MESSAGE_ALERT | UWB_START_RANGING
+						| UWB_GET_INFO, osFlagsWaitAny, osWaitForever);
 
-		if((flags & UWB_MESSAGE_ALERT) == UWB_MESSAGE_ALERT){
+		if ((flags & UWB_MESSAGE_ALERT) == UWB_MESSAGE_ALERT) {
 			memset(uwb_buffer, NULL, sizeof(uwb_buffer));
 			osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
-			hal_status = HAL_I2C_Mem_Read(&hi2c1, UWB_I2C_ADDR, UWB_I2C_GENERAL_MEM_ADDR, 1,
-					uwb_buffer, UWB_READ_BYTES, 100);
+			hal_status = HAL_I2C_Mem_Read(&hi2c1, UWB_I2C_ADDR,
+					UWB_I2C_GENERAL_MEM_ADDR, 1, uwb_buffer, UWB_READ_BYTES,
+					100);
 			osMutexRelease(messageI2C1_LockHandle);
 
 			/* Create a stream that reads from the buffer. */
-			pb_istream_t stream = pb_istream_from_buffer(&uwb_buffer[1], uwb_buffer[0]);
+			pb_istream_t stream = pb_istream_from_buffer(&uwb_buffer[1],
+					uwb_buffer[0]);
 
 			/* Now we are ready to decode the message. */
-			status = pb_decode(&stream, BEECAM_UWB_I2C_DOWNLINK_FIELDS, &uwb_i2c_downlink_packet);
+			status = pb_decode(&stream, BEECAM_UWB_I2C_DOWNLINK_FIELDS,
+					&uwb_i2c_downlink_packet);
 
-			if(status){
-				switch(uwb_i2c_downlink_packet.which_response){
-					case BEECAM_UWB_I2C_DOWNLINK_ERROR_TAG:
-						//todo
-						switch(uwb_i2c_downlink_packet.response.error.code){
-							case BEECAM_UWB_I2C_DOWNLINK_ERROR_CONTEXT_TAG:
-								break;
-							case BEECAM_UWB_I2C_DOWNLINK_ERROR_CODE_TAG:
-								if(uwb_i2c_downlink_packet.response.error.code == BEECAM_UWB_I2C_DOWNLINK_ERROR_ERROR_CODE_TIMEOUT){
-									updateRangeTableUWB(rxPacket.header.system_uid,
-											connectedNodeInfo[rangesRemaining].system_uid,
-											-1,
-											0);
-								}
-								break;
-							default:
-								break;
+			if (status) {
+				switch (uwb_i2c_downlink_packet.which_response) {
+				case BEECAM_UWB_I2C_DOWNLINK_ERROR_TAG:
+					//todo
+					switch (uwb_i2c_downlink_packet.response.error.code) {
+					case BEECAM_UWB_I2C_DOWNLINK_ERROR_CONTEXT_TAG:
+						break;
+					case BEECAM_UWB_I2C_DOWNLINK_ERROR_CODE_TAG:
+						if (uwb_i2c_downlink_packet.response.error.code
+								== BEECAM_UWB_I2C_DOWNLINK_ERROR_ERROR_CODE_TIMEOUT) {
+							updateRangeTableUWB(rxPacket.header.system_uid,
+									connectedNodeInfo[rangesRemaining].system_uid,
+									-1, 0);
 						}
 						break;
-					case BEECAM_UWB_I2C_DOWNLINK_STATUS_TAG:
-						if(uwb_i2c_downlink_packet.response.status.ready){
-							uwb_ready = 1;
-						}else{
-							uwb_ready = 0;
-						}
+					default:
+						break;
+					}
+					break;
+				case BEECAM_UWB_I2C_DOWNLINK_STATUS_TAG:
+					if (uwb_i2c_downlink_packet.response.status.ready) {
+						uwb_ready = 1;
+					} else {
+						uwb_ready = 0;
+					}
 
-						if(uwb_ranging_requested){
-							uwb_ranging_requested = 0;
-							flags |= UWB_START_RANGING;
-							osDelay(500);
-						}
-						if(uwb_info_requested){
-							uwb_info_requested = 1;
-							flags |= UWB_GET_INFO;
-							osDelay(500);
-						}
+					if (uwb_ranging_requested) {
+						uwb_ranging_requested = 0;
+						flags |= UWB_START_RANGING;
+						osDelay(500);
+					}
+					if (uwb_info_requested) {
+						uwb_info_requested = 1;
+						flags |= UWB_GET_INFO;
+						osDelay(500);
+					}
 //						osDelay(500); // add some delay to give UWB sometime
-						break;
-					case BEECAM_UWB_I2C_DOWNLINK_TWR_PTP_RESULT_TAG:
-						updateRangeTableUWB(rxPacket.header.system_uid,
-								connectedNodeInfo[rangesRemaining].system_uid,
-								uwb_i2c_downlink_packet.response.twr_ptp_result.range_mm,
-								0);
+					break;
+				case BEECAM_UWB_I2C_DOWNLINK_TWR_PTP_RESULT_TAG:
+					updateRangeTableUWB(rxPacket.header.system_uid,
+							connectedNodeInfo[rangesRemaining].system_uid,
+							uwb_i2c_downlink_packet.response.twr_ptp_result.range_mm,
+							0);
 
-						if(rangesRemaining > 0){
-							fileWriteSyncUWB.msgTime = getEpoch();
-							fileWriteSyncUWB.msgLength = sizeof(beecam_uwb_i2c_downlink_ptp_result_t);
-							fileWriteSyncUWB.msgType = UWB_TWR_MSG;
-							memcpy(fileWriteSyncUWB.data, &uwb_i2c_downlink_packet.response.twr_ptp_result, fileWriteSyncUWB.msgLength);
-							osMessageQueuePut(fileWriteQueueId, &fileWriteSyncUWB, 0, 0);
+					if (rangesRemaining > 0) {
+						fileWriteSyncUWB.msgTime = getEpoch_ms();
+						fileWriteSyncUWB.msgLength =
+								sizeof(beecam_uwb_i2c_downlink_ptp_result_t);
+						fileWriteSyncUWB.msgType = UWB_TWR_MSG;
+						memcpy(fileWriteSyncUWB.data,
+								&uwb_i2c_downlink_packet.response.twr_ptp_result,
+								fileWriteSyncUWB.msgLength);
+						osMessageQueuePut(fileWriteQueueId, &fileWriteSyncUWB,
+								0, 0);
 
-							rangesRemaining--;
-							if(rangesRemaining != 0) flags |= UWB_START_RANGING;
+						rangesRemaining--;
+						if (rangesRemaining != 0)
+							flags |= UWB_START_RANGING;
+					}
+					break;
+				case BEECAM_UWB_I2C_DOWNLINK_INFO_TAG:
+					fileWriteSyncUWB.msgTime = getEpoch_ms();
+					fileWriteSyncUWB.msgLength =
+							sizeof(beecam_uwb_i2c_device_info_t);
+					fileWriteSyncUWB.msgType = UWB_INFO_MSG;
+					memcpy(fileWriteSyncUWB.data,
+							&uwb_i2c_downlink_packet.response.info,
+							fileWriteSyncUWB.msgLength);
+					osMessageQueuePut(fileWriteQueueId, &fileWriteSyncUWB, 0,
+							0);
+
+					memcpy(&local_uwbInfo,
+							&uwb_i2c_downlink_packet.response.info,
+							sizeof(local_uwbInfo));
+
+					if (uwb_i2c_downlink_packet.response.info.has_uwb) {
+						if (uwb_i2c_downlink_packet.response.info.uwb.has_address) {
+							sendUWB_InfoToNodes(
+									(peer_address_t*) &uwb_i2c_downlink_packet.response.info.uwb.address);
 						}
-						break;
-					case BEECAM_UWB_I2C_DOWNLINK_INFO_TAG:
-						fileWriteSyncUWB.msgTime = getEpoch();
-						fileWriteSyncUWB.msgLength = sizeof(beecam_uwb_i2c_device_info_t);
-						fileWriteSyncUWB.msgType = UWB_INFO_MSG;
-						memcpy(fileWriteSyncUWB.data, &uwb_i2c_downlink_packet.response.info, fileWriteSyncUWB.msgLength);
-						osMessageQueuePut(fileWriteQueueId, &fileWriteSyncUWB, 0, 0);
-
-						memcpy(&local_uwbInfo,&uwb_i2c_downlink_packet.response.info,sizeof(local_uwbInfo));
-
-						if(uwb_i2c_downlink_packet.response.info.has_uwb){
-							if(uwb_i2c_downlink_packet.response.info.uwb.has_address){
-								sendUWB_InfoToNodes((peer_address_t*) &uwb_i2c_downlink_packet.response.info.uwb.address);
-							}
-						}
-						break;
-					case BEECAM_UWB_I2C_DOWNLINK_MULTI_PTP_NORMAL_TAG:
+					}
+					break;
+				case BEECAM_UWB_I2C_DOWNLINK_MULTI_PTP_NORMAL_TAG:
 //						updateRangeTableUWB(rxPacket.header.system_uid,
 //								connectedNodeInfo[rangesRemaining].system_uid,
 //								uwb_i2c_downlink_packet.response.twr_ptp_result.range_mm,
 //								0);
-						//todo: save multi_pt_data
-						if(rangesRemaining > 0){
-							fileWriteSyncUWB.msgTime = getEpoch();
-							fileWriteSyncUWB.msgLength = sizeof(uwb_range_packet_multi_t);
-							fileWriteSyncUWB.msgType = UWB_MULTI_P2P_MSG;
-							memcpy(&range_packet_multi.normal_distribution, &uwb_i2c_downlink_packet.response.multi_ptp_normal, sizeof(beecam_uwb_i2c_downlink_normal_distribution_t));
-							range_packet_multi.system_uid = connectedNodeInfo[rangesRemaining-1].system_uid;
+					//todo: save multi_pt_data
+					if (rangesRemaining > 0) {
+						fileWriteSyncUWB.msgTime = getEpoch_ms();
+						fileWriteSyncUWB.msgLength =
+								sizeof(uwb_range_packet_multi_t);
+						fileWriteSyncUWB.msgType = UWB_MULTI_P2P_MSG;
+						memcpy(&range_packet_multi.normal_distribution,
+								&uwb_i2c_downlink_packet.response.multi_ptp_normal,
+								sizeof(beecam_uwb_i2c_downlink_normal_distribution_t));
+						range_packet_multi.system_uid =
+								connectedNodeInfo[rangesRemaining - 1].system_uid;
 
-							memcpy(fileWriteSyncUWB.data, &range_packet_multi, fileWriteSyncUWB.msgLength);
-							osMessageQueuePut(fileWriteQueueId, &fileWriteSyncUWB, 0, 0);
+						memcpy(fileWriteSyncUWB.data, &range_packet_multi,
+								fileWriteSyncUWB.msgLength);
+						osMessageQueuePut(fileWriteQueueId, &fileWriteSyncUWB,
+								0, 0);
 
-							rangesRemaining--;
-							infoPacket.payload.system_info_packet.discovered_devices[rangesRemaining].uid = connectedNodeInfo[rangesRemaining].system_uid;
-							infoPacket.payload.system_info_packet.discovered_devices[rangesRemaining].range = uwb_i2c_downlink_packet.response.multi_ptp_normal.mean;
-							if(rangesRemaining != 0) flags |= UWB_START_RANGING;
-							else{
-								/* Create a stream that will write to our buffer. */
-								pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-								/* Now we are ready to encode the message! */
-								uint8_t status = pb_encode(&stream, PACKET_FIELDS, &infoPacket);
-								PackedPayload.pPayload = (uint8_t*) buffer;
-								PackedPayload.Length = stream.bytes_written;
-							    if(status) DTS_STM_UpdateChar(BUZZCAM_INFO_CHAR_UUID,(uint8_t*) &PackedPayload);
-							}
+						rangesRemaining--;
+						infoPacket.payload.system_info_packet.discovered_devices[rangesRemaining].uid =
+								connectedNodeInfo[rangesRemaining].system_uid;
+						infoPacket.payload.system_info_packet.discovered_devices[rangesRemaining].range =
+								uwb_i2c_downlink_packet.response.multi_ptp_normal.mean;
+						if (rangesRemaining != 0)
+							flags |= UWB_START_RANGING;
+						else {
+							/* Create a stream that will write to our buffer. */
+							pb_ostream_t stream = pb_ostream_from_buffer(buffer,
+									sizeof(buffer));
+							/* Now we are ready to encode the message! */
+							uint8_t status = pb_encode(&stream, PACKET_FIELDS,
+									&infoPacket);
+							PackedPayload.pPayload = (uint8_t*) buffer;
+							PackedPayload.Length = stream.bytes_written;
+							if (status)
+								DTS_STM_UpdateChar(BUZZCAM_INFO_CHAR_UUID,
+										(uint8_t*) &PackedPayload);
 						}
-						break;
-					case BEECAM_UWB_I2C_DOWNLINK_MULTI_PTP_FULL_TAG:
-						break;
-					case BEECAM_UWB_I2C_DOWNLINK_SUCCESS_TAG:
-						break;
-					default:
-						break;
+					}
+					break;
+				case BEECAM_UWB_I2C_DOWNLINK_MULTI_PTP_FULL_TAG:
+					break;
+				case BEECAM_UWB_I2C_DOWNLINK_SUCCESS_TAG:
+					break;
+				default:
+					break;
 				}
-			}else{
+			} else {
 				Error_Handler();
 			}
 		}
 
-		if((flags & UWB_START_RANGING) == UWB_START_RANGING){
+		if ((flags & UWB_START_RANGING) == UWB_START_RANGING) {
 
-			if(uwb_ready){
-				if(rangesRemaining == 0){
+			if (uwb_ready) {
+				if (rangesRemaining == 0) {
 					/* calculate number of connected nodes */
-					rangesRemaining = totalConnectedNodes((uwb_info_t*) &connectedNodeInfo);
-					infoPacket.payload.system_info_packet.discovered_devices_count = rangesRemaining;
-					if(rangesRemaining == 0) continue; // no ranges to do
+					rangesRemaining = totalConnectedNodes(
+							(uwb_info_t*) &connectedNodeInfo);
+					infoPacket.payload.system_info_packet.discovered_devices_count =
+							rangesRemaining;
+					if (rangesRemaining == 0)
+						continue; // no ranges to do
 				}
 
 				/* request status since unknown if UWB is activated */
@@ -2481,58 +2540,69 @@ void uwbMessageTask(void* argument){
 //				pb_ostream_t stream = pb_ostream_from_buffer(uwb_buffer, sizeof(uwb_buffer));
 //				status = pb_encode(&stream, BEECAM_UWB_I2C_UPLINK_FIELDS, &uwb_i2c_uplink_packet);
 //				sendDataToUWB(uwb_buffer, stream.bytes_written);
-
-				uwb_i2c_uplink_packet.which_command = BEECAM_UWB_I2C_UPLINK_MULTI_PTP_TAG;
-				uwb_i2c_uplink_packet.command.multi_ptp.full_result=false;
-				uwb_i2c_uplink_packet.command.multi_ptp.has_peer=true;
-				uwb_i2c_uplink_packet.command.multi_ptp.n=256;
-				memcpy(&uwb_i2c_uplink_packet.command.multi_ptp.peer, &connectedNodeInfo[rangesRemaining-1].uwb_addr, sizeof(uwb_i2c_uplink_packet.command.twr_ptp));
-				pb_ostream_t stream = pb_ostream_from_buffer(uwb_buffer, sizeof(uwb_buffer));
-				status = pb_encode(&stream, BEECAM_UWB_I2C_UPLINK_FIELDS, &uwb_i2c_uplink_packet);
+				uwb_i2c_uplink_packet.which_command =
+						BEECAM_UWB_I2C_UPLINK_MULTI_PTP_TAG;
+				uwb_i2c_uplink_packet.command.multi_ptp.full_result = false;
+				uwb_i2c_uplink_packet.command.multi_ptp.has_peer = true;
+				uwb_i2c_uplink_packet.command.multi_ptp.n = 256;
+				memcpy(&uwb_i2c_uplink_packet.command.multi_ptp.peer,
+						&connectedNodeInfo[rangesRemaining - 1].uwb_addr,
+						sizeof(uwb_i2c_uplink_packet.command.twr_ptp));
+				pb_ostream_t stream = pb_ostream_from_buffer(uwb_buffer,
+						sizeof(uwb_buffer));
+				status = pb_encode(&stream, BEECAM_UWB_I2C_UPLINK_FIELDS,
+						&uwb_i2c_uplink_packet);
 				sendDataToUWB(uwb_buffer, stream.bytes_written);
-			}else{
+			} else {
 				uwb_ranging_requested = 1;
 				/* request status since unknown if UWB is activated */
-				uwb_i2c_uplink_packet.which_command = BEECAM_UWB_I2C_UPLINK_REQUEST_STATUS_TAG;
-				pb_ostream_t stream = pb_ostream_from_buffer(uwb_buffer, sizeof(uwb_buffer));
-				status = pb_encode(&stream, BEECAM_UWB_I2C_UPLINK_FIELDS, &uwb_i2c_uplink_packet);
+				uwb_i2c_uplink_packet.which_command =
+						BEECAM_UWB_I2C_UPLINK_REQUEST_STATUS_TAG;
+				pb_ostream_t stream = pb_ostream_from_buffer(uwb_buffer,
+						sizeof(uwb_buffer));
+				status = pb_encode(&stream, BEECAM_UWB_I2C_UPLINK_FIELDS,
+						&uwb_i2c_uplink_packet);
 				sendDataToUWB(uwb_buffer, stream.bytes_written);
 			}
 		}
 
-
-
-		if((flags & UWB_GET_INFO) == UWB_GET_INFO){
-			if(uwb_ready){
+		if ((flags & UWB_GET_INFO) == UWB_GET_INFO) {
+			if (uwb_ready) {
 				/* request status since unknown if UWB is activated */
-				uwb_i2c_uplink_packet.which_command = BEECAM_UWB_I2C_UPLINK_GET_DEVICE_INFO_TAG;
-				pb_ostream_t stream = pb_ostream_from_buffer(uwb_buffer, sizeof(uwb_buffer));
-				status = pb_encode(&stream, BEECAM_UWB_I2C_UPLINK_FIELDS, &uwb_i2c_uplink_packet);
+				uwb_i2c_uplink_packet.which_command =
+						BEECAM_UWB_I2C_UPLINK_GET_DEVICE_INFO_TAG;
+				pb_ostream_t stream = pb_ostream_from_buffer(uwb_buffer,
+						sizeof(uwb_buffer));
+				status = pb_encode(&stream, BEECAM_UWB_I2C_UPLINK_FIELDS,
+						&uwb_i2c_uplink_packet);
 				sendDataToUWB(uwb_buffer, stream.bytes_written);
 //				hal_status = HAL_I2C_Mem_Write(&hi2c1, UWB_I2C_ADDR, UWB_I2C_GENERAL_MEM_ADDR, 1, uwb_buffer, stream.bytes_written, 100);
-			}else{
+			} else {
 				uwb_info_requested = 1;
 				/* request status since unknown if UWB is activated */
-				uwb_i2c_uplink_packet.which_command = BEECAM_UWB_I2C_UPLINK_REQUEST_STATUS_TAG;
-				pb_ostream_t stream = pb_ostream_from_buffer(uwb_buffer, sizeof(uwb_buffer));
-				status = pb_encode(&stream, BEECAM_UWB_I2C_UPLINK_FIELDS, &uwb_i2c_uplink_packet);
+				uwb_i2c_uplink_packet.which_command =
+						BEECAM_UWB_I2C_UPLINK_REQUEST_STATUS_TAG;
+				pb_ostream_t stream = pb_ostream_from_buffer(uwb_buffer,
+						sizeof(uwb_buffer));
+				status = pb_encode(&stream, BEECAM_UWB_I2C_UPLINK_FIELDS,
+						&uwb_i2c_uplink_packet);
 				sendDataToUWB(uwb_buffer, stream.bytes_written);
 //				hal_status = HAL_I2C_Mem_Write(&hi2c1, UWB_I2C_ADDR, UWB_I2C_GENERAL_MEM_ADDR, 1, uwb_buffer, stream.bytes_written, 100);
 			}
 		}
-
 
 	}
 }
 
-void wakeupGPS(){
-  HAL_GPIO_WritePin(GPS_INT_GPIO_Port, GPS_INT_Pin, GPIO_PIN_SET);
-  osDelay(1);
-  HAL_GPIO_WritePin(GPS_INT_GPIO_Port, GPS_INT_Pin, GPIO_PIN_RESET);
+void wakeupGPS() {
+	HAL_GPIO_WritePin(GPS_INT_GPIO_Port, GPS_INT_Pin, GPIO_PIN_SET);
+	osDelay(1);
+	HAL_GPIO_WritePin(GPS_INT_GPIO_Port, GPS_INT_Pin, GPIO_PIN_RESET);
 }
 
-void turnOnGPSandInit(){
-	if(Is_GPS_Enabled()) Control_GPS_Power(true);
+void turnOnGPSandInit() {
+	if (!Is_GPS_Enabled())
+		Control_GPS_Power(true);
 
 	osDelay(100); //startup delay (todo: need to tune this)
 
@@ -2548,72 +2618,71 @@ void turnOnGPSandInit(){
 
 	myGNSS.setNavigationFrequency(4);  //Produce four solutions per second
 	myGNSS.setAutoPVT(true); //Tell the GPS to "send" each solution
-	myGNSS.saveConfiguration();        //Save the current settings to flash and BBR
+	myGNSS.saveConfiguration();     //Save the current settings to flash and BBR
 
 	osMutexRelease(messageI2C1_LockHandle);
 }
 
-bool setTimepulseGPS(){
+bool setTimepulseGPS() {
 	bool status;
 	osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
-	  // The Configuration Interface supports two Time Pulse pins TP1 and TP2.
-	  // Here we are configuring TP1, but identical keys exist for TP2 (if your module supports it). See CFG-TP in u-blox_config_keys.h for more details.
+	// The Configuration Interface supports two Time Pulse pins TP1 and TP2.
+	// Here we are configuring TP1, but identical keys exist for TP2 (if your module supports it). See CFG-TP in u-blox_config_keys.h for more details.
 
-	  // We can configure the time pulse pin to produce a defined frequency or period
-	  // Here is how to set the period:
+	// We can configure the time pulse pin to produce a defined frequency or period
+	// Here is how to set the period:
 
-	  myGNSS.newCfgValset(VAL_LAYER_RAM); // Create a new Configuration Interface VALSET message. Apply the changes in RAM only (not BBR).
+	myGNSS.newCfgValset(VAL_LAYER_RAM); // Create a new Configuration Interface VALSET message. Apply the changes in RAM only (not BBR).
 
-	  // Let's say that we want our 1 pulse every 30 seconds to be as accurate as possible. So, let's tell the module
-	  // to generate no signal while it is _locking_ to GNSS time. We want the signal to start only when the module is
-	  // _locked_ to GNSS time.
-	  myGNSS.addCfgValset(UBLOX_CFG_TP_PERIOD_TP1, 0); // Set the period to zero
-	  myGNSS.addCfgValset(UBLOX_CFG_TP_LEN_TP1, 0); // Set the pulse length to zero
+	// Let's say that we want our 1 pulse every 30 seconds to be as accurate as possible. So, let's tell the module
+	// to generate no signal while it is _locking_ to GNSS time. We want the signal to start only when the module is
+	// _locked_ to GNSS time.
+	myGNSS.addCfgValset(UBLOX_CFG_TP_PERIOD_TP1, 0); // Set the period to zero
+	myGNSS.addCfgValset(UBLOX_CFG_TP_LEN_TP1, 0); // Set the pulse length to zero
 
-	  // When the module is _locked_ to GNSS time, make it generate a 1 second pulse every 30 seconds
-	  myGNSS.addCfgValset(UBLOX_CFG_TP_PERIOD_LOCK_TP1, 5000000); // Set the period to 5,000,000 us
-	  myGNSS.addCfgValset(UBLOX_CFG_TP_LEN_LOCK_TP1, 1000000); // Set the pulse length to 1,000,000 us
+	// When the module is _locked_ to GNSS time, make it generate a 1 second pulse every 30 seconds
+	myGNSS.addCfgValset(UBLOX_CFG_TP_PERIOD_LOCK_TP1, 5000000); // Set the period to 5,000,000 us
+	myGNSS.addCfgValset(UBLOX_CFG_TP_LEN_LOCK_TP1, 1000000); // Set the pulse length to 1,000,000 us
 
-	  myGNSS.addCfgValset(UBLOX_CFG_TP_TP1_ENA, 1); // Make sure the enable flag is set to enable the time pulse. (Set to 0 to disable.)
-	  myGNSS.addCfgValset(UBLOX_CFG_TP_USE_LOCKED_TP1, 1); // Tell the module to use PERIOD while locking and PERIOD_LOCK when locked to GNSS time
-	  myGNSS.addCfgValset(UBLOX_CFG_TP_PULSE_DEF, 0); // Tell the module that we want to set the period (not the frequency). PERIOD = 0. FREQ = 1.
-	  myGNSS.addCfgValset(UBLOX_CFG_TP_PULSE_LENGTH_DEF, 1); // Tell the module to set the pulse length (not the pulse ratio / duty). RATIO = 0. LENGTH = 1.
-	  myGNSS.addCfgValset(UBLOX_CFG_TP_POL_TP1, 1); // Tell the module that we want the rising edge at the top of second. Falling Edge = 0. Rising Edge = 1.
+	myGNSS.addCfgValset(UBLOX_CFG_TP_TP1_ENA, 1); // Make sure the enable flag is set to enable the time pulse. (Set to 0 to disable.)
+	myGNSS.addCfgValset(UBLOX_CFG_TP_USE_LOCKED_TP1, 1); // Tell the module to use PERIOD while locking and PERIOD_LOCK when locked to GNSS time
+	myGNSS.addCfgValset(UBLOX_CFG_TP_PULSE_DEF, 0); // Tell the module that we want to set the period (not the frequency). PERIOD = 0. FREQ = 1.
+	myGNSS.addCfgValset(UBLOX_CFG_TP_PULSE_LENGTH_DEF, 1); // Tell the module to set the pulse length (not the pulse ratio / duty). RATIO = 0. LENGTH = 1.
+	myGNSS.addCfgValset(UBLOX_CFG_TP_POL_TP1, 1); // Tell the module that we want the rising edge at the top of second. Falling Edge = 0. Rising Edge = 1.
 
-	  // Now set the time pulse parameters
-	  if (myGNSS.sendCfgValset() == false)
-	  {
-		 status = false;
-	  }
-	  status = true;
-	  osMutexRelease(messageI2C1_LockHandle);
-	  return status;
+	// Now set the time pulse parameters
+	if (myGNSS.sendCfgValset() == false) {
+		status = false;
+	}
+	status = true;
+	osMutexRelease(messageI2C1_LockHandle);
+	return status;
 }
 
-void disableTimepulseGPS(){
+void disableTimepulseGPS() {
 	osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
 	myGNSS.newCfgValset(VAL_LAYER_RAM); // Create a new Configuration Interface VALSET message. Apply the changes in RAM only (not BBR).
 	myGNSS.addCfgValset(UBLOX_CFG_TP_TP1_ENA, 1); // Make sure the enable flag is set to enable the time pulse. (Set to 0 to disable.)
 
 	// Now set the time pulse parameters
-	if (myGNSS.sendCfgValset(1000) == false)
-	{
-	  Error_Handler();
+	if (myGNSS.sendCfgValset(1000) == false) {
+		Error_Handler();
 	}
 	osMutexRelease(messageI2C1_LockHandle);
 }
 
-bool standbyGPSMode(){
+bool standbyGPSMode() {
 	osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
 //	bool status = myGNSS.powerOff(345600000);
-	bool status = myGNSS.powerOffWithInterrupt(345600000, VAL_RXM_PMREQ_WAKEUPSOURCE_EXTINT0,false, 100);
+	bool status = myGNSS.powerOffWithInterrupt(345600000,
+			VAL_RXM_PMREQ_WAKEUPSOURCE_EXTINT0, false, 100);
 //	bool status = true;
 	osMutexRelease(messageI2C1_LockHandle);
 	return status;
 //	return  // 4 day default but querying will immediately wakeup system
 }
 
-GPSFixStatus getGPSFix(GPSFix *currentFix){
+GPSFixStatus getGPSFix(GPSFix *currentFix) {
 	uint32_t start_ms = HAL_GetTick();
 //	while( (HAL_GetTick() - start_ms) < timeout_ms ){
 //		  if (myGNSS.getPVT(timeout_ms) == true)
@@ -2633,47 +2702,53 @@ GPSFixStatus getGPSFix(GPSFix *currentFix){
 //			  break;
 //			}
 //	  }
+#if SIMULATE_GPS == 1
+	osDelay(2000);
+	currentFix->gps_epoch = 1740072378 + HAL_GetTick() / 1000;
+	currentFix->altitude = 98;
+	currentFix->longitude = -710874368;
+	currentFix->latitude = 423603968;
 
-	if (myGNSS.getPVT() && (myGNSS.getInvalidLlh() == false)){
-	//		if (myGNSS.getPVT(250)){
-	//		if( myGNSS.getPVT()){
+	return GPS_FIX_SUCCESS;
+#endif
 
-	//			if(myGNSS.getFixType() != 0){
-	//				Error_Handler();
-	//			}
-	//			currentFix->gps_epoch = myGNSS.getUnixEpoch();
-	//			fixType = myGNSS.getFixType();
-	//			// if fix is 3D, lat, lon, and altitude are available
-	//		    if(fixType == 3) {  // 3D fi
-			    	currentFix->latitude = myGNSS.getLatitude();
+	if (myGNSS.getPVT() && (myGNSS.getInvalidLlh() == false)) {
+		//		if (myGNSS.getPVT(250)){
+		//		if( myGNSS.getPVT()){
 
-			    	currentFix->longitude = myGNSS.getLongitude();
+		//			if(myGNSS.getFixType() != 0){
+		//				Error_Handler();
+		//			}
+		//			currentFix->gps_epoch = myGNSS.getUnixEpoch();
+		//			fixType = myGNSS.getFixType();
+		//			// if fix is 3D, lat, lon, and altitude are available
+		//		    if(fixType == 3) {  // 3D fi
+		currentFix->latitude = myGNSS.getLatitude();
 
-			    	if(currentFix->longitude == currentFix->latitude){
-			    		return GPS_NO_FIX;
-			    	}
+		currentFix->longitude = myGNSS.getLongitude();
 
-					currentFix->gps_epoch = myGNSS.getUnixEpoch();
+		if (currentFix->longitude == currentFix->latitude) {
+			return GPS_NO_FIX;
+		}
 
-			    	currentFix->altitude = myGNSS.getAltitudeMSL(); // Altitude above Mean Sea Level
+		currentFix->gps_epoch = myGNSS.getUnixEpoch();
 
-			    	currentFix->fixType = myGNSS.getFixType();
+		currentFix->altitude = myGNSS.getAltitudeMSL(); // Altitude above Mean Sea Level
 
-			    	return GPS_FIX_SUCCESS;
+		currentFix->fixType = myGNSS.getFixType();
 
+		return GPS_FIX_SUCCESS;
 
-	//		else if(fixType != 0){
-	//		    	return GPS_FIX_TIMEOUT;
-	//		    }
+		//		else if(fixType != 0){
+		//		    	return GPS_FIX_TIMEOUT;
+		//		    }
 
-			}
+	}
 
 	return GPS_FIX_TIMEOUT;
 }
 
-
-
-void writeDefaultConfig(void){
+void writeDefaultConfig(void) {
 
 	configPacket.has_header = true;
 	configPacket.header.epoch = 0;
@@ -2682,21 +2757,29 @@ void writeDefaultConfig(void){
 
 	configPacket.which_payload = PACKET_CONFIG_PACKET_TAG;
 
-	configPacket.payload.config_packet.enable_recording=true;
+	configPacket.payload.config_packet.enable_recording = true;
 
-	configPacket.payload.config_packet.has_audio_config=true;
-	configPacket.payload.config_packet.audio_config.bit_resolution=MIC_BIT_RESOLUTION_BIT_RES_16;
-	configPacket.payload.config_packet.audio_config.channel_1=true;
-	configPacket.payload.config_packet.audio_config.channel_2=true;
-	configPacket.payload.config_packet.audio_config.mic_gain = MIC_GAIN_GAIN_15_DB;
-	configPacket.payload.config_packet.audio_config.has_audio_compression=true;
-	configPacket.payload.config_packet.audio_config.audio_compression.compression_factor=0;
-	configPacket.payload.config_packet.audio_config.audio_compression.compression_type=COMPRESSION_TYPE_FLAC;
-	configPacket.payload.config_packet.audio_config.audio_compression.enabled=false;
-	configPacket.payload.config_packet.audio_config.estimated_record_time=12345678; //placeholder
-	configPacket.payload.config_packet.audio_config.sample_freq=MIC_SAMPLE_FREQ_SAMPLE_RATE_48000;
-	configPacket.payload.config_packet.audio_config.free_run_mode=false;
-	configPacket.payload.config_packet.audio_config.chirp_enable=false;
+	configPacket.payload.config_packet.has_audio_config = true;
+	configPacket.payload.config_packet.audio_config.bit_resolution =
+			MIC_BIT_RESOLUTION_BIT_RES_16;
+	configPacket.payload.config_packet.audio_config.channel_1 = true;
+	configPacket.payload.config_packet.audio_config.channel_2 = true;
+	configPacket.payload.config_packet.audio_config.mic_gain =
+			MIC_GAIN_GAIN_15_DB;
+	configPacket.payload.config_packet.audio_config.has_audio_compression =
+			true;
+	configPacket.payload.config_packet.audio_config.audio_compression.compression_factor =
+			0;
+	configPacket.payload.config_packet.audio_config.audio_compression.compression_type =
+			COMPRESSION_TYPE_FLAC;
+	configPacket.payload.config_packet.audio_config.audio_compression.enabled =
+			false;
+	configPacket.payload.config_packet.audio_config.estimated_record_time =
+			12345678; //placeholder
+	configPacket.payload.config_packet.audio_config.sample_freq =
+			MIC_SAMPLE_FREQ_SAMPLE_RATE_48000;
+	configPacket.payload.config_packet.audio_config.free_run_mode = false;
+	configPacket.payload.config_packet.audio_config.chirp_enable = false;
 
 	configPacket.payload.config_packet.enable_led = true;
 
@@ -2705,12 +2788,14 @@ void writeDefaultConfig(void){
 	//	configPacket.payload.config_packet.camera_control.pair_with_nearby_cameras=false;
 	//	configPacket.payload.config_packet.camera_control.wakeup_cameras=false;
 
-	configPacket.payload.config_packet.has_low_power_config=true;
-	configPacket.payload.config_packet.low_power_config.low_power_mode=false;
+	configPacket.payload.config_packet.has_low_power_config = true;
+	configPacket.payload.config_packet.low_power_config.low_power_mode = false;
 
-	configPacket.payload.config_packet.has_network_state=true;
-	configPacket.payload.config_packet.network_state.discovered_device_uid_count=0;
-	configPacket.payload.config_packet.network_state.number_of_discovered_devices=configPacket.payload.config_packet.network_state.discovered_device_uid_count;
+	configPacket.payload.config_packet.has_network_state = true;
+	configPacket.payload.config_packet.network_state.discovered_device_uid_count =
+			0;
+	configPacket.payload.config_packet.network_state.number_of_discovered_devices =
+			configPacket.payload.config_packet.network_state.discovered_device_uid_count;
 	//	configPacket.payload.config_packet.network_state.discovered_device_uid[0].addr;
 	//	configPacket.payload.config_packet.network_state.force_rediscovery=false;
 	configPacket.payload.config_packet.network_state.channel = 20;
@@ -2724,12 +2809,10 @@ void writeDefaultConfig(void){
 	configPacket.payload.config_packet.network_state.master_node = false;
 #endif
 
-
-
-	configPacket.payload.config_packet.has_sensor_config=true;
-	configPacket.payload.config_packet.sensor_config.enable_gas=true;
-	configPacket.payload.config_packet.sensor_config.enable_humidity=true;
-	configPacket.payload.config_packet.sensor_config.enable_temperature=true;
+	configPacket.payload.config_packet.has_sensor_config = true;
+	configPacket.payload.config_packet.sensor_config.enable_gas = true;
+	configPacket.payload.config_packet.sensor_config.enable_humidity = true;
+	configPacket.payload.config_packet.sensor_config.enable_temperature = true;
 	//	configPacket.payload.config_packet.sensor_config.sample_period_ms=1000;
 
 	configPacket.payload.config_packet.schedule_config_count = 0;
@@ -2756,17 +2839,22 @@ void writeDefaultConfig(void){
 
 	infoPacket.which_payload = PACKET_SYSTEM_INFO_PACKET_TAG;
 	infoPacket.payload.system_info_packet.has_battery_state = true;
-	infoPacket.payload.system_info_packet.battery_state.charging=false;
-	infoPacket.payload.system_info_packet.battery_state.has_percentage=true;
-	infoPacket.payload.system_info_packet.battery_state.percentage=0;
-	infoPacket.payload.system_info_packet.battery_state.voltage=0;
+	infoPacket.payload.system_info_packet.battery_state.charging = false;
+	infoPacket.payload.system_info_packet.battery_state.has_percentage = true;
+	infoPacket.payload.system_info_packet.battery_state.percentage = 0;
+	infoPacket.payload.system_info_packet.battery_state.voltage = 0;
 
 	infoPacket.payload.system_info_packet.discovered_devices_count = 0;
-	infoPacket.payload.system_info_packet.discovered_devices[0].uid = 0xDEADBEEF;
-	infoPacket.payload.system_info_packet.discovered_devices[1].uid = 0xDEADBEAF;
-	infoPacket.payload.system_info_packet.discovered_devices[2].uid = 0xDEADBEBF;
-	infoPacket.payload.system_info_packet.discovered_devices[3].uid = 0xDEADBECF;
-	infoPacket.payload.system_info_packet.discovered_devices[4].uid = 0xDEADBEDF;
+	infoPacket.payload.system_info_packet.discovered_devices[0].uid =
+			0xDEADBEEF;
+	infoPacket.payload.system_info_packet.discovered_devices[1].uid =
+			0xDEADBEAF;
+	infoPacket.payload.system_info_packet.discovered_devices[2].uid =
+			0xDEADBEBF;
+	infoPacket.payload.system_info_packet.discovered_devices[3].uid =
+			0xDEADBECF;
+	infoPacket.payload.system_info_packet.discovered_devices[4].uid =
+			0xDEADBEDF;
 	infoPacket.payload.system_info_packet.discovered_devices[0].range = 1.0;
 	infoPacket.payload.system_info_packet.discovered_devices[1].range = 2;
 	infoPacket.payload.system_info_packet.discovered_devices[2].range = 3;
@@ -2775,25 +2863,28 @@ void writeDefaultConfig(void){
 
 	infoPacket.payload.system_info_packet.has_mark_state = true;
 	//  infoPacket.payload.system_info_packet.mark_state.beep_enabled=false;
-	infoPacket.payload.system_info_packet.mark_state.mark_number=0;
-	infoPacket.payload.system_info_packet.mark_state.timestamp_unix=0;
+	infoPacket.payload.system_info_packet.mark_state.mark_number = 0;
+	infoPacket.payload.system_info_packet.mark_state.timestamp_unix = 0;
 
 	infoPacket.payload.system_info_packet.has_sdcard_state = true;
-	infoPacket.payload.system_info_packet.sdcard_state.detected=true;
-	infoPacket.payload.system_info_packet.sdcard_state.estimated_remaining_recording_time=1234;
-	infoPacket.payload.system_info_packet.sdcard_state.space_remaining=1234;
+	infoPacket.payload.system_info_packet.sdcard_state.detected = true;
+	infoPacket.payload.system_info_packet.sdcard_state.estimated_remaining_recording_time =
+			1234;
+	infoPacket.payload.system_info_packet.sdcard_state.space_remaining = 1234;
 
 	infoPacket.payload.system_info_packet.has_simple_sensor_reading = true;
-	infoPacket.payload.system_info_packet.simple_sensor_reading.co2=0.0;
-	infoPacket.payload.system_info_packet.simple_sensor_reading.humidity=0.0;
-	infoPacket.payload.system_info_packet.simple_sensor_reading.index=0;
-	infoPacket.payload.system_info_packet.simple_sensor_reading.light_level=0.0;
-	infoPacket.payload.system_info_packet.simple_sensor_reading.temperature=0;
-	infoPacket.payload.system_info_packet.simple_sensor_reading.timestamp_unix=0;
+	infoPacket.payload.system_info_packet.simple_sensor_reading.co2 = 0.0;
+	infoPacket.payload.system_info_packet.simple_sensor_reading.humidity = 0.0;
+	infoPacket.payload.system_info_packet.simple_sensor_reading.index = 0;
+	infoPacket.payload.system_info_packet.simple_sensor_reading.light_level =
+			0.0;
+	infoPacket.payload.system_info_packet.simple_sensor_reading.temperature = 0;
+	infoPacket.payload.system_info_packet.simple_sensor_reading.timestamp_unix =
+			0;
 
 	writeSystemStateToFRAM();
 
-	if(coapSetup){
+	if (coapSetup) {
 		/* update characteristics */
 		tBleStatus ret;
 		/* Create a stream that will write to our buffer. */
@@ -2802,7 +2893,9 @@ void writeDefaultConfig(void){
 		status = pb_encode(&stream, PACKET_FIELDS, &configPacket);
 		PackedPayload.pPayload = (uint8_t*) buffer;
 		PackedPayload.Length = stream.bytes_written;
-		if(status) ret = DTS_STM_UpdateChar(BUZZCAM_CONFIG_CHAR_UUID, (uint8_t*)&PackedPayload);
+		if (status)
+			ret = DTS_STM_UpdateChar(BUZZCAM_CONFIG_CHAR_UUID,
+					(uint8_t*) &PackedPayload);
 
 		/* Create a stream that will write to our buffer. */
 		stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
@@ -2810,42 +2903,41 @@ void writeDefaultConfig(void){
 		status = pb_encode(&stream, PACKET_FIELDS, &infoPacket);
 		PackedPayload.pPayload = (uint8_t*) buffer;
 		PackedPayload.Length = stream.bytes_written;
-		if(status) ret = DTS_STM_UpdateChar(BUZZCAM_INFO_CHAR_UUID, (uint8_t*)&PackedPayload);
+		if (status)
+			ret = DTS_STM_UpdateChar(BUZZCAM_INFO_CHAR_UUID,
+					(uint8_t*) &PackedPayload);
 	}
 
 }
 
-
-
-void triggerBatteryMonitorSample(void *argument){
-	osThreadFlagsSet (batteryMonitorTaskId, UPDATE_EVENT);
+void triggerBatteryMonitorSample(void *argument) {
+	osThreadFlagsSet(batteryMonitorTaskId, UPDATE_EVENT);
 }
 
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
 	if (hadc->Instance == ADC1) {
-		osThreadFlagsSet (batteryMonitorTaskId, COMPLETE_EVENT);
+		osThreadFlagsSet(batteryMonitorTaskId, COMPLETE_EVENT);
 	}
 }
 
-void exit_audio(void){
+void exit_audio(void) {
 	disableAudioPeripherals();
 	unmount_sd_card();
 }
 
-void unmount_sd_card(void){
+void unmount_sd_card(void) {
 	f_mount(NULL, "", 1);
 }
 
 void delay_nop(uint32_t count) {
-    while (count--) {
-        __NOP(); // Executes the NOP assembly instruction
-    }
+	while (count--) {
+		__NOP(); // Executes the NOP assembly instruction
+	}
 }
 
 //static FIL configFile;
-static void save_config(char* folder_name){
-	char file_name[30] = {0};
-
+static void save_config(char *folder_name) {
+	char file_name[30] = { 0 };
 
 	strcpy(file_name, folder_name);
 	strcat(file_name, "/config.csv");
@@ -2853,92 +2945,120 @@ static void save_config(char* folder_name){
 	FIL configFile;
 
 	char str[50];
-	FRESULT res = f_open(&configFile, file_name, FA_CREATE_ALWAYS | FA_WRITE | FA_OPEN_APPEND);
-	if(res == FR_OK){
+	FRESULT res = f_open(&configFile, file_name,
+			FA_CREATE_ALWAYS | FA_WRITE | FA_OPEN_APPEND);
+	if (res == FR_OK) {
 
 		snprintf(str, sizeof(str), "uid,%lu\n", LL_FLASH_GetUDN());
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
 		snprintf(str, sizeof(str), "bit res,");
-		strcat(str,getBitResName(configPacket.payload.config_packet.audio_config.bit_resolution));
-		strcat(str,"\n");
+		strcat(str,
+				getBitResName(
+						configPacket.payload.config_packet.audio_config.bit_resolution));
+		strcat(str, "\n");
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
 		snprintf(str, sizeof(str), "ch1,");
-		strcat(str,getBoolName(configPacket.payload.config_packet.audio_config.channel_1));
-		strcat(str,"\n");
+		strcat(str,
+				getBoolName(
+						configPacket.payload.config_packet.audio_config.channel_1));
+		strcat(str, "\n");
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
 		snprintf(str, sizeof(str), "ch2,");
-		strcat(str,getBoolName(configPacket.payload.config_packet.audio_config.channel_2));
-		strcat(str,"\n");
+		strcat(str,
+				getBoolName(
+						configPacket.payload.config_packet.audio_config.channel_2));
+		strcat(str, "\n");
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
 		snprintf(str, sizeof(str), "mic gain,");
-		strcat(str,getMicGainName(configPacket.payload.config_packet.audio_config.mic_gain));
-		strcat(str,"\n");
+		strcat(str,
+				getMicGainName(
+						configPacket.payload.config_packet.audio_config.mic_gain));
+		strcat(str, "\n");
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
-		snprintf(str, sizeof(str), "compression factor,%lu\n", configPacket.payload.config_packet.audio_config.audio_compression.compression_factor);
+		snprintf(str, sizeof(str), "compression factor,%lu\n",
+				configPacket.payload.config_packet.audio_config.audio_compression.compression_factor);
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
 		snprintf(str, sizeof(str), "compression type,");
-		strcat(str,getCompressionName(configPacket.payload.config_packet.audio_config.audio_compression.compression_type));
-		strcat(str,"\n");
+		strcat(str,
+				getCompressionName(
+						configPacket.payload.config_packet.audio_config.audio_compression.compression_type));
+		strcat(str, "\n");
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
 		snprintf(str, sizeof(str), "en_compression,");
-		strcat(str,getBoolName(configPacket.payload.config_packet.audio_config.audio_compression.enabled));
-		strcat(str,"\n");
+		strcat(str,
+				getBoolName(
+						configPacket.payload.config_packet.audio_config.audio_compression.enabled));
+		strcat(str, "\n");
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
 		snprintf(str, sizeof(str), "sample freq,");
-		strcat(str,getSampleFreqName(configPacket.payload.config_packet.audio_config.sample_freq));
-		strcat(str,"\n");
+		strcat(str,
+				getSampleFreqName(
+						configPacket.payload.config_packet.audio_config.sample_freq));
+		strcat(str, "\n");
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
 		snprintf(str, sizeof(str), "free run mode,");
-		strcat(str,getBoolName(configPacket.payload.config_packet.audio_config.free_run_mode));
-		strcat(str,"\n");
+		strcat(str,
+				getBoolName(
+						configPacket.payload.config_packet.audio_config.free_run_mode));
+		strcat(str, "\n");
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
 		snprintf(str, sizeof(str), "en_chirp,");
-		strcat(str,getBoolName(configPacket.payload.config_packet.audio_config.chirp_enable));
-		strcat(str,"\n");
+		strcat(str,
+				getBoolName(
+						configPacket.payload.config_packet.audio_config.chirp_enable));
+		strcat(str, "\n");
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
 		snprintf(str, sizeof(str), "low power mode,");
-		strcat(str,getBoolName(configPacket.payload.config_packet.low_power_config.low_power_mode));
-		strcat(str,"\n");
+		strcat(str,
+				getBoolName(
+						configPacket.payload.config_packet.low_power_config.low_power_mode));
+		strcat(str, "\n");
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
 		snprintf(str, sizeof(str), "en_gas,");
-		strcat(str,getBoolName(configPacket.payload.config_packet.sensor_config.enable_gas));
-		strcat(str,"\n");
+		strcat(str,
+				getBoolName(
+						configPacket.payload.config_packet.sensor_config.enable_gas));
+		strcat(str, "\n");
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
 		snprintf(str, sizeof(str), "en_humidity,");
-		strcat(str,getBoolName(configPacket.payload.config_packet.sensor_config.enable_humidity));
-		strcat(str,"\n");
+		strcat(str,
+				getBoolName(
+						configPacket.payload.config_packet.sensor_config.enable_humidity));
+		strcat(str, "\n");
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
 		snprintf(str, sizeof(str), "en_temp,");
-		strcat(str,getBoolName(configPacket.payload.config_packet.sensor_config.enable_temperature));
-		strcat(str,"\n");
+		strcat(str,
+				getBoolName(
+						configPacket.payload.config_packet.sensor_config.enable_temperature));
+		strcat(str, "\n");
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
@@ -2953,11 +3073,14 @@ static void save_config(char* folder_name){
 		snprintf(str, sizeof(str), "schedule number, start hour, start min,");
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
-		snprintf(str, sizeof(str), "stop hour, stop min, Sun, M, T, W, Th, F, Sat\n");
+		snprintf(str, sizeof(str),
+				"stop hour, stop min, Sun, M, T, W, Th, F, Sat\n");
 		f_write(&configFile, str, strlen(str), NULL);
 		memset(str, '\0', sizeof(str));
 
-		for(int i = 0; i < configPacket.payload.config_packet.schedule_config_count; i++){
+		for (int i = 0;
+				i < configPacket.payload.config_packet.schedule_config_count;
+				i++) {
 			snprintf(str, sizeof(str), "%u,%lu,%lu,%lu,%lu,", i,
 					configPacket.payload.config_packet.schedule_config[i].start_hour,
 					configPacket.payload.config_packet.schedule_config[i].start_minute,
@@ -2967,13 +3090,20 @@ static void save_config(char* folder_name){
 			memset(str, '\0', sizeof(str));
 
 			snprintf(str, sizeof(str), "%s,%s,%s,%s,%s,%s,%s\n",
-					getBoolName(configPacket.payload.config_packet.schedule_config[i].sunday),
-					getBoolName(configPacket.payload.config_packet.schedule_config[i].monday),
-					getBoolName(configPacket.payload.config_packet.schedule_config[i].tuesday),
-					getBoolName(configPacket.payload.config_packet.schedule_config[i].wednesday),
-					getBoolName(configPacket.payload.config_packet.schedule_config[i].thursday),
-					getBoolName(configPacket.payload.config_packet.schedule_config[i].friday),
-					getBoolName(configPacket.payload.config_packet.schedule_config[i].saturday));
+					getBoolName(
+							configPacket.payload.config_packet.schedule_config[i].sunday),
+					getBoolName(
+							configPacket.payload.config_packet.schedule_config[i].monday),
+					getBoolName(
+							configPacket.payload.config_packet.schedule_config[i].tuesday),
+					getBoolName(
+							configPacket.payload.config_packet.schedule_config[i].wednesday),
+					getBoolName(
+							configPacket.payload.config_packet.schedule_config[i].thursday),
+					getBoolName(
+							configPacket.payload.config_packet.schedule_config[i].friday),
+					getBoolName(
+							configPacket.payload.config_packet.schedule_config[i].saturday));
 			f_write(&configFile, str, strlen(str), NULL);
 			memset(str, '\0', sizeof(str));
 		}
@@ -2981,7 +3111,7 @@ static void save_config(char* folder_name){
 		// Close the file
 		f_close(&configFile);
 
-	}else{
+	} else {
 		Error_Handler();
 	}
 
@@ -3001,15 +3131,15 @@ uint32_t RTOS_AppGetRuntimeCounterValueFromISR()
 
 }
 
-void uint64ToString(uint64_t num, char* str) {
-	char* p = str;
+void uint64ToString(uint64_t num, char *str) {
+	char *p = str;
 	uint64_t shifter = num;
 
 	// Move to where representation ends
 	do {
 		++p;
 		shifter = shifter / 10;
-	} while(shifter);
+	} while (shifter);
 
 	// Null terminate string
 	*p = '\0';
@@ -3018,186 +3148,251 @@ void uint64ToString(uint64_t num, char* str) {
 	do {
 		*--p = '0' + (num % 10);
 		num = num / 10;
-	} while(num);
+	} while (num);
 }
 
 const char* getMicGainName(mic_gain_t gain) {
 	switch (gain) {
-	case MIC_GAIN_GAIN_60_DB: return "60dB";
-	case MIC_GAIN_GAIN_57_DB: return "57dB";
-	case MIC_GAIN_GAIN_54_DB: return "54dB";
-	case MIC_GAIN_GAIN_51_DB: return "51dB";
-	case MIC_GAIN_GAIN_48_DB: return "48dB";
-	case MIC_GAIN_GAIN_45_DB: return "45dB";
-	case MIC_GAIN_GAIN_42_DB: return "42dB";
-	case MIC_GAIN_GAIN_39_DB: return "39dB";
-	case MIC_GAIN_GAIN_36_DB: return "36dB";
-	case MIC_GAIN_GAIN_33_DB: return "33dB";
-	case MIC_GAIN_GAIN_30_DB: return "30dB";
-	case MIC_GAIN_GAIN_27_DB: return "27dB";
-	case MIC_GAIN_GAIN_24_DB: return "24dB";
-	case MIC_GAIN_GAIN_21_DB: return "21dB";
-	case MIC_GAIN_GAIN_18_DB: return "18dB";
-	case MIC_GAIN_GAIN_15_DB: return "15dB";
-	case MIC_GAIN_GAIN_12_DB: return "12dB";
-	case MIC_GAIN_GAIN_9_DB: return "9dB";
-	case MIC_GAIN_GAIN_6_DB: return "6dB";
-	case MIC_GAIN_GAIN_3_DB: return "3dB";
-	case MIC_GAIN_GAIN_0_DB: return "0dB";
-	case MIC_GAIN_GAIN_NEG_3_DB: return "-3dB";
-	case MIC_GAIN_GAIN_NEG_6_DB: return "-6dB";
-	case MIC_GAIN_GAIN_NEG_9_DB: return "-9dB";
-	case MIC_GAIN_GAIN_NEG_12_DB: return "-12dB";
-	case MIC_GAIN_GAIN_NEG_15_DB: return "-15dB";
-	default: return "Unknown Gain";
+	case MIC_GAIN_GAIN_60_DB:
+		return "60dB";
+	case MIC_GAIN_GAIN_57_DB:
+		return "57dB";
+	case MIC_GAIN_GAIN_54_DB:
+		return "54dB";
+	case MIC_GAIN_GAIN_51_DB:
+		return "51dB";
+	case MIC_GAIN_GAIN_48_DB:
+		return "48dB";
+	case MIC_GAIN_GAIN_45_DB:
+		return "45dB";
+	case MIC_GAIN_GAIN_42_DB:
+		return "42dB";
+	case MIC_GAIN_GAIN_39_DB:
+		return "39dB";
+	case MIC_GAIN_GAIN_36_DB:
+		return "36dB";
+	case MIC_GAIN_GAIN_33_DB:
+		return "33dB";
+	case MIC_GAIN_GAIN_30_DB:
+		return "30dB";
+	case MIC_GAIN_GAIN_27_DB:
+		return "27dB";
+	case MIC_GAIN_GAIN_24_DB:
+		return "24dB";
+	case MIC_GAIN_GAIN_21_DB:
+		return "21dB";
+	case MIC_GAIN_GAIN_18_DB:
+		return "18dB";
+	case MIC_GAIN_GAIN_15_DB:
+		return "15dB";
+	case MIC_GAIN_GAIN_12_DB:
+		return "12dB";
+	case MIC_GAIN_GAIN_9_DB:
+		return "9dB";
+	case MIC_GAIN_GAIN_6_DB:
+		return "6dB";
+	case MIC_GAIN_GAIN_3_DB:
+		return "3dB";
+	case MIC_GAIN_GAIN_0_DB:
+		return "0dB";
+	case MIC_GAIN_GAIN_NEG_3_DB:
+		return "-3dB";
+	case MIC_GAIN_GAIN_NEG_6_DB:
+		return "-6dB";
+	case MIC_GAIN_GAIN_NEG_9_DB:
+		return "-9dB";
+	case MIC_GAIN_GAIN_NEG_12_DB:
+		return "-12dB";
+	case MIC_GAIN_GAIN_NEG_15_DB:
+		return "-15dB";
+	default:
+		return "Unknown Gain";
 	}
 }
 
 const char* getSampleFreqName(mic_sample_freq sample_freq) {
 	switch (sample_freq) {
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_8000: return "8000";
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_11025: return "11025";
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_16000: return "16000";
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_22500: return "22500";
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_24000: return "24000";
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_32000: return "32000";
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_44100: return "44100";
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_48000: return "48000";
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_96000: return "96000";
-	default: return "Unknown";
+	case MIC_SAMPLE_FREQ_SAMPLE_RATE_8000:
+		return "8000";
+	case MIC_SAMPLE_FREQ_SAMPLE_RATE_11025:
+		return "11025";
+	case MIC_SAMPLE_FREQ_SAMPLE_RATE_16000:
+		return "16000";
+	case MIC_SAMPLE_FREQ_SAMPLE_RATE_22500:
+		return "22500";
+	case MIC_SAMPLE_FREQ_SAMPLE_RATE_24000:
+		return "24000";
+	case MIC_SAMPLE_FREQ_SAMPLE_RATE_32000:
+		return "32000";
+	case MIC_SAMPLE_FREQ_SAMPLE_RATE_44100:
+		return "44100";
+	case MIC_SAMPLE_FREQ_SAMPLE_RATE_48000:
+		return "48000";
+	case MIC_SAMPLE_FREQ_SAMPLE_RATE_96000:
+		return "96000";
+	default:
+		return "Unknown";
 	}
 }
 
 const uint32_t getSampleFreq(mic_sample_freq sample_freq) {
 	switch (sample_freq) {
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_8000: return 8000;
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_11025: return 11025;
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_16000: return 16000;
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_22500: return 22500;
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_24000: return 24000;
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_32000: return 32000;
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_44100: return 44100;
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_48000: return 48000;
-	case MIC_SAMPLE_FREQ_SAMPLE_RATE_96000: return 96000;
-	default: return 48000;
+	case MIC_SAMPLE_FREQ_SAMPLE_RATE_8000:
+		return 8000;
+	case MIC_SAMPLE_FREQ_SAMPLE_RATE_11025:
+		return 11025;
+	case MIC_SAMPLE_FREQ_SAMPLE_RATE_16000:
+		return 16000;
+	case MIC_SAMPLE_FREQ_SAMPLE_RATE_22500:
+		return 22500;
+	case MIC_SAMPLE_FREQ_SAMPLE_RATE_24000:
+		return 24000;
+	case MIC_SAMPLE_FREQ_SAMPLE_RATE_32000:
+		return 32000;
+	case MIC_SAMPLE_FREQ_SAMPLE_RATE_44100:
+		return 44100;
+	case MIC_SAMPLE_FREQ_SAMPLE_RATE_48000:
+		return 48000;
+	case MIC_SAMPLE_FREQ_SAMPLE_RATE_96000:
+		return 96000;
+	default:
+		return 48000;
 	}
 }
 
 const char* getBitResName(mic_bit_resolution bit_res) {
 	switch (bit_res) {
-	case MIC_BIT_RESOLUTION_BIT_RES_8: return "8-bit";
-	case MIC_BIT_RESOLUTION_BIT_RES_16: return "16-bit";
-	case MIC_BIT_RESOLUTION_BIT_RES_24: return "24-bit";
-	default: return "Unknown";
+	case MIC_BIT_RESOLUTION_BIT_RES_8:
+		return "8-bit";
+	case MIC_BIT_RESOLUTION_BIT_RES_16:
+		return "16-bit";
+	case MIC_BIT_RESOLUTION_BIT_RES_24:
+		return "24-bit";
+	default:
+		return "Unknown";
 	}
 }
 
 const char* getCompressionName(compression_type comp_type) {
 	switch (comp_type) {
-	case COMPRESSION_TYPE_OPUS: return "OPUS";
-	case 1: return "True";
-	default: return "Unknown";
+	case COMPRESSION_TYPE_OPUS:
+		return "OPUS";
+	case 1:
+		return "True";
+	default:
+		return "Unknown";
 	}
 }
 
 const char* getBoolName(uint8_t val) {
 	switch (val) {
-	case 0: return "False";
-	case 1: return "True";
-	default: return "Unknown";
+	case 0:
+		return "False";
+	case 1:
+		return "True";
+	default:
+		return "Unknown";
 	}
 }
 
 uint32_t uint64_to_str(uint64_t num, char *str) {
-    // Handle the special case of zero
-    if (num == 0) {
-        str[0] = '0';
-        str[1] = '\0';
-        return 1;
-    }
+	// Handle the special case of zero
+	if (num == 0) {
+		str[0] = '0';
+		str[1] = '\0';
+		return 1;
+	}
 
-    // Temporary index for filling the string in reverse order
-    uint32_t i = 0;
-    while (num > 0) {
-    	if(i > 50) return 0; // error condition but safety to avoid memory leak
-    	uint32_t digit = num % 10; // Extract the least significant digit
-        str[i++] = '0' + digit; // Convert to char and store in the string
-        num /= 10; // Move to the next digit
-    }
-    str[i] = '\0'; // Null-terminate the string
+	// Temporary index for filling the string in reverse order
+	uint32_t i = 0;
+	while (num > 0) {
+		if (i > 50)
+			return 0; // error condition but safety to avoid memory leak
+		uint32_t digit = num % 10; // Extract the least significant digit
+		str[i++] = '0' + digit; // Convert to char and store in the string
+		num /= 10; // Move to the next digit
+	}
+	str[i] = '\0'; // Null-terminate the string
 
-    // Reverse the string since we filled it in reverse order
-    for (int j = 0, k = i - 1; j < k; j++, k--) {
-        char temp = str[j];
-        str[j] = str[k];
-        str[k] = temp;
-    }
+	// Reverse the string since we filled it in reverse order
+	for (int j = 0, k = i - 1; j < k; j++, k--) {
+		char temp = str[j];
+		str[j] = str[k];
+		str[k] = temp;
+	}
 
-    return i;
+	return i;
 }
 
-void readInterrupt(uint8_t *rxData){
-	HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) INT1_SRC_A, 1, rxData, 1, 100);
+void readInterrupt(uint8_t *rxData) {
+	HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) INT1_SRC_A, 1, rxData, 1,
+			100);
 }
 
-
-
-
-
-void tamperAlarm(bool state){
+void tamperAlarm(bool state) {
 	uint8_t txData;
 	volatile HAL_StatusTypeDef status;
 
-	if(state == ENABLE){
+	if (state == ENABLE) {
 		osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
 		txData = 0x40; // reset mag
-		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) 0x60, 1, &txData, 1, 100);
+		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) 0x60, 1,
+				&txData, 1, 100);
 		txData = 0x80; // reset acc
-		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG5_A, 1, &txData, 1, 100);
+		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG5_A,
+				1, &txData, 1, 100);
 
 		osDelay(5);
 
 		txData = 0x97; //enable all channels, no low power mode, HR / Normal / Low-power mode (10 Hz)
-		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG1_A, 1, &txData, 1, 100);
+		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG1_A,
+				1, &txData, 1, 100);
 
 		txData = 0x00; // no filtering
-		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG2_A, 1, &txData, 1, 100);
+		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG2_A,
+				1, &txData, 1, 100);
 
 		txData = 0x60; //
-		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG3_A, 1, &txData, 1, 100);
+		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG3_A,
+				1, &txData, 1, 100);
 
 		txData = 0x10; // continous mode, 4g mode, high-resolution mode
 		//  txData = 0x00; // continous mode, 2g mode, high-resolution mode
-		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG4_A, 1, &txData, 1, 100);
+		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG4_A,
+				1, &txData, 1, 100);
 
 		txData = 0x0; // continous mode, 4g mode, high-resolution mode
 		//  txData = 0x00; // continous mode, 2g mode, high-resolution mode
-		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG5_A, 1, &txData, 1, 100);
+		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG5_A,
+				1, &txData, 1, 100);
 
 //		txData = 0x28 ; //generation on X and Y high threshold events
-		txData = 0x28 ; //generation on X and Y high threshold events
-		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) INT1_CFG_A, 1, &txData, 1, 100);
+		txData = 0x28; //generation on X and Y high threshold events
+		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) INT1_CFG_A,
+				1, &txData, 1, 100);
 
 		txData = 25; //0.512g (32*16mg @ +/- 4g)
-		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) INT1_THS_A, 1, &txData, 1, 100);
+		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) INT1_THS_A,
+				1, &txData, 1, 100);
 
 		txData = 10; // duration: 10 / (10Hz data rate)
-		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) INT1_DURATION_A, 1, &txData, 1, 100);
+		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR,
+				(enum regAddr) INT1_DURATION_A, 1, &txData, 1, 100);
 
 		txData = 0x02; // interrupt active low
-		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG6_A, 1, &txData, 1, 100);
+		status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG6_A,
+				1, &txData, 1, 100);
 		osMutexRelease(messageI2C1_LockHandle);
-
 
 		osDelay(100); // to stablize
 
 //		HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
-	}else{
+	} else {
 //		HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
 	}
 }
 
-bool set_folder_from_time(char* folder_name){
+bool set_folder_from_time(char *folder_name) {
 	//	char folder_name[20];
 	getFormattedTime(&hrtc, folder_name);
 
@@ -3208,9 +3403,9 @@ bool set_folder_from_time(char* folder_name){
 	//		Error_Handler();
 	//	}else{
 	res = f_mkdir(folder_name);
-	if(res == FR_OK){
+	if (res == FR_OK) {
 		return true;
-	}else{
+	} else {
 		return false;
 	}
 	//		if(FR_OK == f_opendir(&dir, folder_name)){
@@ -3233,14 +3428,11 @@ bool set_folder_from_time(char* folder_name){
 	//			// Flush the cached data to the SD card
 	//			f_sync(&file);
 	//		}else Error_Handler();
-
 //	return;
 	//	}
 }
 
-
-
-uint8_t check_file_exists(const char* path) {
+uint8_t check_file_exists(const char *path) {
 	// Check for the existence of a file
 	volatile FRESULT fr = f_stat(path, NULL);
 
@@ -3259,43 +3451,46 @@ uint8_t check_file_exists(const char* path) {
 	return fr;
 }
 
-void grabOrientation(char *folder_name){
+void grabOrientation(char *folder_name) {
 
-	if(systemPowerSupervisor.isAccelerometerEnabled){
+	if (systemPowerSupervisor.isAccelerometerEnabled) {
 
 		// if accelerometer is active doing something, skip
-		if(systemState.isAccelerometerActive) return;
+		if (systemState.isAccelerometerActive)
+			return;
 
 		systemState.isAccelerometerActive = true;
-		if(!Is_Secondary_Enabled()) Control_Secondary_Power(true);
+		if (!Is_Secondary_Enabled())
+			Control_Secondary_Power(true);
 
 		FIL orientationFile;
 		FRESULT res;
 
 		float pitch, roll, heading;
 		grabInertialSample(&pitch, &roll, &heading);
-		double timestamp = getEpoch();
+		double timestamp = getEpoch_ms();
 		// Create a character array large enough to hold the resulting string
-		char str[100] = {0};
-
+		char str[100] = { 0 };
 
 		char file_name[20] = "/orientation.csv";
-		char file_path[42] = {0};
+		char file_path[42] = { 0 };
 
 		strcpy(file_path, folder_name);
 		strcat(file_path, file_name);
 
-		if(check_file_exists(file_path) == FR_NO_FILE){
-			if(f_open(&orientationFile, file_path, FA_CREATE_ALWAYS | FA_WRITE | FA_OPEN_APPEND) == FR_OK){
+		if (check_file_exists(file_path) == FR_NO_FILE) {
+			if (f_open(&orientationFile, file_path,
+					FA_CREATE_ALWAYS | FA_WRITE | FA_OPEN_APPEND) == FR_OK) {
 				strcpy(str, "timestamp, pitch, roll, heading\n");
 				f_write(&orientationFile, str, strlen(str), NULL);
-			}else{
+			} else {
 				Error_Handler();
 			}
 
-		}else{
-			res = f_open(&orientationFile, file_path, FA_CREATE_ALWAYS | FA_WRITE | FA_OPEN_APPEND);
-			if(res != FR_OK){
+		} else {
+			res = f_open(&orientationFile, file_path,
+					FA_CREATE_ALWAYS | FA_WRITE | FA_OPEN_APPEND);
+			if (res != FR_OK) {
 				Error_Handler();
 			}
 
@@ -3303,9 +3498,10 @@ void grabOrientation(char *folder_name){
 
 		memset(str, '\0', sizeof(str));
 		// Use snprintf to format the string as "timestamp,pitch,roll,heading\n"
-		snprintf(str, sizeof(str), "%.1f,%.3f,%.3f,%.3f\n", timestamp, pitch, roll, heading);
+		snprintf(str, sizeof(str), "%.1f,%.3f,%.3f,%.3f\n", timestamp, pitch,
+				roll, heading);
 
-		if(f_write(&orientationFile, str, strlen(str), NULL) != FR_OK){
+		if (f_write(&orientationFile, str, strlen(str), NULL) != FR_OK) {
 			Error_Handler();
 		}
 
@@ -3321,7 +3517,7 @@ void grabOrientation(char *folder_name){
 
 }
 
-void ledStartUpBlinkSequence(void){
+void ledStartUpBlinkSequence(void) {
 
 	//	uint32_t freq = 5000;
 	//
@@ -3350,16 +3546,12 @@ void ledStartUpBlinkSequence(void){
 	HAL_Delay(500);
 	setLED_Blue(0);
 
-
 	//	while(1);
-
-
 
 }
 
-
 // the chirp will operate every 5 minutes where every 15 minutes, a series of three chirps will occur
-void chirpTask(void *argument){
+void chirpTask(void *argument) {
 
 	osDelay(60000 * 5); // initial delay
 
@@ -3368,30 +3560,32 @@ void chirpTask(void *argument){
 	chirp_event_t chirp_event;
 	fileWriteSync_t fileWriteSyncMsg;
 
-	osTimerId_t periodicTimerHandle = osTimerNew(chirp_timer_callback, osTimerPeriodic, NULL, NULL);
+	osTimerId_t periodicTimerHandle = osTimerNew(chirp_timer_callback,
+			osTimerPeriodic, NULL, NULL);
 
-	if(periodicTimerHandle == NULL){
+	if (periodicTimerHandle == NULL) {
 		Error_Handler();
 	}
 
 	//	osTimerStart(periodicTimerHandle,300000);
-	osTimerStart(periodicTimerHandle,30*60000); // 30 minutes
+	osTimerStart(periodicTimerHandle, 30 * 60000); // 30 minutes
 	osThreadFlagsSet(chirpTaskHandle, CHIRP_EVENT);
 
 	uint32_t flags;
 
-	while(1){
-		flags = osThreadFlagsWait(TERMINATE_EVENT | CHIRP_EVENT, osFlagsWaitAny, osWaitForever);
-		chirp_event.epoch = getEpoch();
+	while (1) {
+		flags = osThreadFlagsWait(TERMINATE_EVENT | CHIRP_EVENT, osFlagsWaitAny,
+				osWaitForever);
+		chirp_event.epoch = getEpoch_ms();
 		chirp_event.ms_from_start = HAL_GetTick();
 
 		fileWriteSyncMsg.msgTime = chirp_event.epoch;
 
-		if((flags | CHIRP_EVENT) == CHIRP_EVENT){
-			if((counter % 15) == 0){
+		if ((flags | CHIRP_EVENT) == CHIRP_EVENT) {
+			if ((counter % 15) == 0) {
 				chirp_timestamp();
-			}else if((counter % 5) == 0){
-				tone(4200,1000);
+			} else if ((counter % 5) == 0) {
+				tone(4200, 1000);
 			}
 
 			/* save chirp */
@@ -3399,42 +3593,42 @@ void chirpTask(void *argument){
 			fileWriteSyncMsg.msgType = MASTER_CHIRP_MSG;
 			fileWriteSyncMsg.msgLength = sizeof(chirp_event_t);
 			memcpy(fileWriteSyncMsg.data, &chirp_event, sizeof(chirp_event_t));
-			osMessageQueuePut(fileWriteQueueId, &fileWriteSyncMsg, 0, osWaitForever);
+			osMessageQueuePut(fileWriteQueueId, &fileWriteSyncMsg, 0,
+					osWaitForever);
 
 			counter++;
 		}
 
-
-		if((flags | TERMINATE_EVENT) == TERMINATE_EVENT){
-			vTaskDelete( NULL );
+		if ((flags | TERMINATE_EVENT) == TERMINATE_EVENT) {
+			vTaskDelete( NULL);
 		}
 	}
 }
 
-void chirp(void){
+void chirp(void) {
 
-	tone(4400,100);
-	tone(5600,100);
-	tone(4400,100);
-
-}
-
-void chirp_timestamp(void){
-
-	tone(4600,50);
-	tone(5000,50);
-	tone(5400,50);
-	tone(7000,50);
-	tone(14000,50);
-	tone(7000,50);
-	tone(5400,50);
-	tone(5000,50);
-	tone(4600,50);
+	tone(4400, 100);
+	tone(5600, 100);
+	tone(4400, 100);
 
 }
 
-void toneSweep(uint8_t reverse){
-	if(systemPowerSupervisor.isBuzzerEnabled){
+void chirp_timestamp(void) {
+
+	tone(4600, 50);
+	tone(5000, 50);
+	tone(5400, 50);
+	tone(7000, 50);
+	tone(14000, 50);
+	tone(7000, 50);
+	tone(5400, 50);
+	tone(5000, 50);
+	tone(4600, 50);
+
+}
+
+void toneSweep(uint8_t reverse) {
+	if (systemPowerSupervisor.isBuzzerEnabled) {
 		systemState.isBuzzerActive = true;
 		Control_Buzzer_Power(true);
 
@@ -3442,25 +3636,25 @@ void toneSweep(uint8_t reverse){
 		HAL_TIM_PWM_Start(&htim16, TIM_CHANNEL_1);
 
 		uint16_t index;
-		if(reverse){
+		if (reverse) {
 			index = 0;
-		}else{
+		} else {
 			index = 800;
 		}
-		while(1){
+		while (1) {
 
 			htim16.Instance->ARR = index;
 			htim16.Instance->CCR1 = index >> 1;
 
 			osDelay(20);
 
-			if(reverse){
-				index+=2;
-			}else{
-				index-=2;
+			if (reverse) {
+				index += 2;
+			} else {
+				index -= 2;
 			}
 
-			if((index == 800) || (index==0)) {
+			if ((index == 800) || (index == 0)) {
 				/* stop buzzer pwm */
 				HAL_TIM_PWM_Stop(&htim16, TIM_CHANNEL_1);
 				osDelay(10);
@@ -3474,17 +3668,14 @@ void toneSweep(uint8_t reverse){
 
 }
 
-
-
-void chirp_timer_callback(void *argument){
+void chirp_timer_callback(void *argument) {
 	osThreadFlagsSet(chirpTaskHandle, CHIRP_EVENT);
 }
 
-
 // 4600 - 6800 are pretty loud
 // 10000 is loud-ish
-void tone(uint32_t freq, uint32_t duration_ms){
-	if(systemPowerSupervisor.isBuzzerEnabled){
+void tone(uint32_t freq, uint32_t duration_ms) {
+	if (systemPowerSupervisor.isBuzzerEnabled) {
 		systemState.isBuzzerActive = true;
 		Control_Buzzer_Power(true);
 
@@ -3512,7 +3703,6 @@ void tone(uint32_t freq, uint32_t duration_ms){
 
 		osDelay(duration_ms);
 
-
 		HAL_TIM_PWM_Stop(&htim16, TIM_CHANNEL_1);
 		systemState.isBuzzerActive = false;
 		Control_Buzzer_Power(false);
@@ -3520,7 +3710,8 @@ void tone(uint32_t freq, uint32_t duration_ms){
 }
 
 // Example function to determine if the current time is within a given schedule's start and stop time
-bool is_within_schedule(RTC_TimeTypeDef current_time, schedule_config_t schedule) {
+bool is_within_schedule(RTC_TimeTypeDef current_time,
+		schedule_config_t schedule) {
 	uint32_t current_minutes = current_time.Hours * 60 + current_time.Minutes;
 	uint32_t start_minutes = schedule.start_hour * 60 + schedule.start_minute;
 	uint32_t stop_minutes = schedule.stop_hour * 60 + schedule.stop_minute;
@@ -3531,19 +3722,29 @@ bool is_within_schedule(RTC_TimeTypeDef current_time, schedule_config_t schedule
 // Converts the current day to a boolean array index
 bool is_today_scheduled(uint8_t weekday, schedule_config_t schedule) {
 	switch (weekday) {
-	case 1: return schedule.monday;
-	case 2: return schedule.tuesday;
-	case 3: return schedule.wednesday;
-	case 4: return schedule.thursday;
-	case 5: return schedule.friday;
-	case 6: return schedule.saturday;
-	case 7: return schedule.sunday;
-	default: return false;
+	case 1:
+		return schedule.monday;
+	case 2:
+		return schedule.tuesday;
+	case 3:
+		return schedule.wednesday;
+	case 4:
+		return schedule.thursday;
+	case 5:
+		return schedule.friday;
+	case 6:
+		return schedule.saturday;
+	case 7:
+		return schedule.sunday;
+	default:
+		return false;
 	}
 }
 
 // Main function to find the next scheduled time
-void find_next_schedule(RTC_TimeTypeDef current_time, RTC_DateTypeDef current_date, schedule_config_t schedules[], size_t schedule_count) {
+void find_next_schedule(RTC_TimeTypeDef current_time,
+		RTC_DateTypeDef current_date, schedule_config_t schedules[],
+		size_t schedule_count) {
 	bool is_currently_within_schedule = false;
 	// Iterate through the schedules
 	for (size_t i = 0; i < schedule_count; ++i) {
@@ -3567,19 +3768,23 @@ void find_next_schedule(RTC_TimeTypeDef current_time, RTC_DateTypeDef current_da
 }
 
 // Function to find the next alarm time
-void find_next_alarm(RTC_TimeTypeDef current_time, RTC_DateTypeDef current_date, schedule_config_t schedules[], size_t schedule_count) {
+void find_next_alarm(RTC_TimeTypeDef current_time, RTC_DateTypeDef current_date,
+		schedule_config_t schedules[], size_t schedule_count) {
 	int closest_time_diff = 24 * 60; // Max difference in minutes
-	schedule_config_t* next_schedule = NULL;
+	schedule_config_t *next_schedule = NULL;
 	uint8_t next_schedule_day = current_date.WeekDay;
 	bool found = false;
 
 	for (int day_offset = 0; day_offset < 7; ++day_offset) { // Check the next 7 days
 		uint8_t check_day = (current_date.WeekDay + day_offset - 1) % 7 + 1; // Adjust for wrap-around
 		for (size_t i = 0; i < schedule_count; ++i) {
-			if (!is_today_scheduled(check_day, schedules[i])) continue; // Skip if not scheduled on this day
+			if (!is_today_scheduled(check_day, schedules[i]))
+				continue; // Skip if not scheduled on this day
 
-			int schedule_start_in_minutes = schedules[i].start_hour * 60 + schedules[i].start_minute;
-			int current_time_in_minutes = current_time.Hours * 60 + current_time.Minutes;
+			int schedule_start_in_minutes = schedules[i].start_hour * 60
+					+ schedules[i].start_minute;
+			int current_time_in_minutes = current_time.Hours * 60
+					+ current_time.Minutes;
 			int time_diff = schedule_start_in_minutes - current_time_in_minutes;
 
 			if (day_offset > 0 || time_diff > 0) { // Future schedule
@@ -3597,7 +3802,8 @@ void find_next_alarm(RTC_TimeTypeDef current_time, RTC_DateTypeDef current_date,
 			}
 		}
 
-		if (found) break; // Stop if we found the next schedule
+		if (found)
+			break; // Stop if we found the next schedule
 	}
 
 	if (next_schedule != NULL) {
@@ -3607,16 +3813,20 @@ void find_next_alarm(RTC_TimeTypeDef current_time, RTC_DateTypeDef current_date,
 	}
 }
 
-uint32_t calculateTimeDifference(RTC_TimeTypeDef current_time, RTC_DateTypeDef current_date, schedule_config_t schedule){
-	if(is_today_scheduled(current_date.WeekDay, schedule)){
-		return (schedule.start_hour * 24 + schedule.start_minute) - (current_time.Hours * 24 + current_time.Minutes);
-	}else{
-		uint32_t time_diff = (24*60 - (current_time.Hours * 24 + current_time.Minutes)) + schedule.start_hour * 24 + schedule.start_minute;
-		for(int i = 1; i < 7; i++){
-			if(is_today_scheduled((current_date.WeekDay + i) % 7, schedule)){
+uint32_t calculateTimeDifference(RTC_TimeTypeDef current_time,
+		RTC_DateTypeDef current_date, schedule_config_t schedule) {
+	if (is_today_scheduled(current_date.WeekDay, schedule)) {
+		return (schedule.start_hour * 24 + schedule.start_minute)
+				- (current_time.Hours * 24 + current_time.Minutes);
+	} else {
+		uint32_t time_diff = (24 * 60
+				- (current_time.Hours * 24 + current_time.Minutes))
+				+ schedule.start_hour * 24 + schedule.start_minute;
+		for (int i = 1; i < 7; i++) {
+			if (is_today_scheduled((current_date.WeekDay + i) % 7, schedule)) {
 				return time_diff;
-			}else{
-				time_diff += 60*24;
+			} else {
+				time_diff += 60 * 24;
 			}
 		}
 	}
@@ -3631,21 +3841,22 @@ uint32_t calculateTimeDifference(RTC_TimeTypeDef current_time, RTC_DateTypeDef c
  *  1: we should start the system
  *  0: we should wait until RTC interrupt
  */
-uint8_t setAlarm(schedule_config_t schedules[], uint8_t schedule_count){
+uint8_t setAlarm(schedule_config_t schedules[], uint8_t schedule_count) {
 
 	HAL_RTC_DeactivateAlarm(&hrtc, RTC_ALARM_A);
 
 	/* if RTC is not set properly, just start the recorder and exit */
-	if(getEpoch() < 1707859083) return 1;
+	if (getEpoch_ms() < 1707859083)
+		return 1;
 
 	/* grab current time */
-	RTC_TimeTypeDef current_time = {0};
-	RTC_DateTypeDef current_date = {0};
+	RTC_TimeTypeDef current_time = { 0 };
+	RTC_DateTypeDef current_date = { 0 };
 
 	HAL_RTC_GetTime(&hrtc, &current_time, RTC_FORMAT_BIN);
 	HAL_RTC_GetDate(&hrtc, &current_date, RTC_FORMAT_BIN);
 
-	schedule_config_t* next_schedule = NULL;
+	schedule_config_t *next_schedule = NULL;
 
 	// Iterate through the schedules
 	for (uint8_t i = 0; i < schedule_count; ++i) {
@@ -3664,14 +3875,14 @@ uint8_t setAlarm(schedule_config_t schedules[], uint8_t schedule_count){
 				sAlarm.AlarmMask = RTC_ALARMMASK_NONE;
 				sAlarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
 				sAlarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_WEEKDAY;
-				if(schedules[i].start_hour > schedules[i].stop_hour){
+				if (schedules[i].start_hour > schedules[i].stop_hour) {
 					sAlarm.AlarmDateWeekDay = (current_date.WeekDay + 1) % 7;
-				}else{
+				} else {
 					sAlarm.AlarmDateWeekDay = current_date.WeekDay;
 				}
 				sAlarm.Alarm = RTC_ALARM_A;
-				if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN) != HAL_OK)
-				{
+				if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN)
+						!= HAL_OK) {
 					Error_Handler();
 				}
 
@@ -3680,18 +3891,20 @@ uint8_t setAlarm(schedule_config_t schedules[], uint8_t schedule_count){
 		}
 	}
 
-	uint32_t time_diff_minutes = 7*24*60; // max difference in time over one week
+	uint32_t time_diff_minutes = 7 * 24 * 60; // max difference in time over one week
 	uint32_t new_time_difference = 0;
 	for (uint8_t i = 0; i < schedule_count; ++i) {
-		new_time_difference = calculateTimeDifference(current_time, current_date, schedules[i]);
-		if(new_time_difference < time_diff_minutes){
+		new_time_difference = calculateTimeDifference(current_time,
+				current_date, schedules[i]);
+		if (new_time_difference < time_diff_minutes) {
 			time_diff_minutes = new_time_difference;
 			next_schedule = &schedules[i];
 		}
 	}
 
-	for(int i = 0; i < 7; i++){
-		if(is_today_scheduled((current_date.WeekDay + i) % 7, *next_schedule)){
+	for (int i = 0; i < 7; i++) {
+		if (is_today_scheduled((current_date.WeekDay + i) % 7,
+				*next_schedule)) {
 			sAlarm.AlarmDateWeekDay = (current_date.WeekDay + i) % 7;
 			break;
 		}
@@ -3710,15 +3923,14 @@ uint8_t setAlarm(schedule_config_t schedules[], uint8_t schedule_count){
 	sAlarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_WEEKDAY;
 
 	sAlarm.Alarm = RTC_ALARM_A;
-	if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN) != HAL_OK)
-	{
+	if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN) != HAL_OK) {
 		Error_Handler();
 	}
 
 	return 0;
 }
 
-void grabInertialSample(float *pitch, float *roll, float *heading){
+void grabInertialSample(float *pitch, float *roll, float *heading) {
 
 	uint8_t data[10];
 	uint8_t txData, rxData;
@@ -3728,84 +3940,97 @@ void grabInertialSample(float *pitch, float *roll, float *heading){
 	int16_t x_mag, y_mag, z_mag;
 	int16_t x_mag_offset, y_mag_offset, z_mag_offset;
 
-
 	//	HAL_GPIO_WritePin(EN_3V3_ALT_GPIO_Port, EN_3V3_ALT_Pin, GPIO_PIN_SET);
 	osDelay(100);
 	osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
 	//  status = HAL_I2C_Master_Receive(&hi2c1, ACC_ADDR, data, 1, 1000);
-	status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR,  (enum regAddr) WHO_AM_I, 1,data, 1, 100);
+	status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) WHO_AM_I, 1,
+			data, 1, 100);
 
 	txData = 0x00; //disable all channels, no low power mode, HR / Normal / Low-power mode (10 Hz)
-	status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG1_A, 1, &txData, 1, 100);
+	status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG1_A, 1,
+			&txData, 1, 100);
 
 	txData = 0x08; // continous mode, 2g mode, high-resolution mode
 	//  txData = 0x00; // continous mode, 2g mode, high-resolution mode
-	status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG4_A, 1, &txData, 1, 100);
+	status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG4_A, 1,
+			&txData, 1, 100);
 
 	txData = 0x00; // no filtering
-	status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG2_A, 1, &txData, 1, 100);
+	status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG2_A, 1,
+			&txData, 1, 100);
 
 	txData = 0x27; //enable all channels, no low power mode, HR / Normal / Low-power mode (10 Hz)
-	status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG1_A, 1, &txData, 1, 100);
+	status = HAL_I2C_Mem_Write(&hi2c1, ACC_ADDR, (enum regAddr) CTRL_REG1_A, 1,
+			&txData, 1, 100);
 	osMutexRelease(messageI2C1_LockHandle);
 	osDelay(1000);
 
 	uint8_t errorCnt = 0;
 	rxData = 0;
 	osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
-	do{
-		if(rxData != 0){
+	do {
+		if (rxData != 0) {
 			errorCnt++;
 			osDelay(10);
-			if(errorCnt == 10){
+			if (errorCnt == 10) {
 				Error_Handler();
 			}
 		}
-		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) STATUS_REG_A, 1,&rxData, 1, 100);
+		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) STATUS_REG_A,
+				1, &rxData, 1, 100);
 
-	}while( (rxData & 0x08) != 0x08);
+	} while ((rxData & 0x08) != 0x08);
 	osMutexRelease(messageI2C1_LockHandle);
-	if( (rxData & 0x08) == 0x08){
+	if ((rxData & 0x08) == 0x08) {
 		// new data available
 		osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
-		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_X_L_A, 1,&accData[0], 1, 100);
-		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_X_H_A, 1,&accData[1], 1, 100);
-		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_Y_L_A, 1,&accData[2], 1, 100);
-		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_Y_H_A, 1,&accData[3], 1, 100);
-		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_Z_L_A, 1,&accData[4], 1, 100);
-		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_Z_H_A, 1,&accData[5], 1, 100);
+		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_X_L_A, 1,
+				&accData[0], 1, 100);
+		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_X_H_A, 1,
+				&accData[1], 1, 100);
+		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_Y_L_A, 1,
+				&accData[2], 1, 100);
+		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_Y_H_A, 1,
+				&accData[3], 1, 100);
+		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_Z_L_A, 1,
+				&accData[4], 1, 100);
+		status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_Z_H_A, 1,
+				&accData[5], 1, 100);
 		osMutexRelease(messageI2C1_LockHandle);
 		osDelay(100);
 		//	  status = HAL_I2C_Mem_Read(&hi2c1, ACC_ADDR, (enum regAddr) OUT_X_L_A, 1,accData, 6, 100);
 
-		if(status == HAL_OK){
+		if (status == HAL_OK) {
 			x_acc = ((int16_t) (((uint16_t) accData[1]) << 8)) + accData[0];
 			y_acc = ((int16_t) (((uint16_t) accData[3]) << 8)) + accData[2];
 			z_acc = ((int16_t) (((uint16_t) accData[5]) << 8)) + accData[4];
-		}else{
+		} else {
 			Error_Handler();
 		}
-	}else{
+	} else {
 		Error_Handler();
 	}
 
-
 	osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
 	txData = 0b10000000; // ODR 10Hz, temperature compensation,continous mode
-	status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_CFG_REG_A, 1, &txData, 1, 100);
+	status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR,
+			(lis2mdl_register_t) LIS2MDL_CFG_REG_A, 1, &txData, 1, 100);
 
 	txData = 0b00000001; // digital filter enabled (ODR/4)
-	status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_CFG_REG_B, 1, &txData, 1, 100);
+	status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR,
+			(lis2mdl_register_t) LIS2MDL_CFG_REG_B, 1, &txData, 1, 100);
 
 	txData = 0b00000000;
-	status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_CFG_REG_C, 1, &txData, 1, 100);
+	status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR,
+			(lis2mdl_register_t) LIS2MDL_CFG_REG_C, 1, &txData, 1, 100);
 	osMutexRelease(messageI2C1_LockHandle);
 	osDelay(500);
 
-
 	// new data available
 	osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
-	status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_OFFSET_X_REG_L, 1,magData, 6, 100);
+	status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR,
+			(lis2mdl_register_t) LIS2MDL_OFFSET_X_REG_L, 1, magData, 6, 100);
 	osMutexRelease(messageI2C1_LockHandle);
 	//	/* START MAG CAL */
 	//	if(status == HAL_OK){
@@ -3876,13 +4101,12 @@ void grabInertialSample(float *pitch, float *roll, float *heading){
 	//	}
 	//	/* END MAG CAL */
 
-
-
 	// calibration values
 	//todo: grab mag cal vals from FRAM
 
 	MagCal mag_calibration;
-	readFRAM(FRAM_MAG_CAL_WORD_ADDR, FRAM_MAG_CAL_BYTE_ADDR, (uint8_t *) &mag_calibration, FRAM_MAG_CAL_SIZE);
+	readFRAM(FRAM_MAG_CAL_WORD_ADDR, FRAM_MAG_CAL_BYTE_ADDR,
+			(uint8_t*) &mag_calibration, FRAM_MAG_CAL_SIZE);
 
 //	if(mag_calibration.delimiter != 0xDEADBEEF){
 //		performMagCalibration(2000);
@@ -3898,12 +4122,15 @@ void grabInertialSample(float *pitch, float *roll, float *heading){
 //
 //		osDelay(500);
 	osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
-	if(mag_calibration.delimiter == 0xDEADBEEF){
-		status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_OFFSET_X_REG_L, 1, (uint8_t*) mag_calibration.mag_cal_vals, 6, 100);
+	if (mag_calibration.delimiter == 0xDEADBEEF) {
+		status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR,
+				(lis2mdl_register_t) LIS2MDL_OFFSET_X_REG_L, 1,
+				(uint8_t*) mag_calibration.mag_cal_vals, 6, 100);
 	}
 
 	// new data available
-	status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_OFFSET_X_REG_L, 1,magData, 6, 100);
+	status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR,
+			(lis2mdl_register_t) LIS2MDL_OFFSET_X_REG_L, 1, magData, 6, 100);
 //	osMutexRelease(messageI2C1_LockHandle);
 	//	  readFRAM(FRAM_MAG_CAL_WORD_ADDR, FRAM_MAG_CAL_BYTE_ADDR, mag_cal_vals, FRAM_MAG_CAL_SIZE);
 	//	  writeFRAM(FRAM_MAG_CAL_WORD_ADDR, FRAM_MAG_CAL_BYTE_ADDR, mag_cal_vals, FRAM_MAG_CAL_SIZE);
@@ -3912,29 +4139,32 @@ void grabInertialSample(float *pitch, float *roll, float *heading){
 	//	mag_cal_vals[2] = 159;
 	//	status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_OFFSET_X_REG_L, 1, (uint8_t*) mag_cal_vals, 6, 100);
 //	osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
-	status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_STATUS_REG, 1,&rxData, 1, 100);
+	status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR,
+			(lis2mdl_register_t) LIS2MDL_STATUS_REG, 1, &rxData, 1, 100);
 	osMutexRelease(messageI2C1_LockHandle);
-	if( (rxData & 0x08) == 0x08){
+	if ((rxData & 0x08) == 0x08) {
 		// new data available
 		osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
-		status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_OUTX_L_REG, 1,magData, 6, 100);
+		status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR,
+				(lis2mdl_register_t) LIS2MDL_OUTX_L_REG, 1, magData, 6, 100);
 		osMutexRelease(messageI2C1_LockHandle);
 
-		HAL_Delay(500);
+		osDelay(500);
 
 		osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
-		status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_OUTX_L_REG, 1,magData, 6, 100);
+		status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR,
+				(lis2mdl_register_t) LIS2MDL_OUTX_L_REG, 1, magData, 6, 100);
 		osMutexRelease(messageI2C1_LockHandle);
 
-		if(status == HAL_OK){
+		if (status == HAL_OK) {
 			x_mag = ((int16_t) (((uint16_t) magData[1]) << 8)) + magData[0];
 			y_mag = ((int16_t) (((uint16_t) magData[3]) << 8)) + magData[2];
 			z_mag = ((int16_t) (((uint16_t) magData[5]) << 8)) + magData[4];
-		}else{
+		} else {
 
 			Error_Handler();
 		}
-	}else{
+	} else {
 		Error_Handler();
 	}
 
@@ -3951,17 +4181,18 @@ void grabInertialSample(float *pitch, float *roll, float *heading){
 	//	x_acc = -x_acc; //flip x axis to correct for flipped IC
 
 	computePitchRoll((float) x_acc, (float) y_acc, (float) z_acc, pitch, roll);
-	computeHeading((float) x_mag, (float) y_mag, (float) z_mag,
-			*pitch, *roll, heading);
+	computeHeading((float) x_mag, (float) y_mag, (float) z_mag, *pitch, *roll,
+			heading);
 
 	//	*heading = computeHeading((float) x_mag, (float) y_mag);
 }
 
-void performMagCalibration(uint32_t numOfSamples){
+void performMagCalibration(uint32_t numOfSamples) {
 
 	// increase sample rate
 	uint8_t txData = 0b10001100; // ODR 100Hz, temperature compensation,continous mode
-	status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_CFG_REG_A, 1, &txData, 1, 100);
+	status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR,
+			(lis2mdl_register_t) LIS2MDL_CFG_REG_A, 1, &txData, 1, 100);
 
 	/* START MAG CAL */
 	//		if(status == HAL_OK){
@@ -3969,7 +4200,6 @@ void performMagCalibration(uint32_t numOfSamples){
 	//			y_mag_offset = ((int16_t) (((uint16_t) magData[3]) << 8)) + magData[2];
 	//			z_mag_offset = ((int16_t) (((uint16_t) magData[5]) << 8)) + magData[4];
 	//		}
-
 	int32_t min_x = 0;
 	int32_t min_y = 0;
 	int32_t min_z = 0;
@@ -3995,21 +4225,23 @@ void performMagCalibration(uint32_t numOfSamples){
 //	setLED_Blue(500);
 //	setLED_Red(500);
 
-	colorConfig color = {0,0,0,0};
+	colorConfig color = { 0, 0, 0, 0 };
 	color.blue_val = 1000;
 	color.red_val = 1000;
 	color.duration = 100;
 
-	while(sampleCnt < numOfSamples){
-		status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_STATUS_REG, 1,&rxData, 1, 100);
+	while (sampleCnt < numOfSamples) {
+		status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR,
+				(lis2mdl_register_t) LIS2MDL_STATUS_REG, 1, &rxData, 1, 100);
 
-
-		if( (rxData & 0x08) == 0x08){
+		if ((rxData & 0x08) == 0x08) {
 			osMessageQueuePut(ledSeqQueueId, &color, 0, 0);
 			// new data available
-			status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_OUTX_L_REG, 1,magData, 6, 100);
+			status = HAL_I2C_Mem_Read(&hi2c1, MAG_ADDR,
+					(lis2mdl_register_t) LIS2MDL_OUTX_L_REG, 1, magData, 6,
+					100);
 
-			if(status == HAL_OK){
+			if (status == HAL_OK) {
 				x_mag = ((int16_t) (((uint16_t) magData[1]) << 8)) + magData[0];
 				y_mag = ((int16_t) (((uint16_t) magData[3]) << 8)) + magData[2];
 				z_mag = ((int16_t) (((uint16_t) magData[5]) << 8)) + magData[4];
@@ -4024,7 +4256,7 @@ void performMagCalibration(uint32_t numOfSamples){
 			max_z = max(max_z, z_mag);
 
 			sampleCnt++;
-		}else{
+		} else {
 			osDelay(9);
 		}
 	}
@@ -4037,9 +4269,11 @@ void performMagCalibration(uint32_t numOfSamples){
 	mag_calibration.mag_cal_vals[1] = (max_y + min_y) / 2; //218
 	mag_calibration.mag_cal_vals[2] = (max_z + min_z) / 2; //159
 
-	status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_OFFSET_X_REG_L, 1, (uint8_t*) mag_calibration.mag_cal_vals, 6, 100);
+	status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR,
+			(lis2mdl_register_t) LIS2MDL_OFFSET_X_REG_L, 1,
+			(uint8_t*) mag_calibration.mag_cal_vals, 6, 100);
 
-	if(status != HAL_OK){
+	if (status != HAL_OK) {
 		Error_Handler();
 	}
 
@@ -4054,9 +4288,11 @@ void performMagCalibration(uint32_t numOfSamples){
 
 	// put back sample rate
 	txData = 0b10000000; // ODR 10Hz, temperature compensation,continous mode
-	status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR, (lis2mdl_register_t) LIS2MDL_CFG_REG_A, 1, &txData, 1, 100);
+	status = HAL_I2C_Mem_Write(&hi2c1, MAG_ADDR,
+			(lis2mdl_register_t) LIS2MDL_CFG_REG_A, 1, &txData, 1, 100);
 
-	writeFRAM(FRAM_MAG_CAL_WORD_ADDR, FRAM_MAG_CAL_BYTE_ADDR, (uint8_t *) &mag_calibration, FRAM_MAG_CAL_SIZE);
+	writeFRAM(FRAM_MAG_CAL_WORD_ADDR, FRAM_MAG_CAL_BYTE_ADDR,
+			(uint8_t*) &mag_calibration, FRAM_MAG_CAL_SIZE);
 }
 
 #define MAX_BYTES_PER_WAV_FILE 2000000000
@@ -4072,7 +4308,7 @@ tflac_u32 frame_size = 1152;
 //wav_decoder w = WAV_DECODER_ZERO;
 tflac t;
 
-void startRecord(uint32_t recording_duration_s, char *folder_name){
+void startRecord(uint32_t recording_duration_s, char *folder_name) {
 	uint64_t totalBytesWrittenToFile = 0;
 	uint64_t totalBuffersWritten = 0;
 
@@ -4083,41 +4319,45 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 
 	uint8_t *buffer = NULL;
 
-	colorConfig color = {0,0,0,0};
+	colorConfig color = { 0, 0, 0, 0 };
 	color.blue_val = 70;
 	color.duration = 100;
 
 	/* all the possible frequencies below */
 
 	// assuming stereo recording
-	uint32_t max_seconds_per_file = MAX_BYTES_PER_WAV_FILE / (hsai_BlockA1.Init.AudioFrequency * 4);
-	uint32_t max_bytes_per_file = max_seconds_per_file * hsai_BlockA1.Init.AudioFrequency * 4;
+	uint32_t max_seconds_per_file = MAX_BYTES_PER_WAV_FILE
+			/ (hsai_BlockA1.Init.AudioFrequency * 4);
+	uint32_t max_bytes_per_file = max_seconds_per_file
+			* hsai_BlockA1.Init.AudioFrequency * 4;
 	//	uint32_t file_byte_counter = max_bytes_per_file;
 
 	uint32_t max_bytes_for_session;
-	if(recording_duration_s != 0){
-		max_bytes_for_session = recording_duration_s * hsai_BlockA1.Init.AudioFrequency * 4;
-	}else{
+	if (recording_duration_s != 0) {
+		max_bytes_for_session = recording_duration_s
+				* hsai_BlockA1.Init.AudioFrequency * 4;
+	} else {
 		max_bytes_for_session = 0;
 	}
 	// find a half buffer size that divides into the audio frequency so we can cutoff recordings at one second precision
-	buffer_half_size = greatest_divisor(hsai_BlockA1.Init.AudioFrequency, AUDIO_BUFFER_HALF_LEN);
+	buffer_half_size = greatest_divisor(hsai_BlockA1.Init.AudioFrequency,
+			AUDIO_BUFFER_HALF_LEN);
 	buffer_size = buffer_half_size * 2;
 
 	uint16_t update_file_header_period_s = 30;
-	uint16_t half_buffers_per_period = update_file_header_period_s *
-			(hsai_BlockA1.Init.AudioFrequency / buffer_half_size);
+	uint16_t half_buffers_per_period = update_file_header_period_s
+			* (hsai_BlockA1.Init.AudioFrequency / buffer_half_size);
 
 	uint32_t half_buffers_per_session;
-	if(recording_duration_s != 0){
-		half_buffers_per_session = recording_duration_s *
-				(hsai_BlockA1.Init.AudioFrequency/buffer_half_size) * 2;
-	}else{
+	if (recording_duration_s != 0) {
+		half_buffers_per_session = recording_duration_s
+				* (hsai_BlockA1.Init.AudioFrequency / buffer_half_size) * 2;
+	} else {
 		half_buffers_per_session = 0;
 	}
 
 	char file_name[20] = "wav_";
-	char file_path[40] = {0};
+	char file_path[40] = { 0 };
 	strcpy(file_path, folder_name);
 
 	uint32_t file_index = 0;
@@ -4125,14 +4365,16 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 	uint32_t flag = 0;
 
 	//	triggerSound();
-	if(!configPacket.payload.config_packet.audio_config.audio_compression.enabled){
+	if (!configPacket.payload.config_packet.audio_config.audio_compression.enabled) {
 		sprintf(file_name, "/audio_%lu.wav", file_index);
 		strcat(file_path, file_name);
-	}else{
-		if(COMPRESSION_TYPE_FLAC == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+	} else {
+		if (COMPRESSION_TYPE_FLAC
+				== configPacket.payload.config_packet.audio_config.audio_compression.compression_type) {
 			sprintf(file_name, "/audio_%lu.flac", file_index);
 			strcat(file_path, file_name);
-		}else if(COMPRESSION_TYPE_OPUS == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+		} else if (COMPRESSION_TYPE_OPUS
+				== configPacket.payload.config_packet.audio_config.audio_compression.compression_type) {
 			sprintf(file_name, "/audio_%lu.opus", file_index);
 			strcat(file_path, file_name);
 		}
@@ -4143,78 +4385,102 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 	setLED_Green(0);
 
 	/* Create a new file */
-	if(f_open(&WavFile, file_path, FA_CREATE_ALWAYS | FA_WRITE) == FR_OK)
-	{
+	if (f_open(&WavFile, file_path, FA_CREATE_ALWAYS | FA_WRITE) == FR_OK) {
 		//		FRESULT fr = updateFileTimestamp(file_name, &hrtc);
 
-		f_lseek(&WavFile,0);
+		f_lseek(&WavFile, 0);
 
 		/* Initialize header file */
-		if(!configPacket.payload.config_packet.audio_config.audio_compression.enabled){
+		if (!configPacket.payload.config_packet.audio_config.audio_compression.enabled) {
 			WavProcess_EncInit(hsai_BlockA1.Init.AudioFrequency, pHeaderBuff);
-		}else{
-			if(COMPRESSION_TYPE_FLAC == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+		} else {
+			if (COMPRESSION_TYPE_FLAC
+					== configPacket.payload.config_packet.audio_config.audio_compression.compression_type) {
 				tflac_init(&t);
 				t.samplerate = 48000;
-				t.channels   = 2;
-				t.bitdepth   = 16;
-				t.blocksize  = AUDIO_BUFFER_HALF_LEN;
+				t.channels = 2;
+				t.bitdepth = 16;
+				t.blocksize = AUDIO_BUFFER_HALF_LEN;
 				t.max_partition_order = 3;
 
 				tflac_mem = malloc(tflac_size_memory(t.blocksize));
-				if(tflac_mem == NULL) Error_Handler();
+				if (tflac_mem == NULL)
+					Error_Handler();
 
 				tflac_set_constant_subframe(&t, 1);
 				tflac_set_fixed_subframe(&t, 1);
 
-				if(tflac_validate(&t, tflac_mem, tflac_size_memory(t.blocksize)) != 0) Error_Handler();
+				if (tflac_validate(&t, tflac_mem,
+						tflac_size_memory(t.blocksize)) != 0)
+					Error_Handler();
 
-				bufferlen = tflac_size_frame(t.blocksize,t.channels,t.bitdepth);
+				bufferlen = tflac_size_frame(t.blocksize, t.channels,
+						t.bitdepth);
 				buffer = (uint8_t*) malloc(bufferlen);
-				if(buffer == NULL) Error_Handler();
+				if (buffer == NULL)
+					Error_Handler();
 
-			}else if(COMPRESSION_TYPE_OPUS == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+			} else if (COMPRESSION_TYPE_OPUS
+					== configPacket.payload.config_packet.audio_config.audio_compression.compression_type) {
 				//todo: OPUS compression init
 			}
 		}
 
 		/* Write header file */
-		if(!configPacket.payload.config_packet.audio_config.audio_compression.enabled){
-			if(f_write(&WavFile, pHeaderBuff, 44, (UINT*)&byteswritten) != FR_OK) Error_Handler();
+		if (!configPacket.payload.config_packet.audio_config.audio_compression.enabled) {
+			if (f_write(&WavFile, pHeaderBuff, 44, (UINT*) &byteswritten)
+					!= FR_OK)
+				Error_Handler();
 			totalBytesWrittenToFile += 44;
-		}else{
-			if(COMPRESSION_TYPE_FLAC == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+		} else {
+			if (COMPRESSION_TYPE_FLAC
+					== configPacket.payload.config_packet.audio_config.audio_compression.compression_type) {
 				//todo: FLAC compression
-			}else if(COMPRESSION_TYPE_OPUS == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+			} else if (COMPRESSION_TYPE_OPUS
+					== configPacket.payload.config_packet.audio_config.audio_compression.compression_type) {
 				//todo: OPUS compression
 			}
 		}
 
 		//		HAL_SAI_Receive(&hsai_BlockA1, (uint8_t*) audioSample, buffer_size, 2000); //prime SAI channels
-		hal_status = HAL_SAI_Receive_DMA(&hsai_BlockA1, (uint8_t*) audioSample, buffer_size);
+		hal_status = HAL_SAI_Receive_DMA(&hsai_BlockA1, (uint8_t*) audioSample,
+				buffer_size);
 
 		/* continue recording until max bytes written */
-		while((totalBuffersWritten <= half_buffers_per_session) || (half_buffers_per_session == 0)){
-			while( (sampleCntr <= half_buffers_per_period) && ((totalBuffersWritten <= half_buffers_per_session) || (half_buffers_per_session == 0))){
+		while ((totalBuffersWritten <= half_buffers_per_session)
+				|| (half_buffers_per_session == 0)) {
+			while ((sampleCntr <= half_buffers_per_period)
+					&& ((totalBuffersWritten <= half_buffers_per_session)
+							|| (half_buffers_per_session == 0))) {
 //				osDelay(osWaitForever);
 				// Wait for a notification
-				flag = osThreadFlagsWait(0x0001U | TERMINATE_EVENT, osFlagsWaitAny, osWaitForever);
+				flag = osThreadFlagsWait(0x0001U | TERMINATE_EVENT,
+						osFlagsWaitAny, osWaitForever);
 
-				if( (sampleCntr % 20) == 0) osMessageQueuePut(ledSeqQueueId, &color, 0, 0);
+				if ((sampleCntr % 20) == 0)
+					osMessageQueuePut(ledSeqQueueId, &color, 0, 0);
 
-				if(SAI_HALF_CALLBACK){
+				if (SAI_HALF_CALLBACK) {
 					SAI_HALF_CALLBACK = 0;
 
-					if(!configPacket.payload.config_packet.audio_config.audio_compression.enabled){
+					if (!configPacket.payload.config_packet.audio_config.audio_compression.enabled) {
 						FRESULT res;
-						res = f_write(&WavFile, audioSample, buffer_half_size * 2, (UINT*)&byteswritten);
-						if(res != FR_OK) Error_Handler();
-					}else{
-						if(COMPRESSION_TYPE_FLAC == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+						res = f_write(&WavFile, audioSample,
+								buffer_half_size * 2, (UINT*) &byteswritten);
+						if (res != FR_OK)
+							Error_Handler();
+					} else {
+						if (COMPRESSION_TYPE_FLAC
+								== configPacket.payload.config_packet.audio_config.audio_compression.compression_type) {
 							//todo: FLAC compression
-							if(tflac_encode_s16i(&t, frames, samples, audioSample, bufferlen, &bufferused) != 0) Error_Handler();
-							if(f_write(&WavFile, buffer, bufferused, (UINT*)&byteswritten) != FR_OK) Error_Handler();
-						}else if(COMPRESSION_TYPE_OPUS == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+							if (tflac_encode_s16i(&t, frames, samples,
+									audioSample, bufferlen, &bufferused) != 0)
+								Error_Handler();
+							if (f_write(&WavFile, buffer, bufferused,
+									(UINT*) &byteswritten) != FR_OK)
+								Error_Handler();
+						} else if (COMPRESSION_TYPE_OPUS
+								== configPacket.payload.config_packet.audio_config.audio_compression.compression_type) {
 							//todo: OPUS compression
 						}
 					}
@@ -4223,17 +4489,26 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 					totalBytesWrittenToFile += buffer_half_size * 2;
 				}
 
-				if(SAI_FULL_CALLBACK){
+				if (SAI_FULL_CALLBACK) {
 					SAI_FULL_CALLBACK = 0;
 
-					if(!configPacket.payload.config_packet.audio_config.audio_compression.enabled){
-						if(f_write(&WavFile, &audioSample[buffer_half_size], buffer_half_size * 2, (UINT*)&byteswritten) != FR_OK) Error_Handler();
-					}else{
-						if(COMPRESSION_TYPE_FLAC == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+					if (!configPacket.payload.config_packet.audio_config.audio_compression.enabled) {
+						if (f_write(&WavFile, &audioSample[buffer_half_size],
+								buffer_half_size * 2, (UINT*) &byteswritten)
+								!= FR_OK)
+							Error_Handler();
+					} else {
+						if (COMPRESSION_TYPE_FLAC
+								== configPacket.payload.config_packet.audio_config.audio_compression.compression_type) {
 							//todo: FLAC compression
-							if(tflac_encode_s16i(&t, frames, samples, audioSample, bufferlen, &bufferused) != 0) Error_Handler();
-							if(f_write(&WavFile, buffer, bufferused, (UINT*)&byteswritten) != FR_OK) Error_Handler();
-						}else if(COMPRESSION_TYPE_OPUS == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+							if (tflac_encode_s16i(&t, frames, samples,
+									audioSample, bufferlen, &bufferused) != 0)
+								Error_Handler();
+							if (f_write(&WavFile, buffer, bufferused,
+									(UINT*) &byteswritten) != FR_OK)
+								Error_Handler();
+						} else if (COMPRESSION_TYPE_OPUS
+								== configPacket.payload.config_packet.audio_config.audio_compression.compression_type) {
 							//todo: OPUS compression
 						}
 					}
@@ -4242,8 +4517,9 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 					totalBytesWrittenToFile += buffer_half_size * 2;
 				}
 
-				if((flag & TERMINATE_EVENT) == TERMINATE_EVENT){
-					if(configPacket.payload.config_packet.network_state.master_node) sendConfigToNodes(false);
+				if ((flag & TERMINATE_EVENT) == TERMINATE_EVENT) {
+					if (configPacket.payload.config_packet.network_state.master_node)
+						sendConfigToNodes(false);
 
 					color.blue_val = 0;
 					color.red_val = 1000;
@@ -4252,17 +4528,17 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 					osMessageQueuePut(ledSeqQueueId, &color, 0, 0);
 					f_close(&WavFile);
 					HAL_SAI_DMAStop(&hsai_BlockA1);
-					vTaskDelete( NULL );
+					vTaskDelete( NULL);
 				}
 			}
 
 			sampleCntr = 0;
 
-
-			if(!configPacket.payload.config_packet.audio_config.audio_compression.enabled){
+			if (!configPacket.payload.config_packet.audio_config.audio_compression.enabled) {
 				WavUpdateHeaderSize(totalBytesWrittenToFile);
-			}else{
-				if(COMPRESSION_TYPE_FLAC == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+			} else {
+				if (COMPRESSION_TYPE_FLAC
+						== configPacket.payload.config_packet.audio_config.audio_compression.compression_type) {
 					//todo: FLAC compression
 					//				    /* this will calculate the final MD5 */
 					//				    tflac_finalize(&t);
@@ -4271,14 +4547,15 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 					//				    fseek(output,4,SEEK_SET);
 					//				    tflac_encode_streaminfo(&t, 1, buffer, bufferlen, &bufferused);
 					//				    fwrite(buffer,1,bufferused,output);
-				}else if(COMPRESSION_TYPE_OPUS == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+				} else if (COMPRESSION_TYPE_OPUS
+						== configPacket.payload.config_packet.audio_config.audio_compression.compression_type) {
 					//todo: OPUS compression
 				}
 			}
 
-
-
-			if((totalBytesWrittenToFile > max_bytes_per_file) || ( (totalBuffersWritten > half_buffers_per_session) && (half_buffers_per_session != 0))){
+			if ((totalBytesWrittenToFile > max_bytes_per_file)
+					|| ((totalBuffersWritten > half_buffers_per_session)
+							&& (half_buffers_per_session != 0))) {
 
 				// Close the file
 				f_close(&WavFile);
@@ -4288,7 +4565,9 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 
 				totalBytesWrittenToFile = 0;
 
-				if((totalBuffersWritten > half_buffers_per_session) && (half_buffers_per_session != 0)) break;
+				if ((totalBuffersWritten > half_buffers_per_session)
+						&& (half_buffers_per_session != 0))
+					break;
 
 				//					WavProcess_EncInit(hsai_BlockA1.Init.AudioFrequency, pHeaderBuff);
 				file_index++;
@@ -4296,34 +4575,40 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 				memset(file_path, '\0', sizeof(file_path));
 				strcpy(file_path, folder_name);
 
-				if(!configPacket.payload.config_packet.audio_config.audio_compression.enabled){
+				if (!configPacket.payload.config_packet.audio_config.audio_compression.enabled) {
 					sprintf(file_name, "/audio_%u.wav", file_index);
 					strcat(file_path, file_name);
-				}else{
-					if(COMPRESSION_TYPE_FLAC == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+				} else {
+					if (COMPRESSION_TYPE_FLAC
+							== configPacket.payload.config_packet.audio_config.audio_compression.compression_type) {
 						sprintf(file_name, "/audio_%u.flac", file_index);
 						strcat(file_path, file_name);
-					}else if(COMPRESSION_TYPE_OPUS == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+					} else if (COMPRESSION_TYPE_OPUS
+							== configPacket.payload.config_packet.audio_config.audio_compression.compression_type) {
 						sprintf(file_name, "/audio_%u.opus", file_index);
 						strcat(file_path, file_name);
 					}
 				}
 
-				if(f_open(&WavFile, file_path, FA_CREATE_ALWAYS | FA_WRITE) != FR_OK){
+				if (f_open(&WavFile, file_path, FA_CREATE_ALWAYS | FA_WRITE)
+						!= FR_OK) {
 					Error_Handler();
 				}
 
-				f_lseek(&WavFile,0);
+				f_lseek(&WavFile, 0);
 
-				if(!configPacket.payload.config_packet.audio_config.audio_compression.enabled){
-					if(f_write(&WavFile, pHeaderBuff, 44, (UINT*)&byteswritten) != FR_OK){
+				if (!configPacket.payload.config_packet.audio_config.audio_compression.enabled) {
+					if (f_write(&WavFile, pHeaderBuff, 44,
+							(UINT*) &byteswritten) != FR_OK) {
 						Error_Handler();
 					}
 					totalBytesWrittenToFile += 44;
-				}else{
-					if(COMPRESSION_TYPE_FLAC == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+				} else {
+					if (COMPRESSION_TYPE_FLAC
+							== configPacket.payload.config_packet.audio_config.audio_compression.compression_type) {
 						//todo: FLAC compression
-					}else if(COMPRESSION_TYPE_OPUS == configPacket.payload.config_packet.audio_config.audio_compression.compression_type){
+					} else if (COMPRESSION_TYPE_OPUS
+							== configPacket.payload.config_packet.audio_config.audio_compression.compression_type) {
 						//todo: OPUS compression
 					}
 				}
@@ -4332,7 +4617,8 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 
 		}
 
-		if(configPacket.payload.config_packet.network_state.master_node) sendConfigToNodes(false);
+		if (configPacket.payload.config_packet.network_state.master_node)
+			sendConfigToNodes(false);
 
 		HAL_SAI_DMAStop(&hsai_BlockA1);
 
@@ -4351,7 +4637,7 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 //			osDelay(100);
 //		}
 
-		vTaskDelete( NULL );
+		vTaskDelete( NULL);
 
 		//			if(f_lseek(&WavFile, 0) == FR_OK)
 		//			{
@@ -4372,60 +4658,73 @@ void startRecord(uint32_t recording_duration_s, char *folder_name){
 
 		return;
 
-	}else{
+	} else {
 		Error_Handler();
 	}
 }
 
-
-void writeSystemStateToFRAM(void){
+void writeSystemStateToFRAM(void) {
 	HAL_StatusTypeDef status;
-	do{
-	 status = HAL_I2C_Mem_Write(&hi2c3, FRAM_CONFIG_WORD_ADDR, FRAM_CONFIG_BYTE_ADDR, 1, (uint8_t*) &configPacket, sizeof(configPacket), 1000);
-	}while(status == HAL_BUSY && (osOK == osDelay(100)));
+	do {
+		status = HAL_I2C_Mem_Write(&hi2c3, FRAM_CONFIG_WORD_ADDR,
+				FRAM_CONFIG_BYTE_ADDR, 1, (uint8_t*) &configPacket,
+				sizeof(configPacket), 1000);
+	} while (status == HAL_BUSY && (osOK == osDelay(100)));
 
-	do{
-		status = HAL_I2C_Mem_Write(&hi2c3, FRAM_INFO_WORD_ADDR, FRAM_INFO_BYTE_ADDR, 1, (uint8_t*) &infoPacket, sizeof(infoPacket), 1000);
-	}while(status == HAL_BUSY && (osOK == osDelay(100)));
+	do {
+		status = HAL_I2C_Mem_Write(&hi2c3, FRAM_INFO_WORD_ADDR,
+				FRAM_INFO_BYTE_ADDR, 1, (uint8_t*) &infoPacket,
+				sizeof(infoPacket), 1000);
+	} while (status == HAL_BUSY && (osOK == osDelay(100)));
 
-	if(status != HAL_OK) Error_Handler();
+	if (status != HAL_OK)
+		Error_Handler();
 }
 
-void writeSystemInfoToFRAM(void){
+void writeSystemInfoToFRAM(void) {
 	HAL_StatusTypeDef status;
-	do{
-		status = HAL_I2C_Mem_Write(&hi2c3, FRAM_INFO_WORD_ADDR, FRAM_INFO_BYTE_ADDR, 1, (uint8_t*) &infoPacket, sizeof(infoPacket), 1000);
-	}while(status == HAL_BUSY && (osOK == osDelay(100)));
+	do {
+		status = HAL_I2C_Mem_Write(&hi2c3, FRAM_INFO_WORD_ADDR,
+				FRAM_INFO_BYTE_ADDR, 1, (uint8_t*) &infoPacket,
+				sizeof(infoPacket), 1000);
+	} while (status == HAL_BUSY && (osOK == osDelay(100)));
 
-	if(status != HAL_OK) Error_Handler();
+	if (status != HAL_OK)
+		Error_Handler();
 }
 
-void writeSystemConfigToFRAM(void){
+void writeSystemConfigToFRAM(void) {
 	HAL_StatusTypeDef status;
-	do{
-		status = HAL_I2C_Mem_Write(&hi2c3, FRAM_CONFIG_WORD_ADDR, FRAM_CONFIG_BYTE_ADDR, 1, (uint8_t*) &configPacket, sizeof(configPacket), 1000);
-	}while(status == HAL_BUSY && (osOK == osDelay(100)));
+	do {
+		status = HAL_I2C_Mem_Write(&hi2c3, FRAM_CONFIG_WORD_ADDR,
+				FRAM_CONFIG_BYTE_ADDR, 1, (uint8_t*) &configPacket,
+				sizeof(configPacket), 1000);
+	} while (status == HAL_BUSY && (osOK == osDelay(100)));
 
-	if(status != HAL_OK) Error_Handler();
+	if (status != HAL_OK)
+		Error_Handler();
 }
 
-void readSystemStateToFRAM(void){
+void readSystemStateToFRAM(void) {
 	volatile HAL_StatusTypeDef status;
-	do{
-		status = HAL_I2C_Mem_Read(&hi2c3, FRAM_CONFIG_WORD_ADDR, FRAM_CONFIG_BYTE_ADDR, 1, (uint8_t*) &configPacket, sizeof(configPacket), 1000);
-	}while(status == HAL_BUSY && (osOK == osDelay(100)));
+	do {
+		status = HAL_I2C_Mem_Read(&hi2c3, FRAM_CONFIG_WORD_ADDR,
+				FRAM_CONFIG_BYTE_ADDR, 1, (uint8_t*) &configPacket,
+				sizeof(configPacket), 1000);
+	} while (status == HAL_BUSY && (osOK == osDelay(100)));
 
-	do{
-		status = HAL_I2C_Mem_Read(&hi2c3, FRAM_INFO_WORD_ADDR, FRAM_INFO_BYTE_ADDR, 1, (uint8_t*) &infoPacket, sizeof(infoPacket), 1000);
-	}while(status == HAL_BUSY && (osOK == osDelay(100)));
+	do {
+		status = HAL_I2C_Mem_Read(&hi2c3, FRAM_INFO_WORD_ADDR,
+				FRAM_INFO_BYTE_ADDR, 1, (uint8_t*) &infoPacket,
+				sizeof(infoPacket), 1000);
+	} while (status == HAL_BUSY && (osOK == osDelay(100)));
 
-	if(status != HAL_OK) Error_Handler();
+	if (status != HAL_OK)
+		Error_Handler();
 }
 
 #define MAX_PRECISION	(10)
-static const double rounders[MAX_PRECISION + 1] =
-{
-		0.5,				// 0
+static const double rounders[MAX_PRECISION + 1] = { 0.5,				// 0
 		0.05,				// 1
 		0.005,				// 2
 		0.0005,				// 3
@@ -4436,13 +4735,12 @@ static const double rounders[MAX_PRECISION + 1] =
 		0.000000005,		// 8
 		0.0000000005,		// 9
 		0.00000000005		// 10
-};
+		};
 
-char * ftoa(double f, char * buf, int precision)
-{
-	char * ptr = buf;
-	char * p = ptr;
-	char * p1;
+char* ftoa(double f, char *buf, int precision) {
+	char *ptr = buf;
+	char *p = ptr;
+	char *p1;
 	char c;
 	long intPart;
 
@@ -4451,21 +4749,27 @@ char * ftoa(double f, char * buf, int precision)
 		precision = MAX_PRECISION;
 
 	// sign stuff
-	if (f < 0)
-	{
+	if (f < 0) {
 		f = -f;
 		*ptr++ = '-';
 	}
 
 	if (precision < 0)  // negative precision == automatic precision guess
-	{
-		if (f < 1.0) precision = 6;
-		else if (f < 10.0) precision = 5;
-		else if (f < 100.0) precision = 4;
-		else if (f < 1000.0) precision = 3;
-		else if (f < 10000.0) precision = 2;
-		else if (f < 100000.0) precision = 1;
-		else precision = 0;
+			{
+		if (f < 1.0)
+			precision = 6;
+		else if (f < 10.0)
+			precision = 5;
+		else if (f < 100.0)
+			precision = 4;
+		else if (f < 1000.0)
+			precision = 3;
+		else if (f < 10000.0)
+			precision = 2;
+		else if (f < 100000.0)
+			precision = 1;
+		else
+			precision = 0;
 	}
 
 	// round value according the precision
@@ -4478,14 +4782,12 @@ char * ftoa(double f, char * buf, int precision)
 
 	if (!intPart)
 		*ptr++ = '0';
-	else
-	{
+	else {
 		// save start pointer
 		p = ptr;
 
 		// convert (reverse order)
-		while (intPart)
-		{
+		while (intPart) {
 			*p++ = '0' + intPart % 10;
 			intPart /= 10;
 		}
@@ -4494,8 +4796,7 @@ char * ftoa(double f, char * buf, int precision)
 		p1 = p;
 
 		// reverse result
-		while (p > ptr)
-		{
+		while (p > ptr) {
 			c = *--p;
 			*p = *ptr;
 			*ptr++ = c;
@@ -4506,14 +4807,12 @@ char * ftoa(double f, char * buf, int precision)
 	}
 
 	// decimal part
-	if (precision)
-	{
+	if (precision) {
 		// place decimal point
 		*ptr++ = '.';
 
 		// convert
-		while (precision--)
-		{
+		while (precision--) {
 			f *= 10.0;
 			c = f;
 			*ptr++ = '0' + c;
@@ -4529,17 +4828,14 @@ char * ftoa(double f, char * buf, int precision)
 
 // Function to convert RTC time to FatFs time format
 WORD getFatTime(const RTC_TimeTypeDef *time, const RTC_DateTypeDef *date) {
-	return   ((WORD)(date->Year + 20) << 9)
-			| ((WORD)(date->Month) << 5)
-			| ((WORD)(date->Date))
-			| ((WORD)(time->Hours) << 11)
-			| ((WORD)(time->Minutes) << 5)
-			| ((WORD)(time->Seconds) >> 1);
+	return ((WORD) (date->Year + 20) << 9) | ((WORD) (date->Month) << 5)
+			| ((WORD) (date->Date)) | ((WORD) (time->Hours) << 11)
+			| ((WORD) (time->Minutes) << 5) | ((WORD) (time->Seconds) >> 1);
 }
 
-
 // Function to compute the pitch and roll from accelerometer data
-void computePitchRoll(float x_acc, float y_acc, float z_acc, float* pitch, float* roll) {
+void computePitchRoll(float x_acc, float y_acc, float z_acc, float *pitch,
+		float *roll) {
 	float ax = x_acc / 16384.0f; // Assuming full-scale range is +/- 2g and 16-bit data
 	float ay = y_acc / 16384.0f;
 	float az = z_acc / 16384.0f;
@@ -4549,7 +4845,8 @@ void computePitchRoll(float x_acc, float y_acc, float z_acc, float* pitch, float
 }
 
 // Function to compute the yaw (heading) from magnetometer data
-void computeHeading(float x_mag, float y_mag, float z_mag, float pitch, float roll, float* heading) {
+void computeHeading(float x_mag, float y_mag, float z_mag, float pitch,
+		float roll, float *heading) {
 	float mx = x_mag * 1.5f; // 1.5 mgauss/LSB
 	float my = y_mag * 1.5f;
 	float mz = z_mag * 1.5f;
@@ -4564,9 +4861,9 @@ void computeHeading(float x_mag, float y_mag, float z_mag, float pitch, float ro
 	float Yh = mx * sinRoll * sinPitch + my * cosRoll - mz * sinRoll * cosPitch;
 
 	*heading = atan2(Yh, Xh) * 180.0 / PI;
-	if (*heading < 0) *heading += 360.0;
+	if (*heading < 0)
+		*heading += 360.0;
 }
-
 
 //// Function to compute heading from magnetometer data
 //float computeHeading(float mx, float my) {
@@ -4592,7 +4889,7 @@ void computeHeading(float x_mag, float y_mag, float z_mag, float pitch, float ro
 //}
 
 // Function to update the file's timestamp
-FRESULT updateFileTimestamp(char* path, RTC_HandleTypeDef *hrtc) {
+FRESULT updateFileTimestamp(char *path, RTC_HandleTypeDef *hrtc) {
 	FILINFO fno;
 	RTC_TimeTypeDef sTime;
 	RTC_DateTypeDef sDate;
@@ -4618,7 +4915,6 @@ uint32_t greatest_divisor(int audioFrequency, int half_buffer_size) {
 	return 0;
 }
 
-
 void getFormattedTime(RTC_HandleTypeDef *hrtc, char *formattedTime) {
 	RTC_TimeTypeDef sTime;
 	RTC_DateTypeDef sDate;
@@ -4629,25 +4925,25 @@ void getFormattedTime(RTC_HandleTypeDef *hrtc, char *formattedTime) {
 
 	// Format the time into the provided character array
 	snprintf(formattedTime, 25, "%02dy_%02dm_%02dd_%02dh_%02dm_%02ds",
-			sDate.Year, sDate.Month, sDate.Date,
-			sTime.Hours, sTime.Minutes, sTime.Seconds);
+			sDate.Year, sDate.Month, sDate.Date, sTime.Hours, sTime.Minutes,
+			sTime.Seconds);
 }
 
-void disableAudioPeripherals(void){
+void disableAudioPeripherals(void) {
 	HAL_SAI_DeInit(&hsai_BlockA1);
 
 	/* Turn off microphone and ADC */
 	disableExtAudioDevices();
 }
 
-void disableExtAudioDevices(void){
+void disableExtAudioDevices(void) {
 	systemState.isMicrophoneActive = false;
 	EnableExtADC(false);
 //	HAL_GPIO_WritePin(EN_MIC_PWR_GPIO_Port, EN_MIC_PWR_Pin, GPIO_PIN_RESET);
 	Control_Microphone_FRAM_Power(false);
 }
 
-void enableExtAudioDevices(void){
+void enableExtAudioDevices(void) {
 	systemState.isMicrophoneActive = true;
 	Control_Microphone_FRAM_Power(true);
 	osDelay(2);
@@ -4655,10 +4951,10 @@ void enableExtAudioDevices(void){
 	osDelay(50);
 }
 
-
-void sampleTask(void *argument){
+void sampleTask(void *argument) {
 	audio_config_t audio_config;
-	memcpy((uint8_t*) &audio_config,(uint8_t*)argument,sizeof(audio_config_t));
+	memcpy((uint8_t*) &audio_config, (uint8_t*) argument,
+			sizeof(audio_config_t));
 
 	//	if(audio_config.has_audio_compression){}
 	//	if(audio_config.sample_freq == MIC_SAMPLE_FREQ_SAMPLE_RATE_44100){}
@@ -4668,11 +4964,11 @@ void sampleTask(void *argument){
 
 	uint32_t flags = 0;
 
-	while(1){
+	while (1) {
 		osDelay(100);
 
 		flags = osThreadFlagsWait(TERMINATE_EVENT, osFlagsWaitAny, 0);
-		if(flags & TERMINATE_EVENT){
+		if (flags & TERMINATE_EVENT) {
 			//		    osThreadFlagsSet(sampleThreadId, COMPLETE_EVENT);
 			//			osThreadExit();
 			vTaskDelete(NULL);
@@ -4681,9 +4977,8 @@ void sampleTask(void *argument){
 	}
 }
 
-
-void MX_SAI1_Init_Custom(SAI_HandleTypeDef &hsai_handle, uint8_t bit_resolution)
-{
+void MX_SAI1_Init_Custom(SAI_HandleTypeDef &hsai_handle,
+		uint8_t bit_resolution) {
 	hsai_handle.Instance = SAI1_Block_A;
 	hsai_handle.Init.AudioMode = SAI_MODEMASTER_RX;
 	hsai_handle.Init.Synchro = SAI_ASYNCHRONOUS;
@@ -4699,8 +4994,8 @@ void MX_SAI1_Init_Custom(SAI_HandleTypeDef &hsai_handle, uint8_t bit_resolution)
 	//		{
 	//			Error_Handler();
 	//		}
-	if (HAL_SAI_InitProtocol(&hsai_handle, SAI_I2S_STANDARD, bit_resolution, 2) != HAL_OK)
-	{
+	if (HAL_SAI_InitProtocol(&hsai_handle, SAI_I2S_STANDARD, bit_resolution, 2)
+			!= HAL_OK) {
 		Error_Handler();
 	}
 	//
@@ -4746,11 +5041,7 @@ void MX_SAI1_Init_Custom(SAI_HandleTypeDef &hsai_handle, uint8_t bit_resolution)
 	//	  return status;
 }
 
-
-
-
-
-void mainSystemTask(void *argument){
+void mainSystemTask(void *argument) {
 	uint32_t flags = 0;
 	//
 	//	toneSweep(1);
@@ -4765,7 +5056,7 @@ void mainSystemTask(void *argument){
 	uint8_t scheduleRun = 0;
 
 	res = f_mount(&SDFatFs, "", 1);
-	if(res != FR_OK){
+	if (res != FR_OK) {
 		//		if(res == FR_NOT_READY){
 		//
 		//		}else{
@@ -4775,14 +5066,13 @@ void mainSystemTask(void *argument){
 	}
 
 	DWORD free_clusters = 0;
-	f_getfree("",&free_clusters,NULL);
+	f_getfree("", &free_clusters, NULL);
 	infoPacket.payload.system_info_packet.sdcard_state.detected = true;
-	infoPacket.payload.system_info_packet.sdcard_state.space_remaining = ((uint64_t) free_clusters) * 256 * 512 / (1048576);
-
+	infoPacket.payload.system_info_packet.sdcard_state.space_remaining =
+			((uint64_t) free_clusters) * 256 * 512 / (1048576);
 
 	// turn on GPS if not already on
-	if(systemPowerSupervisor.isGPSEnabled &&
-			!systemState.isGPSActive){
+	if (systemPowerSupervisor.isGPSEnabled && !systemState.isGPSActive) {
 		systemState.isGPSActive = true;
 		turnOnGPSandInit();
 //		// try to get a fix on boot
@@ -4793,14 +5083,17 @@ void mainSystemTask(void *argument){
 		standbyGPSMode();
 	}
 
-
 	// WARNING: calculation doesnt work for 24-bit
 	infoPacket.payload.system_info_packet.sdcard_state.estimated_remaining_recording_time =
-			(infoPacket.payload.system_info_packet.sdcard_state.space_remaining * 1048576) /
-			(configPacket.payload.config_packet.audio_config.channel_1 +
-					configPacket.payload.config_packet.audio_config.channel_2) /
-					(configPacket.payload.config_packet.audio_config.bit_resolution + 1) /
-					(getSampleFreq(configPacket.payload.config_packet.audio_config.sample_freq)) / 60 / 60;
+			(infoPacket.payload.system_info_packet.sdcard_state.space_remaining
+					* 1048576)
+					/ (configPacket.payload.config_packet.audio_config.channel_1
+							+ configPacket.payload.config_packet.audio_config.channel_2)
+					/ (configPacket.payload.config_packet.audio_config.bit_resolution
+							+ 1)
+					/ (getSampleFreq(
+							configPacket.payload.config_packet.audio_config.sample_freq))
+					/ 60 / 60;
 
 	/* Create a stream that will write to our buffer. */
 	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
@@ -4808,8 +5101,8 @@ void mainSystemTask(void *argument){
 	status = pb_encode(&stream, PACKET_FIELDS, &infoPacket);
 	PackedPayload.pPayload = (uint8_t*) buffer;
 	PackedPayload.Length = stream.bytes_written;
-	if(status) DTS_STM_UpdateChar(BUZZCAM_INFO_CHAR_UUID, (uint8_t*)&PackedPayload);
-
+	if (status)
+		DTS_STM_UpdateChar(BUZZCAM_INFO_CHAR_UUID, (uint8_t*) &PackedPayload);
 
 //	tamperAlarm(ENABLE);
 //	if(osOK != osMessageQueuePut(txMsgQueueId, &txPacket,0, 0)){
@@ -4819,7 +5112,7 @@ void mainSystemTask(void *argument){
 //		Error_Handler();
 //	}
 
-	colorConfig color = {0,0,0,0};
+	colorConfig color = { 0, 0, 0, 0 };
 	color.red_val = 1000;
 	color.green_val = 1000;
 	color.duration = 1500;
@@ -4833,7 +5126,6 @@ void mainSystemTask(void *argument){
 //	HAL_GPIO_WritePin(EN_MAX78000_GPIO_Port, EN_MAX78000_Pin, GPIO_PIN_SET);
 //	delay_nop(1000000);
 //	HAL_NVIC_EnableIRQ(EXTI9_5_IRQn); // interrupt line from MAX78000
-
 
 //	HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 //	HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
@@ -4850,23 +5142,24 @@ void mainSystemTask(void *argument){
 	//			sampleThreadId = osThreadNew(sampleTask, &configPacket.payload.config_packet.audio_config, &sampleTask_attributes);
 	//		}
 	//	}
-
 	/* battery monitoring thread will never be exited unless SD card is changed */
-	batteryMonitorTaskId = osThreadNew(batteryMonitorTask, NULL, &batteryMonitorTask_attributes);
-	triggerMarkTaskId = osThreadNew(triggerMarkTask, NULL, &triggerMarkTask_attributes);
+	batteryMonitorTaskId = osThreadNew(batteryMonitorTask, NULL,
+			&batteryMonitorTask_attributes);
+	triggerMarkTaskId = osThreadNew(triggerMarkTask, NULL,
+			&triggerMarkTask_attributes);
 //	uwbMessageTaskId = osThreadNew(uwbMessageTask, NULL, &uwbMessageTask_attributes);
-	ledSequencerId = osThreadNew(ledSequencer, NULL, &ledSequencerTask_attributes);
-//	loraGPSId = osThreadNew(loraGPSTask, NULL, &loraGPSTask_attributes);
-	fileWriteSyncTaskId = osThreadNew(fileWriteSyncTask, NULL, &timestampTask_attributes);
+	ledSequencerId = osThreadNew(ledSequencer, NULL,
+			&ledSequencerTask_attributes);
+	loraGPSId = osThreadNew(loraGPSTask, NULL, &loraGPSTask_attributes);
+	fileWriteSyncTaskId = osThreadNew(fileWriteSyncTask, NULL,
+			&timestampTask_attributes);
 
 	configThreadId = osThreadNew(updateSystemConfig,
-										NULL,
-										&configTask_attributes);
+	NULL, &configTask_attributes);
 
-
-	if(configPacket.payload.config_packet.sensor_config.enable_gas ||
-			configPacket.payload.config_packet.sensor_config.enable_humidity ||
-			configPacket.payload.config_packet.sensor_config.enable_temperature){
+	if (configPacket.payload.config_packet.sensor_config.enable_gas
+			|| configPacket.payload.config_packet.sensor_config.enable_humidity
+			|| configPacket.payload.config_packet.sensor_config.enable_temperature) {
 		bmeTaskHandle = osThreadNew(BME_Task, NULL, &bmeTask_attributes);
 	}
 
@@ -4877,36 +5170,44 @@ void mainSystemTask(void *argument){
 
 	//	osDelay(10000);
 
-	if(configPacket.payload.config_packet.network_state.master_node ||
-			(configPacket.payload.config_packet.network_state.slave_sync == 0)){
+	if (configPacket.payload.config_packet.network_state.master_node
+			|| (configPacket.payload.config_packet.network_state.slave_sync == 0)) {
 #if DISABLE_WIRELESS == 0
-		while(coapSetup != 1){
+		while (coapSetup != 1) {
 			osDelay(100);
 		}
 
-		if(configPacket.payload.config_packet.network_state.master_node){
+		if (configPacket.payload.config_packet.network_state.master_node) {
 //			sendConfigToNodes(false);
-			if(osTimerStart (sendSlavesTimestampId, 30000) != osOK) Error_Handler();
+			if (osTimerStart(sendSlavesTimestampId, 30000) != osOK)
+				Error_Handler();
 		}
 #endif
 
-		if(configPacket.payload.config_packet.enable_recording){
+		if (configPacket.payload.config_packet.enable_recording) {
 			/* start immediately if a slave device or no schedule is given */
-			if( (configPacket.payload.config_packet.schedule_config_count == 0) ||
-					(configPacket.payload.config_packet.audio_config.free_run_mode)){
-				micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
+			if ((configPacket.payload.config_packet.schedule_config_count == 0)
+					|| (configPacket.payload.config_packet.audio_config.free_run_mode)) {
+				micThreadId = osThreadNew(acousticSamplingTask, NULL,
+						&micTask_attributes);
 
 			}
 			/* or if a schedule is given, start next alarm or start right away if within schedule */
-			else if(configPacket.payload.config_packet.enable_recording &&
-					(configPacket.payload.config_packet.schedule_config_count > 0)){
+			else if (configPacket.payload.config_packet.enable_recording
+					&& (configPacket.payload.config_packet.schedule_config_count
+							> 0)) {
 				/* start alarm based on schedule */
-				scheduleRun = setAlarm(configPacket.payload.config_packet.schedule_config,
-						configPacket.payload.config_packet.schedule_config_count);
-				if(scheduleRun) micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
+				scheduleRun =
+						setAlarm(
+								configPacket.payload.config_packet.schedule_config,
+								configPacket.payload.config_packet.schedule_config_count);
+				if (scheduleRun)
+					micThreadId = osThreadNew(acousticSamplingTask, NULL,
+							&micTask_attributes);
 			}
 		}
-	}else if(configPacket.payload.config_packet.network_state.slave_sync==1){
+	} else if (configPacket.payload.config_packet.network_state.slave_sync
+			== 1) {
 		//todo: check Openthread network if a master exists, what desired configuration is, and if we should be running
 		/* broadcast that we are a new slave and need config */
 //		alertMaster();
@@ -4914,22 +5215,22 @@ void mainSystemTask(void *argument){
 		configPacket.payload.config_packet.enable_recording = 0;
 	}
 
-	while(1){
+	while (1) {
 
+		flags = osThreadFlagsWait(CONFIG_UPDATED_EVENT |
+		CAMERA_EVENT |
+		FORMAT_MEMORY |
+		OPENTHREAD_EVENT |
+		MAG_CAL_EVENT |
+		UWB_START |
+		UWB_UPDATE_RANGE, osFlagsWaitAny, osWaitForever);
 
-		flags = osThreadFlagsWait (CONFIG_UPDATED_EVENT |
-				CAMERA_EVENT |
-				FORMAT_MEMORY |
-				OPENTHREAD_EVENT |
-				MAG_CAL_EVENT |
-				UWB_START |
-				UWB_UPDATE_RANGE, 		osFlagsWaitAny, osWaitForever);
-
-		if( IS_CONFIG_EVENT(flags) ||
-				IS_MAG_CAL_EVENT(flags) ||
-				(IS_OPENTHREAD_EVENT(flags) && configPacket.payload.config_packet.network_state.slave_sync)){
+		if ( IS_CONFIG_EVENT(flags) || IS_MAG_CAL_EVENT(flags)
+				|| (IS_OPENTHREAD_EVENT(flags)
+						&& configPacket.payload.config_packet.network_state.slave_sync)) {
 			/* shut off threads */
-			if(micThreadId != NULL) osThreadFlagsSet(micThreadId, TERMINATE_EVENT);
+			if (micThreadId != NULL)
+				osThreadFlagsSet(micThreadId, TERMINATE_EVENT);
 			//			if(triggerMarkTaskId != NULL) osThreadFlagsSet(triggerMarkTaskId, TERMINATE_EVENT);
 			osTimerStop(sendSlavesTimestampId);
 			HAL_RTC_DeactivateAlarm(&hrtc, RTC_ALARM_A);
@@ -4942,7 +5243,7 @@ void mainSystemTask(void *argument){
 		//todo: optimize below wait sequence (reference AirSpecs)
 		osDelay(1000); // give time for threads to cancel
 
-		if(IS_UWB_START_EVENT(flags)){
+		if (IS_UWB_START_EVENT(flags)) {
 			//todo: tell UWB chip to start ranging with all known connected devices
 
 		}
@@ -4952,38 +5253,46 @@ void mainSystemTask(void *argument){
 		//
 		//		}
 
-		if(IS_MAG_CAL_EVENT(flags)){
+		if (IS_MAG_CAL_EVENT(flags)) {
 			performMagCalibration(2000);
 		}
 
 		/* if recording is enabled but not a slave node */
-		if(configPacket.payload.config_packet.enable_recording){
-			while(coapSetup != 1){
+		if (configPacket.payload.config_packet.enable_recording) {
+			while (coapSetup != 1) {
 				osDelay(100);
 			}
 
-			if(configPacket.payload.config_packet.network_state.master_node){
-	//			sendConfigToNodes(false);
-				if(osTimerStart (sendSlavesTimestampId, 30000) != osOK) Error_Handler();
+			if (configPacket.payload.config_packet.network_state.master_node) {
+				//			sendConfigToNodes(false);
+				if (osTimerStart(sendSlavesTimestampId, 30000) != osOK)
+					Error_Handler();
 			}
 
-			if(configPacket.payload.config_packet.network_state.slave_sync){
-				micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
+			if (configPacket.payload.config_packet.network_state.slave_sync) {
+				micThreadId = osThreadNew(acousticSamplingTask, NULL,
+						&micTask_attributes);
 			}
 
 			/* start immediately if a slave device or no schedule is given */
-			else if((configPacket.payload.config_packet.schedule_config_count == 0) ||
-					(configPacket.payload.config_packet.audio_config.free_run_mode)){
-				micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
+			else if ((configPacket.payload.config_packet.schedule_config_count
+					== 0)
+					|| (configPacket.payload.config_packet.audio_config.free_run_mode)) {
+				micThreadId = osThreadNew(acousticSamplingTask, NULL,
+						&micTask_attributes);
 			}
 			/* or if a schedule is given, start next alarm or start right away if within schedule */
-			else{
+			else {
 				/* start alarm based on schedule */
-				scheduleRun = setAlarm(configPacket.payload.config_packet.schedule_config,
-						configPacket.payload.config_packet.schedule_config_count);
-				if(scheduleRun){
-					micThreadId = osThreadNew(acousticSamplingTask, NULL, &micTask_attributes);
-					triggerMarkTaskId = osThreadNew(triggerMarkTask, NULL, &triggerMarkTask_attributes);
+				scheduleRun =
+						setAlarm(
+								configPacket.payload.config_packet.schedule_config,
+								configPacket.payload.config_packet.schedule_config_count);
+				if (scheduleRun) {
+					micThreadId = osThreadNew(acousticSamplingTask, NULL,
+							&micTask_attributes);
+					triggerMarkTaskId = osThreadNew(triggerMarkTask, NULL,
+							&triggerMarkTask_attributes);
 				}
 			}
 		}
@@ -5032,25 +5341,24 @@ void mainSystemTask(void *argument){
 	//		}
 	//	}
 
-	while(1){
+	while (1) {
 		osDelay(10);
 	}
 
 	vTaskDelete(NULL);
 }
 
-
-void alertMainTask(void *argument){
+void alertMainTask(void *argument) {
 	osThreadFlagsSet(mainSystemThreadId, CONFIG_UPDATED_EVENT);
 	writeSystemConfigToFRAM();
 //	if((configPacket.payload.config_packet.network_state.master_node == 1)) sendConfigToNodes(false);
 }
 
-void sendSlavesTimestamp(void *argument){
+void sendSlavesTimestamp(void *argument) {
 	sendTimeToNodes();
 }
 
-void loraGPSTask(void *argument){
+void loraGPSTask(void *argument) {
 	uint8_t loraPktRetry = 0;
 	uint32_t flag;
 	uint8_t gpsMsgRetry = 0;
@@ -5087,8 +5395,9 @@ void loraGPSTask(void *argument){
 //	}
 
 	// turn on LoRa if not already on
-	if(systemPowerSupervisor.isLoRaEnabled && !systemState.isLoRaActive){
-		if(!Is_Secondary_Enabled()) Control_Secondary_Power(true);
+	if (systemPowerSupervisor.isLoRaEnabled && !systemState.isLoRaActive) {
+		if (!Is_Secondary_Enabled())
+			Control_Secondary_Power(true);
 		configLoraRadio();
 		sleepModeLoraRadio(SX126X_SLEEP_CFG_WARM_START);
 //		setLoraAlarm();
@@ -5096,16 +5405,14 @@ void loraGPSTask(void *argument){
 		HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 		//todo: is LoRa normally in low power mode if not doing anything?
 
-		RTC_AlarmTypeDef sAlarm = {0};
+		RTC_AlarmTypeDef sAlarm = { 0 };
 		sAlarm.AlarmTime.Hours = 0;
 		sAlarm.AlarmTime.Minutes = 0;
-		sAlarm.AlarmTime.Seconds = 0;  // Trigger when seconds count reaches 0
-		// Mask the hour, minute, and day, so the alarm triggers every minute
-		sAlarm.AlarmMask = RTC_ALARMMASK_DATEWEEKDAY|RTC_ALARMMASK_HOURS|RTC_ALARMMASK_MINUTES;
+		sAlarm.AlarmTime.Seconds = 0;
+		sAlarm.AlarmMask = RTC_ALARMMASK_DATEWEEKDAY | RTC_ALARMMASK_HOURS | RTC_ALARMMASK_MINUTES;
 		sAlarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
 		sAlarm.Alarm = RTC_ALARM_B;
-		if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN) != HAL_OK)
-		{
+		if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN) != HAL_OK) {
 			Error_Handler();
 		}
 
@@ -5114,11 +5421,12 @@ void loraGPSTask(void *argument){
 		systemState.isLoRaActive = true;
 	}
 	// disable LoRa
-	else if (!systemPowerSupervisor.isLoRaEnabled && systemState.isLoRaActive){
+	else if (!systemPowerSupervisor.isLoRaEnabled && systemState.isLoRaActive) {
 		systemState.isLoRaActive = false;
 
 		// accelerometer shares interrupt line
-		if(!systemState.isAccelerometerActive) HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
+		if (!systemState.isAccelerometerActive)
+			HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
 //		HAL_RTC_DeactivateAlarm(&hrtc, RTC_ALARM_B);
 		//todo: is LoRa normally in low power mode if not doing anything?
 
@@ -5126,17 +5434,16 @@ void loraGPSTask(void *argument){
 		Control_Secondary_Power(false);
 	}
 
-
-	while(1){
+	while (1) {
 		flag = osThreadFlagsWait(0x0001U | TERMINATE_EVENT |
-				GPS_GRAB_SAMPLE | GPS_TIMEPULSE_FLAG |
-				LORA_SEND_PKT | LORA_IRQ_FLAG, osFlagsWaitAny, osWaitForever);
+		GPS_GRAB_SAMPLE | GPS_TIMEPULSE_FLAG |
+		LORA_SEND_PKT | LORA_IRQ_FLAG, osFlagsWaitAny, osWaitForever);
 
 //		if(flag == osFlagsErrorResource){
 //			continue;
 //		}
 
-		if((flag & GPS_GRAB_SAMPLE) == GPS_GRAB_SAMPLE){
+		if ((flag & GPS_GRAB_SAMPLE) == GPS_GRAB_SAMPLE) {
 			grabFix(60000);
 
 //			setTimepulseGPS();
@@ -5158,24 +5465,31 @@ void loraGPSTask(void *argument){
 //			}
 //		}
 
-		if((flag & LORA_SEND_PKT) == LORA_SEND_PKT){
+		if ((flag & LORA_SEND_PKT) == LORA_SEND_PKT) {
 			sendLoRa_pkt(&infoPacket);
 		}
 
-		if((flag & LORA_IRQ_FLAG) == LORA_IRQ_FLAG){
-			if(systemState.isLoRaActive){
+		if ((flag & LORA_IRQ_FLAG) == LORA_IRQ_FLAG) {
+			if (systemState.isLoRaActive) {
 				sx126x_chip_status_t sx126x_chip_status;
-				if(SX126X_STATUS_OK != sx126x_get_status( NULL, (sx126x_chip_status_t*) &sx126x_chip_status)) Error_Handler();
-				if(sx126x_chip_status.cmd_status == SX126X_CMD_STATUS_CMD_TX_DONE){
+				if (SX126X_STATUS_OK
+						!= sx126x_get_status( NULL,
+								(sx126x_chip_status_t*) &sx126x_chip_status))
+					Error_Handler();
+				if (sx126x_chip_status.cmd_status
+						== SX126X_CMD_STATUS_CMD_TX_DONE) {
 
 					sleepModeLoraRadio(SX126X_SLEEP_CFG_WARM_START);
 					loraPktRetry = 0;
-				}else if((sx126x_chip_status.cmd_status == SX126X_CMD_STATUS_CMD_TIMEOUT) ||
-						(sx126x_chip_status.cmd_status == SX126X_CMD_STATUS_CMD_PROCESS_ERROR) ||
-						(sx126x_chip_status.cmd_status == SX126X_CMD_STATUS_CMD_EXEC_FAILURE)){
+				} else if ((sx126x_chip_status.cmd_status
+						== SX126X_CMD_STATUS_CMD_TIMEOUT)
+						|| (sx126x_chip_status.cmd_status
+								== SX126X_CMD_STATUS_CMD_PROCESS_ERROR)
+						|| (sx126x_chip_status.cmd_status
+								== SX126X_CMD_STATUS_CMD_EXEC_FAILURE)) {
 					sendLoRa_pkt(&infoPacket);
 					loraPktRetry++;
-					if(loraPktRetry > LORA_PKT_RETRY){
+					if (loraPktRetry > LORA_PKT_RETRY) {
 						Error_Handler();
 					}
 
@@ -5184,7 +5498,7 @@ void loraGPSTask(void *argument){
 
 		}
 
-		if((flag & TERMINATE_EVENT) == TERMINATE_EVENT){
+		if ((flag & TERMINATE_EVENT) == TERMINATE_EVENT) {
 			/* turn off GPS or put in standby mode */
 //			HAL_NVIC_DisableIRQ(EXTI1_IRQn);
 			standbyGPSMode(); // in case we can't fully shut off GPS power, put in software standby
@@ -5194,40 +5508,44 @@ void loraGPSTask(void *argument){
 			HAL_NVIC_DisableIRQ(RTC_Alarm_IRQn);
 			systemState.isLoRaActive = false;
 			// accelerometer shares interrupt line
-			if(!systemState.isAccelerometerActive) HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
+			if (!systemState.isAccelerometerActive)
+				HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
 			HAL_NVIC_DisableIRQ(RTC_Alarm_IRQn);
 			Control_Secondary_Power(false);
 
 			HAL_RTC_DeactivateAlarm(&hrtc, RTC_ALARM_A);
 
-			vTaskDelete( NULL );
+			vTaskDelete( NULL);
 		}
 	}
 }
 
-void grabFix(uint64_t timeout_ms){
+void grabFix(uint64_t timeout_ms) {
 	wakeupGPS();
 
 	osDelay(100);
-
+	setLED_Green(100);
 	uint64_t startTime = HAL_GetTick();
 
-	while( (HAL_GetTick() - startTime) < (timeout_ms) ){ // wait for 5 minutes (300 seconds)
+	while ((HAL_GetTick() - startTime) < (timeout_ms)) { // wait for 5 minutes (300 seconds)
 		osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
-		setLED_Green(100);
-		if(GPS_FIX_SUCCESS == getGPSFix(&currentFix)){
-			toggledGreen();
+		toggledGreen();
+		if (GPS_FIX_SUCCESS == getGPSFix(&currentFix)) {
 			infoPacket.payload.system_info_packet.has_gps_location = true;
-			infoPacket.payload.system_info_packet.gps_location.epoch = currentFix.gps_epoch;
-			infoPacket.payload.system_info_packet.gps_location.lat = currentFix.latitude;
-			infoPacket.payload.system_info_packet.gps_location.lon = currentFix.longitude;
-			infoPacket.payload.system_info_packet.gps_location.elev = currentFix.altitude;
+			infoPacket.payload.system_info_packet.gps_location.epoch =
+					currentFix.gps_epoch;
+			infoPacket.payload.system_info_packet.gps_location.lat =
+					currentFix.latitude;
+			infoPacket.payload.system_info_packet.gps_location.lon =
+					currentFix.longitude;
+			infoPacket.payload.system_info_packet.gps_location.elev =
+					currentFix.altitude;
 
 			updateRTC(infoPacket.payload.system_info_packet.gps_location.epoch);
 
 			osMutexRelease(messageI2C1_LockHandle);
 			break;
-		}else{
+		} else {
 			osMutexRelease(messageI2C1_LockHandle);
 		}
 		osDelay(50);
@@ -5236,47 +5554,61 @@ void grabFix(uint64_t timeout_ms){
 	standbyGPSMode();
 }
 
-void sleepModeLoraRadio(sx126x_sleep_cfgs_t sleep_cfgs){
+void sleepModeLoraRadio(sx126x_sleep_cfgs_t sleep_cfgs) {
 
-	if(SX126X_STATUS_OK != sx126x_set_sleep( NULL, sleep_cfgs)) Error_Handler();
+	if (SX126X_STATUS_OK != sx126x_set_sleep( NULL, sleep_cfgs))
+		Error_Handler();
 
 }
 
-void configLoraRadio(void){
+void configLoraRadio(void) {
 	volatile sx126x_status_t sx1262x_status;
 	volatile sx126x_errors_mask_t sx126x_errors_mask = SX126X_ERRORS_PA_RAMP;
-	if(SX126X_STATUS_OK != sx126x_get_device_errors( NULL, (sx126x_errors_mask_t*) &sx126x_errors_mask)) Error_Handler();
-	if(SX126X_STATUS_OK != sx126x_set_dio2_as_rf_sw_ctrl(NULL, true)) Error_Handler();
-	if(SX126X_STATUS_OK != sx126x_set_rf_freq( NULL, LORA_FREQ)) Error_Handler();
-	if(SX126X_STATUS_OK != sx126x_set_pkt_type(NULL, SX126X_PKT_TYPE_LORA )) Error_Handler();
+	if (SX126X_STATUS_OK
+			!= sx126x_get_device_errors( NULL,
+					(sx126x_errors_mask_t*) &sx126x_errors_mask))
+		Error_Handler();
+	if (SX126X_STATUS_OK != sx126x_set_dio2_as_rf_sw_ctrl(NULL, true))
+		Error_Handler();
+	if (SX126X_STATUS_OK != sx126x_set_rf_freq( NULL, LORA_FREQ))
+		Error_Handler();
+	if (SX126X_STATUS_OK != sx126x_set_pkt_type(NULL, SX126X_PKT_TYPE_LORA))
+		Error_Handler();
 
 	sx126x_pkt_params_lora_t sx126x_pkt_params_lora;
 	sx126x_pkt_params_lora.preamble_len_in_symb = 13;
 	sx126x_pkt_params_lora.header_type = SX126X_LORA_PKT_EXPLICIT;
-	sx126x_pkt_params_lora.pld_len_in_bytes = 128; // max is 255 bytes
+	sx126x_pkt_params_lora.pld_len_in_bytes = 180; // max is 255 bytes
 	sx126x_pkt_params_lora.crc_is_on = 1;
 	sx126x_pkt_params_lora.invert_iq_is_on = 0;
-	if(SX126X_STATUS_OK != sx126x_set_lora_pkt_params(NULL, &sx126x_pkt_params_lora)) Error_Handler();
+	if (SX126X_STATUS_OK
+			!= sx126x_set_lora_pkt_params(NULL, &sx126x_pkt_params_lora))
+		Error_Handler();
 
-	if(SX126X_STATUS_OK != sx126x_set_dio_irq_params( NULL,
-			SX126X_IRQ_TX_DONE | SX126X_IRQ_RX_DONE | SX126X_IRQ_TIMEOUT,
-			SX126X_IRQ_TX_DONE | SX126X_IRQ_RX_DONE | SX126X_IRQ_TIMEOUT,
-			0,
-			0)) Error_Handler();
+	if (SX126X_STATUS_OK
+			!= sx126x_set_dio_irq_params( NULL,
+					SX126X_IRQ_TX_DONE | SX126X_IRQ_RX_DONE
+							| SX126X_IRQ_TIMEOUT,
+					SX126X_IRQ_TX_DONE | SX126X_IRQ_RX_DONE
+							| SX126X_IRQ_TIMEOUT, 0, 0))
+		Error_Handler();
 
 	//reference table 13-21 in datasheet
 	sx126x_pa_cfg_params_t pa_cfg; //reference table 13-21 in datasheet
-	switch(LORA_POWER_LVL){
+	switch (LORA_POWER_LVL) {
 	case MAX_PWR:
 		// power parameters to achieve +22 dbm
 		pa_cfg.pa_duty_cycle = 0x04;
 		pa_cfg.pa_lut = 0x01;
 		pa_cfg.hp_max = 0x07;
 		pa_cfg.device_sel = 0;
-		if(SX126X_STATUS_OK != sx126x_set_pa_cfg( NULL, &pa_cfg )) Error_Handler();
+		if (SX126X_STATUS_OK != sx126x_set_pa_cfg( NULL, &pa_cfg))
+			Error_Handler();
 		//  - 17 to +14 dBm by step of 1 dB if low power PA is selected
 		//  - 9 to +22  dBm by step of 1 dB if high power PA is selected
-		if(SX126X_STATUS_OK != sx126x_set_tx_params( NULL, 22, SX126X_RAMP_40_US)) Error_Handler();
+		if (SX126X_STATUS_OK
+				!= sx126x_set_tx_params( NULL, 22, SX126X_RAMP_40_US))
+			Error_Handler();
 		break;
 	case HIGH_PWR:
 		// power parameters to achieve +22 dbm
@@ -5284,10 +5616,13 @@ void configLoraRadio(void){
 		pa_cfg.pa_lut = 0x01;
 		pa_cfg.hp_max = 0x05;
 		pa_cfg.device_sel = 0;
-		if(SX126X_STATUS_OK != sx126x_set_pa_cfg( NULL, &pa_cfg )) Error_Handler();
+		if (SX126X_STATUS_OK != sx126x_set_pa_cfg( NULL, &pa_cfg))
+			Error_Handler();
 		//  - 17 to +14 dBm by step of 1 dB if low power PA is selected
 		//  - 9 to +22  dBm by step of 1 dB if high power PA is selected
-		if(SX126X_STATUS_OK != sx126x_set_tx_params( NULL, 20, SX126X_RAMP_40_US)) Error_Handler();
+		if (SX126X_STATUS_OK
+				!= sx126x_set_tx_params( NULL, 20, SX126X_RAMP_40_US))
+			Error_Handler();
 		break;
 	case MID_PWR:
 		// power parameters to achieve +22 dbm
@@ -5295,10 +5630,13 @@ void configLoraRadio(void){
 		pa_cfg.pa_lut = 0x01;
 		pa_cfg.hp_max = 0x03;
 		pa_cfg.device_sel = 0;
-		if(SX126X_STATUS_OK != sx126x_set_pa_cfg( NULL, &pa_cfg )) Error_Handler();
+		if (SX126X_STATUS_OK != sx126x_set_pa_cfg( NULL, &pa_cfg))
+			Error_Handler();
 		//  - 17 to +14 dBm by step of 1 dB if low power PA is selected
 		//  - 9 to +22  dBm by step of 1 dB if high power PA is selected
-		if(SX126X_STATUS_OK != sx126x_set_tx_params( NULL, 17, SX126X_RAMP_40_US)) Error_Handler();
+		if (SX126X_STATUS_OK
+				!= sx126x_set_tx_params( NULL, 17, SX126X_RAMP_40_US))
+			Error_Handler();
 		break;
 	case ULTRA_LOW_PWR:
 		// power parameters to achieve +0 dbm
@@ -5306,10 +5644,13 @@ void configLoraRadio(void){
 		pa_cfg.pa_lut = 0x01;
 		pa_cfg.hp_max = 0x03;
 		pa_cfg.device_sel = 0;
-		if(SX126X_STATUS_OK != sx126x_set_pa_cfg( NULL, &pa_cfg )) Error_Handler();
+		if (SX126X_STATUS_OK != sx126x_set_pa_cfg( NULL, &pa_cfg))
+			Error_Handler();
 		//  - 17 to +14 dBm by step of 1 dB if low power PA is selected
 		//  - 9 to +22  dBm by step of 1 dB if high power PA is selected
-		if(SX126X_STATUS_OK != sx126x_set_tx_params( NULL, 0, SX126X_RAMP_40_US)) Error_Handler();
+		if (SX126X_STATUS_OK
+				!= sx126x_set_tx_params( NULL, 0, SX126X_RAMP_40_US))
+			Error_Handler();
 		break;
 	default:
 		//  power parameters to achieve +14 dbm
@@ -5317,7 +5658,7 @@ void configLoraRadio(void){
 		pa_cfg.pa_lut = 0x01;
 		pa_cfg.hp_max = 0x02;
 		pa_cfg.device_sel = 0;
-		sx1262x_status = sx126x_set_pa_cfg( NULL, &pa_cfg );
+		sx1262x_status = sx126x_set_pa_cfg( NULL, &pa_cfg);
 		//  - 17 to +14 dBm by step of 1 dB if low power PA is selected
 		//  - 9 to +22  dBm by step of 1 dB if high power PA is selected
 		sx1262x_status = sx126x_set_tx_params( NULL, 14, SX126X_RAMP_40_US);
@@ -5328,7 +5669,7 @@ void configLoraRadio(void){
 	// longer spreading factor gives more range at the cost of transmit time (BW)
 	// lower bandwidth gives increases range but less reliable across uncalibrated devices
 	// increased coding rate leads to larger packets for better error-correction (less bW)
-	switch(LORA_RANGE_BW){
+	switch (LORA_RANGE_BW) {
 	case LORA_MAX_BW:
 		sx126x_mod_params_lora.sf = SX126X_LORA_SF7;
 		sx126x_mod_params_lora.bw = SX126X_LORA_BW_500;
@@ -5372,7 +5713,9 @@ void configLoraRadio(void){
 		break;
 	}
 
-	if(SX126X_STATUS_OK != sx126x_set_lora_mod_params( NULL, &sx126x_mod_params_lora)) Error_Handler();
+	if (SX126X_STATUS_OK
+			!= sx126x_set_lora_mod_params( NULL, &sx126x_mod_params_lora))
+		Error_Handler();
 
 //#ifndef COLLAR_MODE
 //#if (LORA_POWER_LVL != ULTRA_LOW_PWR)
@@ -5380,27 +5723,34 @@ void configLoraRadio(void){
 //#endif
 //#endif
 
-	if(SX126X_STATUS_OK != sx126x_set_lora_symb_nb_timeout(NULL, 0)) Error_Handler(); //semtech example has 0 (reference 13.4.9)
-	if(SX126X_STATUS_OK != sx126x_set_standby(NULL, SX126X_STANDBY_CFG_XOSC)) Error_Handler();
-	if(SX126X_STATUS_OK != sx126x_set_rx_tx_fallback_mode(NULL, SX126X_FALLBACK_STDBY_XOSC)) Error_Handler();
+	if (SX126X_STATUS_OK != sx126x_set_lora_symb_nb_timeout(NULL, 0))
+		Error_Handler(); //semtech example has 0 (reference 13.4.9)
+	if (SX126X_STATUS_OK != sx126x_set_standby(NULL, SX126X_STANDBY_CFG_XOSC))
+		Error_Handler();
+	if (SX126X_STATUS_OK
+			!= sx126x_set_rx_tx_fallback_mode(NULL, SX126X_FALLBACK_STDBY_XOSC))
+		Error_Handler();
+
+	sx126x_clear_irq_status(NULL, SX126X_IRQ_ALL);
 
 }
 
-void ledSequencer(void *argument){
+void ledSequencer(void *argument) {
 	colorConfig color;
 	osStatus_t status = osOK;
 
 	color.duration = 0;
 
-	while(1){
-		if(color.duration == 0){
+	while (1) {
+		if (color.duration == 0) {
 			status = osMessageQueueGet(ledSeqQueueId, &color, 0, osWaitForever);
-		}else{
-			status = osMessageQueueGet(ledSeqQueueId, &color, 0, color.duration);
+		} else {
+			status = osMessageQueueGet(ledSeqQueueId, &color, 0,
+					color.duration);
 		}
 
-		if(osErrorTimeout == status){
-			if(configPacket.payload.config_packet.enable_led){
+		if (osErrorTimeout == status) {
+			if (configPacket.payload.config_packet.enable_led) {
 				setLED_Red(0);
 				setLED_Green(0);
 				setLED_Blue(0);
@@ -5408,8 +5758,8 @@ void ledSequencer(void *argument){
 			color.duration = 0;
 		}
 
-		if(osOK == status){
-			if(configPacket.payload.config_packet.enable_led){
+		if (osOK == status) {
+			if (configPacket.payload.config_packet.enable_led) {
 				setLED_Red(color.red_val);
 				setLED_Green(color.green_val);
 				setLED_Blue(color.blue_val);
@@ -5418,116 +5768,134 @@ void ledSequencer(void *argument){
 	}
 }
 
-
-
-void updateSystemConfig(void *argument){
+void updateSystemConfig(void *argument) {
 	configChange configMsg;
-	config_packet_t* new_config;
+	config_packet_t *new_config;
 //	memcpy((uint8_t*) &configMsg,(uint8_t*)argument,sizeof(configChange));
 
-	while(1){
+	while (1) {
 		osMessageQueueGet(configChangeQueueId, &configMsg, 0, osWaitForever);
 
 		new_config = &configMsg.config;
 
 		/* (1) update config */
 		configPacket.has_header = true;
-		configPacket.header.epoch = getEpoch();
+		configPacket.header.epoch = getEpoch_ms();
 		configPacket.header.system_uid = LL_FLASH_GetUDN();
 		configPacket.header.ms_from_start = HAL_GetTick();
 
-		configPacket.payload.config_packet.enable_recording = new_config->enable_recording;
+		configPacket.payload.config_packet.enable_recording =
+				new_config->enable_recording;
 
-		if(configMsg.fromMaster != 1){
-			if(new_config->has_audio_config){
-				memcpy((uint8_t*)&configPacket.payload.config_packet.audio_config,
-						(uint8_t*)&new_config->audio_config,
+		if (configMsg.fromMaster != 1) {
+			if (new_config->has_audio_config) {
+				memcpy(
+						(uint8_t*) &configPacket.payload.config_packet.audio_config,
+						(uint8_t*) &new_config->audio_config,
 						sizeof(new_config->audio_config));
 			}
 
-			if(new_config->has_low_power_config){
-				memcpy((uint8_t*)&configPacket.payload.config_packet.low_power_config,
-						(uint8_t*)&new_config->low_power_config,
+			if (new_config->has_low_power_config) {
+				memcpy(
+						(uint8_t*) &configPacket.payload.config_packet.low_power_config,
+						(uint8_t*) &new_config->low_power_config,
 						sizeof(new_config->low_power_config));
 
-				if( configPacket.payload.config_packet.low_power_config.low_power_mode){
+				if (configPacket.payload.config_packet.low_power_config.low_power_mode) {
 					/* enable low power mode settings */
-				}else{
+				} else {
 					/* disable low power mode settings */
 				}
 			}
 
-			configPacket.payload.config_packet.enable_led = new_config->enable_led;
+			configPacket.payload.config_packet.enable_led =
+					new_config->enable_led;
 		}
 
-	//	if(new_config->has_network_state){
-	//		if(configPacket.payload.config_packet.network_state.channel == 0){
-	//			while(1);
-	//		}
-	//	}
+		//	if(new_config->has_network_state){
+		//		if(configPacket.payload.config_packet.network_state.channel == 0){
+		//			while(1);
+		//		}
+		//	}
 
-		if(new_config->has_network_state){
-	//		if((new_config->network_state.master_node == 1) && (configMsg.fromMaster != 1)){
-	//			configPacket.payload.config_packet.network_state.master_node = 1;
-	//			configPacket.payload.config_packet.network_state.slave_sync = 0;
-	//
-	//		}
-			if(configMsg.fromMaster == 1){
+		if (new_config->has_network_state) {
+			//		if((new_config->network_state.master_node == 1) && (configMsg.fromMaster != 1)){
+			//			configPacket.payload.config_packet.network_state.master_node = 1;
+			//			configPacket.payload.config_packet.network_state.slave_sync = 0;
+			//
+			//		}
+			if (configMsg.fromMaster == 1) {
 				/* if a master node is transmitting, we need to demote since only 1 master allowed */
-				if((new_config->network_state.master_node == 1) &&
-						(configPacket.payload.config_packet.network_state.master_node == 1)){
-					configPacket.payload.config_packet.network_state.master_node = 0;
-					configPacket.payload.config_packet.network_state.slave_sync = 1;
+				if ((new_config->network_state.master_node == 1)
+						&& (configPacket.payload.config_packet.network_state.master_node
+								== 1)) {
+					configPacket.payload.config_packet.network_state.master_node =
+							0;
+					configPacket.payload.config_packet.network_state.slave_sync =
+							1;
 				}
-				configPacket.payload.config_packet.enable_recording = new_config->enable_recording;
-			}else{
+				configPacket.payload.config_packet.enable_recording =
+						new_config->enable_recording;
+			} else {
 				/* updated from phone */
-				configPacket.payload.config_packet.network_state.channel = new_config->network_state.channel;
-				configPacket.payload.config_packet.network_state.pan_id = new_config->network_state.pan_id;
+				configPacket.payload.config_packet.network_state.channel =
+						new_config->network_state.channel;
+				configPacket.payload.config_packet.network_state.pan_id =
+						new_config->network_state.pan_id;
 
-				if((new_config->network_state.master_node == 1) &&
-						(new_config->network_state.slave_sync == 1)){
-					if(configPacket.payload.config_packet.network_state.master_node){
-						configPacket.payload.config_packet.network_state.master_node = 0;
-						configPacket.payload.config_packet.network_state.slave_sync = 1;
-					}else{
-						configPacket.payload.config_packet.network_state.slave_sync = 0;
-						configPacket.payload.config_packet.network_state.master_node = 1;
+				if ((new_config->network_state.master_node == 1)
+						&& (new_config->network_state.slave_sync == 1)) {
+					if (configPacket.payload.config_packet.network_state.master_node) {
+						configPacket.payload.config_packet.network_state.master_node =
+								0;
+						configPacket.payload.config_packet.network_state.slave_sync =
+								1;
+					} else {
+						configPacket.payload.config_packet.network_state.slave_sync =
+								0;
+						configPacket.payload.config_packet.network_state.master_node =
+								1;
 					}
-	//				configPacket.payload.config_packet.network_state.master_node = 1;
-	//				configPacket.payload.config_packet.network_state.slave_sync = 0;
-				}else{
-					configPacket.payload.config_packet.network_state.master_node = new_config->network_state.master_node;
-					configPacket.payload.config_packet.network_state.slave_sync = new_config->network_state.slave_sync;
+					//				configPacket.payload.config_packet.network_state.master_node = 1;
+					//				configPacket.payload.config_packet.network_state.slave_sync = 0;
+				} else {
+					configPacket.payload.config_packet.network_state.master_node =
+							new_config->network_state.master_node;
+					configPacket.payload.config_packet.network_state.slave_sync =
+							new_config->network_state.slave_sync;
 				}
-				configPacket.payload.config_packet.enable_recording = new_config->enable_recording;
-	//			configPacket.payload.config_packet.enable_recording = false;
+				configPacket.payload.config_packet.enable_recording =
+						new_config->enable_recording;
+				//			configPacket.payload.config_packet.enable_recording = false;
 			}
 
-	//		memcpy((uint8_t*)&configPacket.payload.config_packet.network_state,
-	//				(uint8_t*)&new_config->network_state,
-	//				sizeof(new_config->network_state));
+			//		memcpy((uint8_t*)&configPacket.payload.config_packet.network_state,
+			//				(uint8_t*)&new_config->network_state,
+			//				sizeof(new_config->network_state));
 		}
 
-		if(configMsg.fromMaster != 1){
-			if(new_config->has_sensor_config){
-				memcpy((uint8_t*)&configPacket.payload.config_packet.sensor_config,
-						(uint8_t*)&new_config->sensor_config,
+		if (configMsg.fromMaster != 1) {
+			if (new_config->has_sensor_config) {
+				memcpy(
+						(uint8_t*) &configPacket.payload.config_packet.sensor_config,
+						(uint8_t*) &new_config->sensor_config,
 						sizeof(new_config->sensor_config));
 			}
 
-			if(new_config->schedule_config_count != 0){
-				memcpy((uint8_t*)&configPacket.payload.config_packet.schedule_config,
-						(uint8_t*)&new_config->schedule_config,
+			if (new_config->schedule_config_count != 0) {
+				memcpy(
+						(uint8_t*) &configPacket.payload.config_packet.schedule_config,
+						(uint8_t*) &new_config->schedule_config,
 						sizeof(new_config->schedule_config));
-				configPacket.payload.config_packet.schedule_config_count = new_config->schedule_config_count;
+				configPacket.payload.config_packet.schedule_config_count =
+						new_config->schedule_config_count;
 			}
 		}
 
-
 		/* (2) alert master thread that new config exists */
 		osTimerStop(mainTaskUpdateId);
-		if(osTimerStart (mainTaskUpdateId, 5000) != osOK) Error_Handler();
+		if (osTimerStart(mainTaskUpdateId, 5000) != osOK)
+			Error_Handler();
 
 		/* (3) update config characteristic */
 		tBleStatus ret;
@@ -5537,25 +5905,27 @@ void updateSystemConfig(void *argument){
 		status = pb_encode(&stream, PACKET_FIELDS, &configPacket);
 		PackedPayload.pPayload = (uint8_t*) buffer;
 		PackedPayload.Length = stream.bytes_written;
-		if(status) ret = DTS_STM_UpdateChar(BUZZCAM_CONFIG_CHAR_UUID, (uint8_t*)&PackedPayload);
+		if (status)
+			ret = DTS_STM_UpdateChar(BUZZCAM_CONFIG_CHAR_UUID,
+					(uint8_t*) &PackedPayload);
 	}
 	vTaskDelete(NULL);
 }
 
-void triggerSound(void){
+void triggerSound(void) {
 	HAL_TIM_Base_Start(&htim16);
 	HAL_TIM_PWM_Start(&htim16, TIM_CHANNEL_1);
 
 	uint16_t index = 2;
-	while(1){
+	while (1) {
 
 		htim16.Instance->ARR = index;
 		htim16.Instance->CCR1 = index >> 1;
 
 		osDelay(10);
 
-		index+=1;
-		if(index == 1000) {
+		index += 1;
+		if (index == 1000) {
 			/* stop buzzer pwm */
 			HAL_TIM_PWM_Stop(&htim16, TIM_CHANNEL_1);
 			osDelay(10);
@@ -5564,9 +5934,8 @@ void triggerSound(void){
 	}
 }
 
-
 #define MAX_MARK_SIZE 100
-void triggerMarkTask(void *argument){
+void triggerMarkTask(void *argument) {
 
 	mark_packet_t new_mark;
 	FRESULT res;
@@ -5576,11 +5945,13 @@ void triggerMarkTask(void *argument){
 	uint32_t idx_tracker = 0;
 
 	size_t buffer_size;
-	char result[MAX_MARK_SIZE] = {0};
+	char result[MAX_MARK_SIZE] = { 0 };
 
-	if(check_file_exists(file_name) == FR_NO_FILE){
-		if(f_open(&marker_file, file_name, FA_CREATE_NEW | FA_WRITE) == FR_OK){
-			strcpy(result, "timestamp, ms_from_start, beep_enabled, annotation\n");
+	if (check_file_exists(file_name) == FR_NO_FILE) {
+		if (f_open(&marker_file, file_name, FA_CREATE_NEW | FA_WRITE)
+				== FR_OK) {
+			strcpy(result,
+					"timestamp, ms_from_start, beep_enabled, annotation\n");
 			f_write(&marker_file, result, strlen(result), NULL);
 			// Flush the cached data to the SD card
 			f_sync(&marker_file);
@@ -5591,14 +5962,13 @@ void triggerMarkTask(void *argument){
 		}
 	}
 
+	while (1) {
+		queueStatus = osMessageQueueGet(markPacketQueueId, &new_mark, 0, 500);
 
-	while(1){
-		queueStatus = osMessageQueueGet (markPacketQueueId, &new_mark, 0, 500);
-
-
-		if(queueStatus == osOK){
+		if (queueStatus == osOK) {
 			infoPacket.payload.system_info_packet.mark_state.mark_number++;
-			infoPacket.payload.system_info_packet.mark_state.timestamp_unix=getEpoch();
+			infoPacket.payload.system_info_packet.mark_state.timestamp_unix =
+					getEpoch_ms();
 
 			//			infoPacket.payload.system_info_packet.has_battery_state = false;
 			//			infoPacket.payload.system_info_packet.has_sdcard_state = false;
@@ -5606,11 +5976,13 @@ void triggerMarkTask(void *argument){
 			//			infoPacket.payload.system_info_packet.has_discovered_devices = false;
 
 			infoPacket.has_header = true;
-			infoPacket.header.epoch = infoPacket.payload.system_info_packet.mark_state.timestamp_unix;
+			infoPacket.header.epoch =
+					infoPacket.payload.system_info_packet.mark_state.timestamp_unix;
 			infoPacket.header.ms_from_start = HAL_GetTick();
 
 			//			/* Create a stream that will write to our buffer. */
-			pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+			pb_ostream_t stream = pb_ostream_from_buffer(buffer,
+					sizeof(buffer));
 			/* Now we are ready to encode the message! */
 			status = pb_encode(&stream, PACKET_FIELDS, &infoPacket);
 			PackedPayload.pPayload = (uint8_t*) buffer;
@@ -5622,10 +5994,12 @@ void triggerMarkTask(void *argument){
 			//			PackedPayload.pPayload = (uint8_t*) buffer;
 			//			PackedPayload.Length = 182;
 			//			status = 1;
-			if(status) ret = DTS_STM_UpdateChar(BUZZCAM_INFO_CHAR_UUID, (uint8_t*) &PackedPayload);
+			if (status)
+				ret = DTS_STM_UpdateChar(BUZZCAM_INFO_CHAR_UUID,
+						(uint8_t*) &PackedPayload);
 
 			/* trigger beep if enabled */
-			if(new_mark.beep_enabled){
+			if (new_mark.beep_enabled) {
 				//				for(int i = 1000; i < 16000; i+=200){
 				//					tone(i, 500);
 				//					tone(i, 500);
@@ -5636,29 +6010,32 @@ void triggerMarkTask(void *argument){
 
 			}
 
-
-			if(new_mark.has_annotation){
-				buffer_size = 20 + 1 + 10 + 1 + 1 + strlen(new_mark.annotation) + 1;
-			}else{
+			if (new_mark.has_annotation) {
+				buffer_size = 20 + 1 + 10 + 1 + 1 + strlen(new_mark.annotation)
+						+ 1;
+			} else {
 				buffer_size = 20 + 1 + 10 + 1 + 1 + 1;
 			}
 
 			//			buffer_size = MAX_MARK_SIZE > buffer_size ? buffer_size : MAX_MARK_SIZE;
 			memset(result, 0, sizeof(result));
 
-			if(new_mark.has_annotation){
-				idx_tracker += uint64_to_str(infoPacket.payload.system_info_packet.mark_state.timestamp_unix,
-						&result[0]);
+			if (new_mark.has_annotation) {
+				idx_tracker +=
+						uint64_to_str(
+								infoPacket.payload.system_info_packet.mark_state.timestamp_unix,
+								&result[0]);
 
 				result[idx_tracker++] = ',';
 
 				sprintf(&result[idx_tracker], "%lu,%d,%s\n",
 						infoPacket.header.ms_from_start,
-						(uint8_t) new_mark.beep_enabled,
-						new_mark.annotation);
-			}else{
-				idx_tracker += uint64_to_str(infoPacket.payload.system_info_packet.mark_state.timestamp_unix,
-										&result[0]);
+						(uint8_t) new_mark.beep_enabled, new_mark.annotation);
+			} else {
+				idx_tracker +=
+						uint64_to_str(
+								infoPacket.payload.system_info_packet.mark_state.timestamp_unix,
+								&result[0]);
 
 				result[idx_tracker++] = ',';
 
@@ -5671,45 +6048,50 @@ void triggerMarkTask(void *argument){
 
 			/* save to file */
 			UINT bytes_written;
-			res = f_open(&marker_file, file_name, FA_OPEN_APPEND | FA_WRITE | FA_READ);
-			if(res == FR_OK){
-				res = f_write(&marker_file, result, strlen(result), &bytes_written);
-			}else Error_Handler();
-			if (res == FR_OK)
-			{
+			res = f_open(&marker_file, file_name,
+					FA_OPEN_APPEND | FA_WRITE | FA_READ);
+			if (res == FR_OK) {
+				res = f_write(&marker_file, result, strlen(result),
+						&bytes_written);
+			} else
+				Error_Handler();
+			if (res == FR_OK) {
 				// Close the file
 				f_close(&marker_file);
 
 				// Flush the cached data to the SD card
 				f_sync(&marker_file);
-			}else Error_Handler();
+			} else
+				Error_Handler();
 
 			/* update FRAM */
 			writeSystemInfoToFRAM();
 
-		}else if(queueStatus == osErrorTimeout){
-			flag = osThreadFlagsWait(0x0001U | TERMINATE_EVENT | TAMPER_ALERT | BEE_1_ALERT | BEE_2_ALERT, osFlagsWaitAny, 0);
+		} else if (queueStatus == osErrorTimeout) {
+			flag = osThreadFlagsWait(
+					0x0001U | TERMINATE_EVENT | TAMPER_ALERT | BEE_1_ALERT
+							| BEE_2_ALERT, osFlagsWaitAny, 0);
 
-			if(flag == osFlagsErrorResource){
+			if (flag == osFlagsErrorResource) {
 				continue;
 			}
 
-			if( (flag & TAMPER_ALERT) == TAMPER_ALERT){
-				for(int i = 0; i<5; i ++){
-					tone(3500,50);
-					tone(3750,50);
-					tone(4000,50);
-					tone(4250,50);
-					tone(4500,50);
-					tone(7500,50);
-					tone(7750,50);
-					tone(8000,50);
-					tone(8250,50);
-					tone(8500,50);
+			if ((flag & TAMPER_ALERT) == TAMPER_ALERT) {
+				for (int i = 0; i < 5; i++) {
+					tone(3500, 50);
+					tone(3750, 50);
+					tone(4000, 50);
+					tone(4250, 50);
+					tone(4500, 50);
+					tone(7500, 50);
+					tone(7750, 50);
+					tone(8000, 50);
+					tone(8250, 50);
+					tone(8500, 50);
 				}
 			}
 
-			if((flag & BEE_1_ALERT) == BEE_1_ALERT){
+			if ((flag & BEE_1_ALERT) == BEE_1_ALERT) {
 				setLED_Red(100);
 				setLED_Blue(100);
 				osDelay(100);
@@ -5717,7 +6099,7 @@ void triggerMarkTask(void *argument){
 				setLED_Blue(0);
 			}
 
-			if((flag & BEE_2_ALERT) == BEE_2_ALERT){
+			if ((flag & BEE_2_ALERT) == BEE_2_ALERT) {
 				setLED_Green(100);
 				setLED_Red(100);
 				osDelay(100);
@@ -5725,24 +6107,25 @@ void triggerMarkTask(void *argument){
 				setLED_Red(0);
 			}
 
-			if((flag & TERMINATE_EVENT) == TERMINATE_EVENT){
-				vTaskDelete( NULL );
+			if ((flag & TERMINATE_EVENT) == TERMINATE_EVENT) {
+				vTaskDelete( NULL);
 			}
 		}
 	}
 
-	vTaskDelete( NULL );
+	vTaskDelete( NULL);
 }
 
-void setLED_Green(uint32_t intensity){
-	if(intensity > MAX_INTENSITY) intensity = MAX_INTENSITY;
+void setLED_Green(uint32_t intensity) {
+	if (intensity > MAX_INTENSITY)
+		intensity = MAX_INTENSITY;
 
 	greenVal = intensity;
 
-	if( greenVal == 0){
+	if (greenVal == 0) {
 		HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_1);
-	}else{
-		if( (redVal == 0) && (blueVal == 0) ){
+	} else {
+		if ((redVal == 0) && (blueVal == 0)) {
 			HAL_TIM_Base_Start(&htim2);
 		}
 		HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
@@ -5750,20 +6133,21 @@ void setLED_Green(uint32_t intensity){
 
 	htim2.Instance->CCR1 = MAX_INTENSITY - intensity;
 
-	if( (redVal == 0) && (greenVal == 0) && (blueVal == 0) ){
+	if ((redVal == 0) && (greenVal == 0) && (blueVal == 0)) {
 		HAL_TIM_Base_Stop(&htim2);
 	}
 }
 
-void setLED_Blue(uint32_t intensity){
-	if(intensity > MAX_INTENSITY) intensity = MAX_INTENSITY;
+void setLED_Blue(uint32_t intensity) {
+	if (intensity > MAX_INTENSITY)
+		intensity = MAX_INTENSITY;
 
 	blueVal = intensity;
 
-	if( blueVal == 0){
+	if (blueVal == 0) {
 		HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_4);
-	}else{
-		if( (greenVal == 0) && (redVal == 0) ){
+	} else {
+		if ((greenVal == 0) && (redVal == 0)) {
 			HAL_TIM_Base_Start(&htim2);
 		}
 		HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);
@@ -5771,21 +6155,21 @@ void setLED_Blue(uint32_t intensity){
 
 	htim2.Instance->CCR4 = MAX_INTENSITY - intensity;
 
-	if( (redVal == 0) && (greenVal == 0) && (blueVal == 0) ){
+	if ((redVal == 0) && (greenVal == 0) && (blueVal == 0)) {
 		HAL_TIM_Base_Stop(&htim2);
 	}
 }
 
-
-void setLED_Red(uint32_t intensity){
-	if(intensity > MAX_INTENSITY) intensity = MAX_INTENSITY;
+void setLED_Red(uint32_t intensity) {
+	if (intensity > MAX_INTENSITY)
+		intensity = MAX_INTENSITY;
 
 	redVal = intensity;
 
-	if( redVal == 0){
+	if (redVal == 0) {
 		HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_3);
-	}else{
-		if( (greenVal == 0) && (blueVal == 0) ){
+	} else {
+		if ((greenVal == 0) && (blueVal == 0)) {
 			HAL_TIM_Base_Start(&htim2);
 		}
 		HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
@@ -5793,36 +6177,36 @@ void setLED_Red(uint32_t intensity){
 
 	htim2.Instance->CCR3 = MAX_INTENSITY - intensity;
 
-	if( (redVal == 0) && (greenVal == 0) && (blueVal == 0) ){
+	if ((redVal == 0) && (greenVal == 0) && (blueVal == 0)) {
 
 		HAL_TIM_Base_Stop(&htim2);
 	}
 }
 
 #define TOGGLE_LED_INTENSITY 1000
-void toggledRed(){
-	if(redVal>0){
+void toggledRed() {
+	if (redVal > 0) {
 		setLED_Red(0);
-	}else{
+	} else {
 		setLED_Red(TOGGLE_LED_INTENSITY);
 	}
 }
-void toggledGreen(){
-	if(greenVal>0){
+void toggledGreen() {
+	if (greenVal > 0) {
 		setLED_Green(0);
-	}else{
+	} else {
 		setLED_Green(TOGGLE_LED_INTENSITY);
 	}
 }
-void toggledBlue(){
-	if(blueVal>0){
+void toggledBlue() {
+	if (blueVal > 0) {
 		setLED_Blue(0);
-	}else{
+	} else {
 		setLED_Blue(TOGGLE_LED_INTENSITY);
 	}
 }
 
-void disableLEDs(){
+void disableLEDs() {
 	setLED_Green(0);
 	setLED_Red(0);
 	setLED_Blue(0);
@@ -5830,28 +6214,25 @@ void disableLEDs(){
 	HAL_TIM_Base_Stop(&htim2);
 }
 
-
 #define TLV320_ADDR   (0x30)
-void writeToTLV(uint8_t page, uint8_t reg, uint8_t data){
+void writeToTLV(uint8_t page, uint8_t reg, uint8_t data) {
 	volatile HAL_StatusTypeDef status;
-	uint8_t tx_data[4] = {0};
+	uint8_t tx_data[4] = { 0 };
 
 	tx_data[1] = page;
 	tx_data[2] = reg;
 	tx_data[3] = data;
 
-	status = HAL_I2C_Master_Transmit(&hi2c3, TLV320_ADDR, tx_data,
-	                                          2, 100);
+	status = HAL_I2C_Master_Transmit(&hi2c3, TLV320_ADDR, tx_data, 2, 100);
 
-	status = HAL_I2C_Master_Transmit(&hi2c3, TLV320_ADDR, &tx_data[2],
-	                                          2, 100);
+	status = HAL_I2C_Master_Transmit(&hi2c3, TLV320_ADDR, &tx_data[2], 2, 100);
 
-	if(status != HAL_OK){
+	if (status != HAL_OK) {
 		Error_Handler();
 	}
 }
 
-void runAnalogConverter(void){
+void runAnalogConverter(void) {
 
 	uint8_t data = 0;
 	uint8_t ctrl0_settings = 0;
@@ -5875,7 +6256,6 @@ void runAnalogConverter(void){
 
 	// J = 4
 //	writeToTLV(0, 6, 0x04);
-
 
 	/*
 	 * CHECK 1: ADC_CLIKIN = NADC * MADC * AOSR * ADC_FS (12.288 MHZ in the below case)
@@ -5912,7 +6292,6 @@ void runAnalogConverter(void){
 //#define GAIN_9_DB					(9*2)
 //	writeToTLV(0, 93, GAIN_9_DB);
 //	writeToTLV(0, 101, GAIN_9_DB);
-
 	// configure differential pins as inputs to PGA
 	writeToTLV(1, 52, 0x3F);
 	writeToTLV(1, 55, 0x3F);
@@ -5924,7 +6303,6 @@ void runAnalogConverter(void){
 	writeToTLV(1, 59, GAIN_9_DB);
 	writeToTLV(1, 60, GAIN_9_DB);
 
-
 #define LEFT_CHANNEL_ADC_EN 		(0x1 << 7)
 #define RIGHT_CHANNEL_ADC_EN 		(0x1 << 6)
 	// power up ADCs and disable soft-stepping (if gain is changed, it will be abrupt)
@@ -5934,7 +6312,6 @@ void runAnalogConverter(void){
 #define RIGHT_CHANNEL_NOT_MUTED 	(0x0 << 6)
 	// unmute channels
 	writeToTLV(0, 82, LEFT_CHANNEL_NOT_MUTED | RIGHT_CHANNEL_NOT_MUTED);
-
 
 	//	configPacket.payload.config_packet.has_audio_config=true;
 	//	configPacket.payload.config_packet.audio_config.bit_resolution=MIC_BIT_RESOLUTION_BIT_RES_16;
@@ -6216,30 +6593,32 @@ void runAnalogConverter(void){
 
 }
 
-void EnableExtADC(bool state){
-	if(state){
+void EnableExtADC(bool state) {
+	if (state) {
 		HAL_GPIO_WritePin(ADC_PD_RST_GPIO_Port, ADC_PD_RST_Pin, GPIO_PIN_RESET);
 		osDelay(1);
 		HAL_GPIO_WritePin(ADC_PD_RST_GPIO_Port, ADC_PD_RST_Pin, GPIO_PIN_SET);
-	}else{
+	} else {
 		HAL_GPIO_WritePin(ADC_PD_RST_GPIO_Port, ADC_PD_RST_Pin, GPIO_PIN_RESET);
 	}
 }
 
-void sendLoRa_pkt(packet_t *packet){
+void sendLoRa_pkt(packet_t *packet) {
 
-	if(!systemPowerSupervisor.isLoRaEnabled || !systemState.isLoRaActive) return;
+	if (!systemPowerSupervisor.isLoRaEnabled || !systemState.isLoRaActive)
+		return;
 
 	uint8_t dataTransmitted = 0;
 	volatile sx126x_status_t sx1262x_status;
 	sx126x_chip_status_t sx126x_chip_status;
 	sx126x_irq_mask_t sx126x_irq_mask;
 
-	packet->header.epoch = getEpoch();
+	packet->header.epoch = getEpoch_ms();
 	packet->header.ms_from_start = HAL_GetTick();
 
-	sx126x_get_irq_status( NULL, &sx126x_irq_mask);
-	if(sx126x_irq_mask != 0) return;
+	sx126x_get_and_clear_irq_status( NULL, &sx126x_irq_mask);
+//	if (sx126x_irq_mask != 0)
+//		return;
 
 	/* Create a stream that will write to our buffer. */
 	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
@@ -6248,64 +6627,69 @@ void sendLoRa_pkt(packet_t *packet){
 	uint8_t has_encoded_correctly = 0;
 	has_encoded_correctly = pb_encode_delimited(&stream, PACKET_FIELDS, packet);
 
-	if(has_encoded_correctly){
-		setLED_Green(100);
+	if (has_encoded_correctly) {
+		setLED_Blue(100);
 		setLED_Red(100);
-		sx126x_clear_irq_status( NULL, SX126X_IRQ_TX_DONE | SX126X_IRQ_RX_DONE | SX126X_IRQ_TIMEOUT);
+		sx126x_clear_irq_status( NULL,
+				SX126X_IRQ_TX_DONE | SX126X_IRQ_RX_DONE | SX126X_IRQ_TIMEOUT);
 
-//		sx1262x_status = sx126x_write_buffer(NULL, 0, buffer, stream.bytes_written);
+		sx1262x_status = sx126x_write_buffer(NULL, 0, buffer, stream.bytes_written);
 
-		while(dataTransmitted != 1){
-			sx1262x_status = sx126x_get_status( NULL, &sx126x_chip_status);
-
-			if( (sx126x_chip_status.cmd_status != SX126X_CMD_STATUS_RESERVED) &&
-					(sx126x_chip_status.cmd_status != SX126X_CMD_STATUS_RFU) &&
-					(sx126x_chip_status.cmd_status != SX126X_CMD_STATUS_DATA_AVAILABLE)){
-				dataTransmitted = 1;
-			}
-
-			else if( (sx126x_chip_status.chip_mode != SX126X_CHIP_MODE_STBY_RC) ||
-					(sx126x_chip_status.chip_mode != SX126X_CHIP_MODE_STBY_XOSC)){
-				dataTransmitted = 1;
-			}
-
-			else{
-				HAL_Delay(5);
-			}
-		}
+//		while (dataTransmitted != 1) {
+//			sx1262x_status = sx126x_get_status( NULL, &sx126x_chip_status);
+//
+//			if ((sx126x_chip_status.cmd_status != SX126X_CMD_STATUS_RESERVED)
+//					&& (sx126x_chip_status.cmd_status != SX126X_CMD_STATUS_RFU)
+//					&& (sx126x_chip_status.cmd_status
+//							!= SX126X_CMD_STATUS_DATA_AVAILABLE)) {
+//				dataTransmitted = 1;
+//			}
+//
+//			else if ((sx126x_chip_status.chip_mode != SX126X_CHIP_MODE_STBY_RC)
+//					|| (sx126x_chip_status.chip_mode
+//							!= SX126X_CHIP_MODE_STBY_XOSC)) {
+//				dataTransmitted = 1;
+//			}
+//
+//			else {
+//				HAL_Delay(5);
+//			}
+//		}
 
 		sx1262x_status = sx126x_set_tx( NULL, 10000); // timeout: 10000ms
 
-		while(lora_irq_flag != 1);
-
-		if(lora_irq_flag){
-			lora_irq_flag = 0;
-//			sx126x_get_irq_status( const void* context, sx126x_irq_mask_t* irq )
-			sx126x_clear_irq_status( NULL, SX126X_IRQ_ALL);
-		}
-		setLED_Green(0);
+		setLED_Blue(0);
 		setLED_Red(0);
+//		while (lora_irq_flag != 1)
+//			;
+//
+//		if (lora_irq_flag) {
+//			lora_irq_flag = 0;
+////			sx126x_get_irq_status( const void* context, sx126x_irq_mask_t* irq )
+//			sx126x_clear_irq_status( NULL, SX126X_IRQ_ALL);
+//		}
+//		setLED_Green(0);
+//		setLED_Red(0);
 	}
 }
 
-
 uint64_t current_offset;
-static void WavUpdateHeaderSize(uint64_t totalBytesWritten){
+static void WavUpdateHeaderSize(uint64_t totalBytesWritten) {
 	//	current_offset = WavFile.fx_file_current_file_offset;
 	current_offset = WavFile.fptr;
-	if(f_lseek(&WavFile,0) == FR_OK)
-	{
+	if (f_lseek(&WavFile, 0) == FR_OK) {
 		//	if(FX_SUCCESS == fx_file_seek(&WavFile, 0))
 		//	{
 		/* Update the wav file header save it into wav file */
 		WavProcess_HeaderUpdate(pHeaderBuff, totalBytesWritten);
 
-		if((f_write(&WavFile, pHeaderBuff, 44, (UINT*) &byteswritten)) != FR_OK){
+		if ((f_write(&WavFile, pHeaderBuff, 44, (UINT*) &byteswritten))
+				!= FR_OK) {
 			//		if(FX_SUCCESS != fx_file_write(&WavFile, pHeaderBuff, 44))
 			//		{
 			Error_Handler();
 		}
-	}else{
+	} else {
 		Error_Handler();
 	}
 
@@ -6314,8 +6698,7 @@ static void WavUpdateHeaderSize(uint64_t totalBytesWritten){
 	//	status = fx_media_flush(&sd_disk);
 	//	if(status != FX_SUCCESS) Error_Handler();
 
-	if(f_lseek(&WavFile,current_offset) != FR_OK)
-	{
+	if (f_lseek(&WavFile, current_offset) != FR_OK) {
 		Error_Handler();
 	}
 	//	if(FX_SUCCESS != fx_file_seek(&WavFile, current_offset)){
@@ -6324,7 +6707,7 @@ static void WavUpdateHeaderSize(uint64_t totalBytesWritten){
 }
 
 /*******************************************************************************
-                            Static Functions
+ Static Functions
  *******************************************************************************/
 
 /**
@@ -6333,23 +6716,20 @@ static void WavUpdateHeaderSize(uint64_t totalBytesWritten){
  * @param  pHeader: Pointer to the WAV file header to be written.
  * @retval 0 if success, !0 else.
  */
-static uint32_t WavProcess_EncInit(uint32_t Freq, uint8_t *pHeader)
-{
+static uint32_t WavProcess_EncInit(uint32_t Freq, uint8_t *pHeader) {
 	/* Initialize the encoder structure */
-	WaveFormat.SampleRate = Freq;        /* Audio sampling frequency */
-	WaveFormat.NbrChannels = 2;          /* Number of channels: 1:Mono or 2:Stereo */
-	WaveFormat.BitPerSample = 16;        /* Number of bits per sample (16, 24 or 32) */
-	WaveFormat.FileSize = 0x001D4C00;    /* Total length of useful audio data (payload) */
-	WaveFormat.SubChunk1Size = 44;       /* The file header chunk size */
-	WaveFormat.ByteRate = (WaveFormat.SampleRate * \
-			(WaveFormat.BitPerSample/8) * \
-			WaveFormat.NbrChannels);     /* Number of bytes per second  (sample rate * block align)  */
-	WaveFormat.BlockAlign = WaveFormat.NbrChannels * \
-			(WaveFormat.BitPerSample/8); /* channels * bits/sample / 8 */
+	WaveFormat.SampleRate = Freq; /* Audio sampling frequency */
+	WaveFormat.NbrChannels = 2; /* Number of channels: 1:Mono or 2:Stereo */
+	WaveFormat.BitPerSample = 16; /* Number of bits per sample (16, 24 or 32) */
+	WaveFormat.FileSize = 0x001D4C00; /* Total length of useful audio data (payload) */
+	WaveFormat.SubChunk1Size = 44; /* The file header chunk size */
+	WaveFormat.ByteRate = (WaveFormat.SampleRate * (WaveFormat.BitPerSample / 8)
+			* WaveFormat.NbrChannels); /* Number of bytes per second  (sample rate * block align)  */
+	WaveFormat.BlockAlign = WaveFormat.NbrChannels
+			* (WaveFormat.BitPerSample / 8); /* channels * bits/sample / 8 */
 
 	/* Parse the wav file header and extract required information */
-	if(WavProcess_HeaderInit(pHeader, &WaveFormat))
-	{
+	if (WavProcess_HeaderInit(pHeader, &WaveFormat)) {
 		return 1;
 	}
 	return 0;
@@ -6361,8 +6741,8 @@ static uint32_t WavProcess_EncInit(uint32_t Freq, uint8_t *pHeader)
  * @param  pWaveFormatStruct: Pointer to the wave structure to be filled.
  * @retval 0 if passed, !0 if failed.
  */
-static uint32_t WavProcess_HeaderInit(uint8_t* pHeader, WAVE_FormatTypeDef* pWaveFormatStruct)
-{
+static uint32_t WavProcess_HeaderInit(uint8_t *pHeader,
+		WAVE_FormatTypeDef *pWaveFormatStruct) {
 	/* Write chunkID, must be 'RIFF'  ------------------------------------------*/
 	pHeader[0] = 'R';
 	pHeader[1] = 'I';
@@ -6371,70 +6751,70 @@ static uint32_t WavProcess_HeaderInit(uint8_t* pHeader, WAVE_FormatTypeDef* pWav
 
 	/* Write the file length ---------------------------------------------------*/
 	/* The sampling time: this value will be written back at the end of the
-     recording operation.  application: 661500 Btyes = 0x000A17FC, byte[7]=0x00, byte[4]=0xFC */
+	 recording operation.  application: 661500 Btyes = 0x000A17FC, byte[7]=0x00, byte[4]=0xFC */
 	pHeader[4] = 0x00;
 	pHeader[5] = 0x4C;
 	pHeader[6] = 0x1D;
 	pHeader[7] = 0x00;
 	/* Write the file format, must be 'WAVE' -----------------------------------*/
-	pHeader[8]  = 'W';
-	pHeader[9]  = 'A';
+	pHeader[8] = 'W';
+	pHeader[9] = 'A';
 	pHeader[10] = 'V';
 	pHeader[11] = 'E';
 
 	/* Write the format chunk, must be'fmt ' -----------------------------------*/
-	pHeader[12]  = 'f';
-	pHeader[13]  = 'm';
-	pHeader[14]  = 't';
-	pHeader[15]  = ' ';
+	pHeader[12] = 'f';
+	pHeader[13] = 'm';
+	pHeader[14] = 't';
+	pHeader[15] = ' ';
 
 	/* Write the length of the 'fmt' data, must be 0x10 ------------------------*/
-	pHeader[16]  = 0x10;
-	pHeader[17]  = 0x00;
-	pHeader[18]  = 0x00;
-	pHeader[19]  = 0x00;
+	pHeader[16] = 0x10;
+	pHeader[17] = 0x00;
+	pHeader[18] = 0x00;
+	pHeader[19] = 0x00;
 
 	/* Write the audio format, must be 0x01 (PCM) ------------------------------*/
-	pHeader[20]  = 0x01;
-	pHeader[21]  = 0x00;
+	pHeader[20] = 0x01;
+	pHeader[21] = 0x00;
 
 	/* Write the number of channels, ie. 0x01 (Mono) ---------------------------*/
-	pHeader[22]  = pWaveFormatStruct->NbrChannels;
-	pHeader[23]  = 0x00;
+	pHeader[22] = pWaveFormatStruct->NbrChannels;
+	pHeader[23] = 0x00;
 
 	/* Write the Sample Rate in Hz ---------------------------------------------*/
 	/* Write Little Endian ie. 8000 = 0x00001F40 => byte[24]=0x40, byte[27]=0x00*/
-	pHeader[24]  = (uint8_t)((pWaveFormatStruct->SampleRate & 0xFF));
-	pHeader[25]  = (uint8_t)((pWaveFormatStruct->SampleRate >> 8) & 0xFF);
-	pHeader[26]  = (uint8_t)((pWaveFormatStruct->SampleRate >> 16) & 0xFF);
-	pHeader[27]  = (uint8_t)((pWaveFormatStruct->SampleRate >> 24) & 0xFF);
+	pHeader[24] = (uint8_t) ((pWaveFormatStruct->SampleRate & 0xFF));
+	pHeader[25] = (uint8_t) ((pWaveFormatStruct->SampleRate >> 8) & 0xFF);
+	pHeader[26] = (uint8_t) ((pWaveFormatStruct->SampleRate >> 16) & 0xFF);
+	pHeader[27] = (uint8_t) ((pWaveFormatStruct->SampleRate >> 24) & 0xFF);
 
 	/* Write the Byte Rate -----------------------------------------------------*/
-	pHeader[28]  = (uint8_t)((pWaveFormatStruct->ByteRate & 0xFF));
-	pHeader[29]  = (uint8_t)((pWaveFormatStruct->ByteRate >> 8) & 0xFF);
-	pHeader[30]  = (uint8_t)((pWaveFormatStruct->ByteRate >> 16) & 0xFF);
-	pHeader[31]  = (uint8_t)((pWaveFormatStruct->ByteRate >> 24) & 0xFF);
+	pHeader[28] = (uint8_t) ((pWaveFormatStruct->ByteRate & 0xFF));
+	pHeader[29] = (uint8_t) ((pWaveFormatStruct->ByteRate >> 8) & 0xFF);
+	pHeader[30] = (uint8_t) ((pWaveFormatStruct->ByteRate >> 16) & 0xFF);
+	pHeader[31] = (uint8_t) ((pWaveFormatStruct->ByteRate >> 24) & 0xFF);
 
 	/* Write the block alignment -----------------------------------------------*/
-	pHeader[32]  = pWaveFormatStruct->BlockAlign;
-	pHeader[33]  = 0x00;
+	pHeader[32] = pWaveFormatStruct->BlockAlign;
+	pHeader[33] = 0x00;
 
 	/* Write the number of bits per sample -------------------------------------*/
-	pHeader[34]  = pWaveFormatStruct->BitPerSample;
-	pHeader[35]  = 0x00;
+	pHeader[34] = pWaveFormatStruct->BitPerSample;
+	pHeader[35] = 0x00;
 
 	/* Write the Data chunk, must be 'data' ------------------------------------*/
-	pHeader[36]  = 'd';
-	pHeader[37]  = 'a';
-	pHeader[38]  = 't';
-	pHeader[39]  = 'a';
+	pHeader[36] = 'd';
+	pHeader[37] = 'a';
+	pHeader[38] = 't';
+	pHeader[39] = 'a';
 
 	/* Write the number of sample data -----------------------------------------*/
 	/* This variable will be written back at the end of the recording operation */
-	pHeader[40]  = 0x00;
-	pHeader[41]  = 0x4C;
-	pHeader[42]  = 0x1D;
-	pHeader[43]  = 0x00;
+	pHeader[40] = 0x00;
+	pHeader[41] = 0x4C;
+	pHeader[42] = 0x1D;
+	pHeader[43] = 0x00;
 
 	/* Return 0 if all operations are OK */
 	return 0;
@@ -6446,22 +6826,22 @@ static uint32_t WavProcess_HeaderInit(uint8_t* pHeader, WAVE_FormatTypeDef* pWav
  * @param  pWaveFormatStruct: Pointer to the wave structure to be filled.
  * @retval 0 if passed, !0 if failed.
  */
-static uint32_t WavProcess_HeaderUpdate(uint8_t* pHeader, uint32_t bytesWritten)
-{
+static uint32_t WavProcess_HeaderUpdate(uint8_t *pHeader,
+		uint32_t bytesWritten) {
 	/* Write the file length ---------------------------------------------------*/
 	/* The sampling time: this value will be written back at the end of the
-     recording operation.  application: 661500 Btyes = 0x000A17FC, byte[7]=0x00, byte[4]=0xFC */
-	pHeader[4] = (uint8_t)(bytesWritten);
-	pHeader[5] = (uint8_t)(bytesWritten >> 8);
-	pHeader[6] = (uint8_t)(bytesWritten >> 16);
-	pHeader[7] = (uint8_t)(bytesWritten >> 24);
+	 recording operation.  application: 661500 Btyes = 0x000A17FC, byte[7]=0x00, byte[4]=0xFC */
+	pHeader[4] = (uint8_t) (bytesWritten);
+	pHeader[5] = (uint8_t) (bytesWritten >> 8);
+	pHeader[6] = (uint8_t) (bytesWritten >> 16);
+	pHeader[7] = (uint8_t) (bytesWritten >> 24);
 	/* Write the number of sample data -----------------------------------------*/
 	/* This variable will be written back at the end of the recording operation */
-	bytesWritten -=44;
-	pHeader[40] = (uint8_t)(bytesWritten);
-	pHeader[41] = (uint8_t)(bytesWritten >> 8);
-	pHeader[42] = (uint8_t)(bytesWritten >> 16);
-	pHeader[43] = (uint8_t)(bytesWritten >> 24);
+	bytesWritten -= 44;
+	pHeader[40] = (uint8_t) (bytesWritten);
+	pHeader[41] = (uint8_t) (bytesWritten >> 8);
+	pHeader[42] = (uint8_t) (bytesWritten >> 16);
+	pHeader[43] = (uint8_t) (bytesWritten >> 24);
 
 	/* Return 0 if all operations are OK */
 	return 0;
@@ -6471,25 +6851,21 @@ void reset_DFU_trigger(void) {
 	*((int*) 0x2000020c) = 0xCAFEFEED; // Reset our trigger
 }
 
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
-	if(GPIO_Pin == MAX78_INT1_Pin){
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+	if (GPIO_Pin == MAX78_INT1_Pin) {
 		osThreadFlagsSet(triggerMarkTaskId, BEE_1_ALERT);
-	}
-	else if(GPIO_Pin == MAX78_INT2_Pin){
+	} else if (GPIO_Pin == MAX78_INT2_Pin) {
 		osThreadFlagsSet(triggerMarkTaskId, BEE_2_ALERT);
-	}
-	else if(GPIO_Pin == SX_DIO1_Pin){
+	} else if (GPIO_Pin == SX_DIO1_Pin) {
 		osThreadFlagsSet(loraGPSId, LORA_IRQ_FLAG);
-	}
-	else if(GPIO_Pin == TIMEPULSE_Pin){
+	} else if (GPIO_Pin == TIMEPULSE_Pin) {
 		osThreadFlagsSet(loraGPSId, GPS_TIMEPULSE_FLAG);
 	}
 
 }
 
-
 //volatile uint32_t byteswritten = 0;
-void HAL_SAI_RxHalfCpltCallback(SAI_HandleTypeDef *hsai){
+void HAL_SAI_RxHalfCpltCallback(SAI_HandleTypeDef *hsai) {
 	//	 f_write(&WavFile, audioSample, AUDIO_BUFFER_HALF_LEN, (void*)&byteswritten);
 	sampleCntr++;
 	SAI_HALF_CALLBACK = 1;
@@ -6498,7 +6874,7 @@ void HAL_SAI_RxHalfCpltCallback(SAI_HandleTypeDef *hsai){
 	osThreadFlagsSet(micThreadId, 0x0001U);
 }
 
-void HAL_SAI_RxCpltCallback(SAI_HandleTypeDef *hsai){
+void HAL_SAI_RxCpltCallback(SAI_HandleTypeDef *hsai) {
 	//	 f_write(&WavFile, &audioSample[AUDIO_BUFFER_HALF_LEN], AUDIO_BUFFER_HALF_LEN, (void*)&byteswritten);
 	sampleCntr++;
 	SAI_FULL_CALLBACK = 1;
@@ -6508,7 +6884,7 @@ void HAL_SAI_RxCpltCallback(SAI_HandleTypeDef *hsai){
 
 }
 
-void i2c_error_check(I2C_HandleTypeDef *hi2c){
+void i2c_error_check(I2C_HandleTypeDef *hi2c) {
 	return;
 }
 
@@ -6529,17 +6905,17 @@ void i2c_error_check(I2C_HandleTypeDef *hi2c){
 //
 //}
 
-void updateRTC_MS(uint64_t receivedTime_ms){
+void updateRTC_MS(uint64_t receivedTime_ms) {
 
 	updateRTC(receivedTime_ms / 1000);
 
 }
 
-void updateRTC(uint64_t receivedTime_s){
+void updateRTC(uint64_t receivedTime_s) {
 
 	// (1) convert received UNIX time to time struct
-	RTC_TimeTypeDef time = {0};
-	RTC_DateTypeDef date = {0};
+	RTC_TimeTypeDef time = { 0 };
+	RTC_DateTypeDef date = { 0 };
 	RTC_FromEpoch(receivedTime_s, &time, &date);
 
 	// (2) set time
@@ -6550,17 +6926,30 @@ void updateRTC(uint64_t receivedTime_s){
 
 }
 
-uint64_t getEpoch(void){
+uint64_t getEpoch_ms(void) {
 
 	// (1) convert received UNIX time to time struct
-	RTC_TimeTypeDef time = {0};
-	RTC_DateTypeDef date = {0};
+	RTC_TimeTypeDef time = { 0 };
+	RTC_DateTypeDef date = { 0 };
 
 	HAL_RTC_GetTime(&hrtc, &time, RTC_FORMAT_BIN);
 	HAL_RTC_GetDate(&hrtc, &date, RTC_FORMAT_BIN);
 
 	// (2) get time
 	return RTC_ToEpochMS(&time, &date);
+}
+
+uint64_t getEpoch(void) {
+
+	// (1) convert received UNIX time to time struct
+	RTC_TimeTypeDef time = { 0 };
+	RTC_DateTypeDef date = { 0 };
+
+	HAL_RTC_GetTime(&hrtc, &time, RTC_FORMAT_BIN);
+	HAL_RTC_GetDate(&hrtc, &date, RTC_FORMAT_BIN);
+
+	// (2) get time
+	return RTC_ToEpoch(&time, &date);
 }
 
 time_t timestamp;
@@ -6570,7 +6959,6 @@ struct tm time_tm;
 // Convert epoch time to Date/Time structures
 void RTC_FromEpoch(time_t epoch, RTC_TimeTypeDef *time, RTC_DateTypeDef *date) {
 
-
 	time_tm = *(localtime(&epoch));
 
 	time->TimeFormat = 0;
@@ -6579,21 +6967,22 @@ void RTC_FromEpoch(time_t epoch, RTC_TimeTypeDef *time, RTC_DateTypeDef *date) {
 	time->DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
 	time->StoreOperation = RTC_STOREOPERATION_SET;
 
-	time->Hours = (uint8_t)time_tm.tm_hour;
-	time->Minutes = (uint8_t)time_tm.tm_min;
-	time->Seconds = (uint8_t)time_tm.tm_sec;
+	time->Hours = (uint8_t) time_tm.tm_hour;
+	time->Minutes = (uint8_t) time_tm.tm_min;
+	time->Seconds = (uint8_t) time_tm.tm_sec;
 	//	 HAL_RTC_SetTime(&hrtc, time, RTC_FORMAT_BIN);
 
-	if (time_tm.tm_wday == 0) { time_tm.tm_wday = 7; } // the chip goes mon tue wed thu fri sat sun
-	date->WeekDay = (uint8_t)time_tm.tm_wday;
-	date->Month = (uint8_t)time_tm.tm_mon+1; //momth 1- This is why date math is frustrating.
-	date->Date = (uint8_t)time_tm.tm_mday;
-	date->Year = (uint16_t)(time_tm.tm_year+1900-2000); // time.h is years since 1900, chip is years since 2000
+	if (time_tm.tm_wday == 0) {
+		time_tm.tm_wday = 7;
+	} // the chip goes mon tue wed thu fri sat sun
+	date->WeekDay = (uint8_t) time_tm.tm_wday;
+	date->Month = (uint8_t) time_tm.tm_mon + 1; //momth 1- This is why date math is frustrating.
+	date->Date = (uint8_t) time_tm.tm_mday;
+	date->Year = (uint16_t) (time_tm.tm_year + 1900 - 2000); // time.h is years since 1900, chip is years since 2000
 
 	/*
 	 * update the RTC
 	 */
-
 
 	//	 HAL_RTCEx_BKUPWrite(&hrtc,RTC_BKP_DR0,0x32F2); // lock it in with the backup registers
 }
@@ -6602,11 +6991,11 @@ uint32_t RTC_ToEpoch(RTC_TimeTypeDef *time, RTC_DateTypeDef *date) {
 
 	currTime.tm_year = date->Year + 100;  // In fact: 2000 + 18 - 1900
 	currTime.tm_mday = date->Date;
-	currTime.tm_mon  = date->Month - 1;
+	currTime.tm_mon = date->Month - 1;
 
 	currTime.tm_hour = time->Hours;
-	currTime.tm_min  = time->Minutes;
-	currTime.tm_sec  = time->Seconds;
+	currTime.tm_min = time->Minutes;
+	currTime.tm_sec = time->Seconds;
 
 	return mktime(&currTime);
 }
@@ -6615,18 +7004,18 @@ uint64_t RTC_ToEpochMS(RTC_TimeTypeDef *time, RTC_DateTypeDef *date) {
 
 	currTime.tm_year = date->Year + 100;  // In fact: 2000 + 18 - 1900
 	currTime.tm_mday = date->Date;
-	currTime.tm_mon  = date->Month - 1;
+	currTime.tm_mon = date->Month - 1;
 
 	currTime.tm_hour = time->Hours;
-	currTime.tm_min  = time->Minutes;
-	currTime.tm_sec  = time->Seconds;
+	currTime.tm_min = time->Minutes;
+	currTime.tm_sec = time->Seconds;
 
 	uint64_t timestamp_ms = mktime(&currTime);
-	return (timestamp_ms * 1000) + 1000 - ((time->SubSeconds*1000) /  time->SecondFraction);
+	return (timestamp_ms * 1000) + 1000
+			- ((time->SubSeconds * 1000) / time->SecondFraction);
 }
 
-void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc)
-{
+void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc) {
 //	osThreadFlagsSet(mainSystemThreadId, UPDATE_EVENT);
 
 }
@@ -6646,69 +7035,70 @@ void HAL_RTCEx_AlarmBEventCallback(RTC_HandleTypeDef *hrtc) {
  * @retval None
  */
 /* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void *argument)
-{
-  /* init code for USB_Device */
-  MX_USB_Device_Init();
-  /* USER CODE BEGIN 5 */
+void StartDefaultTask(void *argument) {
+	/* init code for USB_Device */
+
+#if DISABLE_WIRELESS == 0
+	/* Init code for STM32_WPAN */
+	MX_APPE_Init();
+#endif
+
+	MX_USB_Device_Init();
+
+	/* USER CODE BEGIN 5 */
 	/* Infinite loop */
-	for(;;)
-	{
+	for (;;) {
 		osDelay(1);
 		//		if(FlagCmdProcessingFromM0){
 		//			ot_StatusNot(ot_TL_CmdAvailable);
 		//		}
 	}
-  /* USER CODE END 5 */
+	/* USER CODE END 5 */
 }
 
 /**
-  * @brief  Period elapsed callback in non blocking mode
-  * @note   This function is called  when TIM1 interrupt took place, inside
-  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
-  * a global variable "uwTick" used as application time base.
-  * @param  htim : TIM handle
-  * @retval None
-  */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-  /* USER CODE BEGIN Callback 0 */
+ * @brief  Period elapsed callback in non blocking mode
+ * @note   This function is called  when TIM1 interrupt took place, inside
+ * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+ * a global variable "uwTick" used as application time base.
+ * @param  htim : TIM handle
+ * @retval None
+ */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+	/* USER CODE BEGIN Callback 0 */
 
-  /* USER CODE END Callback 0 */
-  if (htim->Instance == TIM1) {
-    HAL_IncTick();
-  }
-  /* USER CODE BEGIN Callback 1 */
+	/* USER CODE END Callback 0 */
+	if (htim->Instance == TIM1) {
+		HAL_IncTick();
+	}
+	/* USER CODE BEGIN Callback 1 */
 
-  /* USER CODE END Callback 1 */
+	/* USER CODE END Callback 1 */
 }
 
 /**
-  * @brief  This function is executed in case of error occurrence.
-  * @retval None
-  */
-void Error_Handler(void)
-{
-  /* USER CODE BEGIN Error_Handler_Debug */
+ * @brief  This function is executed in case of error occurrence.
+ * @retval None
+ */
+void Error_Handler(void) {
+	/* USER CODE BEGIN Error_Handler_Debug */
 	//	portENTER_CRITICAL();
 	setLED_Green(0);
 	setLED_Blue(0);
 
-	while (1)
-	{
+	while (1) {
 		setLED_Red(1000);
 		osDelay(500);
 		setLED_Red(0);
 		osDelay(500);
 	}
 
-
 	//	portEXIT_CRITICAL();
 
 	//	/* User can add his own implementation to report the HAL error return state */
 	//	__disable_irq();
 
-  /* USER CODE END Error_Handler_Debug */
+	/* USER CODE END Error_Handler_Debug */
 }
 
 #ifdef  USE_FULL_ASSERT
