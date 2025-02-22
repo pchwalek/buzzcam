@@ -564,10 +564,10 @@ int main(void) {
 		Control_SDCard_Power(systemState.SDCardState);
 	}
 
-	if (systemPowerSupervisor.isMAX78000Enabled) {
-		systemState.isMAX78000Active = true;
-		Control_MAX78000_Power(true);
-	}
+//	if (systemPowerSupervisor.isMAX78000Enabled) {
+//		systemState.isMAX78000Active = true;
+//		Control_MAX78000_Power(true);
+//	}
 
 //	HAL_GPIO_WritePin(EN_3V3_GPS_GPIO_Port, EN_3V3_GPS_Pin, GPIO_PIN_RESET);
 
@@ -641,6 +641,7 @@ int main(void) {
 	/* Init scheduler */
 	osKernelInitialize();
 
+
 	/* USER CODE BEGIN RTOS_MUTEX */
 	/* add mutexes, ... */
 	messageI2C1_LockHandle = osMutexNew(&messageI2C1_Lock_attributes);
@@ -689,9 +690,14 @@ int main(void) {
 //	MX_IPCC_Init();
 #if DISABLE_WIRELESS == 1
 	mainSystemThreadId = osThreadNew(mainSystemTask, NULL, &mainSystemTask_attributes);
+
+#endif
+
+#if DISABLE_WIRELESS == 0
 	/* Init code for STM32_WPAN */
 	MX_APPE_Init();
 #endif
+
 	/* USER CODE END RTOS_EVENTS */
 
 	/* Start scheduler */
@@ -6611,7 +6617,7 @@ void sendLoRa_pkt(packet_t *packet) {
 	uint8_t dataTransmitted = 0;
 	volatile sx126x_status_t sx1262x_status;
 	sx126x_chip_status_t sx126x_chip_status;
-	sx126x_irq_mask_t sx126x_irq_mask;
+	sx126x_irq_mask_t sx126x_irq_mask = 0;
 
 	packet->header.epoch = getEpoch_ms();
 	packet->header.ms_from_start = HAL_GetTick();
@@ -6656,7 +6662,7 @@ void sendLoRa_pkt(packet_t *packet) {
 //			}
 //		}
 
-		sx1262x_status = sx126x_set_tx( NULL, 10000); // timeout: 10000ms
+		sx1262x_status = sx126x_set_tx( NULL, 30000); // timeout: 10000ms
 
 		setLED_Blue(0);
 		setLED_Red(0);
