@@ -292,7 +292,7 @@ void MX_SAI1_Init_Custom(SAI_HandleTypeDef &hsai_handle,
 
 // LoRa Radio Configuration and Communication
 void configLoraRadio(void);                      // Configures the LoRa radio
-void sendLoRa_pkt(packet_t *packet);             // Sends a packet via LoRa
+void sendLoRa_pkt(lo_ra_packet_t *packet);             // Sends a packet via LoRa
 
 // External audio device management
 void disableExtAudioDevices(void);            // Disables external audio devices
@@ -378,6 +378,7 @@ static DTS_STM_Payload_t PackedPayload;   // Struct for packed data payloads
 // Packet Structures for Communication
 packet_t configPacket = PACKET_INIT_ZERO; // Packet structure for configuration messages
 packet_t infoPacket = PACKET_INIT_ZERO;   // Packet structure for info messages
+lo_ra_packet_t loraPacket = LO_RA_PACKET_INIT_ZERO;
 
 // Buffer and Message Handling
 uint8_t buffer[500];        // Buffer for BLE communication
@@ -564,10 +565,10 @@ int main(void) {
 		Control_SDCard_Power(systemState.SDCardState);
 	}
 
-//	if (systemPowerSupervisor.isMAX78000Enabled) {
-//		systemState.isMAX78000Active = true;
-//		Control_MAX78000_Power(true);
-//	}
+	if (systemPowerSupervisor.isMAX78000Enabled) {
+		systemState.isMAX78000Active = true;
+		Control_MAX78000_Power(true);
+	}
 
 //	HAL_GPIO_WritePin(EN_3V3_GPS_GPIO_Port, EN_3V3_GPS_Pin, GPIO_PIN_RESET);
 
@@ -1224,11 +1225,11 @@ static void MX_SPI2_Init(void) {
 	hspi2.Instance = SPI2;
 	hspi2.Init.Mode = SPI_MODE_MASTER;
 	hspi2.Init.Direction = SPI_DIRECTION_2LINES;
-	hspi2.Init.DataSize = SPI_DATASIZE_4BIT;
+	hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
 	hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
 	hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
 	hspi2.Init.NSS = SPI_NSS_SOFT;
-	hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+	hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
 	hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
 	hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
 	hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -5370,6 +5371,8 @@ void loraGPSTask(void *argument) {
 	uint8_t gpsMsgRetry = 0;
 	volatile uint32_t timestamp = 0;
 
+	loraPacket.payload.system_summary_packet.transmission_interval_m = LORA_SEND_INTERVAL_MINS;
+
 //	// turn on GPS if not already on
 //	if(systemPowerSupervisor.isGPSEnabled &&
 //			!systemState.isGPSActive){
@@ -5472,7 +5475,18 @@ void loraGPSTask(void *argument) {
 //		}
 
 		if ((flag & LORA_SEND_PKT) == LORA_SEND_PKT) {
-			sendLoRa_pkt(&infoPacket);
+			loraPacket.has_header = true;
+			loraPacket.header.epoch = getEpoch_ms();
+			loraPacket.header.ms_from_start = HAL_GetTick();
+			loraPacket.header.system_uid = LL_FLASH_GetUDN();
+			loraPacket.which_payload = LO_RA_PACKET_SYSTEM_SUMMARY_PACKET_TAG;
+			if(infoPacket.payload.system_info_packet.has_gps_location){
+				loraPacket.payload.system_summary_packet.has_location = true;
+				loraPacket.payload.system_summary_packet.location.lat = infoPacket.payload.system_info_packet.gps_location.lat;
+				loraPacket.payload.system_summary_packet.location.lon = infoPacket.payload.system_info_packet.gps_location.lon;
+				loraPacket.payload.system_summary_packet.location.elev = infoPacket.payload.system_info_packet.gps_location.elev;
+			}
+			sendLoRa_pkt(&loraPacket);
 		}
 
 		if ((flag & LORA_IRQ_FLAG) == LORA_IRQ_FLAG) {
@@ -5493,7 +5507,7 @@ void loraGPSTask(void *argument) {
 								== SX126X_CMD_STATUS_CMD_PROCESS_ERROR)
 						|| (sx126x_chip_status.cmd_status
 								== SX126X_CMD_STATUS_CMD_EXEC_FAILURE)) {
-					sendLoRa_pkt(&infoPacket);
+					sendLoRa_pkt(&loraPacket);
 					loraPktRetry++;
 					if (loraPktRetry > LORA_PKT_RETRY) {
 						Error_Handler();
@@ -5538,8 +5552,6 @@ void grabFix(uint64_t timeout_ms) {
 		toggledGreen();
 		if (GPS_FIX_SUCCESS == getGPSFix(&currentFix)) {
 			infoPacket.payload.system_info_packet.has_gps_location = true;
-			infoPacket.payload.system_info_packet.gps_location.epoch =
-					currentFix.gps_epoch;
 			infoPacket.payload.system_info_packet.gps_location.lat =
 					currentFix.latitude;
 			infoPacket.payload.system_info_packet.gps_location.lon =
@@ -5547,7 +5559,7 @@ void grabFix(uint64_t timeout_ms) {
 			infoPacket.payload.system_info_packet.gps_location.elev =
 					currentFix.altitude;
 
-			updateRTC(infoPacket.payload.system_info_packet.gps_location.epoch);
+			updateRTC(currentFix.gps_epoch);
 
 			osMutexRelease(messageI2C1_LockHandle);
 			break;
@@ -6609,7 +6621,7 @@ void EnableExtADC(bool state) {
 	}
 }
 
-void sendLoRa_pkt(packet_t *packet) {
+void sendLoRa_pkt(lo_ra_packet_t *packet) {
 
 	if (!systemPowerSupervisor.isLoRaEnabled || !systemState.isLoRaActive)
 		return;
@@ -6622,7 +6634,9 @@ void sendLoRa_pkt(packet_t *packet) {
 	packet->header.epoch = getEpoch_ms();
 	packet->header.ms_from_start = HAL_GetTick();
 
+	taskENTER_CRITICAL();
 	sx126x_get_and_clear_irq_status( NULL, &sx126x_irq_mask);
+	taskEXIT_CRITICAL();
 //	if (sx126x_irq_mask != 0)
 //		return;
 
@@ -6631,7 +6645,7 @@ void sendLoRa_pkt(packet_t *packet) {
 
 	/* Now we are ready to encode the message! */
 	uint8_t has_encoded_correctly = 0;
-	has_encoded_correctly = pb_encode_delimited(&stream, PACKET_FIELDS, packet);
+	has_encoded_correctly = pb_encode_delimited(&stream, LO_RA_PACKET_FIELDS, packet);
 
 	if (has_encoded_correctly) {
 		setLED_Blue(100);

@@ -291,8 +291,20 @@ message SystemSummaryPacket{
     uint64 epoch_last_detection = 3;
     uint32 transmission_interval_m = 4; // minutes
     uint32 buzz_count_interval = 5;
-    uint32 species_1_count_interval = 6;
-    uint32 species_2_count_interval = 7;
+    uint64 species_1_count_interval = 6;
+    uint64 species_2_count_interval = 7;
+}
+
+message Packet {
+    PacketHeader header = 1;
+
+    oneof payload {
+        SystemInfoPacket system_info_packet = 2;
+        MarkPacket mark_packet = 3;
+        ConfigPacket config_packet = 4;
+        SpecialFunction special_function = 5;
+        
+    }
 }
 
 message LoRaPacket {
@@ -301,6 +313,7 @@ message LoRaPacket {
     oneof payload {
         SystemSummaryPacket system_summary_packet = 2;
     }
+
     optional RadioPower radioPower = 3;
 }
 

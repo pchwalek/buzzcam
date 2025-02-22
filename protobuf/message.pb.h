@@ -313,9 +313,21 @@ typedef struct system_summary_packet {
     uint64_t epoch_last_detection;
     uint32_t transmission_interval_m; /* minutes */
     uint32_t buzz_count_interval;
-    uint32_t species_1_count_interval;
-    uint32_t species_2_count_interval;
+    uint64_t species_1_count_interval;
+    uint64_t species_2_count_interval;
 } system_summary_packet_t;
+
+typedef struct packet {
+    bool has_header;
+    packet_header_t header;
+    pb_size_t which_payload;
+    union {
+        system_info_packet_t system_info_packet;
+        mark_packet_t mark_packet;
+        config_packet_t config_packet;
+        special_function_t special_function;
+    } payload;
+} packet_t;
 
 typedef struct lo_ra_packet {
     bool has_header;
@@ -393,6 +405,7 @@ extern "C" {
 
 
 
+
 /* Initializer values for message structs */
 #define RADIO_POWER_INIT_DEFAULT                 {0, 0, 0}
 #define SIMPLE_SENSOR_READING_INIT_DEFAULT       {0, 0, 0, 0, 0, 0}
@@ -421,6 +434,7 @@ extern "C" {
 #define PACKET_HEADER_INIT_DEFAULT               {0, 0, 0}
 #define LOCATION_INIT_DEFAULT                    {0, 0, 0}
 #define SYSTEM_SUMMARY_PACKET_INIT_DEFAULT       {0, false, LOCATION_INIT_DEFAULT, 0, 0, 0, 0, 0}
+#define PACKET_INIT_DEFAULT                      {false, PACKET_HEADER_INIT_DEFAULT, 0, {SYSTEM_INFO_PACKET_INIT_DEFAULT}}
 #define LO_RA_PACKET_INIT_DEFAULT                {false, PACKET_HEADER_INIT_DEFAULT, 0, {SYSTEM_SUMMARY_PACKET_INIT_DEFAULT}, false, RADIO_POWER_INIT_DEFAULT}
 #define RADIO_POWER_INIT_ZERO                    {0, 0, 0}
 #define SIMPLE_SENSOR_READING_INIT_ZERO          {0, 0, 0, 0, 0, 0}
@@ -449,6 +463,7 @@ extern "C" {
 #define PACKET_HEADER_INIT_ZERO                  {0, 0, 0}
 #define LOCATION_INIT_ZERO                       {0, 0, 0}
 #define SYSTEM_SUMMARY_PACKET_INIT_ZERO          {0, false, LOCATION_INIT_ZERO, 0, 0, 0, 0, 0}
+#define PACKET_INIT_ZERO                         {false, PACKET_HEADER_INIT_ZERO, 0, {SYSTEM_INFO_PACKET_INIT_ZERO}}
 #define LO_RA_PACKET_INIT_ZERO                   {false, PACKET_HEADER_INIT_ZERO, 0, {SYSTEM_SUMMARY_PACKET_INIT_ZERO}, false, RADIO_POWER_INIT_ZERO}
 
 /* Field tags (for use in manual encoding/decoding) */
@@ -570,6 +585,11 @@ extern "C" {
 #define SYSTEM_SUMMARY_PACKET_BUZZ_COUNT_INTERVAL_TAG 5
 #define SYSTEM_SUMMARY_PACKET_SPECIES_1_COUNT_INTERVAL_TAG 6
 #define SYSTEM_SUMMARY_PACKET_SPECIES_2_COUNT_INTERVAL_TAG 7
+#define PACKET_HEADER_TAG                        1
+#define PACKET_SYSTEM_INFO_PACKET_TAG            2
+#define PACKET_MARK_PACKET_TAG                   3
+#define PACKET_CONFIG_PACKET_TAG                 4
+#define PACKET_SPECIAL_FUNCTION_TAG              5
 #define LO_RA_PACKET_HEADER_TAG                  1
 #define LO_RA_PACKET_SYSTEM_SUMMARY_PACKET_TAG   2
 #define LO_RA_PACKET_RADIO_POWER_TAG             3
@@ -818,11 +838,25 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  location,          2) \
 X(a, STATIC,   SINGULAR, UINT64,   epoch_last_detection,   3) \
 X(a, STATIC,   SINGULAR, UINT32,   transmission_interval_m,   4) \
 X(a, STATIC,   SINGULAR, UINT32,   buzz_count_interval,   5) \
-X(a, STATIC,   SINGULAR, UINT32,   species_1_count_interval,   6) \
-X(a, STATIC,   SINGULAR, UINT32,   species_2_count_interval,   7)
+X(a, STATIC,   SINGULAR, UINT64,   species_1_count_interval,   6) \
+X(a, STATIC,   SINGULAR, UINT64,   species_2_count_interval,   7)
 #define SYSTEM_SUMMARY_PACKET_CALLBACK NULL
 #define SYSTEM_SUMMARY_PACKET_DEFAULT NULL
 #define system_summary_packet_t_location_MSGTYPE location_t
+
+#define PACKET_FIELDLIST(X, a) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,system_info_packet,payload.system_info_packet),   2) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,mark_packet,payload.mark_packet),   3) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,config_packet,payload.config_packet),   4) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,special_function,payload.special_function),   5)
+#define PACKET_CALLBACK NULL
+#define PACKET_DEFAULT NULL
+#define packet_t_header_MSGTYPE packet_header_t
+#define packet_t_payload_system_info_packet_MSGTYPE system_info_packet_t
+#define packet_t_payload_mark_packet_MSGTYPE mark_packet_t
+#define packet_t_payload_config_packet_MSGTYPE config_packet_t
+#define packet_t_payload_special_function_MSGTYPE special_function_t
 
 #define LO_RA_PACKET_FIELDLIST(X, a) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
@@ -861,6 +895,7 @@ extern const pb_msgdesc_t special_function_t_msg;
 extern const pb_msgdesc_t packet_header_t_msg;
 extern const pb_msgdesc_t location_t_msg;
 extern const pb_msgdesc_t system_summary_packet_t_msg;
+extern const pb_msgdesc_t packet_t_msg;
 extern const pb_msgdesc_t lo_ra_packet_t_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
@@ -891,6 +926,7 @@ extern const pb_msgdesc_t lo_ra_packet_t_msg;
 #define PACKET_HEADER_FIELDS &packet_header_t_msg
 #define LOCATION_FIELDS &location_t_msg
 #define SYSTEM_SUMMARY_PACKET_FIELDS &system_summary_packet_t_msg
+#define PACKET_FIELDS &packet_t_msg
 #define LO_RA_PACKET_FIELDS &lo_ra_packet_t_msg
 
 /* Maximum encoded size of messages (where known) */
@@ -904,11 +940,12 @@ extern const pb_msgdesc_t lo_ra_packet_t_msg;
 #define DEVICE_UID_SIZE                          11
 #define LOCATION_SIZE                            15
 #define LOW_POWER_CONFIG_SIZE                    2
-#define LO_RA_PACKET_SIZE                        119
+#define LO_RA_PACKET_SIZE                        129
 #define MARK_PACKET_SIZE                         53
 #define MARK_STATE_SIZE                          17
 #define NETWORK_STATE_SIZE                       152
 #define PACKET_HEADER_SIZE                       23
+#define PACKET_SIZE                              995
 #define PEER_ADDRESS_SIZE                        14
 #define RADIO_POWER_SIZE                         33
 #define SCHEDULE_CONFIG_SIZE                     38
@@ -918,7 +955,7 @@ extern const pb_msgdesc_t lo_ra_packet_t_msg;
 #define SIMPLE_SENSOR_READING_SIZE               32
 #define SPECIAL_FUNCTION_SIZE                    967
 #define SYSTEM_INFO_PACKET_SIZE                  392
-#define SYSTEM_SUMMARY_PACKET_SIZE               57
+#define SYSTEM_SUMMARY_PACKET_SIZE               67
 #define UWB_INFO_SIZE                            35
 #define UWB_PACKET_SIZE                          964
 #define UWB_RANGE_SIZE                           46
