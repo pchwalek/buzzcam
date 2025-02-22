@@ -6,7 +6,11 @@ syntax = "proto3";
 //protoc message.proto --python_out=./ -I=./
 /**************/
 
-
+message RadioPower{
+    int32 rssi = 1;
+    int32 snr = 2;
+    int32 rssi_est = 3;
+}
 
 message SimpleSensorReading{
     uint32 index = 1;
@@ -297,5 +301,6 @@ message LoRaPacket {
     oneof payload {
         SystemSummaryPacket system_summary_packet = 2;
     }
+    optional RadioPower radioPower = 3;
 }
 
