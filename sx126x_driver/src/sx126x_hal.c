@@ -100,7 +100,7 @@ sx126x_hal_status_t sx126x_hal_write( const void* context, const uint8_t* comman
 	HAL_GPIO_WritePin(SPI2_SX1262_CS_GPIO_Port, SPI2_SX1262_CS_Pin, GPIO_PIN_SET);
 
 	//todo: delay required
-	HAL_Delay(1);
+	osDelay(1);
 
 	return SX126X_HAL_STATUS_OK;
 }

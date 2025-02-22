@@ -68,26 +68,6 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
 
-/*     LoRa Settings     */
-#define MAX_PWR			3 // 22 dBm
-#define HIGH_PWR		2 // 20 dBm
-#define MID_PWR			1 // 17 dBm
-#define LOW_PWR			0 // 14 dBm
-#define ULTRA_LOW_PWR	-1 // 0 dBm
-
-//#define LORA_FREQ		868000000
-#define LORA_FREQ		915000000
-#define LORA_POWER_LVL	HIGH_PWR
-
-#define LORA_LONG_RANGE_LOW_BW		3
-#define LORA_MID_RANGE_MID_BW		2
-#define LORA_SHORT_RANGE_HIGH_BW	1
-#define LORA_MAX_BW					0
-#define LORA_MAX_RANGE				4 // this one takes a long time to send a packet
-
-#define LORA_RANGE_BW	LORA_LONG_RANGE_LOW_BW
-
-#define LORA_TX_PERIOD_MS		5000
 
 
 void writeDefaultConfig(void);

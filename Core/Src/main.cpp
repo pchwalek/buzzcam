@@ -5596,7 +5596,7 @@ void configLoraRadio(void) {
 	sx126x_pkt_params_lora_t sx126x_pkt_params_lora;
 	sx126x_pkt_params_lora.preamble_len_in_symb = 13;
 	sx126x_pkt_params_lora.header_type = SX126X_LORA_PKT_EXPLICIT;
-	sx126x_pkt_params_lora.pld_len_in_bytes = 180; // max is 255 bytes
+	sx126x_pkt_params_lora.pld_len_in_bytes = 128; // max is 255 bytes
 	sx126x_pkt_params_lora.crc_is_on = 1;
 	sx126x_pkt_params_lora.invert_iq_is_on = 0;
 	if (SX126X_STATUS_OK
@@ -6634,9 +6634,9 @@ void sendLoRa_pkt(lo_ra_packet_t *packet) {
 	packet->header.epoch = getEpoch_ms();
 	packet->header.ms_from_start = HAL_GetTick();
 
-	taskENTER_CRITICAL();
+//	taskENTER_CRITICAL();
 	sx126x_get_and_clear_irq_status( NULL, &sx126x_irq_mask);
-	taskEXIT_CRITICAL();
+//	taskEXIT_CRITICAL();
 //	if (sx126x_irq_mask != 0)
 //		return;
 
