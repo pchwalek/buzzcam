@@ -130,6 +130,7 @@ typedef struct sd_card_state {
     bool detected;
     uint64_t space_remaining;
     uint64_t estimated_remaining_recording_time;
+    uint32_t total_space;
 } sd_card_state_t;
 
 typedef struct mark_state {
@@ -425,7 +426,7 @@ extern "C" {
 #define SENSOR_READING_INIT_DEFAULT              {0, 0, {{NULL}, NULL}}
 #define SENSOR_READING_PAYLOAD_INIT_DEFAULT      {0, 0, 0, 0, 0, _SIGNAL_IDENTIFIER_MIN, _SENSOR_ACCURACY_MIN}
 #define SENSOR_CONFIG_INIT_DEFAULT               {0, 0, 0}
-#define SD_CARD_STATE_INIT_DEFAULT               {0, 0, 0}
+#define SD_CARD_STATE_INIT_DEFAULT               {0, 0, 0, 0}
 #define MARK_STATE_INIT_DEFAULT                  {0, 0}
 #define MARK_PACKET_INIT_DEFAULT                 {false, "", 0}
 #define BATTERY_STATE_INIT_DEFAULT               {0, 0, false, 0}
@@ -454,7 +455,7 @@ extern "C" {
 #define SENSOR_READING_INIT_ZERO                 {0, 0, {{NULL}, NULL}}
 #define SENSOR_READING_PAYLOAD_INIT_ZERO         {0, 0, 0, 0, 0, _SIGNAL_IDENTIFIER_MIN, _SENSOR_ACCURACY_MIN}
 #define SENSOR_CONFIG_INIT_ZERO                  {0, 0, 0}
-#define SD_CARD_STATE_INIT_ZERO                  {0, 0, 0}
+#define SD_CARD_STATE_INIT_ZERO                  {0, 0, 0, 0}
 #define MARK_STATE_INIT_ZERO                     {0, 0}
 #define MARK_PACKET_INIT_ZERO                    {false, "", 0}
 #define BATTERY_STATE_INIT_ZERO                  {0, 0, false, 0}
@@ -505,6 +506,7 @@ extern "C" {
 #define SD_CARD_STATE_DETECTED_TAG               1
 #define SD_CARD_STATE_SPACE_REMAINING_TAG        2
 #define SD_CARD_STATE_ESTIMATED_REMAINING_RECORDING_TIME_TAG 3
+#define SD_CARD_STATE_TOTAL_SPACE_TAG            4
 #define MARK_STATE_MARK_NUMBER_TAG               1
 #define MARK_STATE_TIMESTAMP_UNIX_TAG            2
 #define MARK_PACKET_ANNOTATION_TAG               1
@@ -660,7 +662,8 @@ X(a, STATIC,   SINGULAR, BOOL,     enable_gas,        3)
 #define SD_CARD_STATE_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, BOOL,     detected,          1) \
 X(a, STATIC,   SINGULAR, UINT64,   space_remaining,   2) \
-X(a, STATIC,   SINGULAR, UINT64,   estimated_remaining_recording_time,   3)
+X(a, STATIC,   SINGULAR, UINT64,   estimated_remaining_recording_time,   3) \
+X(a, STATIC,   SINGULAR, UINT32,   total_space,       4)
 #define SD_CARD_STATE_CALLBACK NULL
 #define SD_CARD_STATE_DEFAULT NULL
 
@@ -967,7 +970,7 @@ extern const pb_msgdesc_t lo_ra_packet_t_msg;
 #define DEVICE_UID_SIZE                          11
 #define LOCATION_SIZE                            15
 #define LOW_POWER_CONFIG_SIZE                    2
-#define LO_RA_PACKET_SIZE                        201
+#define LO_RA_PACKET_SIZE                        207
 #define MARK_PACKET_SIZE                         53
 #define MARK_STATE_SIZE                          17
 #define NETWORK_STATE_SIZE                       152
@@ -976,13 +979,13 @@ extern const pb_msgdesc_t lo_ra_packet_t_msg;
 #define PEER_ADDRESS_SIZE                        14
 #define RADIO_POWER_SIZE                         33
 #define SCHEDULE_CONFIG_SIZE                     38
-#define SD_CARD_STATE_SIZE                       24
+#define SD_CARD_STATE_SIZE                       30
 #define SENSOR_CONFIG_SIZE                       6
 #define SENSOR_READING_PAYLOAD_SIZE              41
 #define SIMPLE_SENSOR_READING_SIZE               32
 #define SPECIAL_FUNCTION_SIZE                    967
-#define SYSTEM_INFO_PACKET_SIZE                  392
-#define SYSTEM_SUMMARY_PACKET_SIZE               138
+#define SYSTEM_INFO_PACKET_SIZE                  398
+#define SYSTEM_SUMMARY_PACKET_SIZE               144
 #define UWB_INFO_SIZE                            35
 #define UWB_PACKET_SIZE                          964
 #define UWB_RANGE_SIZE                           46

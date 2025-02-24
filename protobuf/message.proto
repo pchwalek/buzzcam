@@ -73,6 +73,7 @@ message SDCardState{
     bool detected = 1;
     uint64 space_remaining = 2;
     uint64 estimated_remaining_recording_time = 3;
+    uint32 total_space = 4;
 }
 
 message MarkState{
