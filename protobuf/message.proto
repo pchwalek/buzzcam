@@ -285,14 +285,21 @@ message Location{
     float elev = 3;
 }
 
+
 message SystemSummaryPacket{
     float classifier_version = 1;
     Location location = 2;
-    uint64 epoch_last_detection = 3;
+    optional uint64 epoch_last_detection = 3;
     uint32 transmission_interval_m = 4; // minutes
-    uint32 buzz_count_interval = 5;
-    uint64 species_1_count_interval = 6;
-    uint64 species_2_count_interval = 7;
+    optional uint32 buzz_count_interval = 5;
+    optional uint32 species_1_count_interval = 6;
+    optional uint32 species_2_count_interval = 7;
+    optional SDCardState sd_card = 8;
+    optional RadioPower radio_power = 9;
+    float battery_voltage = 10;
+    float temperature = 11;
+    float humidity = 12;
+    optional float gas = 13;
 }
 
 message Packet {
@@ -316,4 +323,5 @@ message LoRaPacket {
 
     optional RadioPower radioPower = 3;
 }
+
 

@@ -310,11 +310,24 @@ typedef struct system_summary_packet {
     float classifier_version;
     bool has_location;
     location_t location;
+    bool has_epoch_last_detection;
     uint64_t epoch_last_detection;
     uint32_t transmission_interval_m; /* minutes */
+    bool has_buzz_count_interval;
     uint32_t buzz_count_interval;
-    uint64_t species_1_count_interval;
-    uint64_t species_2_count_interval;
+    bool has_species_1_count_interval;
+    uint32_t species_1_count_interval;
+    bool has_species_2_count_interval;
+    uint32_t species_2_count_interval;
+    bool has_sd_card;
+    sd_card_state_t sd_card;
+    bool has_radio_power;
+    radio_power_t radio_power;
+    float battery_voltage;
+    float temperature;
+    float humidity;
+    bool has_gas;
+    float gas;
 } system_summary_packet_t;
 
 typedef struct packet {
@@ -433,7 +446,7 @@ extern "C" {
 #define SPECIAL_FUNCTION_INIT_DEFAULT            {0, {0}}
 #define PACKET_HEADER_INIT_DEFAULT               {0, 0, 0}
 #define LOCATION_INIT_DEFAULT                    {0, 0, 0}
-#define SYSTEM_SUMMARY_PACKET_INIT_DEFAULT       {0, false, LOCATION_INIT_DEFAULT, 0, 0, 0, 0, 0}
+#define SYSTEM_SUMMARY_PACKET_INIT_DEFAULT       {0, false, LOCATION_INIT_DEFAULT, false, 0, 0, false, 0, false, 0, false, 0, false, SD_CARD_STATE_INIT_DEFAULT, false, RADIO_POWER_INIT_DEFAULT, 0, 0, 0, false, 0}
 #define PACKET_INIT_DEFAULT                      {false, PACKET_HEADER_INIT_DEFAULT, 0, {SYSTEM_INFO_PACKET_INIT_DEFAULT}}
 #define LO_RA_PACKET_INIT_DEFAULT                {false, PACKET_HEADER_INIT_DEFAULT, 0, {SYSTEM_SUMMARY_PACKET_INIT_DEFAULT}, false, RADIO_POWER_INIT_DEFAULT}
 #define RADIO_POWER_INIT_ZERO                    {0, 0, 0}
@@ -462,7 +475,7 @@ extern "C" {
 #define SPECIAL_FUNCTION_INIT_ZERO               {0, {0}}
 #define PACKET_HEADER_INIT_ZERO                  {0, 0, 0}
 #define LOCATION_INIT_ZERO                       {0, 0, 0}
-#define SYSTEM_SUMMARY_PACKET_INIT_ZERO          {0, false, LOCATION_INIT_ZERO, 0, 0, 0, 0, 0}
+#define SYSTEM_SUMMARY_PACKET_INIT_ZERO          {0, false, LOCATION_INIT_ZERO, false, 0, 0, false, 0, false, 0, false, 0, false, SD_CARD_STATE_INIT_ZERO, false, RADIO_POWER_INIT_ZERO, 0, 0, 0, false, 0}
 #define PACKET_INIT_ZERO                         {false, PACKET_HEADER_INIT_ZERO, 0, {SYSTEM_INFO_PACKET_INIT_ZERO}}
 #define LO_RA_PACKET_INIT_ZERO                   {false, PACKET_HEADER_INIT_ZERO, 0, {SYSTEM_SUMMARY_PACKET_INIT_ZERO}, false, RADIO_POWER_INIT_ZERO}
 
@@ -585,6 +598,12 @@ extern "C" {
 #define SYSTEM_SUMMARY_PACKET_BUZZ_COUNT_INTERVAL_TAG 5
 #define SYSTEM_SUMMARY_PACKET_SPECIES_1_COUNT_INTERVAL_TAG 6
 #define SYSTEM_SUMMARY_PACKET_SPECIES_2_COUNT_INTERVAL_TAG 7
+#define SYSTEM_SUMMARY_PACKET_SD_CARD_TAG        8
+#define SYSTEM_SUMMARY_PACKET_RADIO_POWER_TAG    9
+#define SYSTEM_SUMMARY_PACKET_BATTERY_VOLTAGE_TAG 10
+#define SYSTEM_SUMMARY_PACKET_TEMPERATURE_TAG    11
+#define SYSTEM_SUMMARY_PACKET_HUMIDITY_TAG       12
+#define SYSTEM_SUMMARY_PACKET_GAS_TAG            13
 #define PACKET_HEADER_TAG                        1
 #define PACKET_SYSTEM_INFO_PACKET_TAG            2
 #define PACKET_MARK_PACKET_TAG                   3
@@ -835,14 +854,22 @@ X(a, STATIC,   SINGULAR, FLOAT,    elev,              3)
 #define SYSTEM_SUMMARY_PACKET_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, FLOAT,    classifier_version,   1) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  location,          2) \
-X(a, STATIC,   SINGULAR, UINT64,   epoch_last_detection,   3) \
+X(a, STATIC,   OPTIONAL, UINT64,   epoch_last_detection,   3) \
 X(a, STATIC,   SINGULAR, UINT32,   transmission_interval_m,   4) \
-X(a, STATIC,   SINGULAR, UINT32,   buzz_count_interval,   5) \
-X(a, STATIC,   SINGULAR, UINT64,   species_1_count_interval,   6) \
-X(a, STATIC,   SINGULAR, UINT64,   species_2_count_interval,   7)
+X(a, STATIC,   OPTIONAL, UINT32,   buzz_count_interval,   5) \
+X(a, STATIC,   OPTIONAL, UINT32,   species_1_count_interval,   6) \
+X(a, STATIC,   OPTIONAL, UINT32,   species_2_count_interval,   7) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  sd_card,           8) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  radio_power,       9) \
+X(a, STATIC,   SINGULAR, FLOAT,    battery_voltage,  10) \
+X(a, STATIC,   SINGULAR, FLOAT,    temperature,      11) \
+X(a, STATIC,   SINGULAR, FLOAT,    humidity,         12) \
+X(a, STATIC,   OPTIONAL, FLOAT,    gas,              13)
 #define SYSTEM_SUMMARY_PACKET_CALLBACK NULL
 #define SYSTEM_SUMMARY_PACKET_DEFAULT NULL
 #define system_summary_packet_t_location_MSGTYPE location_t
+#define system_summary_packet_t_sd_card_MSGTYPE sd_card_state_t
+#define system_summary_packet_t_radio_power_MSGTYPE radio_power_t
 
 #define PACKET_FIELDLIST(X, a) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
@@ -940,7 +967,7 @@ extern const pb_msgdesc_t lo_ra_packet_t_msg;
 #define DEVICE_UID_SIZE                          11
 #define LOCATION_SIZE                            15
 #define LOW_POWER_CONFIG_SIZE                    2
-#define LO_RA_PACKET_SIZE                        129
+#define LO_RA_PACKET_SIZE                        201
 #define MARK_PACKET_SIZE                         53
 #define MARK_STATE_SIZE                          17
 #define NETWORK_STATE_SIZE                       152
@@ -955,7 +982,7 @@ extern const pb_msgdesc_t lo_ra_packet_t_msg;
 #define SIMPLE_SENSOR_READING_SIZE               32
 #define SPECIAL_FUNCTION_SIZE                    967
 #define SYSTEM_INFO_PACKET_SIZE                  392
-#define SYSTEM_SUMMARY_PACKET_SIZE               67
+#define SYSTEM_SUMMARY_PACKET_SIZE               138
 #define UWB_INFO_SIZE                            35
 #define UWB_PACKET_SIZE                          964
 #define UWB_RANGE_SIZE                           46
