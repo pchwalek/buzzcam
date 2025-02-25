@@ -411,11 +411,7 @@ extern SPI_HandleTypeDef hspi1;
 
 #define SD_SPI_HANDLE hspi1
 
-#define DISABLE_WIRELESS 0
 
-#define SIMULATE_GPS 	1
-
-#define LORA_SEND_INTERVAL_MINS 1
 
 #define ENABLE_GPS				1
 #define ENABLE_ACCELEROMETER	1

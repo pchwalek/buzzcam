@@ -5,6 +5,12 @@
 extern "C" {
 #endif
 
+#define DISABLE_WIRELESS 0
+
+#define SIMULATE_GPS 	1
+
+#define LORA_SEND_INTERVAL_MINS 1
+
 /*     LoRa Settings     */
 #define MAX_PWR			3 // 22 dBm
 #define HIGH_PWR		2 // 20 dBm

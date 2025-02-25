@@ -180,6 +180,7 @@ FIL marker_file;             // Marker file object
 FIL batteryFile;             // File object for battery data
 FIL fileWriteSyncFile;       // File object for file write synchronization
 UINT bytes_written;          // Number of bytes written
+DWORD free_clusters = 0;
 char SDPath[4];              // SD card logical drive path
 
 // Audio handling
@@ -188,6 +189,10 @@ uint8_t pHeaderBuff[44];        // Buffer for WAV file header
 uint32_t byteswritten = 0;      // Total bytes written to a file
 volatile uint32_t sampleCntr = 0; // Sample counter for audio processing
 static uint16_t audioSample[AUDIO_BUFFER_LEN] = { 0 }; // Audio sample buffer
+
+volatile uint64_t buzz_counter_total = 0;
+volatile uint64_t buzz_counter_class_1 = 0;
+volatile uint64_t buzz_counter_class_2 = 0;
 
 // Interrupt and Callback Flags
 volatile uint8_t SAI_HALF_CALLBACK = 0;  // Flag for half SAI buffer callback
@@ -569,6 +574,8 @@ int main(void) {
 		systemState.isMAX78000Active = true;
 		Control_MAX78000_Power(true);
 	}
+
+//	while(1);
 
 //	HAL_GPIO_WritePin(EN_3V3_GPS_GPIO_Port, EN_3V3_GPS_Pin, GPIO_PIN_RESET);
 
@@ -1460,9 +1467,14 @@ static void MX_GPIO_Init(void) {
 	HAL_GPIO_Init(SD_DETECT_GPIO_Port, &GPIO_InitStruct);
 
 	/*Configure GPIO pins : GPS_INT_Pin MAX78_INT1_Pin ZPFL_TRIG_Pin */
-	GPIO_InitStruct.Pin = MAX78_INT1_Pin | ZPFL_TRIG_Pin;
+	GPIO_InitStruct.Pin = MAX78_INT1_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
 	GPIO_InitStruct.Pull = GPIO_PULLUP;
+	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+	GPIO_InitStruct.Pin = ZPFL_TRIG_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
 	GPIO_InitStruct.Pin = GPS_INT_Pin;
@@ -1490,8 +1502,13 @@ static void MX_GPIO_Init(void) {
 	HAL_GPIO_Init(DWM_WAKEUP_GPIO_Port, &GPIO_InitStruct);
 
 	/*Configure GPIO pin : TIMEPULSE_Pin */
+//	GPIO_InitStruct.Pin = TIMEPULSE_Pin;
+//	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+//	GPIO_InitStruct.Pull = GPIO_NOPULL;
+//	HAL_GPIO_Init(TIMEPULSE_GPIO_Port, &GPIO_InitStruct);
+
 	GPIO_InitStruct.Pin = TIMEPULSE_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+	GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(TIMEPULSE_GPIO_Port, &GPIO_InitStruct);
 
@@ -1505,9 +1522,14 @@ static void MX_GPIO_Init(void) {
 	HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
 	/*Configure GPIO pins : DWM_INT_Pin MAX78_INT2D8_Pin */
-	GPIO_InitStruct.Pin = DWM_INT_Pin | MAX78_INT2_Pin;
+	GPIO_InitStruct.Pin =  MAX78_INT2_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
 	GPIO_InitStruct.Pull = GPIO_PULLUP;
+	HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+	GPIO_InitStruct.Pin = DWM_INT_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
 	/*Configure GPIO pin : SD_DETECT_2_Pin */
@@ -1541,8 +1563,13 @@ static void MX_GPIO_Init(void) {
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(SPI2_SX1262_CS_GPIO_Port, &GPIO_InitStruct);
 
+//	GPIO_InitStruct.Pin = SX_BUSY_Pin;
+//	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+//	GPIO_InitStruct.Pull = GPIO_NOPULL;
+//	HAL_GPIO_Init(SX_BUSY_GPIO_Port, &GPIO_InitStruct);
+
 	GPIO_InitStruct.Pin = SX_BUSY_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+	GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(SX_BUSY_GPIO_Port, &GPIO_InitStruct);
 
@@ -1561,18 +1588,29 @@ static void MX_GPIO_Init(void) {
 	GPIO_InitStruct.Pull = GPIO_PULLUP;
 	HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
+//	GPIO_InitStruct.Pin = UWB_ALERT_Pin;
+//	GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+//	GPIO_InitStruct.Pull = GPIO_PULLUP;
+//	HAL_GPIO_Init(UWB_ALERT_GPIO_Port, &GPIO_InitStruct);
+
 	GPIO_InitStruct.Pin = UWB_ALERT_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-	GPIO_InitStruct.Pull = GPIO_PULLUP;
+	GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(UWB_ALERT_GPIO_Port, &GPIO_InitStruct);
 
 	HAL_NVIC_SetPriority(EXTI4_IRQn, 5, 0);
 	HAL_NVIC_EnableIRQ(EXTI4_IRQn);
 
+//	GPIO_InitStruct.Pin = INT1_IMU_XL_Pin;
+//	GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+//	GPIO_InitStruct.Pull = GPIO_PULLUP;
+//	HAL_GPIO_Init(INT1_IMU_XL_GPIO_Port, &GPIO_InitStruct);
+
 	GPIO_InitStruct.Pin = INT1_IMU_XL_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-	GPIO_InitStruct.Pull = GPIO_PULLUP;
+	GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(INT1_IMU_XL_GPIO_Port, &GPIO_InitStruct);
+
 
 	HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
 	HAL_NVIC_SetPriority(EXTI9_5_IRQn, 5, 0);
@@ -1582,6 +1620,7 @@ static void MX_GPIO_Init(void) {
 	HAL_NVIC_DisableIRQ(EXTI1_IRQn);
 	HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
 	HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
+
 
 	/* USER CODE END MX_GPIO_Init_2 */
 }
@@ -1844,6 +1883,18 @@ void acousticSamplingTask(void *argument) {
 			&& configPacket.payload.config_packet.network_state.master_node) {
 		chirpTaskHandle = osThreadNew(chirpTask, NULL, &chirpTask_attributes);
 	}
+
+
+
+	if(!NVIC_GetEnableIRQ(EXTI15_10_IRQn)){
+		HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
+		HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+	}
+	if(!NVIC_GetEnableIRQ(EXTI9_5_IRQn)){
+		HAL_NVIC_SetPriority(EXTI9_5_IRQn, 5, 0);
+		HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+	}
+
 
 //	tone(4000, 100);
 //	if(configPacket.payload.config_packet.audio_config.free_run_mode){
@@ -5072,7 +5123,7 @@ void mainSystemTask(void *argument) {
 		//		}
 	}
 
-	DWORD free_clusters = 0;
+
 	f_getfree("", &free_clusters, NULL);
 	infoPacket.payload.system_info_packet.sdcard_state.detected = true;
 	infoPacket.payload.system_info_packet.sdcard_state.space_remaining =
@@ -5371,22 +5422,26 @@ void loraGPSTask(void *argument) {
 	uint8_t gpsMsgRetry = 0;
 	volatile uint32_t timestamp = 0;
 
+	uint64_t buzz_total = 0;
+	uint64_t buzz_class_1 = 0;
+	uint64_t buzz_class_2 = 0;
+
 	loraPacket.payload.system_summary_packet.transmission_interval_m = LORA_SEND_INTERVAL_MINS;
 
-//	// turn on GPS if not already on
-//	if(systemPowerSupervisor.isGPSEnabled &&
-//			!systemState.isGPSActive){
-//		systemState.isGPSActive = true;
-//		turnOnGPSandInit();
-////		// try to get a fix on boot
-////		if(GPS_FIX_SUCCESS == getGPSFix(&currentFix, 30000)){
-////			updateRTC(currentFix.gps_epoch);
-////		}
-//		standbyGPSMode();
-//
-//		grabFix(60000);
-//	}
-//
+	// turn on GPS if not already on
+	if(systemPowerSupervisor.isGPSEnabled &&
+			!systemState.isGPSActive){
+		systemState.isGPSActive = true;
+		turnOnGPSandInit();
+//		// try to get a fix on boot
+//		if(GPS_FIX_SUCCESS == getGPSFix(&currentFix, 30000)){
+//			updateRTC(currentFix.gps_epoch);
+//		}
+		standbyGPSMode();
+
+		grabFix(60000);
+	}
+
 //	// after initialization
 //	if(systemPowerSupervisor.isGPSEnabled &&
 //			systemState.isGPSActive){
@@ -5411,7 +5466,7 @@ void loraGPSTask(void *argument) {
 		sleepModeLoraRadio(SX126X_SLEEP_CFG_WARM_START);
 //		setLoraAlarm();
 		HAL_NVIC_SetPriority(EXTI9_5_IRQn, 5, 0);
-		HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+		if(!NVIC_GetEnableIRQ(EXTI9_5_IRQn)) HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 		//todo: is LoRa normally in low power mode if not doing anything?
 
 		RTC_AlarmTypeDef sAlarm = { 0 };
@@ -5486,8 +5541,52 @@ void loraGPSTask(void *argument) {
 				loraPacket.payload.system_summary_packet.location.lon = infoPacket.payload.system_info_packet.gps_location.lon;
 				loraPacket.payload.system_summary_packet.location.elev = infoPacket.payload.system_info_packet.gps_location.elev;
 			}
+			loraPacket.payload.system_summary_packet.battery_voltage = infoPacket.payload.system_info_packet.battery_state.voltage;
+			loraPacket.payload.system_summary_packet.has_gas = true;
+			if(infoPacket.payload.system_info_packet.has_simple_sensor_reading){
+				loraPacket.payload.system_summary_packet.gas = infoPacket.payload.system_info_packet.simple_sensor_reading.co2;
+				loraPacket.payload.system_summary_packet.humidity = infoPacket.payload.system_info_packet.simple_sensor_reading.humidity;
+				loraPacket.payload.system_summary_packet.temperature = infoPacket.payload.system_info_packet.simple_sensor_reading.temperature;
+			}
+
+			if(infoPacket.payload.system_info_packet.has_sdcard_state){
+				loraPacket.payload.system_summary_packet.has_sd_card = true;
+				loraPacket.payload.system_summary_packet.sd_card.detected = true;
+				f_getfree("", &free_clusters, NULL);
+				loraPacket.payload.system_summary_packet.sd_card.space_remaining = ((uint64_t) free_clusters) * 256 * 512 / (1048576);
+				infoPacket.payload.system_info_packet.sdcard_state.space_remaining = loraPacket.payload.system_summary_packet.sd_card.space_remaining;
+				// WARNING: calculation doesnt work for 24-bit
+				infoPacket.payload.system_info_packet.sdcard_state.estimated_remaining_recording_time =
+						(infoPacket.payload.system_info_packet.sdcard_state.space_remaining
+								* 1048576)
+								/ (configPacket.payload.config_packet.audio_config.channel_1
+										+ configPacket.payload.config_packet.audio_config.channel_2)
+								/ (configPacket.payload.config_packet.audio_config.bit_resolution
+										+ 1)
+								/ (getSampleFreq(
+										configPacket.payload.config_packet.audio_config.sample_freq))
+								/ 60 / 60;
+
+				loraPacket.payload.system_summary_packet.sd_card.estimated_remaining_recording_time = infoPacket.payload.system_info_packet.sdcard_state.estimated_remaining_recording_time;
+//				loraPacket.payload.system_summary_packet.sd_card.total_space =
+//						((uint64_t) SDFatFS.n_fatent) * 256 * 512 / (1048576);
+			}
+
+			loraPacket.payload.system_summary_packet.has_buzz_count_interval = true;
+			loraPacket.payload.system_summary_packet.has_species_1_count_interval = true;
+			loraPacket.payload.system_summary_packet.has_species_2_count_interval = true;
+			loraPacket.payload.system_summary_packet.buzz_count_interval = buzz_counter_total - buzz_total;
+			loraPacket.payload.system_summary_packet.species_1_count_interval = buzz_counter_class_1 - buzz_class_1;
+			loraPacket.payload.system_summary_packet.species_2_count_interval = buzz_counter_class_2 - buzz_class_2;
+			loraPacket.payload.system_summary_packet.transmission_interval_m = 10;
+
+			buzz_total = buzz_counter_total;
+			buzz_class_1 = buzz_counter_class_1;
+			buzz_class_2 = buzz_counter_class_2;
+
 			sendLoRa_pkt(&loraPacket);
 		}
+
 
 		if ((flag & LORA_IRQ_FLAG) == LORA_IRQ_FLAG) {
 			if (systemState.isLoRaActive) {
@@ -6110,17 +6209,22 @@ void triggerMarkTask(void *argument) {
 			}
 
 			if ((flag & BEE_1_ALERT) == BEE_1_ALERT) {
-				setLED_Red(100);
+				buzz_counter_total++;
+				buzz_counter_class_1++;
+				volatile uint64_t buzz_counter_class_2 = 0;
+ 				setLED_Red(100);
 				setLED_Blue(100);
-				osDelay(100);
+				osDelay(25);
 				setLED_Red(0);
 				setLED_Blue(0);
 			}
 
 			if ((flag & BEE_2_ALERT) == BEE_2_ALERT) {
+				buzz_counter_total++;
+				buzz_counter_class_2++;
 				setLED_Green(100);
 				setLED_Red(100);
-				osDelay(100);
+				osDelay(25);
 				setLED_Green(0);
 				setLED_Red(0);
 			}
