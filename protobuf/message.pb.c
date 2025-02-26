@@ -96,7 +96,7 @@ PB_BIND(SYSTEM_SUMMARY_PACKET, system_summary_packet_t, AUTO)
 PB_BIND(PACKET, packet_t, 2)
 
 
-PB_BIND(LO_RA_PACKET, lo_ra_packet_t, AUTO)
+PB_BIND(LO_RA_PACKET, lo_ra_packet_t, 2)
 
 
 

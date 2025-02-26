@@ -457,32 +457,25 @@ public struct BuzzIntervalData: Sendable {
   /// minutes
   public var transmissionIntervalM: UInt32 = 0
 
-  public var buzzCountInterval: UInt32 {
-    get {return _buzzCountInterval ?? 0}
-    set {_buzzCountInterval = newValue}
-  }
-  /// Returns true if `buzzCountInterval` has been explicitly set.
-  public var hasBuzzCountInterval: Bool {return self._buzzCountInterval != nil}
-  /// Clears the value of `buzzCountInterval`. Subsequent reads from it will return its default value.
-  public mutating func clearBuzzCountInterval() {self._buzzCountInterval = nil}
+  public var buzzCount: UInt64 = 0
 
-  public var species1CountInterval: UInt32 {
-    get {return _species1CountInterval ?? 0}
-    set {_species1CountInterval = newValue}
+  public var species1Count: UInt64 {
+    get {return _species1Count ?? 0}
+    set {_species1Count = newValue}
   }
-  /// Returns true if `species1CountInterval` has been explicitly set.
-  public var hasSpecies1CountInterval: Bool {return self._species1CountInterval != nil}
-  /// Clears the value of `species1CountInterval`. Subsequent reads from it will return its default value.
-  public mutating func clearSpecies1CountInterval() {self._species1CountInterval = nil}
+  /// Returns true if `species1Count` has been explicitly set.
+  public var hasSpecies1Count: Bool {return self._species1Count != nil}
+  /// Clears the value of `species1Count`. Subsequent reads from it will return its default value.
+  public mutating func clearSpecies1Count() {self._species1Count = nil}
 
-  public var species2CountInterval: UInt32 {
-    get {return _species2CountInterval ?? 0}
-    set {_species2CountInterval = newValue}
+  public var species2Count: UInt64 {
+    get {return _species2Count ?? 0}
+    set {_species2Count = newValue}
   }
-  /// Returns true if `species2CountInterval` has been explicitly set.
-  public var hasSpecies2CountInterval: Bool {return self._species2CountInterval != nil}
-  /// Clears the value of `species2CountInterval`. Subsequent reads from it will return its default value.
-  public mutating func clearSpecies2CountInterval() {self._species2CountInterval = nil}
+  /// Returns true if `species2Count` has been explicitly set.
+  public var hasSpecies2Count: Bool {return self._species2Count != nil}
+  /// Clears the value of `species2Count`. Subsequent reads from it will return its default value.
+  public mutating func clearSpecies2Count() {self._species2Count = nil}
 
   public var intervalEpoch: UInt32 {
     get {return _intervalEpoch ?? 0}
@@ -499,9 +492,8 @@ public struct BuzzIntervalData: Sendable {
 
   public init() {}
 
-  fileprivate var _buzzCountInterval: UInt32? = nil
-  fileprivate var _species1CountInterval: UInt32? = nil
-  fileprivate var _species2CountInterval: UInt32? = nil
+  fileprivate var _species1Count: UInt64? = nil
+  fileprivate var _species2Count: UInt64? = nil
   fileprivate var _intervalEpoch: UInt32? = nil
 }
 
@@ -512,17 +504,34 @@ public struct BuzzSummaryData: Sendable {
 
   public var classifierVersion: UInt32 = 0
 
-  public var buzzCounter: UInt32 = 0
+  public var buzzCounter: UInt64 = 0
 
-  public var species1Count: UInt32 = 0
+  public var species1Count: UInt64 {
+    get {return _species1Count ?? 0}
+    set {_species1Count = newValue}
+  }
+  /// Returns true if `species1Count` has been explicitly set.
+  public var hasSpecies1Count: Bool {return self._species1Count != nil}
+  /// Clears the value of `species1Count`. Subsequent reads from it will return its default value.
+  public mutating func clearSpecies1Count() {self._species1Count = nil}
 
-  public var species2Count: UInt32 = 0
+  public var species2Count: UInt64 {
+    get {return _species2Count ?? 0}
+    set {_species2Count = newValue}
+  }
+  /// Returns true if `species2Count` has been explicitly set.
+  public var hasSpecies2Count: Bool {return self._species2Count != nil}
+  /// Clears the value of `species2Count`. Subsequent reads from it will return its default value.
+  public mutating func clearSpecies2Count() {self._species2Count = nil}
 
   public var lastDetectionEpoch: UInt32 = 0
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
+
+  fileprivate var _species1Count: UInt64? = nil
+  fileprivate var _species2Count: UInt64? = nil
 }
 
 public struct SensorReading: Sendable {
@@ -1607,9 +1616,9 @@ extension BuzzIntervalData: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
   public static let protoMessageName: String = "BuzzIntervalData"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "transmission_interval_m"),
-    2: .standard(proto: "buzz_count_interval"),
-    3: .standard(proto: "species_1_count_interval"),
-    4: .standard(proto: "species_2_count_interval"),
+    2: .standard(proto: "buzz_count"),
+    3: .standard(proto: "species_1_count"),
+    4: .standard(proto: "species_2_count"),
     5: .standard(proto: "interval_epoch"),
     6: .standard(proto: "last_detection_epoch"),
   ]
@@ -1621,9 +1630,9 @@ extension BuzzIntervalData: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularUInt32Field(value: &self.transmissionIntervalM) }()
-      case 2: try { try decoder.decodeSingularUInt32Field(value: &self._buzzCountInterval) }()
-      case 3: try { try decoder.decodeSingularUInt32Field(value: &self._species1CountInterval) }()
-      case 4: try { try decoder.decodeSingularUInt32Field(value: &self._species2CountInterval) }()
+      case 2: try { try decoder.decodeSingularUInt64Field(value: &self.buzzCount) }()
+      case 3: try { try decoder.decodeSingularUInt64Field(value: &self._species1Count) }()
+      case 4: try { try decoder.decodeSingularUInt64Field(value: &self._species2Count) }()
       case 5: try { try decoder.decodeSingularUInt32Field(value: &self._intervalEpoch) }()
       case 6: try { try decoder.decodeSingularUInt32Field(value: &self.lastDetectionEpoch) }()
       default: break
@@ -1639,14 +1648,14 @@ extension BuzzIntervalData: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
     if self.transmissionIntervalM != 0 {
       try visitor.visitSingularUInt32Field(value: self.transmissionIntervalM, fieldNumber: 1)
     }
-    try { if let v = self._buzzCountInterval {
-      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 2)
+    if self.buzzCount != 0 {
+      try visitor.visitSingularUInt64Field(value: self.buzzCount, fieldNumber: 2)
+    }
+    try { if let v = self._species1Count {
+      try visitor.visitSingularUInt64Field(value: v, fieldNumber: 3)
     } }()
-    try { if let v = self._species1CountInterval {
-      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 3)
-    } }()
-    try { if let v = self._species2CountInterval {
-      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 4)
+    try { if let v = self._species2Count {
+      try visitor.visitSingularUInt64Field(value: v, fieldNumber: 4)
     } }()
     try { if let v = self._intervalEpoch {
       try visitor.visitSingularUInt32Field(value: v, fieldNumber: 5)
@@ -1659,9 +1668,9 @@ extension BuzzIntervalData: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
 
   public static func ==(lhs: BuzzIntervalData, rhs: BuzzIntervalData) -> Bool {
     if lhs.transmissionIntervalM != rhs.transmissionIntervalM {return false}
-    if lhs._buzzCountInterval != rhs._buzzCountInterval {return false}
-    if lhs._species1CountInterval != rhs._species1CountInterval {return false}
-    if lhs._species2CountInterval != rhs._species2CountInterval {return false}
+    if lhs.buzzCount != rhs.buzzCount {return false}
+    if lhs._species1Count != rhs._species1Count {return false}
+    if lhs._species2Count != rhs._species2Count {return false}
     if lhs._intervalEpoch != rhs._intervalEpoch {return false}
     if lhs.lastDetectionEpoch != rhs.lastDetectionEpoch {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
@@ -1686,9 +1695,9 @@ extension BuzzSummaryData: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularUInt32Field(value: &self.classifierVersion) }()
-      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.buzzCounter) }()
-      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.species1Count) }()
-      case 4: try { try decoder.decodeSingularUInt32Field(value: &self.species2Count) }()
+      case 2: try { try decoder.decodeSingularUInt64Field(value: &self.buzzCounter) }()
+      case 3: try { try decoder.decodeSingularUInt64Field(value: &self._species1Count) }()
+      case 4: try { try decoder.decodeSingularUInt64Field(value: &self._species2Count) }()
       case 5: try { try decoder.decodeSingularUInt32Field(value: &self.lastDetectionEpoch) }()
       default: break
       }
@@ -1696,18 +1705,22 @@ extension BuzzSummaryData: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if self.classifierVersion != 0 {
       try visitor.visitSingularUInt32Field(value: self.classifierVersion, fieldNumber: 1)
     }
     if self.buzzCounter != 0 {
-      try visitor.visitSingularUInt32Field(value: self.buzzCounter, fieldNumber: 2)
+      try visitor.visitSingularUInt64Field(value: self.buzzCounter, fieldNumber: 2)
     }
-    if self.species1Count != 0 {
-      try visitor.visitSingularUInt32Field(value: self.species1Count, fieldNumber: 3)
-    }
-    if self.species2Count != 0 {
-      try visitor.visitSingularUInt32Field(value: self.species2Count, fieldNumber: 4)
-    }
+    try { if let v = self._species1Count {
+      try visitor.visitSingularUInt64Field(value: v, fieldNumber: 3)
+    } }()
+    try { if let v = self._species2Count {
+      try visitor.visitSingularUInt64Field(value: v, fieldNumber: 4)
+    } }()
     if self.lastDetectionEpoch != 0 {
       try visitor.visitSingularUInt32Field(value: self.lastDetectionEpoch, fieldNumber: 5)
     }
@@ -1717,8 +1730,8 @@ extension BuzzSummaryData: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
   public static func ==(lhs: BuzzSummaryData, rhs: BuzzSummaryData) -> Bool {
     if lhs.classifierVersion != rhs.classifierVersion {return false}
     if lhs.buzzCounter != rhs.buzzCounter {return false}
-    if lhs.species1Count != rhs.species1Count {return false}
-    if lhs.species2Count != rhs.species2Count {return false}
+    if lhs._species1Count != rhs._species1Count {return false}
+    if lhs._species2Count != rhs._species2Count {return false}
     if lhs.lastDetectionEpoch != rhs.lastDetectionEpoch {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
