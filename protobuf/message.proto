@@ -49,21 +49,20 @@ enum SensorAccuracy {
 
 message BuzzIntervalData{
     uint32 transmission_interval_m = 1; // minutes
-    optional uint32 buzz_count_interval = 2;
-    optional uint32 species_1_count_interval = 3;
-    optional uint32 species_2_count_interval = 4;
+    uint64 buzz_count = 2;
+    optional uint64 species_1_count = 3;
+    optional uint64 species_2_count = 4;
     optional uint32 interval_epoch = 5;
     uint32 last_detection_epoch = 6;
 }
 
 message BuzzSummaryData{
     uint32 classifier_version = 1;
-    uint32 buzz_counter = 2;
-    uint32 species_1_count = 3;
-    uint32 species_2_count = 4;
+    uint64 buzz_counter = 2;
+    optional uint64 species_1_count = 3;
+    optional uint64 species_2_count = 4;
     uint32 last_detection_epoch = 5;
 }
-
 
 message SensorReading{
     uint32 packet_index = 1;
