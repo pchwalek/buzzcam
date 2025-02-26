@@ -47,6 +47,23 @@ enum SensorAccuracy {
     HIGH_ACCURACY       = 3;
 } ;
 
+message BuzzIntervalData{
+    uint32 transmission_interval_m = 1; // minutes
+    optional uint32 buzz_count_interval = 2;
+    optional uint32 species_1_count_interval = 3;
+    optional uint32 species_2_count_interval = 4;
+    optional uint32 last_interval_epoch = 5;
+    uint32 last_detection_epoch = 6;
+}
+
+message BuzzSummaryData{
+    uint32 buzz_counter = 1;
+    uint32 species_1_count = 2;
+    uint32 species_2_count = 3;
+    uint32 last_detection_epoch = 4;
+}
+
+
 message SensorReading{
     uint32 packet_index = 1;
     uint32 sample_period = 2;
@@ -109,6 +126,8 @@ message SystemInfoPacket{
     BatteryState battery_state = 5;
     repeated Device discoveredDevices = 6;
     optional Location gps_location = 7;
+    optional BuzzIntervalData buzz_snterval_data = 8;
+    optional BuzzSummaryData buzz_summary_data = 9;
 }
 
 enum MicSampleFreq {
@@ -290,17 +309,14 @@ message Location{
 message SystemSummaryPacket{
     float classifier_version = 1;
     Location location = 2;
-    optional uint64 epoch_last_detection = 3;
-    uint32 transmission_interval_m = 4; // minutes
-    optional uint32 buzz_count_interval = 5;
-    optional uint32 species_1_count_interval = 6;
-    optional uint32 species_2_count_interval = 7;
-    optional SDCardState sd_card = 8;
-    optional RadioPower radio_power = 9;
-    float battery_voltage = 10;
-    float temperature = 11;
-    float humidity = 12;
-    optional float gas = 13;
+    optional BuzzIntervalData buzz_snterval_data = 3;
+    optional BuzzSummaryData buzz_summary_data = 4;
+    optional SDCardState sd_card = 5;
+    optional RadioPower radio_power = 6;
+    float battery_voltage = 7;
+    float temperature = 8;
+    float humidity = 9;
+    optional float gas = 10;
 }
 
 message Packet {

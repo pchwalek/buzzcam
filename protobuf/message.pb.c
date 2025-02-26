@@ -12,6 +12,12 @@ PB_BIND(RADIO_POWER, radio_power_t, AUTO)
 PB_BIND(SIMPLE_SENSOR_READING, simple_sensor_reading_t, AUTO)
 
 
+PB_BIND(BUZZ_INTERVAL_DATA, buzz_interval_data_t, AUTO)
+
+
+PB_BIND(BUZZ_SUMMARY_DATA, buzz_summary_data_t, AUTO)
+
+
 PB_BIND(SENSOR_READING, sensor_reading_t, AUTO)
 
 

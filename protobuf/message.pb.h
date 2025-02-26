@@ -104,6 +104,26 @@ typedef struct simple_sensor_reading {
     float light_level;
 } simple_sensor_reading_t;
 
+typedef struct buzz_interval_data {
+    uint32_t transmission_interval_m; /* minutes */
+    bool has_buzz_count_interval;
+    uint32_t buzz_count_interval;
+    bool has_species_1_count_interval;
+    uint32_t species_1_count_interval;
+    bool has_species_2_count_interval;
+    uint32_t species_2_count_interval;
+    bool has_last_interval_epoch;
+    uint32_t last_interval_epoch;
+    uint32_t last_detection_epoch;
+} buzz_interval_data_t;
+
+typedef struct buzz_summary_data {
+    uint32_t buzz_counter;
+    uint32_t species_1_count;
+    uint32_t species_2_count;
+    uint32_t last_detection_epoch;
+} buzz_summary_data_t;
+
 typedef struct sensor_reading {
     uint32_t packet_index;
     uint32_t sample_period;
@@ -305,21 +325,20 @@ typedef struct system_info_packet {
     device_t discovered_devices[20];
     bool has_gps_location;
     location_t gps_location;
+    bool has_buzz_snterval_data;
+    buzz_interval_data_t buzz_snterval_data;
+    bool has_buzz_summary_data;
+    buzz_summary_data_t buzz_summary_data;
 } system_info_packet_t;
 
 typedef struct system_summary_packet {
     float classifier_version;
     bool has_location;
     location_t location;
-    bool has_epoch_last_detection;
-    uint64_t epoch_last_detection;
-    uint32_t transmission_interval_m; /* minutes */
-    bool has_buzz_count_interval;
-    uint32_t buzz_count_interval;
-    bool has_species_1_count_interval;
-    uint32_t species_1_count_interval;
-    bool has_species_2_count_interval;
-    uint32_t species_2_count_interval;
+    bool has_buzz_snterval_data;
+    buzz_interval_data_t buzz_snterval_data;
+    bool has_buzz_summary_data;
+    buzz_summary_data_t buzz_summary_data;
     bool has_sd_card;
     sd_card_state_t sd_card;
     bool has_radio_power;
@@ -387,6 +406,8 @@ extern "C" {
 
 
 
+
+
 #define sensor_reading_payload_t_sensor_id_ENUMTYPE signal_identifier_t
 #define sensor_reading_payload_t_accuracy_ENUMTYPE sensor_accuracy_t
 
@@ -423,6 +444,8 @@ extern "C" {
 /* Initializer values for message structs */
 #define RADIO_POWER_INIT_DEFAULT                 {0, 0, 0}
 #define SIMPLE_SENSOR_READING_INIT_DEFAULT       {0, 0, 0, 0, 0, 0}
+#define BUZZ_INTERVAL_DATA_INIT_DEFAULT          {0, false, 0, false, 0, false, 0, false, 0, 0}
+#define BUZZ_SUMMARY_DATA_INIT_DEFAULT           {0, 0, 0, 0}
 #define SENSOR_READING_INIT_DEFAULT              {0, 0, {{NULL}, NULL}}
 #define SENSOR_READING_PAYLOAD_INIT_DEFAULT      {0, 0, 0, 0, 0, _SIGNAL_IDENTIFIER_MIN, _SENSOR_ACCURACY_MIN}
 #define SENSOR_CONFIG_INIT_DEFAULT               {0, 0, 0}
@@ -431,7 +454,7 @@ extern "C" {
 #define MARK_PACKET_INIT_DEFAULT                 {false, "", 0}
 #define BATTERY_STATE_INIT_DEFAULT               {0, 0, false, 0}
 #define DEVICE_INIT_DEFAULT                      {0, 0}
-#define SYSTEM_INFO_PACKET_INIT_DEFAULT          {false, SIMPLE_SENSOR_READING_INIT_DEFAULT, 0, false, SD_CARD_STATE_INIT_DEFAULT, false, MARK_STATE_INIT_DEFAULT, false, BATTERY_STATE_INIT_DEFAULT, 0, {DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT}, false, LOCATION_INIT_DEFAULT}
+#define SYSTEM_INFO_PACKET_INIT_DEFAULT          {false, SIMPLE_SENSOR_READING_INIT_DEFAULT, 0, false, SD_CARD_STATE_INIT_DEFAULT, false, MARK_STATE_INIT_DEFAULT, false, BATTERY_STATE_INIT_DEFAULT, 0, {DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT, DEVICE_INIT_DEFAULT}, false, LOCATION_INIT_DEFAULT, false, BUZZ_INTERVAL_DATA_INIT_DEFAULT, false, BUZZ_SUMMARY_DATA_INIT_DEFAULT}
 #define AUDIO_COMPRESSION_INIT_DEFAULT           {0, _COMPRESSION_TYPE_MIN, 0}
 #define AUDIO_CONFIG_INIT_DEFAULT                {0, 0, _MIC_SAMPLE_FREQ_MIN, _MIC_GAIN_MIN, _MIC_BIT_RESOLUTION_MIN, false, AUDIO_COMPRESSION_INIT_DEFAULT, 0, 0, 0}
 #define SCHEDULE_CONFIG_INIT_DEFAULT             {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
@@ -447,11 +470,13 @@ extern "C" {
 #define SPECIAL_FUNCTION_INIT_DEFAULT            {0, {0}}
 #define PACKET_HEADER_INIT_DEFAULT               {0, 0, 0}
 #define LOCATION_INIT_DEFAULT                    {0, 0, 0}
-#define SYSTEM_SUMMARY_PACKET_INIT_DEFAULT       {0, false, LOCATION_INIT_DEFAULT, false, 0, 0, false, 0, false, 0, false, 0, false, SD_CARD_STATE_INIT_DEFAULT, false, RADIO_POWER_INIT_DEFAULT, 0, 0, 0, false, 0}
+#define SYSTEM_SUMMARY_PACKET_INIT_DEFAULT       {0, false, LOCATION_INIT_DEFAULT, false, BUZZ_INTERVAL_DATA_INIT_DEFAULT, false, BUZZ_SUMMARY_DATA_INIT_DEFAULT, false, SD_CARD_STATE_INIT_DEFAULT, false, RADIO_POWER_INIT_DEFAULT, 0, 0, 0, false, 0}
 #define PACKET_INIT_DEFAULT                      {false, PACKET_HEADER_INIT_DEFAULT, 0, {SYSTEM_INFO_PACKET_INIT_DEFAULT}}
 #define LO_RA_PACKET_INIT_DEFAULT                {false, PACKET_HEADER_INIT_DEFAULT, 0, {SYSTEM_SUMMARY_PACKET_INIT_DEFAULT}, false, RADIO_POWER_INIT_DEFAULT}
 #define RADIO_POWER_INIT_ZERO                    {0, 0, 0}
 #define SIMPLE_SENSOR_READING_INIT_ZERO          {0, 0, 0, 0, 0, 0}
+#define BUZZ_INTERVAL_DATA_INIT_ZERO             {0, false, 0, false, 0, false, 0, false, 0, 0}
+#define BUZZ_SUMMARY_DATA_INIT_ZERO              {0, 0, 0, 0}
 #define SENSOR_READING_INIT_ZERO                 {0, 0, {{NULL}, NULL}}
 #define SENSOR_READING_PAYLOAD_INIT_ZERO         {0, 0, 0, 0, 0, _SIGNAL_IDENTIFIER_MIN, _SENSOR_ACCURACY_MIN}
 #define SENSOR_CONFIG_INIT_ZERO                  {0, 0, 0}
@@ -460,7 +485,7 @@ extern "C" {
 #define MARK_PACKET_INIT_ZERO                    {false, "", 0}
 #define BATTERY_STATE_INIT_ZERO                  {0, 0, false, 0}
 #define DEVICE_INIT_ZERO                         {0, 0}
-#define SYSTEM_INFO_PACKET_INIT_ZERO             {false, SIMPLE_SENSOR_READING_INIT_ZERO, 0, false, SD_CARD_STATE_INIT_ZERO, false, MARK_STATE_INIT_ZERO, false, BATTERY_STATE_INIT_ZERO, 0, {DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO}, false, LOCATION_INIT_ZERO}
+#define SYSTEM_INFO_PACKET_INIT_ZERO             {false, SIMPLE_SENSOR_READING_INIT_ZERO, 0, false, SD_CARD_STATE_INIT_ZERO, false, MARK_STATE_INIT_ZERO, false, BATTERY_STATE_INIT_ZERO, 0, {DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO, DEVICE_INIT_ZERO}, false, LOCATION_INIT_ZERO, false, BUZZ_INTERVAL_DATA_INIT_ZERO, false, BUZZ_SUMMARY_DATA_INIT_ZERO}
 #define AUDIO_COMPRESSION_INIT_ZERO              {0, _COMPRESSION_TYPE_MIN, 0}
 #define AUDIO_CONFIG_INIT_ZERO                   {0, 0, _MIC_SAMPLE_FREQ_MIN, _MIC_GAIN_MIN, _MIC_BIT_RESOLUTION_MIN, false, AUDIO_COMPRESSION_INIT_ZERO, 0, 0, 0}
 #define SCHEDULE_CONFIG_INIT_ZERO                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
@@ -476,7 +501,7 @@ extern "C" {
 #define SPECIAL_FUNCTION_INIT_ZERO               {0, {0}}
 #define PACKET_HEADER_INIT_ZERO                  {0, 0, 0}
 #define LOCATION_INIT_ZERO                       {0, 0, 0}
-#define SYSTEM_SUMMARY_PACKET_INIT_ZERO          {0, false, LOCATION_INIT_ZERO, false, 0, 0, false, 0, false, 0, false, 0, false, SD_CARD_STATE_INIT_ZERO, false, RADIO_POWER_INIT_ZERO, 0, 0, 0, false, 0}
+#define SYSTEM_SUMMARY_PACKET_INIT_ZERO          {0, false, LOCATION_INIT_ZERO, false, BUZZ_INTERVAL_DATA_INIT_ZERO, false, BUZZ_SUMMARY_DATA_INIT_ZERO, false, SD_CARD_STATE_INIT_ZERO, false, RADIO_POWER_INIT_ZERO, 0, 0, 0, false, 0}
 #define PACKET_INIT_ZERO                         {false, PACKET_HEADER_INIT_ZERO, 0, {SYSTEM_INFO_PACKET_INIT_ZERO}}
 #define LO_RA_PACKET_INIT_ZERO                   {false, PACKET_HEADER_INIT_ZERO, 0, {SYSTEM_SUMMARY_PACKET_INIT_ZERO}, false, RADIO_POWER_INIT_ZERO}
 
@@ -490,6 +515,16 @@ extern "C" {
 #define SIMPLE_SENSOR_READING_HUMIDITY_TAG       4
 #define SIMPLE_SENSOR_READING_CO2_TAG            5
 #define SIMPLE_SENSOR_READING_LIGHT_LEVEL_TAG    6
+#define BUZZ_INTERVAL_DATA_TRANSMISSION_INTERVAL_M_TAG 1
+#define BUZZ_INTERVAL_DATA_BUZZ_COUNT_INTERVAL_TAG 2
+#define BUZZ_INTERVAL_DATA_SPECIES_1_COUNT_INTERVAL_TAG 3
+#define BUZZ_INTERVAL_DATA_SPECIES_2_COUNT_INTERVAL_TAG 4
+#define BUZZ_INTERVAL_DATA_LAST_INTERVAL_EPOCH_TAG 5
+#define BUZZ_INTERVAL_DATA_LAST_DETECTION_EPOCH_TAG 6
+#define BUZZ_SUMMARY_DATA_BUZZ_COUNTER_TAG       1
+#define BUZZ_SUMMARY_DATA_SPECIES_1_COUNT_TAG    2
+#define BUZZ_SUMMARY_DATA_SPECIES_2_COUNT_TAG    3
+#define BUZZ_SUMMARY_DATA_LAST_DETECTION_EPOCH_TAG 4
 #define SENSOR_READING_PACKET_INDEX_TAG          1
 #define SENSOR_READING_SAMPLE_PERIOD_TAG         2
 #define SENSOR_READING_PAYLOAD_TAG               3
@@ -593,19 +628,18 @@ extern "C" {
 #define SYSTEM_INFO_PACKET_BATTERY_STATE_TAG     5
 #define SYSTEM_INFO_PACKET_DISCOVERED_DEVICES_TAG 6
 #define SYSTEM_INFO_PACKET_GPS_LOCATION_TAG      7
+#define SYSTEM_INFO_PACKET_BUZZ_SNTERVAL_DATA_TAG 8
+#define SYSTEM_INFO_PACKET_BUZZ_SUMMARY_DATA_TAG 9
 #define SYSTEM_SUMMARY_PACKET_CLASSIFIER_VERSION_TAG 1
 #define SYSTEM_SUMMARY_PACKET_LOCATION_TAG       2
-#define SYSTEM_SUMMARY_PACKET_EPOCH_LAST_DETECTION_TAG 3
-#define SYSTEM_SUMMARY_PACKET_TRANSMISSION_INTERVAL_M_TAG 4
-#define SYSTEM_SUMMARY_PACKET_BUZZ_COUNT_INTERVAL_TAG 5
-#define SYSTEM_SUMMARY_PACKET_SPECIES_1_COUNT_INTERVAL_TAG 6
-#define SYSTEM_SUMMARY_PACKET_SPECIES_2_COUNT_INTERVAL_TAG 7
-#define SYSTEM_SUMMARY_PACKET_SD_CARD_TAG        8
-#define SYSTEM_SUMMARY_PACKET_RADIO_POWER_TAG    9
-#define SYSTEM_SUMMARY_PACKET_BATTERY_VOLTAGE_TAG 10
-#define SYSTEM_SUMMARY_PACKET_TEMPERATURE_TAG    11
-#define SYSTEM_SUMMARY_PACKET_HUMIDITY_TAG       12
-#define SYSTEM_SUMMARY_PACKET_GAS_TAG            13
+#define SYSTEM_SUMMARY_PACKET_BUZZ_SNTERVAL_DATA_TAG 3
+#define SYSTEM_SUMMARY_PACKET_BUZZ_SUMMARY_DATA_TAG 4
+#define SYSTEM_SUMMARY_PACKET_SD_CARD_TAG        5
+#define SYSTEM_SUMMARY_PACKET_RADIO_POWER_TAG    6
+#define SYSTEM_SUMMARY_PACKET_BATTERY_VOLTAGE_TAG 7
+#define SYSTEM_SUMMARY_PACKET_TEMPERATURE_TAG    8
+#define SYSTEM_SUMMARY_PACKET_HUMIDITY_TAG       9
+#define SYSTEM_SUMMARY_PACKET_GAS_TAG            10
 #define PACKET_HEADER_TAG                        1
 #define PACKET_SYSTEM_INFO_PACKET_TAG            2
 #define PACKET_MARK_PACKET_TAG                   3
@@ -632,6 +666,24 @@ X(a, STATIC,   SINGULAR, FLOAT,    co2,               5) \
 X(a, STATIC,   SINGULAR, FLOAT,    light_level,       6)
 #define SIMPLE_SENSOR_READING_CALLBACK NULL
 #define SIMPLE_SENSOR_READING_DEFAULT NULL
+
+#define BUZZ_INTERVAL_DATA_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, UINT32,   transmission_interval_m,   1) \
+X(a, STATIC,   OPTIONAL, UINT32,   buzz_count_interval,   2) \
+X(a, STATIC,   OPTIONAL, UINT32,   species_1_count_interval,   3) \
+X(a, STATIC,   OPTIONAL, UINT32,   species_2_count_interval,   4) \
+X(a, STATIC,   OPTIONAL, UINT32,   last_interval_epoch,   5) \
+X(a, STATIC,   SINGULAR, UINT32,   last_detection_epoch,   6)
+#define BUZZ_INTERVAL_DATA_CALLBACK NULL
+#define BUZZ_INTERVAL_DATA_DEFAULT NULL
+
+#define BUZZ_SUMMARY_DATA_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, UINT32,   buzz_counter,      1) \
+X(a, STATIC,   SINGULAR, UINT32,   species_1_count,   2) \
+X(a, STATIC,   SINGULAR, UINT32,   species_2_count,   3) \
+X(a, STATIC,   SINGULAR, UINT32,   last_detection_epoch,   4)
+#define BUZZ_SUMMARY_DATA_CALLBACK NULL
+#define BUZZ_SUMMARY_DATA_DEFAULT NULL
 
 #define SENSOR_READING_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UINT32,   packet_index,      1) \
@@ -699,7 +751,9 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  sdcard_state,      3) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  mark_state,        4) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  battery_state,     5) \
 X(a, STATIC,   REPEATED, MESSAGE,  discovered_devices,   6) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  gps_location,      7)
+X(a, STATIC,   OPTIONAL, MESSAGE,  gps_location,      7) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  buzz_snterval_data,   8) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  buzz_summary_data,   9)
 #define SYSTEM_INFO_PACKET_CALLBACK NULL
 #define SYSTEM_INFO_PACKET_DEFAULT NULL
 #define system_info_packet_t_simple_sensor_reading_MSGTYPE simple_sensor_reading_t
@@ -708,6 +762,8 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  gps_location,      7)
 #define system_info_packet_t_battery_state_MSGTYPE battery_state_t
 #define system_info_packet_t_discovered_devices_MSGTYPE device_t
 #define system_info_packet_t_gps_location_MSGTYPE location_t
+#define system_info_packet_t_buzz_snterval_data_MSGTYPE buzz_interval_data_t
+#define system_info_packet_t_buzz_summary_data_MSGTYPE buzz_summary_data_t
 
 #define AUDIO_COMPRESSION_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, BOOL,     enabled,           1) \
@@ -857,20 +913,19 @@ X(a, STATIC,   SINGULAR, FLOAT,    elev,              3)
 #define SYSTEM_SUMMARY_PACKET_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, FLOAT,    classifier_version,   1) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  location,          2) \
-X(a, STATIC,   OPTIONAL, UINT64,   epoch_last_detection,   3) \
-X(a, STATIC,   SINGULAR, UINT32,   transmission_interval_m,   4) \
-X(a, STATIC,   OPTIONAL, UINT32,   buzz_count_interval,   5) \
-X(a, STATIC,   OPTIONAL, UINT32,   species_1_count_interval,   6) \
-X(a, STATIC,   OPTIONAL, UINT32,   species_2_count_interval,   7) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  sd_card,           8) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  radio_power,       9) \
-X(a, STATIC,   SINGULAR, FLOAT,    battery_voltage,  10) \
-X(a, STATIC,   SINGULAR, FLOAT,    temperature,      11) \
-X(a, STATIC,   SINGULAR, FLOAT,    humidity,         12) \
-X(a, STATIC,   OPTIONAL, FLOAT,    gas,              13)
+X(a, STATIC,   OPTIONAL, MESSAGE,  buzz_snterval_data,   3) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  buzz_summary_data,   4) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  sd_card,           5) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  radio_power,       6) \
+X(a, STATIC,   SINGULAR, FLOAT,    battery_voltage,   7) \
+X(a, STATIC,   SINGULAR, FLOAT,    temperature,       8) \
+X(a, STATIC,   SINGULAR, FLOAT,    humidity,          9) \
+X(a, STATIC,   OPTIONAL, FLOAT,    gas,              10)
 #define SYSTEM_SUMMARY_PACKET_CALLBACK NULL
 #define SYSTEM_SUMMARY_PACKET_DEFAULT NULL
 #define system_summary_packet_t_location_MSGTYPE location_t
+#define system_summary_packet_t_buzz_snterval_data_MSGTYPE buzz_interval_data_t
+#define system_summary_packet_t_buzz_summary_data_MSGTYPE buzz_summary_data_t
 #define system_summary_packet_t_sd_card_MSGTYPE sd_card_state_t
 #define system_summary_packet_t_radio_power_MSGTYPE radio_power_t
 
@@ -900,6 +955,8 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  radio_power,       3)
 
 extern const pb_msgdesc_t radio_power_t_msg;
 extern const pb_msgdesc_t simple_sensor_reading_t_msg;
+extern const pb_msgdesc_t buzz_interval_data_t_msg;
+extern const pb_msgdesc_t buzz_summary_data_t_msg;
 extern const pb_msgdesc_t sensor_reading_t_msg;
 extern const pb_msgdesc_t sensor_reading_payload_t_msg;
 extern const pb_msgdesc_t sensor_config_t_msg;
@@ -931,6 +988,8 @@ extern const pb_msgdesc_t lo_ra_packet_t_msg;
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
 #define RADIO_POWER_FIELDS &radio_power_t_msg
 #define SIMPLE_SENSOR_READING_FIELDS &simple_sensor_reading_t_msg
+#define BUZZ_INTERVAL_DATA_FIELDS &buzz_interval_data_t_msg
+#define BUZZ_SUMMARY_DATA_FIELDS &buzz_summary_data_t_msg
 #define SENSOR_READING_FIELDS &sensor_reading_t_msg
 #define SENSOR_READING_PAYLOAD_FIELDS &sensor_reading_payload_t_msg
 #define SENSOR_CONFIG_FIELDS &sensor_config_t_msg
@@ -964,13 +1023,15 @@ extern const pb_msgdesc_t lo_ra_packet_t_msg;
 #define AUDIO_COMPRESSION_SIZE                   10
 #define AUDIO_CONFIG_SIZE                        31
 #define BATTERY_STATE_SIZE                       12
+#define BUZZ_INTERVAL_DATA_SIZE                  36
+#define BUZZ_SUMMARY_DATA_SIZE                   24
 #define CAMERA_CONTROL_SIZE                      6
 #define CONFIG_PACKET_SIZE                       604
 #define DEVICE_SIZE                              12
 #define DEVICE_UID_SIZE                          11
 #define LOCATION_SIZE                            15
 #define LOW_POWER_CONFIG_SIZE                    2
-#define LO_RA_PACKET_SIZE                        207
+#define LO_RA_PACKET_SIZE                        236
 #define MARK_PACKET_SIZE                         53
 #define MARK_STATE_SIZE                          17
 #define NETWORK_STATE_SIZE                       152
@@ -984,8 +1045,8 @@ extern const pb_msgdesc_t lo_ra_packet_t_msg;
 #define SENSOR_READING_PAYLOAD_SIZE              41
 #define SIMPLE_SENSOR_READING_SIZE               32
 #define SPECIAL_FUNCTION_SIZE                    967
-#define SYSTEM_INFO_PACKET_SIZE                  398
-#define SYSTEM_SUMMARY_PACKET_SIZE               144
+#define SYSTEM_INFO_PACKET_SIZE                  462
+#define SYSTEM_SUMMARY_PACKET_SIZE               173
 #define UWB_INFO_SIZE                            35
 #define UWB_PACKET_SIZE                          964
 #define UWB_RANGE_SIZE                           46

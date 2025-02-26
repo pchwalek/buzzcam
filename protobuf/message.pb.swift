@@ -449,6 +449,80 @@ public struct SimpleSensorReading: Sendable {
   public init() {}
 }
 
+public struct BuzzIntervalData: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// minutes
+  public var transmissionIntervalM: UInt32 = 0
+
+  public var buzzCountInterval: UInt32 {
+    get {return _buzzCountInterval ?? 0}
+    set {_buzzCountInterval = newValue}
+  }
+  /// Returns true if `buzzCountInterval` has been explicitly set.
+  public var hasBuzzCountInterval: Bool {return self._buzzCountInterval != nil}
+  /// Clears the value of `buzzCountInterval`. Subsequent reads from it will return its default value.
+  public mutating func clearBuzzCountInterval() {self._buzzCountInterval = nil}
+
+  public var species1CountInterval: UInt32 {
+    get {return _species1CountInterval ?? 0}
+    set {_species1CountInterval = newValue}
+  }
+  /// Returns true if `species1CountInterval` has been explicitly set.
+  public var hasSpecies1CountInterval: Bool {return self._species1CountInterval != nil}
+  /// Clears the value of `species1CountInterval`. Subsequent reads from it will return its default value.
+  public mutating func clearSpecies1CountInterval() {self._species1CountInterval = nil}
+
+  public var species2CountInterval: UInt32 {
+    get {return _species2CountInterval ?? 0}
+    set {_species2CountInterval = newValue}
+  }
+  /// Returns true if `species2CountInterval` has been explicitly set.
+  public var hasSpecies2CountInterval: Bool {return self._species2CountInterval != nil}
+  /// Clears the value of `species2CountInterval`. Subsequent reads from it will return its default value.
+  public mutating func clearSpecies2CountInterval() {self._species2CountInterval = nil}
+
+  public var lastIntervalEpoch: UInt32 {
+    get {return _lastIntervalEpoch ?? 0}
+    set {_lastIntervalEpoch = newValue}
+  }
+  /// Returns true if `lastIntervalEpoch` has been explicitly set.
+  public var hasLastIntervalEpoch: Bool {return self._lastIntervalEpoch != nil}
+  /// Clears the value of `lastIntervalEpoch`. Subsequent reads from it will return its default value.
+  public mutating func clearLastIntervalEpoch() {self._lastIntervalEpoch = nil}
+
+  public var lastDetectionEpoch: UInt32 = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _buzzCountInterval: UInt32? = nil
+  fileprivate var _species1CountInterval: UInt32? = nil
+  fileprivate var _species2CountInterval: UInt32? = nil
+  fileprivate var _lastIntervalEpoch: UInt32? = nil
+}
+
+public struct BuzzSummaryData: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var buzzCounter: UInt32 = 0
+
+  public var species1Count: UInt32 = 0
+
+  public var species2Count: UInt32 = 0
+
+  public var lastDetectionEpoch: UInt32 = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
 public struct SensorReading: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -660,6 +734,24 @@ public struct SystemInfoPacket: @unchecked Sendable {
   public var hasGpsLocation: Bool {return _storage._gpsLocation != nil}
   /// Clears the value of `gpsLocation`. Subsequent reads from it will return its default value.
   public mutating func clearGpsLocation() {_uniqueStorage()._gpsLocation = nil}
+
+  public var buzzSntervalData: BuzzIntervalData {
+    get {return _storage._buzzSntervalData ?? BuzzIntervalData()}
+    set {_uniqueStorage()._buzzSntervalData = newValue}
+  }
+  /// Returns true if `buzzSntervalData` has been explicitly set.
+  public var hasBuzzSntervalData: Bool {return _storage._buzzSntervalData != nil}
+  /// Clears the value of `buzzSntervalData`. Subsequent reads from it will return its default value.
+  public mutating func clearBuzzSntervalData() {_uniqueStorage()._buzzSntervalData = nil}
+
+  public var buzzSummaryData: BuzzSummaryData {
+    get {return _storage._buzzSummaryData ?? BuzzSummaryData()}
+    set {_uniqueStorage()._buzzSummaryData = newValue}
+  }
+  /// Returns true if `buzzSummaryData` has been explicitly set.
+  public var hasBuzzSummaryData: Bool {return _storage._buzzSummaryData != nil}
+  /// Clears the value of `buzzSummaryData`. Subsequent reads from it will return its default value.
+  public mutating func clearBuzzSummaryData() {_uniqueStorage()._buzzSummaryData = nil}
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1137,47 +1229,23 @@ public struct SystemSummaryPacket: @unchecked Sendable {
   /// Clears the value of `location`. Subsequent reads from it will return its default value.
   public mutating func clearLocation() {_uniqueStorage()._location = nil}
 
-  public var epochLastDetection: UInt64 {
-    get {return _storage._epochLastDetection ?? 0}
-    set {_uniqueStorage()._epochLastDetection = newValue}
+  public var buzzSntervalData: BuzzIntervalData {
+    get {return _storage._buzzSntervalData ?? BuzzIntervalData()}
+    set {_uniqueStorage()._buzzSntervalData = newValue}
   }
-  /// Returns true if `epochLastDetection` has been explicitly set.
-  public var hasEpochLastDetection: Bool {return _storage._epochLastDetection != nil}
-  /// Clears the value of `epochLastDetection`. Subsequent reads from it will return its default value.
-  public mutating func clearEpochLastDetection() {_uniqueStorage()._epochLastDetection = nil}
+  /// Returns true if `buzzSntervalData` has been explicitly set.
+  public var hasBuzzSntervalData: Bool {return _storage._buzzSntervalData != nil}
+  /// Clears the value of `buzzSntervalData`. Subsequent reads from it will return its default value.
+  public mutating func clearBuzzSntervalData() {_uniqueStorage()._buzzSntervalData = nil}
 
-  /// minutes
-  public var transmissionIntervalM: UInt32 {
-    get {return _storage._transmissionIntervalM}
-    set {_uniqueStorage()._transmissionIntervalM = newValue}
+  public var buzzSummaryData: BuzzSummaryData {
+    get {return _storage._buzzSummaryData ?? BuzzSummaryData()}
+    set {_uniqueStorage()._buzzSummaryData = newValue}
   }
-
-  public var buzzCountInterval: UInt32 {
-    get {return _storage._buzzCountInterval ?? 0}
-    set {_uniqueStorage()._buzzCountInterval = newValue}
-  }
-  /// Returns true if `buzzCountInterval` has been explicitly set.
-  public var hasBuzzCountInterval: Bool {return _storage._buzzCountInterval != nil}
-  /// Clears the value of `buzzCountInterval`. Subsequent reads from it will return its default value.
-  public mutating func clearBuzzCountInterval() {_uniqueStorage()._buzzCountInterval = nil}
-
-  public var species1CountInterval: UInt32 {
-    get {return _storage._species1CountInterval ?? 0}
-    set {_uniqueStorage()._species1CountInterval = newValue}
-  }
-  /// Returns true if `species1CountInterval` has been explicitly set.
-  public var hasSpecies1CountInterval: Bool {return _storage._species1CountInterval != nil}
-  /// Clears the value of `species1CountInterval`. Subsequent reads from it will return its default value.
-  public mutating func clearSpecies1CountInterval() {_uniqueStorage()._species1CountInterval = nil}
-
-  public var species2CountInterval: UInt32 {
-    get {return _storage._species2CountInterval ?? 0}
-    set {_uniqueStorage()._species2CountInterval = newValue}
-  }
-  /// Returns true if `species2CountInterval` has been explicitly set.
-  public var hasSpecies2CountInterval: Bool {return _storage._species2CountInterval != nil}
-  /// Clears the value of `species2CountInterval`. Subsequent reads from it will return its default value.
-  public mutating func clearSpecies2CountInterval() {_uniqueStorage()._species2CountInterval = nil}
+  /// Returns true if `buzzSummaryData` has been explicitly set.
+  public var hasBuzzSummaryData: Bool {return _storage._buzzSummaryData != nil}
+  /// Clears the value of `buzzSummaryData`. Subsequent reads from it will return its default value.
+  public mutating func clearBuzzSummaryData() {_uniqueStorage()._buzzSummaryData = nil}
 
   public var sdCard: SDCardState {
     get {return _storage._sdCard ?? SDCardState()}
@@ -1528,6 +1596,122 @@ extension SimpleSensorReading: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     if lhs.humidity != rhs.humidity {return false}
     if lhs.co2 != rhs.co2 {return false}
     if lhs.lightLevel != rhs.lightLevel {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension BuzzIntervalData: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = "BuzzIntervalData"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "transmission_interval_m"),
+    2: .standard(proto: "buzz_count_interval"),
+    3: .standard(proto: "species_1_count_interval"),
+    4: .standard(proto: "species_2_count_interval"),
+    5: .standard(proto: "last_interval_epoch"),
+    6: .standard(proto: "last_detection_epoch"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.transmissionIntervalM) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self._buzzCountInterval) }()
+      case 3: try { try decoder.decodeSingularUInt32Field(value: &self._species1CountInterval) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self._species2CountInterval) }()
+      case 5: try { try decoder.decodeSingularUInt32Field(value: &self._lastIntervalEpoch) }()
+      case 6: try { try decoder.decodeSingularUInt32Field(value: &self.lastDetectionEpoch) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if self.transmissionIntervalM != 0 {
+      try visitor.visitSingularUInt32Field(value: self.transmissionIntervalM, fieldNumber: 1)
+    }
+    try { if let v = self._buzzCountInterval {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 2)
+    } }()
+    try { if let v = self._species1CountInterval {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 3)
+    } }()
+    try { if let v = self._species2CountInterval {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 4)
+    } }()
+    try { if let v = self._lastIntervalEpoch {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 5)
+    } }()
+    if self.lastDetectionEpoch != 0 {
+      try visitor.visitSingularUInt32Field(value: self.lastDetectionEpoch, fieldNumber: 6)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: BuzzIntervalData, rhs: BuzzIntervalData) -> Bool {
+    if lhs.transmissionIntervalM != rhs.transmissionIntervalM {return false}
+    if lhs._buzzCountInterval != rhs._buzzCountInterval {return false}
+    if lhs._species1CountInterval != rhs._species1CountInterval {return false}
+    if lhs._species2CountInterval != rhs._species2CountInterval {return false}
+    if lhs._lastIntervalEpoch != rhs._lastIntervalEpoch {return false}
+    if lhs.lastDetectionEpoch != rhs.lastDetectionEpoch {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension BuzzSummaryData: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = "BuzzSummaryData"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "buzz_counter"),
+    2: .standard(proto: "species_1_count"),
+    3: .standard(proto: "species_2_count"),
+    4: .standard(proto: "last_detection_epoch"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.buzzCounter) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.species1Count) }()
+      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.species2Count) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self.lastDetectionEpoch) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.buzzCounter != 0 {
+      try visitor.visitSingularUInt32Field(value: self.buzzCounter, fieldNumber: 1)
+    }
+    if self.species1Count != 0 {
+      try visitor.visitSingularUInt32Field(value: self.species1Count, fieldNumber: 2)
+    }
+    if self.species2Count != 0 {
+      try visitor.visitSingularUInt32Field(value: self.species2Count, fieldNumber: 3)
+    }
+    if self.lastDetectionEpoch != 0 {
+      try visitor.visitSingularUInt32Field(value: self.lastDetectionEpoch, fieldNumber: 4)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: BuzzSummaryData, rhs: BuzzSummaryData) -> Bool {
+    if lhs.buzzCounter != rhs.buzzCounter {return false}
+    if lhs.species1Count != rhs.species1Count {return false}
+    if lhs.species2Count != rhs.species2Count {return false}
+    if lhs.lastDetectionEpoch != rhs.lastDetectionEpoch {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1915,6 +2099,8 @@ extension SystemInfoPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
     5: .standard(proto: "battery_state"),
     6: .same(proto: "discoveredDevices"),
     7: .standard(proto: "gps_location"),
+    8: .standard(proto: "buzz_snterval_data"),
+    9: .standard(proto: "buzz_summary_data"),
   ]
 
   fileprivate class _StorageClass {
@@ -1925,6 +2111,8 @@ extension SystemInfoPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
     var _batteryState: BatteryState? = nil
     var _discoveredDevices: [Device] = []
     var _gpsLocation: Location? = nil
+    var _buzzSntervalData: BuzzIntervalData? = nil
+    var _buzzSummaryData: BuzzSummaryData? = nil
 
     #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
@@ -1946,6 +2134,8 @@ extension SystemInfoPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
       _batteryState = source._batteryState
       _discoveredDevices = source._discoveredDevices
       _gpsLocation = source._gpsLocation
+      _buzzSntervalData = source._buzzSntervalData
+      _buzzSummaryData = source._buzzSummaryData
     }
   }
 
@@ -1971,6 +2161,8 @@ extension SystemInfoPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
         case 5: try { try decoder.decodeSingularMessageField(value: &_storage._batteryState) }()
         case 6: try { try decoder.decodeRepeatedMessageField(value: &_storage._discoveredDevices) }()
         case 7: try { try decoder.decodeSingularMessageField(value: &_storage._gpsLocation) }()
+        case 8: try { try decoder.decodeSingularMessageField(value: &_storage._buzzSntervalData) }()
+        case 9: try { try decoder.decodeSingularMessageField(value: &_storage._buzzSummaryData) }()
         default: break
         }
       }
@@ -2004,6 +2196,12 @@ extension SystemInfoPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
       try { if let v = _storage._gpsLocation {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
       } }()
+      try { if let v = _storage._buzzSntervalData {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
+      } }()
+      try { if let v = _storage._buzzSummaryData {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -2020,6 +2218,8 @@ extension SystemInfoPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
         if _storage._batteryState != rhs_storage._batteryState {return false}
         if _storage._discoveredDevices != rhs_storage._discoveredDevices {return false}
         if _storage._gpsLocation != rhs_storage._gpsLocation {return false}
+        if _storage._buzzSntervalData != rhs_storage._buzzSntervalData {return false}
+        if _storage._buzzSummaryData != rhs_storage._buzzSummaryData {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -3005,27 +3205,21 @@ extension SystemSummaryPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "classifier_version"),
     2: .same(proto: "location"),
-    3: .standard(proto: "epoch_last_detection"),
-    4: .standard(proto: "transmission_interval_m"),
-    5: .standard(proto: "buzz_count_interval"),
-    6: .standard(proto: "species_1_count_interval"),
-    7: .standard(proto: "species_2_count_interval"),
-    8: .standard(proto: "sd_card"),
-    9: .standard(proto: "radio_power"),
-    10: .standard(proto: "battery_voltage"),
-    11: .same(proto: "temperature"),
-    12: .same(proto: "humidity"),
-    13: .same(proto: "gas"),
+    3: .standard(proto: "buzz_snterval_data"),
+    4: .standard(proto: "buzz_summary_data"),
+    5: .standard(proto: "sd_card"),
+    6: .standard(proto: "radio_power"),
+    7: .standard(proto: "battery_voltage"),
+    8: .same(proto: "temperature"),
+    9: .same(proto: "humidity"),
+    10: .same(proto: "gas"),
   ]
 
   fileprivate class _StorageClass {
     var _classifierVersion: Float = 0
     var _location: Location? = nil
-    var _epochLastDetection: UInt64? = nil
-    var _transmissionIntervalM: UInt32 = 0
-    var _buzzCountInterval: UInt32? = nil
-    var _species1CountInterval: UInt32? = nil
-    var _species2CountInterval: UInt32? = nil
+    var _buzzSntervalData: BuzzIntervalData? = nil
+    var _buzzSummaryData: BuzzSummaryData? = nil
     var _sdCard: SDCardState? = nil
     var _radioPower: RadioPower? = nil
     var _batteryVoltage: Float = 0
@@ -3048,11 +3242,8 @@ extension SystemSummaryPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     init(copying source: _StorageClass) {
       _classifierVersion = source._classifierVersion
       _location = source._location
-      _epochLastDetection = source._epochLastDetection
-      _transmissionIntervalM = source._transmissionIntervalM
-      _buzzCountInterval = source._buzzCountInterval
-      _species1CountInterval = source._species1CountInterval
-      _species2CountInterval = source._species2CountInterval
+      _buzzSntervalData = source._buzzSntervalData
+      _buzzSummaryData = source._buzzSummaryData
       _sdCard = source._sdCard
       _radioPower = source._radioPower
       _batteryVoltage = source._batteryVoltage
@@ -3079,17 +3270,14 @@ extension SystemSummaryPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
         switch fieldNumber {
         case 1: try { try decoder.decodeSingularFloatField(value: &_storage._classifierVersion) }()
         case 2: try { try decoder.decodeSingularMessageField(value: &_storage._location) }()
-        case 3: try { try decoder.decodeSingularUInt64Field(value: &_storage._epochLastDetection) }()
-        case 4: try { try decoder.decodeSingularUInt32Field(value: &_storage._transmissionIntervalM) }()
-        case 5: try { try decoder.decodeSingularUInt32Field(value: &_storage._buzzCountInterval) }()
-        case 6: try { try decoder.decodeSingularUInt32Field(value: &_storage._species1CountInterval) }()
-        case 7: try { try decoder.decodeSingularUInt32Field(value: &_storage._species2CountInterval) }()
-        case 8: try { try decoder.decodeSingularMessageField(value: &_storage._sdCard) }()
-        case 9: try { try decoder.decodeSingularMessageField(value: &_storage._radioPower) }()
-        case 10: try { try decoder.decodeSingularFloatField(value: &_storage._batteryVoltage) }()
-        case 11: try { try decoder.decodeSingularFloatField(value: &_storage._temperature) }()
-        case 12: try { try decoder.decodeSingularFloatField(value: &_storage._humidity) }()
-        case 13: try { try decoder.decodeSingularFloatField(value: &_storage._gas) }()
+        case 3: try { try decoder.decodeSingularMessageField(value: &_storage._buzzSntervalData) }()
+        case 4: try { try decoder.decodeSingularMessageField(value: &_storage._buzzSummaryData) }()
+        case 5: try { try decoder.decodeSingularMessageField(value: &_storage._sdCard) }()
+        case 6: try { try decoder.decodeSingularMessageField(value: &_storage._radioPower) }()
+        case 7: try { try decoder.decodeSingularFloatField(value: &_storage._batteryVoltage) }()
+        case 8: try { try decoder.decodeSingularFloatField(value: &_storage._temperature) }()
+        case 9: try { try decoder.decodeSingularFloatField(value: &_storage._humidity) }()
+        case 10: try { try decoder.decodeSingularFloatField(value: &_storage._gas) }()
         default: break
         }
       }
@@ -3108,38 +3296,29 @@ extension SystemSummaryPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
       try { if let v = _storage._location {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
       } }()
-      try { if let v = _storage._epochLastDetection {
-        try visitor.visitSingularUInt64Field(value: v, fieldNumber: 3)
+      try { if let v = _storage._buzzSntervalData {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
       } }()
-      if _storage._transmissionIntervalM != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._transmissionIntervalM, fieldNumber: 4)
-      }
-      try { if let v = _storage._buzzCountInterval {
-        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 5)
-      } }()
-      try { if let v = _storage._species1CountInterval {
-        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 6)
-      } }()
-      try { if let v = _storage._species2CountInterval {
-        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 7)
+      try { if let v = _storage._buzzSummaryData {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
       } }()
       try { if let v = _storage._sdCard {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
       } }()
       try { if let v = _storage._radioPower {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
       } }()
       if _storage._batteryVoltage.bitPattern != 0 {
-        try visitor.visitSingularFloatField(value: _storage._batteryVoltage, fieldNumber: 10)
+        try visitor.visitSingularFloatField(value: _storage._batteryVoltage, fieldNumber: 7)
       }
       if _storage._temperature.bitPattern != 0 {
-        try visitor.visitSingularFloatField(value: _storage._temperature, fieldNumber: 11)
+        try visitor.visitSingularFloatField(value: _storage._temperature, fieldNumber: 8)
       }
       if _storage._humidity.bitPattern != 0 {
-        try visitor.visitSingularFloatField(value: _storage._humidity, fieldNumber: 12)
+        try visitor.visitSingularFloatField(value: _storage._humidity, fieldNumber: 9)
       }
       try { if let v = _storage._gas {
-        try visitor.visitSingularFloatField(value: v, fieldNumber: 13)
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 10)
       } }()
     }
     try unknownFields.traverse(visitor: &visitor)
@@ -3152,11 +3331,8 @@ extension SystemSummaryPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
         let rhs_storage = _args.1
         if _storage._classifierVersion != rhs_storage._classifierVersion {return false}
         if _storage._location != rhs_storage._location {return false}
-        if _storage._epochLastDetection != rhs_storage._epochLastDetection {return false}
-        if _storage._transmissionIntervalM != rhs_storage._transmissionIntervalM {return false}
-        if _storage._buzzCountInterval != rhs_storage._buzzCountInterval {return false}
-        if _storage._species1CountInterval != rhs_storage._species1CountInterval {return false}
-        if _storage._species2CountInterval != rhs_storage._species2CountInterval {return false}
+        if _storage._buzzSntervalData != rhs_storage._buzzSntervalData {return false}
+        if _storage._buzzSummaryData != rhs_storage._buzzSummaryData {return false}
         if _storage._sdCard != rhs_storage._sdCard {return false}
         if _storage._radioPower != rhs_storage._radioPower {return false}
         if _storage._batteryVoltage != rhs_storage._batteryVoltage {return false}
