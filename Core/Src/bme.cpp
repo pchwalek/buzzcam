@@ -276,12 +276,12 @@ void BME_Task(void *argument) {
 				bmeData[bmeIdx++].accuracy = static_cast<bme680_accuracy_t>(bme.outputs.output[i].accuracy);
 
 				/* update characteristic */
-				if(bme.outputs.output[i].sensor_id == BSEC_OUTPUT_RAW_TEMPERATURE){
+				if(bme.outputs.output[i].sensor_id == BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE){
 					infoPacket.payload.system_info_packet.simple_sensor_reading.temperature=floorf(bme.outputs.output[i].signal * 10) / 10;
-				}else if(bme.outputs.output[i].sensor_id == BSEC_OUTPUT_RAW_HUMIDITY){
+				}else if(bme.outputs.output[i].sensor_id == BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY){
 					infoPacket.payload.system_info_packet.simple_sensor_reading.humidity=floorf(bme.outputs.output[i].signal * 10) / 10;
-				}else if(bme.outputs.output[i].sensor_id == BSEC_OUTPUT_CO2_EQUIVALENT){
-					infoPacket.payload.system_info_packet.simple_sensor_reading.co2=bme.outputs.output[i].signal;
+				}else if(bme.outputs.output[i].sensor_id == BSEC_OUTPUT_RAW_GAS){
+					infoPacket.payload.system_info_packet.simple_sensor_reading.gas=bme.outputs.output[i].signal;
 				}
 
 			}

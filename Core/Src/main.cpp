@@ -570,10 +570,7 @@ int main(void) {
 		Control_SDCard_Power(systemState.SDCardState);
 	}
 
-	if (systemPowerSupervisor.isMAX78000Enabled) {
-		systemState.isMAX78000Active = true;
-		Control_MAX78000_Power(true);
-	}
+
 
 //	while(1);
 
@@ -638,6 +635,15 @@ int main(void) {
 					0;
 			infoPacket.payload.system_info_packet.discovered_devices[i].uid = 0;
 		}
+	}
+
+	infoPacket.payload.system_info_packet.has_buzz_summary_data = true;
+	infoPacket.payload.system_info_packet.buzz_summary_data.classifier_version = 1.0;
+
+
+	if (systemPowerSupervisor.isMAX78000Enabled) {
+		systemState.isMAX78000Active = true;
+		Control_MAX78000_Power(true);
 	}
 
 	systemState.isFRAMActive = false;
@@ -2931,7 +2937,7 @@ void writeDefaultConfig(void) {
 	infoPacket.payload.system_info_packet.sdcard_state.space_remaining = 1234;
 
 	infoPacket.payload.system_info_packet.has_simple_sensor_reading = true;
-	infoPacket.payload.system_info_packet.simple_sensor_reading.co2 = 0.0;
+	infoPacket.payload.system_info_packet.simple_sensor_reading.gas = 0.0;
 	infoPacket.payload.system_info_packet.simple_sensor_reading.humidity = 0.0;
 	infoPacket.payload.system_info_packet.simple_sensor_reading.index = 0;
 	infoPacket.payload.system_info_packet.simple_sensor_reading.light_level =
@@ -5426,6 +5432,8 @@ void loraGPSTask(void *argument) {
 	uint64_t buzz_class_1 = 0;
 	uint64_t buzz_class_2 = 0;
 
+	infoPacket.payload.system_info_packet.has_radio_power = true;
+
 //	loraPacket.payload.system_summary_packet.transmission_interval_m = LORA_SEND_INTERVAL_MINS;
 
 	// turn on GPS if not already on
@@ -5544,7 +5552,7 @@ void loraGPSTask(void *argument) {
 			loraPacket.payload.system_summary_packet.battery_voltage = infoPacket.payload.system_info_packet.battery_state.voltage;
 			loraPacket.payload.system_summary_packet.has_gas = true;
 			if(infoPacket.payload.system_info_packet.has_simple_sensor_reading){
-				loraPacket.payload.system_summary_packet.gas = infoPacket.payload.system_info_packet.simple_sensor_reading.co2;
+				loraPacket.payload.system_summary_packet.gas = infoPacket.payload.system_info_packet.simple_sensor_reading.gas;
 				loraPacket.payload.system_summary_packet.humidity = infoPacket.payload.system_info_packet.simple_sensor_reading.humidity;
 				loraPacket.payload.system_summary_packet.temperature = infoPacket.payload.system_info_packet.simple_sensor_reading.temperature;
 			}
@@ -5573,15 +5581,18 @@ void loraGPSTask(void *argument) {
 			}
 
 			loraPacket.payload.system_summary_packet.has_buzz_interval_data = true;
-			loraPacket.payload.system_summary_packet.buzz_interval_data.has_buzz_count_interval = true;
-			loraPacket.payload.system_summary_packet.buzz_interval_data.has_species_1_count_interval = true;
-			loraPacket.payload.system_summary_packet.buzz_interval_data.has_species_2_count_interval = true;
+			loraPacket.payload.system_summary_packet.buzz_interval_data.has_species_1_count = true;
+			loraPacket.payload.system_summary_packet.buzz_interval_data.has_species_2_count = true;
 			loraPacket.payload.system_summary_packet.buzz_interval_data.interval_epoch = getEpoch();
-			loraPacket.payload.system_summary_packet.buzz_interval_data.buzz_count_interval = buzz_counter_total - buzz_total;
-			loraPacket.payload.system_summary_packet.buzz_interval_data.species_1_count_interval = buzz_counter_class_1 - buzz_class_1;
-			loraPacket.payload.system_summary_packet.buzz_interval_data.species_2_count_interval = buzz_counter_class_2 - buzz_class_2;
+			loraPacket.payload.system_summary_packet.buzz_interval_data.buzz_count = buzz_counter_total - buzz_total;
+			loraPacket.payload.system_summary_packet.buzz_interval_data.species_1_count = buzz_counter_class_1 - buzz_class_1;
+			loraPacket.payload.system_summary_packet.buzz_interval_data.species_2_count = buzz_counter_class_2 - buzz_class_2;
 			loraPacket.payload.system_summary_packet.buzz_interval_data.transmission_interval_m = LORA_SEND_INTERVAL_MINS;
 
+			infoPacket.payload.system_info_packet.has_buzz_interval_data = true;
+			memcpy(&infoPacket.payload.system_info_packet.buzz_interval_data,
+					&loraPacket.payload.system_summary_packet.buzz_interval_data,
+					sizeof(buzz_interval_data_t));
 
 			infoPacket.payload.system_info_packet.buzz_summary_data.buzz_counter++;
 							infoPacket.payload.system_info_packet.buzz_summary_data.species_1_count++;

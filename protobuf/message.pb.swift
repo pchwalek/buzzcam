@@ -764,6 +764,15 @@ public struct SystemInfoPacket: @unchecked Sendable {
   /// Clears the value of `buzzSummaryData`. Subsequent reads from it will return its default value.
   public mutating func clearBuzzSummaryData() {_uniqueStorage()._buzzSummaryData = nil}
 
+  public var radioPower: RadioPower {
+    get {return _storage._radioPower ?? RadioPower()}
+    set {_uniqueStorage()._radioPower = newValue}
+  }
+  /// Returns true if `radioPower` has been explicitly set.
+  public var hasRadioPower: Bool {return _storage._radioPower != nil}
+  /// Clears the value of `radioPower`. Subsequent reads from it will return its default value.
+  public mutating func clearRadioPower() {_uniqueStorage()._radioPower = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -2122,6 +2131,7 @@ extension SystemInfoPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
     7: .standard(proto: "gps_location"),
     8: .standard(proto: "buzz_interval_data"),
     9: .standard(proto: "buzz_summary_data"),
+    10: .same(proto: "radioPower"),
   ]
 
   fileprivate class _StorageClass {
@@ -2134,6 +2144,7 @@ extension SystemInfoPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
     var _gpsLocation: Location? = nil
     var _buzzIntervalData: BuzzIntervalData? = nil
     var _buzzSummaryData: BuzzSummaryData? = nil
+    var _radioPower: RadioPower? = nil
 
     #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
@@ -2157,6 +2168,7 @@ extension SystemInfoPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
       _gpsLocation = source._gpsLocation
       _buzzIntervalData = source._buzzIntervalData
       _buzzSummaryData = source._buzzSummaryData
+      _radioPower = source._radioPower
     }
   }
 
@@ -2184,6 +2196,7 @@ extension SystemInfoPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
         case 7: try { try decoder.decodeSingularMessageField(value: &_storage._gpsLocation) }()
         case 8: try { try decoder.decodeSingularMessageField(value: &_storage._buzzIntervalData) }()
         case 9: try { try decoder.decodeSingularMessageField(value: &_storage._buzzSummaryData) }()
+        case 10: try { try decoder.decodeSingularMessageField(value: &_storage._radioPower) }()
         default: break
         }
       }
@@ -2223,6 +2236,9 @@ extension SystemInfoPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
       try { if let v = _storage._buzzSummaryData {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
       } }()
+      try { if let v = _storage._radioPower {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 10)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -2241,6 +2257,7 @@ extension SystemInfoPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
         if _storage._gpsLocation != rhs_storage._gpsLocation {return false}
         if _storage._buzzIntervalData != rhs_storage._buzzIntervalData {return false}
         if _storage._buzzSummaryData != rhs_storage._buzzSummaryData {return false}
+        if _storage._radioPower != rhs_storage._radioPower {return false}
         return true
       }
       if !storagesAreEqual {return false}
