@@ -17,7 +17,7 @@ message SimpleSensorReading{
     uint32 timestamp_unix = 2;
     float temperature = 3;
     float humidity = 4;
-    float co2 = 5;
+    float gas = 5;
     float light_level = 6;
 }
 

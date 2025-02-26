@@ -5426,7 +5426,7 @@ void loraGPSTask(void *argument) {
 	uint64_t buzz_class_1 = 0;
 	uint64_t buzz_class_2 = 0;
 
-	loraPacket.payload.system_summary_packet.transmission_interval_m = LORA_SEND_INTERVAL_MINS;
+//	loraPacket.payload.system_summary_packet.transmission_interval_m = LORA_SEND_INTERVAL_MINS;
 
 	// turn on GPS if not already on
 	if(systemPowerSupervisor.isGPSEnabled &&
@@ -5572,17 +5572,23 @@ void loraGPSTask(void *argument) {
 //						((uint64_t) SDFatFS.n_fatent) * 256 * 512 / (1048576);
 			}
 
-			loraPacket.payload.system_summary_packet.has_buzz_count_interval = true;
-			loraPacket.payload.system_summary_packet.has_species_1_count_interval = true;
-			loraPacket.payload.system_summary_packet.has_species_2_count_interval = true;
-			loraPacket.payload.system_summary_packet.buzz_count_interval = buzz_counter_total - buzz_total;
-			loraPacket.payload.system_summary_packet.species_1_count_interval = buzz_counter_class_1 - buzz_class_1;
-			loraPacket.payload.system_summary_packet.species_2_count_interval = buzz_counter_class_2 - buzz_class_2;
-			loraPacket.payload.system_summary_packet.transmission_interval_m = 10;
+			loraPacket.payload.system_summary_packet.has_buzz_interval_data = true;
+			loraPacket.payload.system_summary_packet.buzz_interval_data.has_buzz_count_interval = true;
+			loraPacket.payload.system_summary_packet.buzz_interval_data.has_species_1_count_interval = true;
+			loraPacket.payload.system_summary_packet.buzz_interval_data.has_species_2_count_interval = true;
+			loraPacket.payload.system_summary_packet.buzz_interval_data.interval_epoch = getEpoch();
+			loraPacket.payload.system_summary_packet.buzz_interval_data.buzz_count_interval = buzz_counter_total - buzz_total;
+			loraPacket.payload.system_summary_packet.buzz_interval_data.species_1_count_interval = buzz_counter_class_1 - buzz_class_1;
+			loraPacket.payload.system_summary_packet.buzz_interval_data.species_2_count_interval = buzz_counter_class_2 - buzz_class_2;
+			loraPacket.payload.system_summary_packet.buzz_interval_data.transmission_interval_m = LORA_SEND_INTERVAL_MINS;
 
-			buzz_total = buzz_counter_total;
-			buzz_class_1 = buzz_counter_class_1;
-			buzz_class_2 = buzz_counter_class_2;
+
+			infoPacket.payload.system_info_packet.buzz_summary_data.buzz_counter++;
+							infoPacket.payload.system_info_packet.buzz_summary_data.species_1_count++;
+
+			buzz_total = infoPacket.payload.system_info_packet.buzz_summary_data.buzz_counter;
+			buzz_class_1 = infoPacket.payload.system_info_packet.buzz_summary_data.species_1_count;
+			buzz_class_2 = infoPacket.payload.system_info_packet.buzz_summary_data.species_2_count;
 
 			sendLoRa_pkt(&loraPacket);
 		}
@@ -6209,9 +6215,11 @@ void triggerMarkTask(void *argument) {
 			}
 
 			if ((flag & BEE_1_ALERT) == BEE_1_ALERT) {
-				buzz_counter_total++;
-				buzz_counter_class_1++;
-				volatile uint64_t buzz_counter_class_2 = 0;
+				infoPacket.payload.system_info_packet.has_buzz_summary_data = true;
+				infoPacket.payload.system_info_packet.buzz_summary_data.buzz_counter++;
+				infoPacket.payload.system_info_packet.buzz_summary_data.species_1_count++;
+				infoPacket.payload.system_info_packet.buzz_summary_data.last_detection_epoch = getEpoch();
+
  				setLED_Red(100);
 				setLED_Blue(100);
 				osDelay(25);
@@ -6220,8 +6228,10 @@ void triggerMarkTask(void *argument) {
 			}
 
 			if ((flag & BEE_2_ALERT) == BEE_2_ALERT) {
-				buzz_counter_total++;
-				buzz_counter_class_2++;
+				infoPacket.payload.system_info_packet.has_buzz_summary_data = true;
+				infoPacket.payload.system_info_packet.buzz_summary_data.buzz_counter++;
+				infoPacket.payload.system_info_packet.buzz_summary_data.species_2_count++;
+				infoPacket.payload.system_info_packet.buzz_summary_data.last_detection_epoch = getEpoch();
 				setLED_Green(100);
 				setLED_Red(100);
 				osDelay(25);

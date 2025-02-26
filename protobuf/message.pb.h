@@ -100,7 +100,7 @@ typedef struct simple_sensor_reading {
     uint32_t timestamp_unix;
     float temperature;
     float humidity;
-    float co2;
+    float gas;
     float light_level;
 } simple_sensor_reading_t;
 
@@ -515,7 +515,7 @@ extern "C" {
 #define SIMPLE_SENSOR_READING_TIMESTAMP_UNIX_TAG 2
 #define SIMPLE_SENSOR_READING_TEMPERATURE_TAG    3
 #define SIMPLE_SENSOR_READING_HUMIDITY_TAG       4
-#define SIMPLE_SENSOR_READING_CO2_TAG            5
+#define SIMPLE_SENSOR_READING_GAS_TAG            5
 #define SIMPLE_SENSOR_READING_LIGHT_LEVEL_TAG    6
 #define BUZZ_INTERVAL_DATA_TRANSMISSION_INTERVAL_M_TAG 1
 #define BUZZ_INTERVAL_DATA_BUZZ_COUNT_TAG        2
@@ -665,7 +665,7 @@ X(a, STATIC,   SINGULAR, UINT32,   index,             1) \
 X(a, STATIC,   SINGULAR, UINT32,   timestamp_unix,    2) \
 X(a, STATIC,   SINGULAR, FLOAT,    temperature,       3) \
 X(a, STATIC,   SINGULAR, FLOAT,    humidity,          4) \
-X(a, STATIC,   SINGULAR, FLOAT,    co2,               5) \
+X(a, STATIC,   SINGULAR, FLOAT,    gas,               5) \
 X(a, STATIC,   SINGULAR, FLOAT,    light_level,       6)
 #define SIMPLE_SENSOR_READING_CALLBACK NULL
 #define SIMPLE_SENSOR_READING_DEFAULT NULL

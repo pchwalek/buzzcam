@@ -440,7 +440,7 @@ public struct SimpleSensorReading: Sendable {
 
   public var humidity: Float = 0
 
-  public var co2: Float = 0
+  public var gas: Float = 0
 
   public var lightLevel: Float = 0
 
@@ -1557,7 +1557,7 @@ extension SimpleSensorReading: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     2: .standard(proto: "timestamp_unix"),
     3: .same(proto: "temperature"),
     4: .same(proto: "humidity"),
-    5: .same(proto: "co2"),
+    5: .same(proto: "gas"),
     6: .standard(proto: "light_level"),
   ]
 
@@ -1571,7 +1571,7 @@ extension SimpleSensorReading: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
       case 2: try { try decoder.decodeSingularUInt32Field(value: &self.timestampUnix) }()
       case 3: try { try decoder.decodeSingularFloatField(value: &self.temperature) }()
       case 4: try { try decoder.decodeSingularFloatField(value: &self.humidity) }()
-      case 5: try { try decoder.decodeSingularFloatField(value: &self.co2) }()
+      case 5: try { try decoder.decodeSingularFloatField(value: &self.gas) }()
       case 6: try { try decoder.decodeSingularFloatField(value: &self.lightLevel) }()
       default: break
       }
@@ -1591,8 +1591,8 @@ extension SimpleSensorReading: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     if self.humidity.bitPattern != 0 {
       try visitor.visitSingularFloatField(value: self.humidity, fieldNumber: 4)
     }
-    if self.co2.bitPattern != 0 {
-      try visitor.visitSingularFloatField(value: self.co2, fieldNumber: 5)
+    if self.gas.bitPattern != 0 {
+      try visitor.visitSingularFloatField(value: self.gas, fieldNumber: 5)
     }
     if self.lightLevel.bitPattern != 0 {
       try visitor.visitSingularFloatField(value: self.lightLevel, fieldNumber: 6)
@@ -1605,7 +1605,7 @@ extension SimpleSensorReading: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     if lhs.timestampUnix != rhs.timestampUnix {return false}
     if lhs.temperature != rhs.temperature {return false}
     if lhs.humidity != rhs.humidity {return false}
-    if lhs.co2 != rhs.co2 {return false}
+    if lhs.gas != rhs.gas {return false}
     if lhs.lightLevel != rhs.lightLevel {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
