@@ -52,15 +52,16 @@ message BuzzIntervalData{
     optional uint32 buzz_count_interval = 2;
     optional uint32 species_1_count_interval = 3;
     optional uint32 species_2_count_interval = 4;
-    optional uint32 last_interval_epoch = 5;
+    optional uint32 interval_epoch = 5;
     uint32 last_detection_epoch = 6;
 }
 
 message BuzzSummaryData{
-    uint32 buzz_counter = 1;
-    uint32 species_1_count = 2;
-    uint32 species_2_count = 3;
-    uint32 last_detection_epoch = 4;
+    uint32 classifier_version = 1;
+    uint32 buzz_counter = 2;
+    uint32 species_1_count = 3;
+    uint32 species_2_count = 4;
+    uint32 last_detection_epoch = 5;
 }
 
 
@@ -126,7 +127,7 @@ message SystemInfoPacket{
     BatteryState battery_state = 5;
     repeated Device discoveredDevices = 6;
     optional Location gps_location = 7;
-    optional BuzzIntervalData buzz_snterval_data = 8;
+    optional BuzzIntervalData buzz_interval_data = 8;
     optional BuzzSummaryData buzz_summary_data = 9;
 }
 
@@ -309,7 +310,7 @@ message Location{
 message SystemSummaryPacket{
     float classifier_version = 1;
     Location location = 2;
-    optional BuzzIntervalData buzz_snterval_data = 3;
+    optional BuzzIntervalData buzz_interval_data = 3;
     optional BuzzSummaryData buzz_summary_data = 4;
     optional SDCardState sd_card = 5;
     optional RadioPower radio_power = 6;
