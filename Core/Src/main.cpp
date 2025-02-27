@@ -177,11 +177,15 @@ FIL WavFile;                 // File object for WAV files
 DIR dir;                     // Directory object
 FIL file;                    // General file object
 FIL marker_file;             // Marker file object
+FIL buzz_file;             // Marker file object
+FIL gps_file;             // Marker file object
 FIL batteryFile;             // File object for battery data
 FIL fileWriteSyncFile;       // File object for file write synchronization
 UINT bytes_written;          // Number of bytes written
 DWORD free_clusters = 0;
 char SDPath[4];              // SD card logical drive path
+
+char bufferRowData[200] = { 0 };
 
 // Audio handling
 WAVE_FormatTypeDef WaveFormat;  // WAV file format data
@@ -189,6 +193,8 @@ uint8_t pHeaderBuff[44];        // Buffer for WAV file header
 uint32_t byteswritten = 0;      // Total bytes written to a file
 volatile uint32_t sampleCntr = 0; // Sample counter for audio processing
 static uint16_t audioSample[AUDIO_BUFFER_LEN] = { 0 }; // Audio sample buffer
+
+const char file_name_gps[20] = "gps.csv";
 
 volatile uint64_t buzz_counter_total = 0;
 volatile uint64_t buzz_counter_class_1 = 0;
@@ -283,7 +289,7 @@ static void WavUpdateHeaderSize(uint64_t totalBytesWritten); // Updates header s
 // Function prototypes related to GPS
 bool setTimepulseGPS(void);
 void disableTimepulseGPS(void);
-void grabFix(uint64_t timeout_ms);
+uint8_t grabFix(uint64_t timeout_ms);
 GPSFixStatus getGPSFix(GPSFix *currentFix);
 
 // RTC (Real-Time Clock) utility functions
@@ -5129,11 +5135,11 @@ void mainSystemTask(void *argument) {
 		//		}
 	}
 
-
+	loraPacket.payload.system_summary_packet.sd_card.total_space = ((SDFatFs.n_fatent - 2) * SDFatFs.csize / 2) / 1024;
+	infoPacket.payload.system_info_packet.sdcard_state.total_space = ((SDFatFs.n_fatent - 2) * SDFatFs.csize / 2) / 1024;
 	f_getfree("", &free_clusters, NULL);
 	infoPacket.payload.system_info_packet.sdcard_state.detected = true;
-	infoPacket.payload.system_info_packet.sdcard_state.space_remaining =
-			((uint64_t) free_clusters) * 256 * 512 / (1048576);
+	infoPacket.payload.system_info_packet.sdcard_state.space_remaining = (((free_clusters * SDFatFs.csize) / 2) / 1024);
 
 	// turn on GPS if not already on
 	if (systemPowerSupervisor.isGPSEnabled && !systemState.isGPSActive) {
@@ -5143,7 +5149,26 @@ void mainSystemTask(void *argument) {
 //		if(GPS_FIX_SUCCESS == getGPSFix(&currentFix, 30000)){
 //			updateRTC(currentFix.gps_epoch);
 //		}
-		grabFix(60000 * 10);
+		if(grabFix(60000 * 10)){
+			if (f_open(&gps_file, file_name_gps, FA_OPEN_APPEND | FA_WRITE | FA_READ)
+					== FR_OK) {
+				 sprintf(bufferRowData, "%d,%d,%lu,%lu\n",
+						 infoPacket.payload.system_info_packet.gps_location.lat =
+						 			currentFix.latitude,
+						infoPacket.payload.system_info_packet.gps_location.lon =
+									currentFix.longitude,
+						infoPacket.payload.system_info_packet.gps_location.elev =
+									currentFix.altitude,
+				        getEpoch());
+				f_write(&gps_file, bufferRowData, strlen(bufferRowData), NULL);
+				// Flush the cached data to the SD card
+				f_sync(&gps_file);
+				// Close the file
+				f_close(&gps_file);
+
+				memset(bufferRowData, 0, sizeof(bufferRowData));
+			}
+		}
 		standbyGPSMode();
 	}
 
@@ -5432,6 +5457,39 @@ void loraGPSTask(void *argument) {
 	uint64_t buzz_class_1 = 0;
 	uint64_t buzz_class_2 = 0;
 
+
+	if (check_file_exists(file_name_gps) == FR_NO_FILE) {
+		if (f_open(&gps_file, file_name_gps, FA_CREATE_NEW | FA_WRITE)
+				== FR_OK) {
+			strcpy(bufferRowData,
+					"latitude, longitude, elevation, epoch\n");
+			f_write(&gps_file, bufferRowData, strlen(bufferRowData), NULL);
+			// Flush the cached data to the SD card
+			f_sync(&gps_file);
+			// Close the file
+			f_close(&gps_file);
+
+			memset(bufferRowData, 0, sizeof(bufferRowData));
+		}
+	}
+
+
+	const char file_name_buzz[20] = "buzz.csv";
+	if (check_file_exists(file_name_buzz) == FR_NO_FILE) {
+		if (f_open(&buzz_file, file_name_buzz, FA_CREATE_NEW | FA_WRITE)
+				== FR_OK) {
+			strcpy(bufferRowData,
+					"total_buzz_count, total_species_1, total_species_2, epoch_last_detection, current_epoch\n");
+			f_write(&buzz_file, bufferRowData, strlen(bufferRowData), NULL);
+			// Flush the cached data to the SD card
+			f_sync(&buzz_file);
+			// Close the file
+			f_close(&buzz_file);
+
+			memset(bufferRowData, 0, sizeof(bufferRowData));
+		}
+	}
+
 	infoPacket.payload.system_info_packet.has_radio_power = true;
 
 //	loraPacket.payload.system_summary_packet.transmission_interval_m = LORA_SEND_INTERVAL_MINS;
@@ -5447,7 +5505,26 @@ void loraGPSTask(void *argument) {
 //		}
 		standbyGPSMode();
 
-		grabFix(60000);
+		if(grabFix(60000)){
+			if (f_open(&gps_file, file_name_gps, FA_OPEN_APPEND | FA_WRITE | FA_READ)
+					== FR_OK) {
+				 sprintf(bufferRowData, "%d,%d,%lu,%lu\n",
+						 infoPacket.payload.system_info_packet.gps_location.lat =
+						 			currentFix.latitude,
+						infoPacket.payload.system_info_packet.gps_location.lon =
+									currentFix.longitude,
+						infoPacket.payload.system_info_packet.gps_location.elev =
+									currentFix.altitude,
+				        getEpoch());
+				f_write(&gps_file, bufferRowData, strlen(bufferRowData), NULL);
+				// Flush the cached data to the SD card
+				f_sync(&gps_file);
+				// Close the file
+				f_close(&gps_file);
+
+				memset(bufferRowData, 0, sizeof(bufferRowData));
+			}
+		}
 	}
 
 //	// after initialization
@@ -5516,7 +5593,26 @@ void loraGPSTask(void *argument) {
 //		}
 
 		if ((flag & GPS_GRAB_SAMPLE) == GPS_GRAB_SAMPLE) {
-			grabFix(60000);
+			if(grabFix(60000)){
+				if (f_open(&gps_file, file_name_gps, FA_OPEN_APPEND | FA_WRITE | FA_READ)
+						== FR_OK) {
+					 sprintf(bufferRowData, "%d,%d,%lu,%lu\n",
+							 infoPacket.payload.system_info_packet.gps_location.lat =
+							 			currentFix.latitude,
+							infoPacket.payload.system_info_packet.gps_location.lon =
+										currentFix.longitude,
+							infoPacket.payload.system_info_packet.gps_location.elev =
+										currentFix.altitude,
+					        getEpoch());
+					f_write(&gps_file, bufferRowData, strlen(bufferRowData), NULL);
+					// Flush the cached data to the SD card
+					f_sync(&gps_file);
+					// Close the file
+					f_close(&gps_file);
+
+					memset(bufferRowData, 0, sizeof(bufferRowData));
+				}
+			}
 
 //			setTimepulseGPS();
 //			HAL_NVIC_SetPriority(EXTI1_IRQn, 5, 0);
@@ -5561,7 +5657,8 @@ void loraGPSTask(void *argument) {
 				loraPacket.payload.system_summary_packet.has_sd_card = true;
 				loraPacket.payload.system_summary_packet.sd_card.detected = true;
 				f_getfree("", &free_clusters, NULL);
-				loraPacket.payload.system_summary_packet.sd_card.space_remaining = ((uint64_t) free_clusters) * 256 * 512 / (1048576);
+
+				loraPacket.payload.system_summary_packet.sd_card.space_remaining = (((free_clusters * SDFatFs.csize) / 2) / 1024);
 				infoPacket.payload.system_info_packet.sdcard_state.space_remaining = loraPacket.payload.system_summary_packet.sd_card.space_remaining;
 				// WARNING: calculation doesnt work for 24-bit
 				infoPacket.payload.system_info_packet.sdcard_state.estimated_remaining_recording_time =
@@ -5584,10 +5681,18 @@ void loraGPSTask(void *argument) {
 			loraPacket.payload.system_summary_packet.buzz_interval_data.has_species_1_count = true;
 			loraPacket.payload.system_summary_packet.buzz_interval_data.has_species_2_count = true;
 			loraPacket.payload.system_summary_packet.buzz_interval_data.interval_epoch = getEpoch();
-			loraPacket.payload.system_summary_packet.buzz_interval_data.buzz_count = buzz_counter_total - buzz_total;
-			loraPacket.payload.system_summary_packet.buzz_interval_data.species_1_count = buzz_counter_class_1 - buzz_class_1;
-			loraPacket.payload.system_summary_packet.buzz_interval_data.species_2_count = buzz_counter_class_2 - buzz_class_2;
+			loraPacket.payload.system_summary_packet.buzz_interval_data.last_detection_epoch = infoPacket.payload.system_info_packet.buzz_summary_data.last_detection_epoch;
+			loraPacket.payload.system_summary_packet.buzz_interval_data.buzz_count = infoPacket.payload.system_info_packet.buzz_summary_data.buzz_counter - buzz_total;
+			loraPacket.payload.system_summary_packet.buzz_interval_data.species_1_count = infoPacket.payload.system_info_packet.buzz_summary_data.species_1_count - buzz_class_1;
+			loraPacket.payload.system_summary_packet.buzz_interval_data.species_2_count = infoPacket.payload.system_info_packet.buzz_summary_data.species_2_count - buzz_class_2;
 			loraPacket.payload.system_summary_packet.buzz_interval_data.transmission_interval_m = LORA_SEND_INTERVAL_MINS;
+//			loraPacket.payload.system_summary_packet.has_buzz_summary_data = true;
+//			loraPacket.payload.system_summary_packet.buzz_summary_data.last_detection_epoch = infoPacket.payload.system_info_packet.buzz_summary_data.last_detection_epoch;
+//			loraPacket.payload.system_summary_packet.buzz_summary_data.buzz_counter = infoPacket.payload.system_info_packet.buzz_summary_data.buzz_counter;
+//			loraPacket.payload.system_summary_packet.buzz_summary_data.has_species_1_count = true;
+//			loraPacket.payload.system_summary_packet.buzz_summary_data.has_species_2_count = true;
+//			loraPacket.payload.system_summary_packet.buzz_summary_data.species_1_count = infoPacket.payload.system_info_packet.buzz_summary_data.species_1_count;
+//			loraPacket.payload.system_summary_packet.buzz_summary_data.species_2_count = infoPacket.payload.system_info_packet.buzz_summary_data.species_2_count;
 
 			infoPacket.payload.system_info_packet.has_buzz_interval_data = true;
 			memcpy(&infoPacket.payload.system_info_packet.buzz_interval_data,
@@ -5600,6 +5705,24 @@ void loraGPSTask(void *argument) {
 			buzz_total = infoPacket.payload.system_info_packet.buzz_summary_data.buzz_counter;
 			buzz_class_1 = infoPacket.payload.system_info_packet.buzz_summary_data.species_1_count;
 			buzz_class_2 = infoPacket.payload.system_info_packet.buzz_summary_data.species_2_count;
+
+			if (f_open(&buzz_file, file_name_buzz, FA_OPEN_APPEND | FA_WRITE | FA_READ)
+					== FR_OK) {
+
+				 sprintf(bufferRowData, "%lu,%lu,%lu,%lu,%lu\n",
+				       infoPacket.payload.system_info_packet.buzz_summary_data.buzz_counter,
+				       infoPacket.payload.system_info_packet.buzz_summary_data.species_1_count,
+				       infoPacket.payload.system_info_packet.buzz_summary_data.species_2_count,
+				       infoPacket.payload.system_info_packet.buzz_summary_data.last_detection_epoch,
+				        getEpoch());
+				f_write(&buzz_file, bufferRowData, strlen(bufferRowData), NULL);
+				// Flush the cached data to the SD card
+				f_sync(&buzz_file);
+				// Close the file
+				f_close(&buzz_file);
+
+				memset(bufferRowData, 0, sizeof(bufferRowData));
+			}
 
 			sendLoRa_pkt(&loraPacket);
 		}
@@ -5656,7 +5779,8 @@ void loraGPSTask(void *argument) {
 	}
 }
 
-void grabFix(uint64_t timeout_ms) {
+uint8_t grabFix(uint64_t timeout_ms) {
+	uint8_t returnVar = 0;
 	wakeupGPS();
 
 	osDelay(100);
@@ -5678,6 +5802,7 @@ void grabFix(uint64_t timeout_ms) {
 			updateRTC(currentFix.gps_epoch);
 
 			osMutexRelease(messageI2C1_LockHandle);
+			returnVar = 1;
 			break;
 		} else {
 			osMutexRelease(messageI2C1_LockHandle);
@@ -5686,6 +5811,7 @@ void grabFix(uint64_t timeout_ms) {
 	}
 	setLED_Green(0);
 	standbyGPSMode();
+	return returnVar;
 }
 
 void sleepModeLoraRadio(sx126x_sleep_cfgs_t sleep_cfgs) {
@@ -6078,6 +6204,10 @@ void triggerMarkTask(void *argument) {
 	const char file_name[20] = "marker.csv";
 	uint32_t idx_tracker = 0;
 
+	infoPacket.payload.system_info_packet.has_buzz_summary_data = true;
+	infoPacket.payload.system_info_packet.buzz_summary_data.has_species_1_count = true;
+	infoPacket.payload.system_info_packet.buzz_summary_data.has_species_2_count = true;
+
 	size_t buffer_size;
 	char result[MAX_MARK_SIZE] = { 0 };
 
@@ -6226,7 +6356,6 @@ void triggerMarkTask(void *argument) {
 			}
 
 			if ((flag & BEE_1_ALERT) == BEE_1_ALERT) {
-				infoPacket.payload.system_info_packet.has_buzz_summary_data = true;
 				infoPacket.payload.system_info_packet.buzz_summary_data.buzz_counter++;
 				infoPacket.payload.system_info_packet.buzz_summary_data.species_1_count++;
 				infoPacket.payload.system_info_packet.buzz_summary_data.last_detection_epoch = getEpoch();
@@ -6239,7 +6368,6 @@ void triggerMarkTask(void *argument) {
 			}
 
 			if ((flag & BEE_2_ALERT) == BEE_2_ALERT) {
-				infoPacket.payload.system_info_packet.has_buzz_summary_data = true;
 				infoPacket.payload.system_info_packet.buzz_summary_data.buzz_counter++;
 				infoPacket.payload.system_info_packet.buzz_summary_data.species_2_count++;
 				infoPacket.payload.system_info_packet.buzz_summary_data.last_detection_epoch = getEpoch();

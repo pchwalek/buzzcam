@@ -59,7 +59,7 @@ osThreadId_t configThreadId;
 
 const osThreadAttr_t mainSystemTask_attributes = { .name = "mainSystemTask", .attr_bits =
 		osThreadDetached, .cb_mem = NULL, .cb_size = 0, .stack_mem = NULL,
-		.stack_size = 512*4, .priority = (osPriority_t) osPriorityNormal,
+		.stack_size = 512*5, .priority = (osPriority_t) osPriorityNormal,
 		.tz_module = 0, .reserved = 0 };
 osThreadId_t mainSystemThreadId;
 
@@ -118,7 +118,7 @@ const osThreadAttr_t chirpTask_attributes = { .name = "chirpTask",
 
 const osThreadAttr_t loraGPSTask_attributes = { .name = "loraGPSTask",
 		.attr_bits = osThreadDetached, .cb_mem = NULL, .cb_size = 0,
-		.stack_mem = NULL, .stack_size = 512*3, .priority =
+		.stack_mem = NULL, .stack_size = 512*4, .priority =
 				(osPriority_t) osPriorityNormal, .tz_module = 0, .reserved = 0 };
 
 
