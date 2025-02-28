@@ -645,7 +645,7 @@ int main(void) {
 
 	infoPacket.payload.system_info_packet.has_buzz_summary_data = true;
 	infoPacket.payload.system_info_packet.buzz_summary_data.classifier_version = 1.0;
-
+	loraPacket.payload.system_summary_packet.classifier_version = infoPacket.payload.system_info_packet.buzz_summary_data.classifier_version;
 
 	if (systemPowerSupervisor.isMAX78000Enabled) {
 		systemState.isMAX78000Active = true;
