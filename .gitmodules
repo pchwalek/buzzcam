@@ -4,6 +4,3 @@
 [submodule "tflac"]
 	path = tflac
 	url = git@github.com:jprjr/tflac.git
-[submodule "Middlewares/SparkFun_u-blox_GNSS_v3"]
-	path = Middlewares/SparkFun_u-blox_GNSS_v3
-	url = git@github.com:sparkfun/SparkFun_u-blox_GNSS_v3.git
