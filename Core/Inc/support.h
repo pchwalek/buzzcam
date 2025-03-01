@@ -10,6 +10,7 @@ extern "C" {
 #define SIMULATE_GPS 	1
 
 #define LORA_SEND_INTERVAL_MINS 1
+#define GPS_FIX_INTERVAL_MINS	1440
 
 /*     LoRa Settings     */
 #define MAX_PWR			3 // 22 dBm

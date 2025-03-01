@@ -196,6 +196,8 @@ static uint16_t audioSample[AUDIO_BUFFER_LEN] = { 0 }; // Audio sample buffer
 
 const char file_name_gps[20] = "gps.csv";
 
+volatile uint64_t loRaGPSRTCAlarmIdx = 0;
+
 volatile uint64_t buzz_counter_total = 0;
 volatile uint64_t buzz_counter_class_1 = 0;
 volatile uint64_t buzz_counter_class_2 = 0;
@@ -291,6 +293,7 @@ bool setTimepulseGPS(void);
 void disableTimepulseGPS(void);
 uint8_t grabFix(uint64_t timeout_ms);
 GPSFixStatus getGPSFix(GPSFix *currentFix);
+void setLoraGPSRTCAlarm();
 
 // RTC (Real-Time Clock) utility functions
 void RTC_FromEpoch(time_t epoch, RTC_TimeTypeDef *time, RTC_DateTypeDef *date); // Converts epoch to RTC time and date
@@ -5554,19 +5557,7 @@ void loraGPSTask(void *argument) {
 		if(!NVIC_GetEnableIRQ(EXTI9_5_IRQn)) HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 		//todo: is LoRa normally in low power mode if not doing anything?
 
-		RTC_AlarmTypeDef sAlarm = { 0 };
-		sAlarm.AlarmTime.Hours = 0;
-		sAlarm.AlarmTime.Minutes = 0;
-		sAlarm.AlarmTime.Seconds = 0;
-		sAlarm.AlarmMask = RTC_ALARMMASK_DATEWEEKDAY | RTC_ALARMMASK_HOURS | RTC_ALARMMASK_MINUTES;
-		sAlarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
-		sAlarm.Alarm = RTC_ALARM_B;
-		if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN) != HAL_OK) {
-			Error_Handler();
-		}
 
-		HAL_NVIC_SetPriority(RTC_Alarm_IRQn, 5, 0);
-		HAL_NVIC_EnableIRQ(RTC_Alarm_IRQn);
 		systemState.isLoRaActive = true;
 	}
 	// disable LoRa
@@ -5582,6 +5573,8 @@ void loraGPSTask(void *argument) {
 		HAL_NVIC_DisableIRQ(RTC_Alarm_IRQn);
 		Control_Secondary_Power(false);
 	}
+
+	setLoraGPSRTCAlarm();
 
 	while (1) {
 		flag = osThreadFlagsWait(0x0001U | TERMINATE_EVENT |
@@ -5686,13 +5679,13 @@ void loraGPSTask(void *argument) {
 			loraPacket.payload.system_summary_packet.buzz_interval_data.species_1_count = infoPacket.payload.system_info_packet.buzz_summary_data.species_1_count - buzz_class_1;
 			loraPacket.payload.system_summary_packet.buzz_interval_data.species_2_count = infoPacket.payload.system_info_packet.buzz_summary_data.species_2_count - buzz_class_2;
 			loraPacket.payload.system_summary_packet.buzz_interval_data.transmission_interval_m = LORA_SEND_INTERVAL_MINS;
-//			loraPacket.payload.system_summary_packet.has_buzz_summary_data = true;
-//			loraPacket.payload.system_summary_packet.buzz_summary_data.last_detection_epoch = infoPacket.payload.system_info_packet.buzz_summary_data.last_detection_epoch;
-//			loraPacket.payload.system_summary_packet.buzz_summary_data.buzz_counter = infoPacket.payload.system_info_packet.buzz_summary_data.buzz_counter;
-//			loraPacket.payload.system_summary_packet.buzz_summary_data.has_species_1_count = true;
-//			loraPacket.payload.system_summary_packet.buzz_summary_data.has_species_2_count = true;
-//			loraPacket.payload.system_summary_packet.buzz_summary_data.species_1_count = infoPacket.payload.system_info_packet.buzz_summary_data.species_1_count;
-//			loraPacket.payload.system_summary_packet.buzz_summary_data.species_2_count = infoPacket.payload.system_info_packet.buzz_summary_data.species_2_count;
+			loraPacket.payload.system_summary_packet.has_buzz_summary_data = true;
+			loraPacket.payload.system_summary_packet.buzz_summary_data.last_detection_epoch = infoPacket.payload.system_info_packet.buzz_summary_data.last_detection_epoch;
+			loraPacket.payload.system_summary_packet.buzz_summary_data.buzz_counter = infoPacket.payload.system_info_packet.buzz_summary_data.buzz_counter;
+			loraPacket.payload.system_summary_packet.buzz_summary_data.has_species_1_count = true;
+			loraPacket.payload.system_summary_packet.buzz_summary_data.has_species_2_count = true;
+			loraPacket.payload.system_summary_packet.buzz_summary_data.species_1_count = infoPacket.payload.system_info_packet.buzz_summary_data.species_1_count;
+			loraPacket.payload.system_summary_packet.buzz_summary_data.species_2_count = infoPacket.payload.system_info_packet.buzz_summary_data.species_2_count;
 
 			infoPacket.payload.system_info_packet.has_buzz_interval_data = true;
 			memcpy(&infoPacket.payload.system_info_packet.buzz_interval_data,
@@ -5774,9 +5767,29 @@ void loraGPSTask(void *argument) {
 
 			HAL_RTC_DeactivateAlarm(&hrtc, RTC_ALARM_A);
 
+			loRaGPSRTCAlarmIdx = 0;
+
 			vTaskDelete( NULL);
 		}
 	}
+}
+
+void setLoraGPSRTCAlarm(){
+	RTC_AlarmTypeDef sAlarm = { 0 };
+	sAlarm.AlarmTime.Hours = 0;
+	sAlarm.AlarmTime.Minutes = 0;
+	sAlarm.AlarmTime.Seconds = 0;
+	sAlarm.AlarmMask = RTC_ALARMMASK_DATEWEEKDAY | RTC_ALARMMASK_HOURS | RTC_ALARMMASK_MINUTES;
+	sAlarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
+	sAlarm.Alarm = RTC_ALARM_B;
+	if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN) != HAL_OK) {
+		Error_Handler();
+	}
+
+	loRaGPSRTCAlarmIdx = 0;
+
+	HAL_NVIC_SetPriority(RTC_Alarm_IRQn, 5, 0);
+	HAL_NVIC_EnableIRQ(RTC_Alarm_IRQn);
 }
 
 uint8_t grabFix(uint64_t timeout_ms) {
@@ -5838,7 +5851,7 @@ void configLoraRadio(void) {
 	sx126x_pkt_params_lora_t sx126x_pkt_params_lora;
 	sx126x_pkt_params_lora.preamble_len_in_symb = 13;
 	sx126x_pkt_params_lora.header_type = SX126X_LORA_PKT_EXPLICIT;
-	sx126x_pkt_params_lora.pld_len_in_bytes = 128; // max is 255 bytes
+	sx126x_pkt_params_lora.pld_len_in_bytes = 200; // max is 255 bytes
 	sx126x_pkt_params_lora.crc_is_on = 1;
 	sx126x_pkt_params_lora.invert_iq_is_on = 0;
 	if (SX126X_STATUS_OK
@@ -7295,8 +7308,15 @@ void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc) {
 
 void HAL_RTCEx_AlarmBEventCallback(RTC_HandleTypeDef *hrtc) {
 
-	osThreadFlagsSet(loraGPSId, LORA_SEND_PKT);
+	loRaGPSRTCAlarmIdx++;
 
+	if((loRaGPSRTCAlarmIdx % LORA_SEND_INTERVAL_MINS) == 0){
+		osThreadFlagsSet(loraGPSId, LORA_SEND_PKT);
+	}
+
+	if((loRaGPSRTCAlarmIdx % GPS_FIX_INTERVAL_MINS) == 0){
+		osThreadFlagsSet(loraGPSId, GPS_GRAB_SAMPLE);
+	}
 }
 
 /* USER CODE END 4 */
