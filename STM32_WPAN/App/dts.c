@@ -203,7 +203,7 @@ static SVCCTL_EvtAckStatus_t DTS_Event_Handler(void *Event) {
 				osThreadState_t state;
 				if(status){
 					if(rxPacket.header.epoch > 1707866274000){
-						updateRTC_MS(rxPacket.header.epoch);
+//						updateRTC_MS(rxPacket.header.epoch); // superseded now by GPS
 					}
 
 					// update system

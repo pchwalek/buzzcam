@@ -1312,7 +1312,7 @@ static void APP_THREAD_CoapConfigHandler(void *pContext, otMessage *pMessage,
 
 						/* update internal timestamp if a valid timestamp received */
 						if(rxPacket.header.epoch > 1707866274000){
-							updateRTC_MS(rxPacket.header.epoch);
+//							updateRTC_MS(rxPacket.header.epoch); //superseded now by GPS
 						}
 
 

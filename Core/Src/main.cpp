@@ -196,7 +196,7 @@ static uint16_t audioSample[AUDIO_BUFFER_LEN] = { 0 }; // Audio sample buffer
 
 const char file_name_gps[20] = "gps.csv";
 
-volatile uint64_t loRaGPSRTCAlarmIdx = 0;
+volatile int64_t loRaGPSRTCAlarmIdx = -1;
 
 volatile uint64_t buzz_counter_total = 0;
 volatile uint64_t buzz_counter_class_1 = 0;
@@ -294,6 +294,7 @@ void disableTimepulseGPS(void);
 uint8_t grabFix(uint64_t timeout_ms);
 GPSFixStatus getGPSFix(GPSFix *currentFix);
 void setLoraGPSRTCAlarm();
+void setLoraGPSRTCAlarmWithOffset(uint8_t offsetMinutes, uint8_t offsetSeconds);
 
 // RTC (Real-Time Clock) utility functions
 void RTC_FromEpoch(time_t epoch, RTC_TimeTypeDef *time, RTC_DateTypeDef *date); // Converts epoch to RTC time and date
@@ -574,12 +575,13 @@ int main(void) {
 		 */
 	}
 
-	if (systemPowerSupervisor.isSDEnabled) {
-		systemState.SDCardState = SD1_EN;
-		Control_SDCard_Power(systemState.SDCardState);
-	}
-
-
+//	if (systemPowerSupervisor.isSDEnabled) {
+//		systemState.SDCardState = SD1_EN;
+//		Control_SDCard_Power(systemState.SDCardState);
+//	}
+	systemPowerSupervisor.isSDEnabled = true;
+	systemState.SDCardState = SD1_EN;
+	Control_SDCard_Power(systemState.SDCardState);
 
 //	while(1);
 
@@ -1107,21 +1109,21 @@ static void MX_RTC_Init(void) {
 
   /** Enable the Alarm A
   */
-  sAlarm.AlarmTime.Hours = 0x0;
-  sAlarm.AlarmTime.Minutes = 0x0;
-  sAlarm.AlarmTime.Seconds = 0x0;
-  sAlarm.AlarmTime.SubSeconds = 0x0;
-  sAlarm.AlarmTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
-  sAlarm.AlarmTime.StoreOperation = RTC_STOREOPERATION_SET;
-  sAlarm.AlarmMask = RTC_ALARMMASK_NONE;
-  sAlarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
-  sAlarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_DATE;
-  sAlarm.AlarmDateWeekDay = 0x1;
-  sAlarm.Alarm = RTC_ALARM_A;
-  if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BCD) != HAL_OK)
-  {
-    Error_Handler();
-  }
+//  sAlarm.AlarmTime.Hours = 0x0;
+//  sAlarm.AlarmTime.Minutes = 0x0;
+//  sAlarm.AlarmTime.Seconds = 0x0;
+//  sAlarm.AlarmTime.SubSeconds = 0x0;
+//  sAlarm.AlarmTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+//  sAlarm.AlarmTime.StoreOperation = RTC_STOREOPERATION_SET;
+//  sAlarm.AlarmMask = RTC_ALARMMASK_NONE;
+//  sAlarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
+//  sAlarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_DATE;
+//  sAlarm.AlarmDateWeekDay = 0x1;
+//  sAlarm.Alarm = RTC_ALARM_A;
+//  if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BCD) != HAL_OK)
+//  {
+//    Error_Handler();
+//  }
 
   /** Enable the Alarm B
   */
@@ -2688,9 +2690,11 @@ void turnOnGPSandInit() {
 	}
 
 	myGNSS.setI2COutput(COM_TYPE_UBX); //Set the I2C port to output UBX only (turn off NMEA noise)
-
+	myGNSS.setDynamicModel(DYN_MODEL_STATIONARY);
+	myGNSS.setDGNSSConfiguration(SFE_UBLOX_DGNSS_MODE_FIXED);
 	myGNSS.setNavigationFrequency(4);  //Produce four solutions per second
 	myGNSS.setAutoPVT(true); //Tell the GPS to "send" each solution
+
 	myGNSS.saveConfiguration();     //Save the current settings to flash and BBR
 
 	osMutexRelease(messageI2C1_LockHandle);
@@ -2793,24 +2797,24 @@ GPSFixStatus getGPSFix(GPSFix *currentFix) {
 		//				Error_Handler();
 		//			}
 		//			currentFix->gps_epoch = myGNSS.getUnixEpoch();
-		//			fixType = myGNSS.getFixType();
-		//			// if fix is 3D, lat, lon, and altitude are available
-		//		    if(fixType == 3) {  // 3D fi
-		currentFix->latitude = myGNSS.getLatitude();
+		uint8_t fixType = myGNSS.getFixType();
+		// if fix is 3D, lat, lon, and altitude are available
+		if(fixType == 3) {  // 3D fix
+			currentFix->latitude = myGNSS.getLatitude();
 
-		currentFix->longitude = myGNSS.getLongitude();
+			currentFix->longitude = myGNSS.getLongitude();
+			if (currentFix->longitude == currentFix->latitude) {
+				return GPS_NO_FIX;
+			}
 
-		if (currentFix->longitude == currentFix->latitude) {
-			return GPS_NO_FIX;
+			currentFix->gps_epoch = myGNSS.getUnixEpoch();
+
+			currentFix->altitude = myGNSS.getAltitudeMSL(); // Altitude above Mean Sea Level
+
+			currentFix->fixType = myGNSS.getFixType();
+
+			return GPS_FIX_SUCCESS;
 		}
-
-		currentFix->gps_epoch = myGNSS.getUnixEpoch();
-
-		currentFix->altitude = myGNSS.getAltitudeMSL(); // Altitude above Mean Sea Level
-
-		currentFix->fixType = myGNSS.getFixType();
-
-		return GPS_FIX_SUCCESS;
 
 		//		else if(fixType != 0){
 		//		    	return GPS_FIX_TIMEOUT;
@@ -5129,13 +5133,19 @@ void mainSystemTask(void *argument) {
 	uint8_t scheduleRun = 0;
 
 	res = f_mount(&SDFatFs, "", 1);
-	if (res != FR_OK) {
-		//		if(res == FR_NOT_READY){
-		//
-		//		}else{
+	uint32_t retrySD = 0;
+	while(res == FR_NOT_READY) {
+		retrySD++;
+		osDelay(500);
 
+		if(retrySD > 10){
+			break;
+		}
+
+	}
+
+	if(res != FR_OK){
 		Error_Handler();
-		//		}
 	}
 
 	loraPacket.payload.system_summary_packet.sd_card.total_space = ((SDFatFs.n_fatent - 2) * SDFatFs.csize / 2) / 1024;
@@ -5450,6 +5460,28 @@ void sendSlavesTimestamp(void *argument) {
 	sendTimeToNodes();
 }
 
+#define DEVICE_COUNT		10
+uint32_t UID_Devices[DEVICE_COUNT] = {0x01add962, 0x01add4e2, 0x01adc7a3, 0x01ade447, 0x01ade23c, 0x01adc925, 0x01add8de, 0x01add933, 0x01adddf5, 0x01adc352};
+
+void getRTCOffsets(uint8_t *offsetMinutes, uint8_t *offsetSeconds){
+	uint32_t uid = LL_FLASH_GetUDN();
+
+	for(uint8_t idx = 0; idx<DEVICE_COUNT; idx++){
+		if(UID_Devices[idx] == uid){
+
+			uint16_t totalOffsetSeconds = 30 * idx;
+
+			*offsetSeconds = totalOffsetSeconds % 60;
+			*offsetMinutes = (totalOffsetSeconds / 60) % 60;
+			return;
+		}
+	}
+
+	*offsetMinutes = 0;
+	*offsetSeconds = 0;
+	return;
+}
+
 void loraGPSTask(void *argument) {
 	uint8_t loraPktRetry = 0;
 	uint32_t flag;
@@ -5494,6 +5526,8 @@ void loraGPSTask(void *argument) {
 	}
 
 	infoPacket.payload.system_info_packet.has_radio_power = true;
+
+//	Packet.payload.system_summary_packet.has_radio_power = true;
 
 //	loraPacket.payload.system_summary_packet.transmission_interval_m = LORA_SEND_INTERVAL_MINS;
 
@@ -5574,7 +5608,9 @@ void loraGPSTask(void *argument) {
 		Control_Secondary_Power(false);
 	}
 
-	setLoraGPSRTCAlarm();
+	uint8_t offsetMinutes, offsetSeconds;
+	getRTCOffsets(&offsetMinutes, &offsetSeconds);
+	setLoraGPSRTCAlarmWithOffset(offsetMinutes, offsetSeconds);
 
 	while (1) {
 		flag = osThreadFlagsWait(0x0001U | TERMINATE_EVENT |
@@ -5695,9 +5731,9 @@ void loraGPSTask(void *argument) {
 			infoPacket.payload.system_info_packet.buzz_summary_data.buzz_counter++;
 							infoPacket.payload.system_info_packet.buzz_summary_data.species_1_count++;
 
-			buzz_total = infoPacket.payload.system_info_packet.buzz_summary_data.buzz_counter;
-			buzz_class_1 = infoPacket.payload.system_info_packet.buzz_summary_data.species_1_count;
-			buzz_class_2 = infoPacket.payload.system_info_packet.buzz_summary_data.species_2_count;
+			buzz_total = loraPacket.payload.system_summary_packet.buzz_summary_data.buzz_counter;
+			buzz_class_1 = loraPacket.payload.system_summary_packet.buzz_summary_data.species_1_count;
+			buzz_class_2 = loraPacket.payload.system_summary_packet.buzz_summary_data.species_2_count;
 
 			if (f_open(&buzz_file, file_name_buzz, FA_OPEN_APPEND | FA_WRITE | FA_READ)
 					== FR_OK) {
@@ -5790,6 +5826,45 @@ void setLoraGPSRTCAlarm(){
 
 	HAL_NVIC_SetPriority(RTC_Alarm_IRQn, 5, 0);
 	HAL_NVIC_EnableIRQ(RTC_Alarm_IRQn);
+}
+
+void setLoraGPSRTCAlarmWithOffset(uint8_t offsetMinutes, uint8_t offsetSeconds) {
+    RTC_TimeTypeDef currentTime;
+    HAL_RTC_GetTime(&hrtc, &currentTime, RTC_FORMAT_BIN);
+
+    RTC_AlarmTypeDef sAlarm = {0};
+
+    // Calculate the initial alarm time
+    uint8_t initialMinute;
+    if((currentTime.Minutes % LORA_SEND_INTERVAL_MINS) != 0){
+		initialMinute = (currentTime.Minutes + (LORA_SEND_INTERVAL_MINS - (currentTime.Minutes % LORA_SEND_INTERVAL_MINS)) + offsetMinutes);
+    }else{
+		initialMinute = ((currentTime.Minutes + LORA_SEND_INTERVAL_MINS) + offsetMinutes + 1);
+    }
+
+	uint8_t initialHour = currentTime.Hours;
+	uint8_t initialSecond = (offsetSeconds) % 60;
+
+    // Adjust the hour if adding minutes rolls over to the next hour
+    if (initialMinute >= 60) {
+    	initialMinute = initialMinute % 60;
+        initialHour = (initialHour + 1) % 24;
+    }
+
+    // Set the alarm for the calculated time
+    sAlarm.AlarmTime.Hours = initialHour;
+    sAlarm.AlarmTime.Minutes = initialMinute;
+    sAlarm.AlarmTime.Seconds = initialSecond;
+    sAlarm.AlarmMask = RTC_ALARMMASK_DATEWEEKDAY; // Trigger at the specified hour and minute and second
+    sAlarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
+    sAlarm.Alarm = RTC_ALARM_B;
+
+    if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN) != HAL_OK) {
+        Error_Handler();
+    }
+
+    HAL_NVIC_SetPriority(RTC_Alarm_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(RTC_Alarm_IRQn);
 }
 
 uint8_t grabFix(uint64_t timeout_ms) {
@@ -7302,19 +7377,43 @@ uint64_t RTC_ToEpochMS(RTC_TimeTypeDef *time, RTC_DateTypeDef *date) {
 }
 
 void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc) {
-//	osThreadFlagsSet(mainSystemThreadId, UPDATE_EVENT);
-
+	osThreadFlagsSet(mainSystemThreadId, UPDATE_EVENT);
 }
 
 void HAL_RTCEx_AlarmBEventCallback(RTC_HandleTypeDef *hrtc) {
 
 	loRaGPSRTCAlarmIdx++;
 
-	if((loRaGPSRTCAlarmIdx % LORA_SEND_INTERVAL_MINS) == 0){
-		osThreadFlagsSet(loraGPSId, LORA_SEND_PKT);
+	RTC_AlarmTypeDef sAlarm = {0};
+	RTC_TimeTypeDef currentTime;
+	HAL_RTC_GetTime(hrtc, &currentTime, RTC_FORMAT_BIN);
+
+	// Calculate the next alarm time for 1-minute intervals with the same offset
+	uint8_t nextMinute = currentTime.Minutes + LORA_SEND_INTERVAL_MINS;
+	uint8_t nextHour = currentTime.Hours;
+
+	if (nextMinute >= 60) {
+		nextMinute -= 60;
+		nextHour = (nextHour + 1) % 24;
 	}
 
-	if((loRaGPSRTCAlarmIdx % GPS_FIX_INTERVAL_MINS) == 0){
+	// Set the next alarm
+	sAlarm.AlarmTime.Hours = nextHour;
+	sAlarm.AlarmTime.Minutes = nextMinute;
+//	sAlarm.AlarmTime.Seconds = currentTime.Seconds;
+	sAlarm.AlarmMask = RTC_ALARMMASK_DATEWEEKDAY;
+	sAlarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
+	sAlarm.Alarm = RTC_ALARM_B;
+
+	if (HAL_RTC_SetAlarm_IT(hrtc, &sAlarm, RTC_FORMAT_BIN) != HAL_OK) {
+		Error_Handler();
+	}
+
+//	if((loRaGPSRTCAlarmIdx % LORA_SEND_INTERVAL_MINS) == 0){
+	osThreadFlagsSet(loraGPSId, LORA_SEND_PKT);
+//	}
+
+	if((loRaGPSRTCAlarmIdx % GPS_FIX_INTERVAL_MULTIPLE_OF_LORA) == 0){
 		osThreadFlagsSet(loraGPSId, GPS_GRAB_SAMPLE);
 	}
 }

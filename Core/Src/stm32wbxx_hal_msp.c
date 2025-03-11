@@ -707,7 +707,6 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim)
 
   /* USER CODE END TIM16_MspPostInit 1 */
   }
-
 }
 /**
 * @brief TIM_PWM MSP De-Initialization
