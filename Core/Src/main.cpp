@@ -6400,22 +6400,35 @@ void triggerMarkTask(void *argument) {
 
 			/* save to file */
 			UINT bytes_written;
-			res = f_open(&marker_file, file_name,
-					FA_OPEN_APPEND | FA_WRITE | FA_READ);
+			res == FR_INVALID_PARAMETER;
+			uint8_t retryAttempts = 0;
+			while(res != FR_OK){
+				res = f_open(&marker_file, file_name,
+						FA_OPEN_APPEND | FA_WRITE | FA_READ);
+				retryAttempts++;
+				if(res != FR_OK){
+					if(retryAttempts > 10){
+						break;
+					}
+					osDelay(50);
+				}
+			}
 			if (res == FR_OK) {
 				res = f_write(&marker_file, result, strlen(result),
 						&bytes_written);
-			} else
-				Error_Handler();
-			if (res == FR_OK) {
+
 				// Close the file
 				f_close(&marker_file);
 
 				// Flush the cached data to the SD card
 				f_sync(&marker_file);
-			} else
-				Error_Handler();
 
+			} else{
+				setLED_Red(1000);
+				osDelay(500);
+				setLED_Red(0);
+				osDelay(500);
+			}
 			/* update FRAM */
 			writeSystemInfoToFRAM();
 
