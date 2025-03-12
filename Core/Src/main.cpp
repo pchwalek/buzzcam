@@ -635,8 +635,8 @@ int main(void) {
 	Control_Microphone_FRAM_Power(true);
 
 	HAL_Delay(10);
-
 	readSystemStateToFRAM();
+//	writeDefaultConfig();
 	if (infoPacket.header.system_uid != LL_FLASH_GetUDN()) {
 		writeDefaultConfig();
 	} else {
@@ -5165,14 +5165,17 @@ void mainSystemTask(void *argument) {
 		if(grabFix(60000 * 10)){
 			if (f_open(&gps_file, file_name_gps, FA_OPEN_APPEND | FA_WRITE | FA_READ)
 					== FR_OK) {
-				 sprintf(bufferRowData, "%d,%d,%lu,%lu\n",
-						 infoPacket.payload.system_info_packet.gps_location.lat =
-						 			currentFix.latitude,
-						infoPacket.payload.system_info_packet.gps_location.lon =
-									currentFix.longitude,
-						infoPacket.payload.system_info_packet.gps_location.elev =
-									currentFix.altitude,
-				        getEpoch());
+				uint32_t idx_tracker = 0;
+				idx_tracker +=
+						uint64_to_str(getEpoch(),
+								bufferRowData);
+
+				bufferRowData[idx_tracker++] = ',';
+
+				 sprintf(&bufferRowData[idx_tracker], "%.3f,%.3f,%.2f,\n",
+						 infoPacket.payload.system_info_packet.gps_location.lat,
+						infoPacket.payload.system_info_packet.gps_location.lon,
+						infoPacket.payload.system_info_packet.gps_location.elev);
 				f_write(&gps_file, bufferRowData, strlen(bufferRowData), NULL);
 				// Flush the cached data to the SD card
 				f_sync(&gps_file);
@@ -5497,7 +5500,7 @@ void loraGPSTask(void *argument) {
 		if (f_open(&gps_file, file_name_gps, FA_CREATE_NEW | FA_WRITE)
 				== FR_OK) {
 			strcpy(bufferRowData,
-					"latitude, longitude, elevation, epoch\n");
+					"epoch, latitude, longitude, elevation\n");
 			f_write(&gps_file, bufferRowData, strlen(bufferRowData), NULL);
 			// Flush the cached data to the SD card
 			f_sync(&gps_file);
@@ -5514,7 +5517,7 @@ void loraGPSTask(void *argument) {
 		if (f_open(&buzz_file, file_name_buzz, FA_CREATE_NEW | FA_WRITE)
 				== FR_OK) {
 			strcpy(bufferRowData,
-					"total_buzz_count, total_species_1, total_species_2, epoch_last_detection, current_epoch\n");
+					"current_epoch, epoch_last_detection, total_buzz_count, total_species_1, total_species_2\n");
 			f_write(&buzz_file, bufferRowData, strlen(bufferRowData), NULL);
 			// Flush the cached data to the SD card
 			f_sync(&buzz_file);
@@ -5545,14 +5548,21 @@ void loraGPSTask(void *argument) {
 		if(grabFix(60000)){
 			if (f_open(&gps_file, file_name_gps, FA_OPEN_APPEND | FA_WRITE | FA_READ)
 					== FR_OK) {
-				 sprintf(bufferRowData, "%d,%d,%lu,%lu\n",
+				uint32_t idx_tracker = 0;
+				idx_tracker +=
+						uint64_to_str(getEpoch(),
+								bufferRowData);
+
+				bufferRowData[idx_tracker++] = ',';
+
+				 sprintf(&bufferRowData[idx_tracker], "%d,%d,%lu\n",
 						 infoPacket.payload.system_info_packet.gps_location.lat =
 						 			currentFix.latitude,
 						infoPacket.payload.system_info_packet.gps_location.lon =
 									currentFix.longitude,
 						infoPacket.payload.system_info_packet.gps_location.elev =
-									currentFix.altitude,
-				        getEpoch());
+									currentFix.altitude);
+
 				f_write(&gps_file, bufferRowData, strlen(bufferRowData), NULL);
 				// Flush the cached data to the SD card
 				f_sync(&gps_file);
@@ -5621,32 +5631,6 @@ void loraGPSTask(void *argument) {
 //			continue;
 //		}
 
-		if ((flag & GPS_GRAB_SAMPLE) == GPS_GRAB_SAMPLE) {
-			if(grabFix(60000)){
-				if (f_open(&gps_file, file_name_gps, FA_OPEN_APPEND | FA_WRITE | FA_READ)
-						== FR_OK) {
-					 sprintf(bufferRowData, "%d,%d,%lu,%lu\n",
-							 infoPacket.payload.system_info_packet.gps_location.lat =
-							 			currentFix.latitude,
-							infoPacket.payload.system_info_packet.gps_location.lon =
-										currentFix.longitude,
-							infoPacket.payload.system_info_packet.gps_location.elev =
-										currentFix.altitude,
-					        getEpoch());
-					f_write(&gps_file, bufferRowData, strlen(bufferRowData), NULL);
-					// Flush the cached data to the SD card
-					f_sync(&gps_file);
-					// Close the file
-					f_close(&gps_file);
-
-					memset(bufferRowData, 0, sizeof(bufferRowData));
-				}
-			}
-
-//			setTimepulseGPS();
-//			HAL_NVIC_SetPriority(EXTI1_IRQn, 5, 0);
-//			HAL_NVIC_EnableIRQ(EXTI1_IRQn);
-		}
 
 //		if((flag & GPS_TIMEPULSE_FLAG) == GPS_TIMEPULSE_FLAG){
 //	    	osMutexAcquire(messageI2C1_LockHandle, osWaitForever); // this should never be necessary since no device should be communicating at this point
@@ -5738,12 +5722,23 @@ void loraGPSTask(void *argument) {
 			if (f_open(&buzz_file, file_name_buzz, FA_OPEN_APPEND | FA_WRITE | FA_READ)
 					== FR_OK) {
 
-				 sprintf(bufferRowData, "%lu,%lu,%lu,%lu,%lu\n",
+				uint32_t idx_tracker = 0;
+				idx_tracker +=
+						uint64_to_str(getEpoch(),
+								bufferRowData);
+
+				bufferRowData[idx_tracker++] = ',';
+
+				idx_tracker +=
+						uint64_to_str(infoPacket.payload.system_info_packet.buzz_summary_data.last_detection_epoch,
+								&bufferRowData[idx_tracker]);
+
+				bufferRowData[idx_tracker++] = ',';
+
+				 sprintf(&bufferRowData[idx_tracker], "%lu,%lu,%lu\n",
 				       infoPacket.payload.system_info_packet.buzz_summary_data.buzz_counter,
 				       infoPacket.payload.system_info_packet.buzz_summary_data.species_1_count,
-				       infoPacket.payload.system_info_packet.buzz_summary_data.species_2_count,
-				       infoPacket.payload.system_info_packet.buzz_summary_data.last_detection_epoch,
-				        getEpoch());
+				       infoPacket.payload.system_info_packet.buzz_summary_data.species_2_count);
 				f_write(&buzz_file, bufferRowData, strlen(bufferRowData), NULL);
 				// Flush the cached data to the SD card
 				f_sync(&buzz_file);
@@ -5755,6 +5750,7 @@ void loraGPSTask(void *argument) {
 
 			sendLoRa_pkt(&loraPacket);
 		}
+
 
 
 		if ((flag & LORA_IRQ_FLAG) == LORA_IRQ_FLAG) {
@@ -5785,6 +5781,34 @@ void loraGPSTask(void *argument) {
 			}
 
 		}
+
+		if ((flag & GPS_GRAB_SAMPLE) == GPS_GRAB_SAMPLE) {
+			if(grabFix(60000)){
+				if (f_open(&gps_file, file_name_gps, FA_OPEN_APPEND | FA_WRITE | FA_READ)
+						== FR_OK) {
+					 sprintf(bufferRowData, "%ld,%ld,%lu,%lu\n",
+							 infoPacket.payload.system_info_packet.gps_location.lat =
+							 			currentFix.latitude,
+							infoPacket.payload.system_info_packet.gps_location.lon =
+										currentFix.longitude,
+							infoPacket.payload.system_info_packet.gps_location.elev =
+										currentFix.altitude,
+					        getEpoch());
+					f_write(&gps_file, bufferRowData, strlen(bufferRowData), NULL);
+					// Flush the cached data to the SD card
+					f_sync(&gps_file);
+					// Close the file
+					f_close(&gps_file);
+
+					memset(bufferRowData, 0, sizeof(bufferRowData));
+				}
+			}
+
+//			setTimepulseGPS();
+//			HAL_NVIC_SetPriority(EXTI1_IRQn, 5, 0);
+//			HAL_NVIC_EnableIRQ(EXTI1_IRQn);
+		}
+
 
 		if ((flag & TERMINATE_EVENT) == TERMINATE_EVENT) {
 			/* turn off GPS or put in standby mode */
@@ -6303,7 +6327,7 @@ void triggerMarkTask(void *argument) {
 		if (f_open(&marker_file, file_name, FA_CREATE_NEW | FA_WRITE)
 				== FR_OK) {
 			strcpy(result,
-					"timestamp, ms_from_start, beep_enabled, annotation\n");
+					"timestamp, ms_from_start, beep_enabled, annotation, mark\n");
 			f_write(&marker_file, result, strlen(result), NULL);
 			// Flush the cached data to the SD card
 			f_sync(&marker_file);
@@ -6380,9 +6404,9 @@ void triggerMarkTask(void *argument) {
 
 				result[idx_tracker++] = ',';
 
-				sprintf(&result[idx_tracker], "%lu,%d,%s\n",
+				sprintf(&result[idx_tracker], "%lu,%d,%s,%d\n",
 						infoPacket.header.ms_from_start,
-						(uint8_t) new_mark.beep_enabled, new_mark.annotation);
+						(uint8_t) new_mark.beep_enabled, new_mark.annotation, infoPacket.payload.system_info_packet.mark_state.mark_number-1);
 			} else {
 				idx_tracker +=
 						uint64_to_str(
@@ -6391,16 +6415,16 @@ void triggerMarkTask(void *argument) {
 
 				result[idx_tracker++] = ',';
 
-				sprintf(&result[idx_tracker], "%lu,%d,\n",
+				sprintf(&result[idx_tracker], "%lu,%d,,%d\n",
 						infoPacket.header.ms_from_start,
-						(uint8_t) new_mark.beep_enabled);
+						(uint8_t) new_mark.beep_enabled, infoPacket.payload.system_info_packet.mark_state.mark_number-1);
 			}
 
 			idx_tracker = 0;
 
 			/* save to file */
 			UINT bytes_written;
-			res == FR_INVALID_PARAMETER;
+			FRESULT res = FR_INVALID_PARAMETER;
 			uint8_t retryAttempts = 0;
 			while(res != FR_OK){
 				res = f_open(&marker_file, file_name,
@@ -6416,18 +6440,27 @@ void triggerMarkTask(void *argument) {
 			if (res == FR_OK) {
 				res = f_write(&marker_file, result, strlen(result),
 						&bytes_written);
-
-				// Close the file
-				f_close(&marker_file);
-
+				if(res != FR_OK){
+					setLED_Red(1000);
+					osDelay(500);
+					setLED_Red(0);
+					osDelay(500);
+				}
 				// Flush the cached data to the SD card
 				f_sync(&marker_file);
-
+				// Close the file
+				f_close(&marker_file);
 			} else{
 				setLED_Red(1000);
 				osDelay(500);
 				setLED_Red(0);
 				osDelay(500);
+
+				// Flush the cached data to the SD card
+				f_sync(&marker_file);
+				// Close the file
+				f_close(&marker_file);
+
 			}
 			/* update FRAM */
 			writeSystemInfoToFRAM();
@@ -7426,9 +7459,9 @@ void HAL_RTCEx_AlarmBEventCallback(RTC_HandleTypeDef *hrtc) {
 	osThreadFlagsSet(loraGPSId, LORA_SEND_PKT);
 //	}
 
-	if((loRaGPSRTCAlarmIdx % GPS_FIX_INTERVAL_MULTIPLE_OF_LORA) == 0){
-		osThreadFlagsSet(loraGPSId, GPS_GRAB_SAMPLE);
-	}
+//	if((loRaGPSRTCAlarmIdx % GPS_FIX_INTERVAL_MULTIPLE_OF_LORA) == 0){
+//		osThreadFlagsSet(loraGPSId, GPS_GRAB_SAMPLE);
+//	}
 }
 
 /* USER CODE END 4 */
