@@ -5707,6 +5707,12 @@ void loraGPSTask(void *argument) {
 			loraPacket.payload.system_summary_packet.buzz_summary_data.species_1_count = infoPacket.payload.system_info_packet.buzz_summary_data.species_1_count;
 			loraPacket.payload.system_summary_packet.buzz_summary_data.species_2_count = infoPacket.payload.system_info_packet.buzz_summary_data.species_2_count;
 
+//			loraPacket.payload.system_summary_packet.humidity = infoPacket.payload.system_info_packet.simple_sensor_reading.humidity;
+//			loraPacket.payload.system_summary_packet.temperature = infoPacket.payload.system_info_packet.simple_sensor_reading.temperature;
+//			loraPacket.payload.system_summary_packet.has_gas = true;
+//			loraPacket.payload.system_summary_packet.gas = infoPacket.payload.system_info_packet.simple_sensor_reading.gas;
+
+
 			infoPacket.payload.system_info_packet.has_buzz_interval_data = true;
 			memcpy(&infoPacket.payload.system_info_packet.buzz_interval_data,
 					&loraPacket.payload.system_summary_packet.buzz_interval_data,
