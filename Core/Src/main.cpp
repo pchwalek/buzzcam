@@ -7464,9 +7464,9 @@ void HAL_RTCEx_AlarmBEventCallback(RTC_HandleTypeDef *hrtc) {
 	osThreadFlagsSet(loraGPSId, LORA_SEND_PKT);
 //	}
 
-//	if((loRaGPSRTCAlarmIdx % GPS_FIX_INTERVAL_MULTIPLE_OF_LORA) == 0){
-//		osThreadFlagsSet(loraGPSId, GPS_GRAB_SAMPLE);
-//	}
+	if((loRaGPSRTCAlarmIdx % GPS_FIX_INTERVAL_MULTIPLE_OF_LORA) == 0){
+		osThreadFlagsSet(loraGPSId, GPS_GRAB_SAMPLE);
+	}
 }
 
 /* USER CODE END 4 */
