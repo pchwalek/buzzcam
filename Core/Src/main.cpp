@@ -5647,6 +5647,34 @@ void loraGPSTask(void *argument) {
 //			}
 //		}
 
+		if ((flag & GPS_GRAB_SAMPLE) == GPS_GRAB_SAMPLE) {
+			if(grabFix(60000)){
+				if (f_open(&gps_file, file_name_gps, FA_OPEN_APPEND | FA_WRITE | FA_READ)
+						== FR_OK) {
+					 sprintf(bufferRowData, "%ld,%ld,%lu,%lu\n",
+							 infoPacket.payload.system_info_packet.gps_location.lat,
+							infoPacket.payload.system_info_packet.gps_location.lon,
+							infoPacket.payload.system_info_packet.gps_location.elev,
+					        getEpoch());
+					f_write(&gps_file, bufferRowData, strlen(bufferRowData), NULL);
+					// Flush the cached data to the SD card
+					f_sync(&gps_file);
+					// Close the file
+					f_close(&gps_file);
+
+					memset(bufferRowData, 0, sizeof(bufferRowData));
+				}
+
+				flag |= LORA_SEND_PKT;
+
+				sendLoRa_pkt(&loraPacket);
+			}
+
+//			setTimepulseGPS();
+//			HAL_NVIC_SetPriority(EXTI1_IRQn, 5, 0);
+//			HAL_NVIC_EnableIRQ(EXTI1_IRQn);
+		}
+
 		if ((flag & LORA_SEND_PKT) == LORA_SEND_PKT) {
 			loraPacket.has_header = true;
 			loraPacket.header.epoch = getEpoch_ms();
@@ -5787,30 +5815,6 @@ void loraGPSTask(void *argument) {
 				}
 			}
 
-		}
-
-		if ((flag & GPS_GRAB_SAMPLE) == GPS_GRAB_SAMPLE) {
-			if(grabFix(60000)){
-				if (f_open(&gps_file, file_name_gps, FA_OPEN_APPEND | FA_WRITE | FA_READ)
-						== FR_OK) {
-					 sprintf(bufferRowData, "%ld,%ld,%lu,%lu\n",
-							 infoPacket.payload.system_info_packet.gps_location.lat,
-							infoPacket.payload.system_info_packet.gps_location.lon,
-							infoPacket.payload.system_info_packet.gps_location.elev,
-					        getEpoch());
-					f_write(&gps_file, bufferRowData, strlen(bufferRowData), NULL);
-					// Flush the cached data to the SD card
-					f_sync(&gps_file);
-					// Close the file
-					f_close(&gps_file);
-
-					memset(bufferRowData, 0, sizeof(bufferRowData));
-				}
-			}
-
-//			setTimepulseGPS();
-//			HAL_NVIC_SetPriority(EXTI1_IRQn, 5, 0);
-//			HAL_NVIC_EnableIRQ(EXTI1_IRQn);
 		}
 
 
@@ -7460,7 +7464,7 @@ void HAL_RTCEx_AlarmBEventCallback(RTC_HandleTypeDef *hrtc) {
 	}
 
 //	if((loRaGPSRTCAlarmIdx % LORA_SEND_INTERVAL_MINS) == 0){
-	osThreadFlagsSet(loraGPSId, LORA_SEND_PKT);
+//	osThreadFlagsSet(loraGPSId, LORA_SEND_PKT);
 //	}
 
 	if((loRaGPSRTCAlarmIdx % GPS_FIX_INTERVAL_MULTIPLE_OF_LORA) == 0){
