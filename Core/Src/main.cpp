@@ -2749,14 +2749,15 @@ void disableTimepulseGPS() {
 }
 
 bool standbyGPSMode() {
-	osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
-//	bool status = myGNSS.powerOff(345600000);
-	bool status = myGNSS.powerOffWithInterrupt(345600000,
-			VAL_RXM_PMREQ_WAKEUPSOURCE_EXTINT0, false, 100);
-//	bool status = true;
-	osMutexRelease(messageI2C1_LockHandle);
-	return status;
-//	return  // 4 day default but querying will immediately wakeup system
+//	osMutexAcquire(messageI2C1_LockHandle, osWaitForever);
+////	bool status = myGNSS.powerOff(345600000);
+//	bool status = myGNSS.powerOffWithInterrupt(345600000,
+//			VAL_RXM_PMREQ_WAKEUPSOURCE_EXTINT0, false, 100);
+////	bool status = true;
+//	osMutexRelease(messageI2C1_LockHandle);
+//	return status;
+
+	return true;
 }
 
 GPSFixStatus getGPSFix(GPSFix *currentFix) {
@@ -5289,36 +5290,36 @@ void mainSystemTask(void *argument) {
 		}
 #endif
 
-		if (configPacket.payload.config_packet.enable_recording) {
-			/* start immediately if a slave device or no schedule is given */
-			if ((configPacket.payload.config_packet.schedule_config_count == 0)
-					|| (configPacket.payload.config_packet.audio_config.free_run_mode)) {
-				micThreadId = osThreadNew(acousticSamplingTask, NULL,
-						&micTask_attributes);
-
-			}
-			/* or if a schedule is given, start next alarm or start right away if within schedule */
-			else if (configPacket.payload.config_packet.enable_recording
-					&& (configPacket.payload.config_packet.schedule_config_count
-							> 0)) {
-				/* start alarm based on schedule */
-				scheduleRun =
-						setAlarm(
-								configPacket.payload.config_packet.schedule_config,
-								configPacket.payload.config_packet.schedule_config_count);
-				if (scheduleRun)
-					micThreadId = osThreadNew(acousticSamplingTask, NULL,
-							&micTask_attributes);
-			}
-		}
-	} else if (configPacket.payload.config_packet.network_state.slave_sync
-			== 1) {
-		//todo: check Openthread network if a master exists, what desired configuration is, and if we should be running
-		/* broadcast that we are a new slave and need config */
-//		alertMaster();
-		/* this is done when slave thread state changes */
-		configPacket.payload.config_packet.enable_recording = 0;
-	}
+//		if (configPacket.payload.config_packet.enable_recording) {
+//			/* start immediately if a slave device or no schedule is given */
+//			if ((configPacket.payload.config_packet.schedule_config_count == 0)
+//					|| (configPacket.payload.config_packet.audio_config.free_run_mode)) {
+//				micThreadId = osThreadNew(acousticSamplingTask, NULL,
+//						&micTask_attributes);
+//
+//			}
+//			/* or if a schedule is given, start next alarm or start right away if within schedule */
+//			else if (configPacket.payload.config_packet.enable_recording
+//					&& (configPacket.payload.config_packet.schedule_config_count
+//							> 0)) {
+//				/* start alarm based on schedule */
+//				scheduleRun =
+//						setAlarm(
+//								configPacket.payload.config_packet.schedule_config,
+//								configPacket.payload.config_packet.schedule_config_count);
+//				if (scheduleRun)
+//					micThreadId = osThreadNew(acousticSamplingTask, NULL,
+//							&micTask_attributes);
+//			}
+//		}
+//	} else if (configPacket.payload.config_packet.network_state.slave_sync
+//			== 1) {
+//		//todo: check Openthread network if a master exists, what desired configuration is, and if we should be running
+//		/* broadcast that we are a new slave and need config */
+////		alertMaster();
+//		/* this is done when slave thread state changes */
+//		configPacket.payload.config_packet.enable_recording = 0;
+//	}
 
 	while (1) {
 
@@ -5793,10 +5794,8 @@ void loraGPSTask(void *argument) {
 				if (f_open(&gps_file, file_name_gps, FA_OPEN_APPEND | FA_WRITE | FA_READ)
 						== FR_OK) {
 					 sprintf(bufferRowData, "%ld,%ld,%lu,%lu\n",
-							 infoPacket.payload.system_info_packet.gps_location.lat =
-							 			currentFix.latitude,
-							infoPacket.payload.system_info_packet.gps_location.lon =
-										currentFix.longitude,
+							 infoPacket.payload.system_info_packet.gps_location.lat,
+							infoPacket.payload.system_info_packet.gps_location.lon,
 							infoPacket.payload.system_info_packet.gps_location.elev =
 										currentFix.altitude,
 					        getEpoch());
