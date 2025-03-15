@@ -5796,8 +5796,7 @@ void loraGPSTask(void *argument) {
 					 sprintf(bufferRowData, "%ld,%ld,%lu,%lu\n",
 							 infoPacket.payload.system_info_packet.gps_location.lat,
 							infoPacket.payload.system_info_packet.gps_location.lon,
-							infoPacket.payload.system_info_packet.gps_location.elev =
-										currentFix.altitude,
+							infoPacket.payload.system_info_packet.gps_location.elev,
 					        getEpoch());
 					f_write(&gps_file, bufferRowData, strlen(bufferRowData), NULL);
 					// Flush the cached data to the SD card
