@@ -5312,14 +5312,14 @@ void mainSystemTask(void *argument) {
 //							&micTask_attributes);
 //			}
 //		}
-//	} else if (configPacket.payload.config_packet.network_state.slave_sync
-//			== 1) {
-//		//todo: check Openthread network if a master exists, what desired configuration is, and if we should be running
-//		/* broadcast that we are a new slave and need config */
-////		alertMaster();
-//		/* this is done when slave thread state changes */
-//		configPacket.payload.config_packet.enable_recording = 0;
-//	}
+	} else if (configPacket.payload.config_packet.network_state.slave_sync
+			== 1) {
+		//todo: check Openthread network if a master exists, what desired configuration is, and if we should be running
+		/* broadcast that we are a new slave and need config */
+//		alertMaster();
+		/* this is done when slave thread state changes */
+		configPacket.payload.config_packet.enable_recording = 0;
+	}
 
 	while (1) {
 
