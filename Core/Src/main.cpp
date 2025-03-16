@@ -5667,7 +5667,7 @@ void loraGPSTask(void *argument) {
 
 				flag |= LORA_SEND_PKT;
 
-				sendLoRa_pkt(&loraPacket);
+//				sendLoRa_pkt(&loraPacket);
 			}
 
 //			setTimepulseGPS();
