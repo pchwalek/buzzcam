@@ -5604,6 +5604,7 @@ void loraGPSTask(void *argument) {
 
 		systemState.isLoRaActive = true;
 	}
+
 	// disable LoRa
 	else if (!systemPowerSupervisor.isLoRaEnabled && systemState.isLoRaActive) {
 		systemState.isLoRaActive = false;
@@ -7462,12 +7463,14 @@ void HAL_RTCEx_AlarmBEventCallback(RTC_HandleTypeDef *hrtc) {
 	}
 
 //	if((loRaGPSRTCAlarmIdx % LORA_SEND_INTERVAL_MINS) == 0){
+#if DISABLE_LORA == 1
 	osThreadFlagsSet(loraGPSId, LORA_SEND_PKT);
+#endif
 //	}
 
-//	if((loRaGPSRTCAlarmIdx % GPS_FIX_INTERVAL_MULTIPLE_OF_LORA) == 0){
-//		osThreadFlagsSet(loraGPSId, GPS_GRAB_SAMPLE);
-//	}
+	if((loRaGPSRTCAlarmIdx % GPS_FIX_INTERVAL_MULTIPLE_OF_LORA) == 0){
+		osThreadFlagsSet(loraGPSId, GPS_GRAB_SAMPLE);
+	}
 }
 
 /* USER CODE END 4 */
