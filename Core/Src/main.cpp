@@ -5621,7 +5621,8 @@ void loraGPSTask(void *argument) {
 
 	uint8_t offsetMinutes, offsetSeconds;
 	getRTCOffsets(&offsetMinutes, &offsetSeconds);
-	setLoraGPSRTCAlarmWithOffset(offsetMinutes, offsetSeconds);
+//	setLoraGPSRTCAlarmWithOffset(0, 0);
+	setLoraGPSRTCAlarm();
 
 	while (1) {
 		flag = osThreadFlagsWait(0x0001U | TERMINATE_EVENT |
@@ -5648,114 +5649,116 @@ void loraGPSTask(void *argument) {
 //		}
 
 		if ((flag & LORA_SEND_PKT) == LORA_SEND_PKT) {
-			loraPacket.has_header = true;
-			loraPacket.header.epoch = getEpoch_ms();
-			loraPacket.header.ms_from_start = HAL_GetTick();
-			loraPacket.header.system_uid = LL_FLASH_GetUDN();
-			loraPacket.which_payload = LO_RA_PACKET_SYSTEM_SUMMARY_PACKET_TAG;
-			if(infoPacket.payload.system_info_packet.has_gps_location){
-				loraPacket.payload.system_summary_packet.has_location = true;
-				loraPacket.payload.system_summary_packet.location.lat = infoPacket.payload.system_info_packet.gps_location.lat;
-				loraPacket.payload.system_summary_packet.location.lon = infoPacket.payload.system_info_packet.gps_location.lon;
-				loraPacket.payload.system_summary_packet.location.elev = infoPacket.payload.system_info_packet.gps_location.elev;
-			}
-			loraPacket.payload.system_summary_packet.battery_voltage = infoPacket.payload.system_info_packet.battery_state.voltage;
-			loraPacket.payload.system_summary_packet.has_gas = true;
-			if(infoPacket.payload.system_info_packet.has_simple_sensor_reading){
-				loraPacket.payload.system_summary_packet.gas = infoPacket.payload.system_info_packet.simple_sensor_reading.gas;
-				loraPacket.payload.system_summary_packet.humidity = infoPacket.payload.system_info_packet.simple_sensor_reading.humidity;
-				loraPacket.payload.system_summary_packet.temperature = infoPacket.payload.system_info_packet.simple_sensor_reading.temperature;
-			}
+			chirp();
 
-			if(infoPacket.payload.system_info_packet.has_sdcard_state){
-				loraPacket.payload.system_summary_packet.has_sd_card = true;
-				loraPacket.payload.system_summary_packet.sd_card.detected = true;
-				f_getfree("", &free_clusters, NULL);
-
-				loraPacket.payload.system_summary_packet.sd_card.space_remaining = (((free_clusters * SDFatFs.csize) / 2) / 1024);
-				infoPacket.payload.system_info_packet.sdcard_state.space_remaining = loraPacket.payload.system_summary_packet.sd_card.space_remaining;
-				// WARNING: calculation doesnt work for 24-bit
-				infoPacket.payload.system_info_packet.sdcard_state.estimated_remaining_recording_time =
-						(infoPacket.payload.system_info_packet.sdcard_state.space_remaining
-								* 1048576)
-								/ (configPacket.payload.config_packet.audio_config.channel_1
-										+ configPacket.payload.config_packet.audio_config.channel_2)
-								/ (configPacket.payload.config_packet.audio_config.bit_resolution
-										+ 1)
-								/ (getSampleFreq(
-										configPacket.payload.config_packet.audio_config.sample_freq))
-								/ 60 / 60;
-
-				loraPacket.payload.system_summary_packet.sd_card.estimated_remaining_recording_time = infoPacket.payload.system_info_packet.sdcard_state.estimated_remaining_recording_time;
-//				loraPacket.payload.system_summary_packet.sd_card.total_space =
-//						((uint64_t) SDFatFS.n_fatent) * 256 * 512 / (1048576);
-			}
-
-			loraPacket.payload.system_summary_packet.has_buzz_interval_data = true;
-			loraPacket.payload.system_summary_packet.buzz_interval_data.has_species_1_count = true;
-			loraPacket.payload.system_summary_packet.buzz_interval_data.has_species_2_count = true;
-			loraPacket.payload.system_summary_packet.buzz_interval_data.interval_epoch = getEpoch();
-			loraPacket.payload.system_summary_packet.buzz_interval_data.last_detection_epoch = infoPacket.payload.system_info_packet.buzz_summary_data.last_detection_epoch;
-			loraPacket.payload.system_summary_packet.buzz_interval_data.buzz_count = infoPacket.payload.system_info_packet.buzz_summary_data.buzz_counter - buzz_total;
-			loraPacket.payload.system_summary_packet.buzz_interval_data.species_1_count = infoPacket.payload.system_info_packet.buzz_summary_data.species_1_count - buzz_class_1;
-			loraPacket.payload.system_summary_packet.buzz_interval_data.species_2_count = infoPacket.payload.system_info_packet.buzz_summary_data.species_2_count - buzz_class_2;
-			loraPacket.payload.system_summary_packet.buzz_interval_data.transmission_interval_m = LORA_SEND_INTERVAL_MINS;
-			loraPacket.payload.system_summary_packet.has_buzz_summary_data = true;
-			loraPacket.payload.system_summary_packet.buzz_summary_data.last_detection_epoch = infoPacket.payload.system_info_packet.buzz_summary_data.last_detection_epoch;
-			loraPacket.payload.system_summary_packet.buzz_summary_data.buzz_counter = infoPacket.payload.system_info_packet.buzz_summary_data.buzz_counter;
-			loraPacket.payload.system_summary_packet.buzz_summary_data.has_species_1_count = true;
-			loraPacket.payload.system_summary_packet.buzz_summary_data.has_species_2_count = true;
-			loraPacket.payload.system_summary_packet.buzz_summary_data.species_1_count = infoPacket.payload.system_info_packet.buzz_summary_data.species_1_count;
-			loraPacket.payload.system_summary_packet.buzz_summary_data.species_2_count = infoPacket.payload.system_info_packet.buzz_summary_data.species_2_count;
-
-//			loraPacket.payload.system_summary_packet.humidity = infoPacket.payload.system_info_packet.simple_sensor_reading.humidity;
-//			loraPacket.payload.system_summary_packet.temperature = infoPacket.payload.system_info_packet.simple_sensor_reading.temperature;
+//			loraPacket.has_header = true;
+//			loraPacket.header.epoch = getEpoch_ms();
+//			loraPacket.header.ms_from_start = HAL_GetTick();
+//			loraPacket.header.system_uid = LL_FLASH_GetUDN();
+//			loraPacket.which_payload = LO_RA_PACKET_SYSTEM_SUMMARY_PACKET_TAG;
+//			if(infoPacket.payload.system_info_packet.has_gps_location){
+//				loraPacket.payload.system_summary_packet.has_location = true;
+//				loraPacket.payload.system_summary_packet.location.lat = infoPacket.payload.system_info_packet.gps_location.lat;
+//				loraPacket.payload.system_summary_packet.location.lon = infoPacket.payload.system_info_packet.gps_location.lon;
+//				loraPacket.payload.system_summary_packet.location.elev = infoPacket.payload.system_info_packet.gps_location.elev;
+//			}
+//			loraPacket.payload.system_summary_packet.battery_voltage = infoPacket.payload.system_info_packet.battery_state.voltage;
 //			loraPacket.payload.system_summary_packet.has_gas = true;
-//			loraPacket.payload.system_summary_packet.gas = infoPacket.payload.system_info_packet.simple_sensor_reading.gas;
-
-
-			infoPacket.payload.system_info_packet.has_buzz_interval_data = true;
-			memcpy(&infoPacket.payload.system_info_packet.buzz_interval_data,
-					&loraPacket.payload.system_summary_packet.buzz_interval_data,
-					sizeof(buzz_interval_data_t));
-
-			infoPacket.payload.system_info_packet.buzz_summary_data.buzz_counter++;
-							infoPacket.payload.system_info_packet.buzz_summary_data.species_1_count++;
-
-			buzz_total = loraPacket.payload.system_summary_packet.buzz_summary_data.buzz_counter;
-			buzz_class_1 = loraPacket.payload.system_summary_packet.buzz_summary_data.species_1_count;
-			buzz_class_2 = loraPacket.payload.system_summary_packet.buzz_summary_data.species_2_count;
-
-			if (f_open(&buzz_file, file_name_buzz, FA_OPEN_APPEND | FA_WRITE | FA_READ)
-					== FR_OK) {
-
-				uint32_t idx_tracker = 0;
-				idx_tracker +=
-						uint64_to_str(getEpoch(),
-								bufferRowData);
-
-				bufferRowData[idx_tracker++] = ',';
-
-				idx_tracker +=
-						uint64_to_str(infoPacket.payload.system_info_packet.buzz_summary_data.last_detection_epoch,
-								&bufferRowData[idx_tracker]);
-
-				bufferRowData[idx_tracker++] = ',';
-
-				 sprintf(&bufferRowData[idx_tracker], "%lu,%lu,%lu\n",
-				       infoPacket.payload.system_info_packet.buzz_summary_data.buzz_counter,
-				       infoPacket.payload.system_info_packet.buzz_summary_data.species_1_count,
-				       infoPacket.payload.system_info_packet.buzz_summary_data.species_2_count);
-				f_write(&buzz_file, bufferRowData, strlen(bufferRowData), NULL);
-				// Flush the cached data to the SD card
-				f_sync(&buzz_file);
-				// Close the file
-				f_close(&buzz_file);
-
-				memset(bufferRowData, 0, sizeof(bufferRowData));
-			}
-
-			sendLoRa_pkt(&loraPacket);
+//			if(infoPacket.payload.system_info_packet.has_simple_sensor_reading){
+//				loraPacket.payload.system_summary_packet.gas = infoPacket.payload.system_info_packet.simple_sensor_reading.gas;
+//				loraPacket.payload.system_summary_packet.humidity = infoPacket.payload.system_info_packet.simple_sensor_reading.humidity;
+//				loraPacket.payload.system_summary_packet.temperature = infoPacket.payload.system_info_packet.simple_sensor_reading.temperature;
+//			}
+//
+//			if(infoPacket.payload.system_info_packet.has_sdcard_state){
+//				loraPacket.payload.system_summary_packet.has_sd_card = true;
+//				loraPacket.payload.system_summary_packet.sd_card.detected = true;
+//				f_getfree("", &free_clusters, NULL);
+//
+//				loraPacket.payload.system_summary_packet.sd_card.space_remaining = (((free_clusters * SDFatFs.csize) / 2) / 1024);
+//				infoPacket.payload.system_info_packet.sdcard_state.space_remaining = loraPacket.payload.system_summary_packet.sd_card.space_remaining;
+//				// WARNING: calculation doesnt work for 24-bit
+//				infoPacket.payload.system_info_packet.sdcard_state.estimated_remaining_recording_time =
+//						(infoPacket.payload.system_info_packet.sdcard_state.space_remaining
+//								* 1048576)
+//								/ (configPacket.payload.config_packet.audio_config.channel_1
+//										+ configPacket.payload.config_packet.audio_config.channel_2)
+//								/ (configPacket.payload.config_packet.audio_config.bit_resolution
+//										+ 1)
+//								/ (getSampleFreq(
+//										configPacket.payload.config_packet.audio_config.sample_freq))
+//								/ 60 / 60;
+//
+//				loraPacket.payload.system_summary_packet.sd_card.estimated_remaining_recording_time = infoPacket.payload.system_info_packet.sdcard_state.estimated_remaining_recording_time;
+////				loraPacket.payload.system_summary_packet.sd_card.total_space =
+////						((uint64_t) SDFatFS.n_fatent) * 256 * 512 / (1048576);
+//			}
+//
+//			loraPacket.payload.system_summary_packet.has_buzz_interval_data = true;
+//			loraPacket.payload.system_summary_packet.buzz_interval_data.has_species_1_count = true;
+//			loraPacket.payload.system_summary_packet.buzz_interval_data.has_species_2_count = true;
+//			loraPacket.payload.system_summary_packet.buzz_interval_data.interval_epoch = getEpoch();
+//			loraPacket.payload.system_summary_packet.buzz_interval_data.last_detection_epoch = infoPacket.payload.system_info_packet.buzz_summary_data.last_detection_epoch;
+//			loraPacket.payload.system_summary_packet.buzz_interval_data.buzz_count = infoPacket.payload.system_info_packet.buzz_summary_data.buzz_counter - buzz_total;
+//			loraPacket.payload.system_summary_packet.buzz_interval_data.species_1_count = infoPacket.payload.system_info_packet.buzz_summary_data.species_1_count - buzz_class_1;
+//			loraPacket.payload.system_summary_packet.buzz_interval_data.species_2_count = infoPacket.payload.system_info_packet.buzz_summary_data.species_2_count - buzz_class_2;
+//			loraPacket.payload.system_summary_packet.buzz_interval_data.transmission_interval_m = LORA_SEND_INTERVAL_MINS;
+//			loraPacket.payload.system_summary_packet.has_buzz_summary_data = true;
+//			loraPacket.payload.system_summary_packet.buzz_summary_data.last_detection_epoch = infoPacket.payload.system_info_packet.buzz_summary_data.last_detection_epoch;
+//			loraPacket.payload.system_summary_packet.buzz_summary_data.buzz_counter = infoPacket.payload.system_info_packet.buzz_summary_data.buzz_counter;
+//			loraPacket.payload.system_summary_packet.buzz_summary_data.has_species_1_count = true;
+//			loraPacket.payload.system_summary_packet.buzz_summary_data.has_species_2_count = true;
+//			loraPacket.payload.system_summary_packet.buzz_summary_data.species_1_count = infoPacket.payload.system_info_packet.buzz_summary_data.species_1_count;
+//			loraPacket.payload.system_summary_packet.buzz_summary_data.species_2_count = infoPacket.payload.system_info_packet.buzz_summary_data.species_2_count;
+//
+////			loraPacket.payload.system_summary_packet.humidity = infoPacket.payload.system_info_packet.simple_sensor_reading.humidity;
+////			loraPacket.payload.system_summary_packet.temperature = infoPacket.payload.system_info_packet.simple_sensor_reading.temperature;
+////			loraPacket.payload.system_summary_packet.has_gas = true;
+////			loraPacket.payload.system_summary_packet.gas = infoPacket.payload.system_info_packet.simple_sensor_reading.gas;
+//
+//
+//			infoPacket.payload.system_info_packet.has_buzz_interval_data = true;
+//			memcpy(&infoPacket.payload.system_info_packet.buzz_interval_data,
+//					&loraPacket.payload.system_summary_packet.buzz_interval_data,
+//					sizeof(buzz_interval_data_t));
+//
+//			infoPacket.payload.system_info_packet.buzz_summary_data.buzz_counter++;
+//							infoPacket.payload.system_info_packet.buzz_summary_data.species_1_count++;
+//
+//			buzz_total = loraPacket.payload.system_summary_packet.buzz_summary_data.buzz_counter;
+//			buzz_class_1 = loraPacket.payload.system_summary_packet.buzz_summary_data.species_1_count;
+//			buzz_class_2 = loraPacket.payload.system_summary_packet.buzz_summary_data.species_2_count;
+//
+//			if (f_open(&buzz_file, file_name_buzz, FA_OPEN_APPEND | FA_WRITE | FA_READ)
+//					== FR_OK) {
+//
+//				uint32_t idx_tracker = 0;
+//				idx_tracker +=
+//						uint64_to_str(getEpoch(),
+//								bufferRowData);
+//
+//				bufferRowData[idx_tracker++] = ',';
+//
+//				idx_tracker +=
+//						uint64_to_str(infoPacket.payload.system_info_packet.buzz_summary_data.last_detection_epoch,
+//								&bufferRowData[idx_tracker]);
+//
+//				bufferRowData[idx_tracker++] = ',';
+//
+//				 sprintf(&bufferRowData[idx_tracker], "%lu,%lu,%lu\n",
+//				       infoPacket.payload.system_info_packet.buzz_summary_data.buzz_counter,
+//				       infoPacket.payload.system_info_packet.buzz_summary_data.species_1_count,
+//				       infoPacket.payload.system_info_packet.buzz_summary_data.species_2_count);
+//				f_write(&buzz_file, bufferRowData, strlen(bufferRowData), NULL);
+//				// Flush the cached data to the SD card
+//				f_sync(&buzz_file);
+//				// Close the file
+//				f_close(&buzz_file);
+//
+//				memset(bufferRowData, 0, sizeof(bufferRowData));
+//			}
+//
+//			sendLoRa_pkt(&loraPacket);
 		}
 
 
@@ -5846,7 +5849,7 @@ void setLoraGPSRTCAlarm(){
 	sAlarm.AlarmTime.Hours = 0;
 	sAlarm.AlarmTime.Minutes = 0;
 	sAlarm.AlarmTime.Seconds = 0;
-	sAlarm.AlarmMask = RTC_ALARMMASK_DATEWEEKDAY | RTC_ALARMMASK_HOURS | RTC_ALARMMASK_MINUTES;
+	sAlarm.AlarmMask = RTC_ALARMMASK_DATEWEEKDAY  | RTC_ALARMMASK_HOURS | RTC_ALARMMASK_MINUTES;
 	sAlarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
 	sAlarm.Alarm = RTC_ALARM_B;
 	if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN) != HAL_OK) {
@@ -7437,33 +7440,33 @@ void HAL_RTCEx_AlarmBEventCallback(RTC_HandleTypeDef *hrtc) {
 
 	loRaGPSRTCAlarmIdx++;
 
-	RTC_AlarmTypeDef sAlarm = {0};
-	RTC_TimeTypeDef currentTime;
-	HAL_RTC_GetTime(hrtc, &currentTime, RTC_FORMAT_BIN);
-
-	// Calculate the next alarm time for 1-minute intervals with the same offset
-	uint8_t nextMinute = currentTime.Minutes + LORA_SEND_INTERVAL_MINS;
-	uint8_t nextHour = currentTime.Hours;
-
-	if (nextMinute >= 60) {
-		nextMinute -= 60;
-		nextHour = (nextHour + 1) % 24;
-	}
-
-	// Set the next alarm
-	sAlarm.AlarmTime.Hours = nextHour;
-	sAlarm.AlarmTime.Minutes = nextMinute;
-//	sAlarm.AlarmTime.Seconds = currentTime.Seconds;
-	sAlarm.AlarmMask = RTC_ALARMMASK_DATEWEEKDAY;
-	sAlarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
-	sAlarm.Alarm = RTC_ALARM_B;
-
-	if (HAL_RTC_SetAlarm_IT(hrtc, &sAlarm, RTC_FORMAT_BIN) != HAL_OK) {
-		Error_Handler();
-	}
+//	RTC_AlarmTypeDef sAlarm = {0};
+//	RTC_TimeTypeDef currentTime;
+//	HAL_RTC_GetTime(hrtc, &currentTime, RTC_FORMAT_BIN);
+//
+//	// Calculate the next alarm time for 1-minute intervals with the same offset
+//	uint8_t nextMinute = currentTime.Minutes + LORA_SEND_INTERVAL_MINS;
+//	uint8_t nextHour = currentTime.Hours;
+//
+//	if (nextMinute >= 60) {
+//		nextMinute -= 60;
+//		nextHour = (nextHour + 1) % 24;
+//	}
+//
+//	// Set the next alarm
+//	sAlarm.AlarmTime.Hours = nextHour;
+//	sAlarm.AlarmTime.Minutes = nextMinute;
+////	sAlarm.AlarmTime.Seconds = currentTime.Seconds;
+//	sAlarm.AlarmMask = RTC_ALARMMASK_DATEWEEKDAY;
+//	sAlarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
+//	sAlarm.Alarm = RTC_ALARM_B;
+//
+//	if (HAL_RTC_SetAlarm_IT(hrtc, &sAlarm, RTC_FORMAT_BIN) != HAL_OK) {
+//		Error_Handler();
+//	}
 
 //	if((loRaGPSRTCAlarmIdx % LORA_SEND_INTERVAL_MINS) == 0){
-#if DISABLE_LORA == 1
+#if DISABLE_LORA == 0
 	osThreadFlagsSet(loraGPSId, LORA_SEND_PKT);
 #endif
 //	}

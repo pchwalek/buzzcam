@@ -7,9 +7,9 @@ extern "C" {
 
 #define DISABLE_WIRELESS 0
 
-#define SIMULATE_GPS 	0
+#define SIMULATE_GPS 	1
 
-#define DISABLE_LORA	1
+#define DISABLE_LORA	0
 
 #define LORA_SEND_INTERVAL_MINS 5
 #define GPS_FIX_INTERVAL_MULTIPLE_OF_LORA (6*48)
