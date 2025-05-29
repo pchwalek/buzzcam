@@ -446,6 +446,7 @@ extern SPI_HandleTypeDef hspi1;
 #define UWB_UPDATE_ADDR	      0x00000040
 #define UWB_UPDATE_RANGE      0x00000080
 #define MAG_CAL_EVENT		  0x00000100
+#define AUDIO_RTC_EVENT		  0x00000200
 
 #define UWB_MESSAGE_ALERT	  0x00000001
 #define UWB_START_RANGING	  0x00000002
@@ -458,6 +459,7 @@ extern SPI_HandleTypeDef hspi1;
 #define IS_UWB_START_EVENT(X)			(((X & UWB_START) == UWB_START) ? (1) : (0))
 #define IS_UWB_UPDATE_RANGE_EVENT(X)	(((X & UWB_UPDATE_RANGE) == UWB_UPDATE_RANGE) ? (1) : (0))
 #define IS_MAG_CAL_EVENT(X)				(((X & MAG_CAL_EVENT) == MAG_CAL_EVENT) ? (1) : (0))
+#define IS_AUDIO_RTC_EVENT(X)				(((X & AUDIO_RTC_EVENT) == AUDIO_RTC_EVENT) ? (1) : (0))
 
 #define GRAB_SAMPLE_BIT							0x0100
 #define TERMINATE_THREAD_BIT					0x0200

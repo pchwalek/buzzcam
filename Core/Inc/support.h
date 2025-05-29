@@ -9,7 +9,11 @@ extern "C" {
 
 #define SIMULATE_GPS 	1
 
-#define DISABLE_LORA	0
+#define INTERVAL_MODE				1	// this is a mode that saves X minutes every hour
+#define INTERVAL_START_MINUTE		0
+#define INTERVAL_STOP_MINUTE		10
+
+#define DISABLE_LORA	1
 
 #define LORA_SEND_INTERVAL_MINS 5
 #define GPS_FIX_INTERVAL_MULTIPLE_OF_LORA (6*48)

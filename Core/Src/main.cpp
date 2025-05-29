@@ -255,6 +255,11 @@ void configLoraRadio(void);
 void setLoraAlarm(void);
 void sleepModeLoraRadio(sx126x_sleep_cfgs_t sleep_cfgs);
 
+bool areCurrentMinutesWithinRange(RTC_HandleTypeDef *hrtc_ptr, uint8_t START_MIN, uint8_t STOP_MIN);
+HAL_StatusTypeDef setRtcAlarmAtMinuteBoundary(RTC_HandleTypeDef *hrtc_ptr, uint8_t START_MIN, uint8_t STOP_MIN);
+static bool get_current_rtc_time_internal(RTC_HandleTypeDef *hrtc_ptr, RTC_TimeTypeDef *sTime);
+static bool check_if_minute_is_active(uint8_t currentMinutes, uint8_t START_MIN, uint8_t STOP_MIN);
+
 // Alarm-related functions
 void tamperAlarm(bool state);  // Controls the tamper alarm state
 
@@ -2781,7 +2786,7 @@ GPSFixStatus getGPSFix(GPSFix *currentFix) {
 //	  }
 #if SIMULATE_GPS == 1
 	osDelay(2000);
-	currentFix->gps_epoch = 1740072378 + HAL_GetTick() / 1000;
+	currentFix->gps_epoch = 1748476800 + HAL_GetTick() / 1000;
 	currentFix->altitude = 98;
 	currentFix->longitude = -710874368;
 	currentFix->latitude = 423603968;
@@ -4605,6 +4610,8 @@ void startRecord(uint32_t recording_duration_s, char *folder_name) {
 					osMessageQueuePut(ledSeqQueueId, &color, 0, 0);
 					f_close(&WavFile);
 					HAL_SAI_DMAStop(&hsai_BlockA1);
+					disableExtAudioDevices();
+
 					vTaskDelete( NULL);
 				}
 			}
@@ -5290,8 +5297,18 @@ void mainSystemTask(void *argument) {
 #endif
 
 		if (configPacket.payload.config_packet.enable_recording) {
+			if(INTERVAL_MODE == 1){
+
+				if(areCurrentMinutesWithinRange(&hrtc, INTERVAL_START_MINUTE, INTERVAL_STOP_MINUTE)){
+					micThreadId = osThreadNew(acousticSamplingTask, NULL,
+							&micTask_attributes);
+				}
+
+				setRtcAlarmAtMinuteBoundary(&hrtc, INTERVAL_START_MINUTE, INTERVAL_STOP_MINUTE);
+
+			}
 			/* start immediately if a slave device or no schedule is given */
-			if ((configPacket.payload.config_packet.schedule_config_count == 0)
+			else if ((configPacket.payload.config_packet.schedule_config_count == 0)
 					|| (configPacket.payload.config_packet.audio_config.free_run_mode)) {
 				micThreadId = osThreadNew(acousticSamplingTask, NULL,
 						&micTask_attributes);
@@ -5328,7 +5345,22 @@ void mainSystemTask(void *argument) {
 		OPENTHREAD_EVENT |
 		MAG_CAL_EVENT |
 		UWB_START |
-		UWB_UPDATE_RANGE, osFlagsWaitAny, osWaitForever);
+		UWB_UPDATE_RANGE |
+		AUDIO_RTC_EVENT, osFlagsWaitAny, osWaitForever);
+
+		if( IS_AUDIO_RTC_EVENT(flags)){
+			if(areCurrentMinutesWithinRange(&hrtc, INTERVAL_START_MINUTE, INTERVAL_STOP_MINUTE)){
+				if(micThreadId == 0){
+					micThreadId = osThreadNew(acousticSamplingTask, NULL,
+							&micTask_attributes);
+				}
+			}else{
+				osThreadFlagsSet(micThreadId, TERMINATE_EVENT);
+
+			}
+			setRtcAlarmAtMinuteBoundary(&hrtc, INTERVAL_START_MINUTE, INTERVAL_STOP_MINUTE);
+
+		}
 
 		if ( IS_CONFIG_EVENT(flags) || IS_MAG_CAL_EVENT(flags)
 				|| (IS_OPENTHREAD_EVENT(flags)
@@ -5362,6 +5394,7 @@ void mainSystemTask(void *argument) {
 			performMagCalibration(2000);
 		}
 
+#if INTERVAL_MODE == 0
 		/* if recording is enabled but not a slave node */
 		if (configPacket.payload.config_packet.enable_recording) {
 			while (coapSetup != 1) {
@@ -5401,6 +5434,8 @@ void mainSystemTask(void *argument) {
 				}
 			}
 		}
+
+#endif
 
 	}
 
@@ -5451,6 +5486,155 @@ void mainSystemTask(void *argument) {
 	}
 
 	vTaskDelete(NULL);
+}
+
+
+/**
+ * @brief Helper function to get the current RTC time.
+ * @param hrtc_ptr Pointer to RTC_HandleTypeDef structure.
+ * @param sTime Pointer to RTC_TimeTypeDef structure to store the time.
+ * @retval bool True if time was read successfully, false otherwise.
+ */
+static bool get_current_rtc_time_internal(RTC_HandleTypeDef *hrtc_ptr, RTC_TimeTypeDef *sTime) {
+    RTC_DateTypeDef sDate; // Dummy structure, but HAL_RTC_GetDate might be needed to unlock shadow registers
+
+    if (HAL_RTC_GetTime(hrtc_ptr, sTime, RTC_FORMAT_BIN) != HAL_OK) {
+        return false; // Error getting time
+    }
+    // Reading the date register is often necessary after reading time to allow shadow registers to be updated
+    // for subsequent reads, especially if LSE is the clock source.
+    if (HAL_RTC_GetDate(hrtc_ptr, &sDate, RTC_FORMAT_BIN) != HAL_OK) {
+        return false; // Error getting date (which might affect future time reads)
+    }
+    return true;
+}
+
+/**
+ * @brief Helper function to check if a given minute is within the active range.
+ * @param currentMinutes The minute to check.
+ * @param START_MIN The start minute of the active range.
+ * @param STOP_MIN The stop minute of the active range.
+ * @retval bool True if active, false otherwise.
+ */
+static bool check_if_minute_is_active(uint8_t currentMinutes, uint8_t START_MIN, uint8_t STOP_MIN) {
+    if (START_MIN <= STOP_MIN) { // Normal range, e.g., 10 to 30
+        return (currentMinutes >= START_MIN && currentMinutes <= STOP_MIN);
+    } else { // Wrap-around range, e.g., 50 to 10 (meaning 50-59 or 0-10)
+        return (currentMinutes >= START_MIN || currentMinutes <= STOP_MIN);
+    }
+}
+
+/**
+ * @brief Sets RTC Alarm A to trigger at the next boundary minute (START_MIN or STOP_MIN).
+ *
+ * The alarm will be set for the specified minute and 00 seconds. It will trigger
+ * at the next occurrence of this minute:00, regardless of the hour or date.
+ * For example, if START_MIN=0, STOP_MIN=10:
+ * - If current minute is 6, alarm is set for minute 10.
+ * - If current minute is 11, alarm is set for minute 0.
+ *
+ * @param hrtc_ptr Pointer to the RTC_HandleTypeDef structure.
+ * @param START_MIN The starting minute of the active interval (0-59).
+ * @param STOP_MIN The ending minute of the active interval (0-59).
+ * @retval HAL_StatusTypeDef HAL_OK if alarm set successfully, or HAL_ERROR/HAL_BUSY/HAL_TIMEOUT.
+ */
+HAL_StatusTypeDef setRtcAlarmAtMinuteBoundary(RTC_HandleTypeDef *hrtc_ptr, uint8_t START_MIN, uint8_t STOP_MIN) {
+    RTC_TimeTypeDef currentTime;
+    RTC_AlarmTypeDef sAlarm;
+    uint8_t alarm_minute_target;
+    HAL_StatusTypeDef status;
+
+    // Validate inputs (optional, but good practice)
+    if (START_MIN > 59 || STOP_MIN > 59) {
+        return HAL_ERROR; // Invalid parameters
+    }
+
+    if (!get_current_rtc_time_internal(hrtc_ptr, &currentTime)) {
+        return HAL_ERROR; // Failed to get current time
+    }
+
+    bool is_currently_active = check_if_minute_is_active(currentTime.Minutes, START_MIN, STOP_MIN);
+
+    if (is_currently_active) {
+        // If currently active, the next boundary is STOP_MIN (to signal end of active period)
+        alarm_minute_target = STOP_MIN;
+    } else {
+        // If currently inactive, the next boundary is START_MIN (to signal start of active period)
+        alarm_minute_target = START_MIN;
+    }
+
+    // Configure Alarm A
+    memset(&sAlarm, 0, sizeof(sAlarm)); // Initialize all fields to 0
+
+    sAlarm.AlarmTime.Hours          = 0;    // Ignored due to AlarmMask
+    sAlarm.AlarmTime.Minutes        = alarm_minute_target;
+    sAlarm.AlarmTime.Seconds        = 0;    // Alarm triggers at the start of the minute
+    sAlarm.AlarmTime.SubSeconds     = 0;
+    sAlarm.AlarmTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+    sAlarm.AlarmTime.StoreOperation = RTC_STOREOPERATION_RESET;
+
+    // RTC_ALARMMASK_HOURS: Hour is ignored in comparison.
+    // RTC_ALARMMASK_DATEWEEKDAY: Date/Weekday is ignored.
+    // So, alarm triggers when Minutes and Seconds match, every hour, every day.
+    sAlarm.AlarmMask            = RTC_ALARMMASK_HOURS | RTC_ALARMMASK_DATEWEEKDAY;
+    sAlarm.AlarmDateWeekDaySel  = RTC_ALARMDATEWEEKDAYSEL_DATE; // Doesn't matter due to mask
+    sAlarm.AlarmDateWeekDay     = 1; // Doesn't matter due to mask
+
+    sAlarm.Alarm                = RTC_ALARM_A;
+
+    // Deactivate the alarm before setting it to ensure clean configuration
+    status = HAL_RTC_DeactivateAlarm(hrtc_ptr, RTC_ALARM_A);
+    if (status != HAL_OK) {
+        return status; // Error deactivating alarm
+    }
+
+    // Set the alarm with interrupt
+    status = HAL_RTC_SetAlarm_IT(hrtc_ptr, &sAlarm, RTC_FORMAT_BIN);
+    if (status != HAL_OK) {
+        // Handle error (e.g., call Error_Handler() or log it)
+        return status;
+    }
+
+    return HAL_OK; // Alarm set successfully
+}
+
+bool areCurrentMinutesWithinRange(RTC_HandleTypeDef *hrtc_ptr, uint8_t START_MIN, uint8_t STOP_MIN) {
+    RTC_TimeTypeDef sTime;
+    RTC_DateTypeDef sDate; // Required to read along with time for shadow registers
+
+    // Get the current time from RTC
+    // It's important to read both time and date to ensure shadow registers are updated correctly in HAL.
+    if (HAL_RTC_GetTime(hrtc_ptr, &sTime, RTC_FORMAT_BIN) != HAL_OK) {
+        // Handle error, e.g., by returning false or asserting
+        // For simplicity in this example, we'll assume it always succeeds
+        // or you might have a global error handler.
+        return false; // Or some other error indication
+    }
+    // Even if the date is not directly used in the logic,
+    // it's often necessary to call HAL_RTC_GetDate after HAL_RTC_GetTime
+    // to allow the shadow registers to be updated for the next read.
+    if (HAL_RTC_GetDate(hrtc_ptr, &sDate, RTC_FORMAT_BIN) != HAL_OK) {
+        // Handle error
+        return false;
+    }
+
+    uint8_t currentMinutes = sTime.Minutes;
+
+    // Validate input minute range (optional, but good practice)
+    if (START_MIN > 59 || STOP_MIN > 59) {
+        // Invalid input parameters
+        return false;
+    }
+
+    if (START_MIN <= STOP_MIN) {
+        // Normal case: e.g., START_MIN = 10, STOP_MIN = 30.
+        // True if currentMinutes is 10, 11, ..., 30.
+        return (currentMinutes >= START_MIN && currentMinutes <= STOP_MIN);
+    } else {
+        // Wrap-around case: e.g., START_MIN = 50, STOP_MIN = 10.
+        // True if currentMinutes is 50, 51, ..., 59 OR 0, 1, ..., 10.
+        return (currentMinutes >= START_MIN || currentMinutes <= STOP_MIN);
+    }
 }
 
 void alertMainTask(void *argument) {
@@ -7430,7 +7614,9 @@ uint64_t RTC_ToEpochMS(RTC_TimeTypeDef *time, RTC_DateTypeDef *date) {
 }
 
 void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc) {
-	osThreadFlagsSet(mainSystemThreadId, UPDATE_EVENT);
+	osThreadFlagsSet(mainSystemThreadId, AUDIO_RTC_EVENT);
+
+
 }
 
 void HAL_RTCEx_AlarmBEventCallback(RTC_HandleTypeDef *hrtc) {
