@@ -4610,7 +4610,7 @@ void startRecord(uint32_t recording_duration_s, char *folder_name) {
 					osMessageQueuePut(ledSeqQueueId, &color, 0, 0);
 					f_close(&WavFile);
 					HAL_SAI_DMAStop(&hsai_BlockA1);
-					disableExtAudioDevices();
+					disableAudioPeripherals();
 
 					vTaskDelete( NULL);
 				}
@@ -4720,7 +4720,7 @@ void startRecord(uint32_t recording_duration_s, char *folder_name) {
 //			setLED_Red(0);
 //			osDelay(100);
 //		}
-
+		disableAudioPeripherals();
 		vTaskDelete( NULL);
 
 		//			if(f_lseek(&WavFile, 0) == FR_OK)
@@ -5296,8 +5296,16 @@ void mainSystemTask(void *argument) {
 		}
 #endif
 
+
+
 		if (configPacket.payload.config_packet.enable_recording) {
 			if(INTERVAL_MODE == 1){
+
+				// wait until time updates
+				while(getEpoch() < 1735707600){
+					osDelay(100);
+				}
+
 
 				if(areCurrentMinutesWithinRange(&hrtc, INTERVAL_START_MINUTE, INTERVAL_STOP_MINUTE)){
 					micThreadId = osThreadNew(acousticSamplingTask, NULL,
@@ -5629,11 +5637,11 @@ bool areCurrentMinutesWithinRange(RTC_HandleTypeDef *hrtc_ptr, uint8_t START_MIN
     if (START_MIN <= STOP_MIN) {
         // Normal case: e.g., START_MIN = 10, STOP_MIN = 30.
         // True if currentMinutes is 10, 11, ..., 30.
-        return (currentMinutes >= START_MIN && currentMinutes <= STOP_MIN);
+        return (currentMinutes >= START_MIN && currentMinutes < STOP_MIN);
     } else {
         // Wrap-around case: e.g., START_MIN = 50, STOP_MIN = 10.
         // True if currentMinutes is 50, 51, ..., 59 OR 0, 1, ..., 10.
-        return (currentMinutes >= START_MIN || currentMinutes <= STOP_MIN);
+        return (currentMinutes >= START_MIN || currentMinutes < STOP_MIN);
     }
 }
 
