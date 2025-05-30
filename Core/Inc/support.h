@@ -9,9 +9,11 @@ extern "C" {
 
 #define SIMULATE_GPS 	1
 
+#define DISABLE_CHIRP 	1
+
 #define INTERVAL_MODE				1	// this is a mode that saves X minutes every hour
 #define INTERVAL_START_MINUTE		0
-#define INTERVAL_STOP_MINUTE		1
+#define INTERVAL_STOP_MINUTE		10
 
 #define DISABLE_LORA	1
 

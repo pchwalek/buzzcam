@@ -1903,7 +1903,7 @@ void acousticSamplingTask(void *argument) {
 
 	if (configPacket.payload.config_packet.audio_config.chirp_enable
 			&& configPacket.payload.config_packet.network_state.master_node) {
-		chirpTaskHandle = osThreadNew(chirpTask, NULL, &chirpTask_attributes);
+		if(chirpTaskHandle == 0) chirpTaskHandle = osThreadNew(chirpTask, NULL, &chirpTask_attributes);
 	}
 
 
@@ -4438,8 +4438,10 @@ void startRecord(uint32_t recording_duration_s, char *folder_name) {
 		half_buffers_per_session = 0;
 	}
 
-	char file_name[20] = "wav_";
-	char file_path[40] = { 0 };
+
+
+	char file_name[40] = "wav_";
+	char file_path[60] = { 0 };
 	strcpy(file_path, folder_name);
 
 	uint32_t file_index = 0;
@@ -4609,7 +4611,14 @@ void startRecord(uint32_t recording_duration_s, char *folder_name) {
 					color.duration = 2000;
 					osMessageQueuePut(ledSeqQueueId, &color, 0, 0);
 					f_close(&WavFile);
+					// Flush the cached data to the SD card
+					f_sync(&WavFile);
+
+					if(buffer != 0) free(buffer;
+					if(tflac_mem != 0) free(tflac_mem;
+
 					HAL_SAI_DMAStop(&hsai_BlockA1);
+					HAL_SAI_DeInit(&hsai_BlockA1);
 					disableAudioPeripherals();
 
 					vTaskDelete( NULL);
@@ -5358,10 +5367,10 @@ void mainSystemTask(void *argument) {
 
 		if( IS_AUDIO_RTC_EVENT(flags)){
 			if(areCurrentMinutesWithinRange(&hrtc, INTERVAL_START_MINUTE, INTERVAL_STOP_MINUTE)){
-				if(micThreadId == 0){
+//				if(micThreadId == 0){
 					micThreadId = osThreadNew(acousticSamplingTask, NULL,
 							&micTask_attributes);
-				}
+//				}
 			}else{
 				osThreadFlagsSet(micThreadId, TERMINATE_EVENT);
 
@@ -5526,9 +5535,9 @@ static bool get_current_rtc_time_internal(RTC_HandleTypeDef *hrtc_ptr, RTC_TimeT
  */
 static bool check_if_minute_is_active(uint8_t currentMinutes, uint8_t START_MIN, uint8_t STOP_MIN) {
     if (START_MIN <= STOP_MIN) { // Normal range, e.g., 10 to 30
-        return (currentMinutes >= START_MIN && currentMinutes <= STOP_MIN);
+        return (currentMinutes >= START_MIN && currentMinutes < STOP_MIN);
     } else { // Wrap-around range, e.g., 50 to 10 (meaning 50-59 or 0-10)
-        return (currentMinutes >= START_MIN || currentMinutes <= STOP_MIN);
+        return (currentMinutes >= START_MIN || currentMinutes < STOP_MIN);
     }
 }
 
