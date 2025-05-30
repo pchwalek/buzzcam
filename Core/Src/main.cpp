@@ -1901,11 +1901,12 @@ void acousticSamplingTask(void *argument) {
 	//	toneSweep(1);
 	//	toneSweep(0);
 
+#if DISABLE_CHIRP == 1
 	if (configPacket.payload.config_packet.audio_config.chirp_enable
 			&& configPacket.payload.config_packet.network_state.master_node) {
 		if(chirpTaskHandle == 0) chirpTaskHandle = osThreadNew(chirpTask, NULL, &chirpTask_attributes);
 	}
-
+#endif
 
 
 	if(!NVIC_GetEnableIRQ(EXTI15_10_IRQn)){
@@ -4614,8 +4615,8 @@ void startRecord(uint32_t recording_duration_s, char *folder_name) {
 					// Flush the cached data to the SD card
 					f_sync(&WavFile);
 
-					if(buffer != 0) free(buffer;
-					if(tflac_mem != 0) free(tflac_mem;
+					if(buffer != 0) free(buffer);
+					if(tflac_mem != 0) free(tflac_mem);
 
 					HAL_SAI_DMAStop(&hsai_BlockA1);
 					HAL_SAI_DeInit(&hsai_BlockA1);
