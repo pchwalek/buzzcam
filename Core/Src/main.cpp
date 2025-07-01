@@ -1798,6 +1798,13 @@ void acousticSamplingTask(void *argument) {
 	disableAudioPeripherals();
 	//	unmount_sd_card();
 
+	if (systemPowerSupervisor.isMAX78000Enabled) {
+		systemState.isMAX78000Active = true;
+		Control_MAX78000_Power(true);
+	}
+
+	osDelay(50);
+
 	if ((!configPacket.payload.config_packet.audio_config.channel_1)
 			&& (!configPacket.payload.config_packet.audio_config.channel_2)) {
 		osThreadExit();
@@ -1901,7 +1908,7 @@ void acousticSamplingTask(void *argument) {
 	//	toneSweep(1);
 	//	toneSweep(0);
 
-#if DISABLE_CHIRP == 1
+#if DISABLE_CHIRP == 0
 	if (configPacket.payload.config_packet.audio_config.chirp_enable
 			&& configPacket.payload.config_packet.network_state.master_node) {
 		if(chirpTaskHandle == 0) chirpTaskHandle = osThreadNew(chirpTask, NULL, &chirpTask_attributes);
@@ -4508,6 +4515,8 @@ void startRecord(uint32_t recording_duration_s, char *folder_name) {
 			} else if (COMPRESSION_TYPE_OPUS
 					== configPacket.payload.config_packet.audio_config.audio_compression.compression_type) {
 				//todo: OPUS compression init
+			} else {
+				Error_Handler();
 			}
 		}
 
@@ -4524,12 +4533,16 @@ void startRecord(uint32_t recording_duration_s, char *folder_name) {
 			} else if (COMPRESSION_TYPE_OPUS
 					== configPacket.payload.config_packet.audio_config.audio_compression.compression_type) {
 				//todo: OPUS compression
+			} else {
+				Error_Handler();
 			}
 		}
 
 		//		HAL_SAI_Receive(&hsai_BlockA1, (uint8_t*) audioSample, buffer_size, 2000); //prime SAI channels
 		hal_status = HAL_SAI_Receive_DMA(&hsai_BlockA1, (uint8_t*) audioSample,
 				buffer_size);
+
+		if(hal_status != HAL_OK) Error_Handler();
 
 		/* continue recording until max bytes written */
 		while ((totalBuffersWritten <= half_buffers_per_session)
@@ -4610,16 +4623,27 @@ void startRecord(uint32_t recording_duration_s, char *folder_name) {
 					color.red_val = 1000;
 					color.green_val = 0;
 					color.duration = 2000;
+
+					HAL_SAI_DMAStop(&hsai_BlockA1);
+
+					if (systemPowerSupervisor.isMAX78000Enabled) {
+						systemState.isMAX78000Active = false;
+						Control_MAX78000_Power(false);
+					}
+
 					osMessageQueuePut(ledSeqQueueId, &color, 0, 0);
+
+					WavUpdateHeaderSize(totalBytesWrittenToFile);
+
 					f_close(&WavFile);
-					// Flush the cached data to the SD card
-					f_sync(&WavFile);
 
 					if(buffer != 0) free(buffer);
 					if(tflac_mem != 0) free(tflac_mem);
 
-					HAL_SAI_DMAStop(&hsai_BlockA1);
-					HAL_SAI_DeInit(&hsai_BlockA1);
+					sampleCntr = 0;
+					SAI_HALF_CALLBACK = 0;
+					SAI_FULL_CALLBACK = 0;
+
 					disableAudioPeripherals();
 
 					vTaskDelete( NULL);
@@ -4731,6 +4755,8 @@ void startRecord(uint32_t recording_duration_s, char *folder_name) {
 //			osDelay(100);
 //		}
 		disableAudioPeripherals();
+
+
 		vTaskDelete( NULL);
 
 		//			if(f_lseek(&WavFile, 0) == FR_OK)
@@ -5024,7 +5050,7 @@ void getFormattedTime(RTC_HandleTypeDef *hrtc, char *formattedTime) {
 }
 
 void disableAudioPeripherals(void) {
-	HAL_SAI_DeInit(&hsai_BlockA1);
+//	HAL_SAI_DeInit(&hsai_BlockA1);
 
 	/* Turn off microphone and ADC */
 	disableExtAudioDevices();
@@ -5368,12 +5394,11 @@ void mainSystemTask(void *argument) {
 
 		if( IS_AUDIO_RTC_EVENT(flags)){
 			if(areCurrentMinutesWithinRange(&hrtc, INTERVAL_START_MINUTE, INTERVAL_STOP_MINUTE)){
-//				if(micThreadId == 0){
 					micThreadId = osThreadNew(acousticSamplingTask, NULL,
 							&micTask_attributes);
-//				}
 			}else{
 				osThreadFlagsSet(micThreadId, TERMINATE_EVENT);
+
 
 			}
 			setRtcAlarmAtMinuteBoundary(&hrtc, INTERVAL_START_MINUTE, INTERVAL_STOP_MINUTE);

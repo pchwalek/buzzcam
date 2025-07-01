@@ -5,9 +5,11 @@
 extern "C" {
 #endif
 
-#define DISABLE_WIRELESS 0
+#include <stdbool.h>
 
-#define SIMULATE_GPS 	1
+#define DISABLE_WIRELESS 1
+
+#define SIMULATE_GPS 	0
 
 #define DISABLE_CHIRP 	1
 
