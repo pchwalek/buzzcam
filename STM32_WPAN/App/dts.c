@@ -39,6 +39,8 @@
 
 #include "cmsis_os2.h"
 
+#include "support.h"
+
 //#include "packet.h"
 
 //#include "fram.h"
